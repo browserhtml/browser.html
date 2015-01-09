@@ -39,7 +39,7 @@ define([],
 
       if (options.buttontext) {
         elbutton.innerHTML = options.buttontext;
-        } else {
+      } else {
         elbutton.innerHTML = 'Okay';
       }
 
@@ -47,7 +47,7 @@ define([],
     },
   closePopup: function() {
     el.style.display = 'none';
-    },
+  },
   }
 
   elbutton.addEventListener('click', Popup.closePopup);

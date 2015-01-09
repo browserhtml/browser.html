@@ -236,7 +236,7 @@ define(['js/eventemitter', 'js/popup'], function(EventEmitter, Popup) {
         } else if (e.detail.type == 'remoteXUL') {
           Popup.openPopup({title:'Remote XUL', content:'This capability is disabled and cannot be used.'});
         } else {
-          Popup.openPopup({title:'This Connection is Untrusted', content:'You have asked Firefox to connect securely to this page, but we can't confirm that your connection is secure. Normally, when you try to connect securely, sites will present trusted identification to prove that you are going to the right place. However, this site's identity can't be verified.', buttontext:'Get me out of here!'});
+          Popup.openPopup({title:'This Connection is Untrusted', content:'You have asked Firefox to connect securely to this page, but we can\'t confirm that your connection is secure. Normally, when you try to connect securely, sites will present trusted identification to prove that you are going to the right place. However, this site\'s identity can\'t be verified.', buttontext:'Get me out of here!'});
         }
         this._loading = false;
         break;
