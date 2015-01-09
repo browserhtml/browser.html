@@ -1,24 +1,29 @@
 .popup {
-  position:fixed;
-  top:30vh;
-  left:30vw;
+  display: flex;
+  flex-wrap: wrap;
   background:#F8F8F8;
   color:#777;
-  padding:2em;
   box-shadow:0px 27px 24px 0px rgba(0, 0, 0, 0.2), 0px 40px 77px 0px rgba(0, 0, 0, 0.22), 0px -5px 24px 0px rgba(0, 0, 0, 0.2);
-  min-width: 200px;
-  min-height: 40vh;
-  max-height: 70vh;
-  overflow: auto;
-  width:40vw;
-  height:auto;
-  transition:0.07s;
   -moz-user-select:none;
+  padding:2em;
+  height:auto;
+  width:auto;
+  max-width: 600px;
+  max-height: 350px;
+  z-index: 999999;
+  overflow:auto;
+  margin:auto;
+  position:fixed;
+  top:0;
+  bottom:0;
+  left:0;
+  right:0;
 }
 .popup > h1 {
   font-size:275%;
   font-weight: 300;
   margin:0.3em;
+  height:50px;
   padding-bottom:0.25em;
   box-sizing: border-box;
   border-bottom:1px #999 solid;
@@ -30,16 +35,11 @@
   font-weight: 300;
   line-height: 130%;
 }
-.button {
-  position: absolute;
+.popup > button {
   font-size:17px;
   font-weight: 300;
-  bottom:20px;
-  right:25px;
   height:40px;
   width:160px;
-  padding:0.3em;
-  padding-top:11px;
   box-sizing: border-box;
 background:#0095DD;
   color:#FBFBFB;
@@ -47,6 +47,6 @@ background:#0095DD;
   text-align: center;
   cursor:pointer;
 }
-.button:hover {
+.popup > button:hover {
   background: #0086C7;
 }

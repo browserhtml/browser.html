@@ -15,6 +15,7 @@
     <title>firefox</title>
     <link rel='stylesheet' href='css/layout.css'>
     <link rel='stylesheet' title='default' href='css/theme.css'>
+    <link rel='stylesheet' title='default' href='css/popup.css'>
 
     <!-- Alternate themes -->
     <link rel='stylesheet alternate' title='dark' href='css/dark/dark.css'>
@@ -27,7 +28,11 @@
   </head>
 
   <body>
+    <div class="popup"><h1 flex="1">Lorem Ipsum</h1><div class="content" flex="1">
 
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum maximus pharetra urna, pharetra aliquet lacus condimentum interdum. Integer tempus enim eros, ac pharetra lectus consectetur at. Morbi vehicula mauris augue, vitae interdum magna porttitor at. Aliquam erat volutpat. Proin nisl nunc, congue ac urna et, pulvinar fringilla eros. Sed fermentum elit sed interdum placerat. Vivamus cursus fermentum tristique. Aliquam erat volutpat. </div><button class="close" flex="1">Okay</button></div>                
+
+    
     <vbox id='outervbox' flex='1'> <!-- This is not XUL. It's html. -->
       <hbox id='outerhbox' flex='1'>
         <box class='iframes' flex='1' align='stretch'></box>
