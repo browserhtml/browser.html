@@ -227,20 +227,16 @@ define(['js/eventemitter', 'js/popup'], function(EventEmitter, Popup) {
         this._favicon = e.detail.href;
         break;
       case 'mozbrowsererror':
-        if(e.detail.type == "offline" || e.detail.type == "dnsNotFound") {
-          Popup.openPopup({title:"You are offline", content:"Please reconnect to the internet and try again."});
-        }
-        else if(e.detail.type == "redirectLoop") {
-          Popup.openPopup({title:"Too many redirects", content:"This page is trying to redirect you in a way that will never complete."});
-        }
-        else if(e.detail.type == "corruptedContentError") {
-          Popup.openPopup({title:"Content is corrupted", content:"There is something wrong with this content that prevents it from being displayed."});
-        }
-        else if(e.detail.type == "remoteXUL") {
-          Popup.openPopup({title:"Remote XUL", content:"This capability is disabled and cannot be used."});
-        }
-        else {
-          Popup.openPopup({title:"This Connection is Untrusted", content:"You have asked Firefox to connect securely to this page, but we can't confirm that your connection is secure. Normally, when you try to connect securely, sites will present trusted identification to prove that you are going to the right place. However, this site's identity can't be verified.", buttontext:"Get me out of here!"});
+        if (e.detail.type == 'offline' || e.detail.type == 'dnsNotFound') {
+          Popup.openPopup({title:'You are offline', content:'Please reconnect to the internet and try again.'});
+        } else if (e.detail.type == 'redirectLoop') {
+          Popup.openPopup({title:'Too many redirects', content:'This page is trying to redirect you in a way that will never complete.'});
+        } else if (e.detail.type == 'corruptedContentError') {
+          Popup.openPopup({title:'Content is corrupted', content:'There is something wrong with this content that prevents it from being displayed.'});
+        } else if (e.detail.type == 'remoteXUL') {
+          Popup.openPopup({title:'Remote XUL', content:'This capability is disabled and cannot be used.'});
+        } else {
+          Popup.openPopup({title:'This Connection is Untrusted', content:'You have asked Firefox to connect securely to this page, but we can't confirm that your connection is secure. Normally, when you try to connect securely, sites will present trusted identification to prove that you are going to the right place. However, this site's identity can't be verified.', buttontext:'Get me out of here!'});
         }
         this._loading = false;
         break;
