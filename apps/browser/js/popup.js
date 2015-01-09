@@ -14,9 +14,12 @@ define([],
 
   'use strict';
   
-  //really bad way of adding the popup html - needs to be changed
-  
-document.body.innerHTML = '<div class="popup"><h1 flex="1"></h1><div class="content" flex="1"></div><button class="close" flex="1"></button></div>' + document.body.innerHTML; 
+    let html = `<div class="popup"><h1 flex="1"></h1><div class="content" flex="1"></div><button class="close" flex="1"></button></div>`;
+  let body = document.body;
+  let placeholder = document.createElement('div');
+  let outervbox = document.querySelector("#outervbox");
+  body.insertBefore(placeholder, outervbox);
+  placeholder.outerHTML = html;
 
   let el = document.querySelector(".popup");
   let elheading = document.querySelector(".popup > h1");
