@@ -1,5 +1,5 @@
 .popup {
-  display: flex;
+  display: none; /* changed to flex in popup.js */
   flex-wrap: wrap;
   background:#F8F8F8;
   color:#777;
@@ -8,8 +8,8 @@
   padding:2em;
   height:auto;
   width:auto;
-  max-width: 600px;
-  max-height: 350px;
+  max-width: 500px;
+  max-height: 275px;
   z-index: 999999;
   overflow:auto;
   margin:auto;
@@ -28,6 +28,7 @@
   box-sizing: border-box;
   border-bottom:1px #999 solid;
   color:#444;
+  min-width: 100%;
 }
 .popup > .content {
   padding:0.5em;
@@ -46,6 +47,7 @@ background:#0095DD;
   border-radius: 2px;
   text-align: center;
   cursor:pointer;
+  min-width: 100%;
 }
 .popup > button:hover {
   background: #0086C7;
