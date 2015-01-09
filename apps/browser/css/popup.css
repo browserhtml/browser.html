@@ -1,0 +1,52 @@
+.popup {
+  position:fixed;
+  top:30vh;
+  left:30vw;
+  background:#F8F8F8;
+  color:#777;
+  padding:2em;
+  box-shadow:0px 27px 24px 0px rgba(0, 0, 0, 0.2), 0px 40px 77px 0px rgba(0, 0, 0, 0.22), 0px -5px 24px 0px rgba(0, 0, 0, 0.2);
+  min-width: 200px;
+  min-height: 40vh;
+  max-height: 70vh;
+  overflow: auto;
+  width:40vw;
+  height:auto;
+  transition:0.07s;
+  -moz-user-select:none;
+}
+.popup > h1 {
+  font-size:275%;
+  font-weight: 300;
+  margin:0.3em;
+  padding-bottom:0.25em;
+  box-sizing: border-box;
+  border-bottom:1px #999 solid;
+  color:#444;
+}
+.popup > .content {
+  padding:0.5em;
+  font-size:150%;
+  font-weight: 300;
+  line-height: 130%;
+}
+.button {
+  position: absolute;
+  font-size:17px;
+  font-weight: 300;
+  bottom:20px;
+  right:25px;
+  height:40px;
+  width:160px;
+  padding:0.3em;
+  padding-top:11px;
+  box-sizing: border-box;
+background:#0095DD;
+  color:#FBFBFB;
+  border-radius: 2px;
+  text-align: center;
+  cursor:pointer;
+}
+.button:hover {
+  background: #0086C7;
+}
