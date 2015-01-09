@@ -14,7 +14,13 @@ define([],
 
   'use strict';
   
-    let html = `<div class="popup"><h1 flex="1"></h1><div class="content" flex="1"></div><button class="close" flex="1"></button></div>`;
+  let link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'css/popup.css';
+  let defaultStyleSheet = document.querySelector('link[title=default]');
+  document.head.insertBefore(link, defaultStyleSheet.nextSibling);
+  
+  let html = `<div class="popup"><h1 flex="1"></h1><div class="content" flex="1"></div><button class="close" flex="1"></button></div>`;
   let body = document.body;
   let placeholder = document.createElement('div');
   let outervbox = document.querySelector("#outervbox");
