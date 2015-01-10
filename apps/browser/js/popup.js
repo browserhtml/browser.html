@@ -24,18 +24,18 @@ define([],
 
   const Popup = {
     openPopup: function(options) {
-      
-      var generatedhtml = html;
-      generatedhtml = generatedhtml.replace("headerinsert", options.title).replace("contentinsert", options.content);
-        if (options.buttontext) {
-          generatedhtml = generatedhtml.replace("btinsert", options.buttontext);
-        } else {
-          generatedhtml = generatedhtml.replace("btinsert", "Okay");
-        }
 
-      if(options.page) {
+      var generatedhtml = html;
+      generatedhtml = generatedhtml.replace('headerinsert', options.title).replace('contentinsert', options.content);
+      if (options.buttontext) {
+        generatedhtml = generatedhtml.replace('btinsert', options.buttontext);
+      } else {
+        generatedhtml = generatedhtml.replace('btinsert', 'Okay');
+      }
+
+      if (options.page) {
         var currentTabFrame = options.tabiframetarget;
-        currentTabFrame.insertAdjacentHTML("BeforeEnd", generatedhtml);      
+        currentTabFrame.insertAdjacentHTML('BeforeEnd', generatedhtml);
       } else {
         var body = document.body;
         var placeholder = document.createElement('div');
