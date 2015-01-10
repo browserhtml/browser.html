@@ -34,7 +34,7 @@ define([],
       }
 
       if (options.page) {
-        var currentTabFrame = options.tabiframetarget;
+        var currentTabFrame = options.insertiontarget;
         currentTabFrame.insertAdjacentHTML('BeforeEnd', generatedhtml);
       } else {
         var body = document.body;
