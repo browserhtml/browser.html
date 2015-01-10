@@ -44,7 +44,10 @@ define([],
         placeholder.outerHTML = generatedhtml;
       }
 
-      document.querySelector('.popup > button').onclick = Popup.closePopup;
+      var closebuttons = document.querySelectorAll('.popup > button');
+      for (var i = 0; i < closebuttons.length; i++) {
+        closebuttons[i].onclick = Popup.closePopup;
+      }
     },
 
   closePopup: function() {
