@@ -44,12 +44,15 @@ define([],
         placeholder.outerHTML = generatedhtml;
       }
 
+      document.querySelector('.popup > button').onclick = null;
       document.querySelector('.popup > button').addEventListener('click', Popup.closePopup);
     },
 
   closePopup: function() {
     var el = document.querySelector('.popup');
     el.parentNode.removeChild(el);
+      document.querySelector('.popup > button').onclick = null;
+    document.querySelector('.popup > button').addEventListener('click', Popup.closePopup);
   },
   }
 
