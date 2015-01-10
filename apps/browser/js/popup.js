@@ -44,15 +44,14 @@ define([],
         placeholder.outerHTML = generatedhtml;
       }
 
-      document.querySelector('.popup > button').onclick = null;
-      document.querySelector('.popup > button').addEventListener('click', Popup.closePopup);
+      document.querySelector('.popup > button').onclick = Popup.closePopup;
     },
 
   closePopup: function() {
-    var el = document.querySelector('.popup');
-    el.parentNode.removeChild(el);
-    document.querySelector('.popup > button').onclick = null;
-    document.querySelector('.popup > button').addEventListener('click', Popup.closePopup);
+    var el = document.getElementsByClassName('popup');
+    while(el[0]) {
+      el[0].parentNode.removeChild(el[0]);
+    }  
   },
   }
 
