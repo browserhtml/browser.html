@@ -49,9 +49,9 @@ define([],
 
   closePopup: function() {
     var el = document.getElementsByClassName('popup');
-    while(el[0]) {
+    while (el[0]) {
       el[0].parentNode.removeChild(el[0]);
-    }  
+    }
   },
   }
 
