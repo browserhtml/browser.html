@@ -20,36 +20,38 @@ define([],
   let defaultStyleSheet = document.querySelector('link[title=default]');
   document.head.insertBefore(link, defaultStyleSheet.nextSibling);
 
-  let html = `<div class="popup"><h1 flex="1"></h1><div class="content" flex="1"></div><button class="close" flex="1"></button></div>`;
-  let body = document.body;
-  let placeholder = document.createElement('div');
-  let outervbox = document.querySelector('#outervbox');
-  body.insertBefore(placeholder, outervbox);
-  placeholder.outerHTML = html;
-
-  let el = document.querySelector('.popup');
-  let elheading = document.querySelector('.popup > h1');
-  let elcontent = document.querySelector('.popup > .content');
-  let elbutton = document.querySelector('.popup > button');
+  let html = `<div class="popup"><h1 flex="1">headerinsert</h1><div class="content" flex="1">contentinsert</div><button class="close" flex="1">btinsert</button></div>`;
 
   const Popup = {
     openPopup: function(options) {
-      elheading.innerHTML = options.title;
-      elcontent.innerHTML = options.content;
+      
+      var generatedhtml = html;
+      generatedhtml = generatedhtml.replace("headerinsert", options.title).replace("contentinsert", options.content);
+        if (options.buttontext) {
+          generatedhtml = generatedhtml.replace("btinsert", options.buttontext);
+        } else {
+          generatedhtml = generatedhtml.replace("btinsert", "Okay");
+        }
 
-      if (options.buttontext) {
-        elbutton.innerHTML = options.buttontext;
+      if(options.page) {
+        var currentTabFrame = options.tabiframetarget;
+        currentTabFrame.insertAdjacentHTML("BeforeEnd", generatedhtml);      
       } else {
-        elbutton.innerHTML = 'Okay';
+        var body = document.body;
+        var placeholder = document.createElement('div');
+        var outervbox = document.querySelector('#outervbox');
+        body.insertBefore(placeholder, outervbox);
+        placeholder.outerHTML = generatedhtml;
       }
 
-      el.style.display = 'flex';
+      document.querySelector('.popup > button').addEventListener('click', Popup.closePopup);
     },
+
   closePopup: function() {
-    el.style.display = 'none';
+    var el = document.querySelector('.popup');
+    el.parentNode.removeChild(el);
   },
   }
 
-  elbutton.addEventListener('click', Popup.closePopup);
   return Popup;
 });
