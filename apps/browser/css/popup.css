@@ -1,0 +1,68 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+.popup {
+  display: flex;
+  flex-wrap: wrap;
+  background: #F8F8F8;
+  color: #777;
+  box-shadow: 0px 27px 24px 0px rgba(0, 0, 0, 0.2), 0px 40px 77px 0px rgba(0, 0, 0, 0.22), 0px -5px 24px 0px rgba(0, 0, 0, 0.2);
+  -moz-user-select: none;
+  padding: 2em;
+  height: auto;
+  width: auto;
+  max-width: 500px;
+  max-height: 275px;
+  z-index: 999999;
+  overflow: auto;
+  margin: auto;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  white-space: normal;
+}
+
+tab-iframe > .popup {
+  max-width: none;
+  max-height: none;
+  padding: 9em;
+}
+
+.popup > h1 {
+  font-size: 275%;
+  font-weight: 300;
+  margin: 0.3em;
+  height: 50px;
+  white-space: nowrap;
+  padding-bottom: 0.25em;
+  box-sizing: border-box;
+  border-bottom: 1px #999 solid;
+  color: #444;
+  min-width: 100%;
+  overflow: hidden;
+}
+.popup > .content {
+  padding: 0.5em;
+  font-size: 150%;
+  font-weight: 300;
+  line-height: 140%;
+}
+.popup > button {
+  font-size: 17px;
+  font-weight: 300;
+  height: 40px;
+  width: 160px;
+  box-sizing: border-box;
+background: #0095DD;
+  color: #FBFBFB;
+  border-radius: 2px;
+  text-align: center;
+  cursor: pointer;
+  min-width: 100%;
+}
+.popup > button:hover {
+  background: #0086C7;
+}

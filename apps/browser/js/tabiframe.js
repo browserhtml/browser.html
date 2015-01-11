@@ -10,7 +10,7 @@
  *
  */
 
-define(['js/eventemitter'], function(EventEmitter) {
+define(['js/eventemitter', 'js/popup'], function(EventEmitter, Popup) {
 
   'use strict';
 
@@ -227,6 +227,19 @@ define(['js/eventemitter'], function(EventEmitter) {
         this._favicon = e.detail.href;
         break;
       case 'mozbrowsererror':
+        if (e.detail.type == 'offline' || e.detail.type == 'dnsNotFound') {
+          Popup.openPopup({title:'You are offline', content:'Please reconnect to the internet and try again.'});
+        } else if (e.detail.type == 'redirectLoop') {
+          Popup.openPopup({title:'Too many redirects', content:'This page is trying to redirect you in a way that will never complete.', page: true, insertiontarget: e.target.parentNode});
+        } else if (e.detail.type == 'corruptedContentError') {
+          Popup.openPopup({title:'Content is corrupted', content:'There is something wrong with this content that prevents it from being displayed.', page: true, insertiontarget: e.target.parentNode});
+        } else if (e.detail.type == 'remoteXUL') {
+          Popup.openPopup({title:'Remote XUL', content:'This capability is disabled and cannot be used.', page: true, insertiontarget: e.target.parentNode});
+        } else if (e.detail.type == 'other' || e.detail.type == 'certerror') {
+          Popup.openPopup({title:'This Connection is Untrusted', content:'You have asked Firefox to connect securely to this page, but we can\'t confirm that your connection is secure. Normally, when you try to connect securely, sites will present trusted identification to prove that you are going to the right place. However, this site\'s identity can\'t be verified. If you usually connect to this site without problems, this error could mean that someone is trying to impersonate the site, and you shouldn\'t continue.', buttontext:'Get me out of here!', page: true, insertiontarget: e.target.parentNode});
+        } else {
+          Popup.openPopup({title:'Error', content:'Something went wrong here. Try reloading.', page: true, insertiontarget: e.target.parentNode});
+        }
         this._loading = false;
         break;
       case 'mozbrowsersecuritychange':

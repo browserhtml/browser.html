@@ -42,6 +42,11 @@ tab-iframe, box, hbox, vbox, spacer {
   white-space: pre;
 }
 
+tab-iframe {
+  overflow: hidden;
+  position: relative;
+}
+
 hbox {
   flex-flow: row;
 }
