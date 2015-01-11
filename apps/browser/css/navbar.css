@@ -84,6 +84,7 @@
   display: none;
 }
 
+.newtab-button {  background-position: -558px   0px; }
 .back-button {    background-position: -36px   0px; }
 .forward-button { background-position: -54px   0px; }
 .reload-button {  background-position: -73px   0px; }
