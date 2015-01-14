@@ -9,7 +9,6 @@ window[os=linux] {
 
 window[os=osx] {
   -moz-appearance: dialog;
-  -moz-window-dragging: drag;
 }
 
 window[os=windows] {
@@ -29,7 +28,6 @@ window:not([draw-in-titlebar]) #titlebar {
 
 window[draw-in-titlebar=true] #titlebar {
   -moz-binding: url("chrome://global/content/bindings/general.xml#windowdragbox");
-  -moz-window-dragging: drag;
 }
 
 window[draw-in-titlebar=true][os=osx] #titlebar {
@@ -67,8 +65,16 @@ browser {
   background: transparent;
 }
 
+window[os=osx][draw-in-titlebar=true] browser {
+    margin-top:-39px;
+}
+
+window[draw-in-titlebar=true][os=windows] browser {
+  margin-top: -16px;
+}
+
 #init {
-  margin: 40px;;
+  margin: 40px;
   padding: 40px;
   font: -moz-field;
   color: black;
@@ -77,4 +83,16 @@ browser {
 
 #init input {
   width: 100%;
+}
+
+window[os=osx][draw-in-titlebar=true] #dragger {
+  height:39px;
+  width:100%;
+  -moz-window-dragging:drag;
+}
+
+window[os=windows][draw-in-titlebar=true] #dragger {
+  height:16px;
+  width:100%;
+  -moz-window-dragging:drag;
 }
