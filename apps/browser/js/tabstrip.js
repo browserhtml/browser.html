@@ -37,7 +37,7 @@ require(['js/tabiframedeck'], function(TabIframeDeck) {
 
   // Tab JS object. This should use web components.
   // issue #64
-  function Tab(tabIframe) {
+  function Tab(tabIframe, tabPosition) {
     let hbox = document.createElement('hbox');
     hbox.className = 'tab';
     hbox.setAttribute('align', 'center');
@@ -85,7 +85,21 @@ require(['js/tabiframedeck'], function(TabIframeDeck) {
     this._tabIframe = tabIframe;
     this._trackTabIframe();
 
-    tabstrip.appendChild(this._dom);
+    // Add to end if tabPosition is not mentioned
+    tabPosition = typeof (tabPosition) !== 'undefined' ? tabPosition : -1;
+    if (tabPosition == -1) {
+      tabPosition = tabstrip.children.length;
+    }
+
+    this._position = tabPosition;
+    this._tabIframe.position = tabPosition;
+
+    // If tabPosition == 0 => First tab.
+    if (tabPosition === 0) {
+      tabstrip.appendChild(this._dom);
+    } else {
+      tabstrip.insertBefore(this._dom, tabstrip.children[tabPosition]);
+    }
 
     this.updateDom();
   }
@@ -98,6 +112,14 @@ require(['js/tabiframedeck'], function(TabIframeDeck) {
 
     get dom() {
       return this._dom;
+    },
+
+    get position() {
+      return this._position;
+    },
+
+    set position(newPosition) {
+      this._position = newPosition;
     },
 
     destroy: function() {
@@ -165,7 +187,8 @@ require(['js/tabiframedeck'], function(TabIframeDeck) {
 
   TabIframeDeck.on('add', (event, detail) => {
     let tabIframe = detail.tabIframe;
-    let tab = new Tab(tabIframe);
+    let tabPosition = detail.tabPosition ? detail.tabPosition : -1;
+    let tab = new Tab(tabIframe, tabPosition);
     allTabs.set(tabIframe, tab);
     if (tabIframe == TabIframeDeck.getSelected()) {
       tab.select();
@@ -177,6 +200,7 @@ require(['js/tabiframedeck'], function(TabIframeDeck) {
     if (tab) {
       tab.destroy();
       allTabs.delete(detail.tabIframe);
+      resetTabPositions();
     }
   });
 
@@ -203,6 +227,19 @@ require(['js/tabiframedeck'], function(TabIframeDeck) {
   if (tabIframe) {
     let tab = allTabs.get(tabIframe);
     tab.select();
+  }
+
+  /* Update tabIframePosition */
+
+  function resetTabPositions() {
+    for (let tabIframe of TabIframeDeck) {
+      let tab = allTabs.get(tabIframe);
+      let tabPosition = TabIframeDeck.getTabPosition(tabIframe);
+
+      tab.position = tabPosition;
+      tab.tabIframe.position = tabPosition;
+      tab.updateDom();
+    }
   }
 
   /* Build curved tabs */
