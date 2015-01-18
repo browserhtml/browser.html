@@ -175,6 +175,15 @@ define(['js/eventemitter'], function(EventEmitter) {
     }
   });
 
+  Object.defineProperty(tabIframeProto, 'position', {
+    get: function() {
+      return this._position;
+    },
+    set: function(newPosition) {
+      this._position = newPosition;
+    }
+  });
+
   tabIframeProto.canGoBack = function() {
     return new Promise((resolve, reject) => {
       if (!this._innerIframe) {
