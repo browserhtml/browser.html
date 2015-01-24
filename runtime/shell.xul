@@ -204,6 +204,7 @@
     <tooltip id="contentAreaTooltip" page="true" />
   </popupset>
 
+  <hbox id="dragger"></hbox>
   <browser id="content"
            type="content-primary"
            flex="1"
