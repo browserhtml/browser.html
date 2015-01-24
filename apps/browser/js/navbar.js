@@ -24,6 +24,7 @@ function(UrlHelper, TabIframeDeck, RegisterKeyBindings) {
 
   let html = `
     <hbox class='navbar toolbar' align='center'>
+      <button class='newtab-button' title='Create a new tab'></button>
       <button class='back-button' title='Go back one page'></button>
       <button class='forward-button' title='Go forward one page'></button>
       <hbox class='urlbar' flex='1' align='center'>
@@ -53,11 +54,13 @@ function(UrlHelper, TabIframeDeck, RegisterKeyBindings) {
   let urlinput = navbar.querySelector('.urlinput');
   let searchbar = navbar.querySelector('.searchbar');
   let searchinput = navbar.querySelector('.searchinput');
+  let newtabButton = navbar.querySelector('.newtab-button')
   let backButton = navbar.querySelector('.back-button')
   let forwardButton = navbar.querySelector('.forward-button')
   let reloadButton = navbar.querySelector('.reload-button');
   let stopButton = navbar.querySelector('.stop-button');
 
+  newtabButton.onclick = () =>   TabIframeDeck.add({select: true});
   backButton.onclick = () => TabIframeDeck.getSelected().goBack();
   forwardButton.onclick = () => TabIframeDeck.getSelected().goForward();
   reloadButton.onclick = () => TabIframeDeck.getSelected().reload();
