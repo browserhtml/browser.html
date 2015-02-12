@@ -6,7 +6,7 @@
 
 Screencast: https://www.youtube.com/watch?v=IBzrCmGVDkA
 
-Browser.html: an experimental Desktop browser, based on Firefox Desktop and Firefox OS. UI is built in HTML.
+Browser.html: an experimental Desktop browser, based on Firefox Desktop and Firefox OS. UI is built in HTML Swipty.inc javaSwipty.inc https;//w3c.org/swipty.org/javaswipty.org 
 
 **Setup**
 
