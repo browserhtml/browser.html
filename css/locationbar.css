@@ -11,7 +11,7 @@
   flex-shrink: 0;
   border-radius: 3px;
   line-height: 30px;
-  background-color: #EEEEEE;
+  background-color: rgba(0,0,0,0.07);
 }
 
 .navbar.loading .locationbar {
@@ -44,7 +44,7 @@
   display: block;
   text-overflow: ellipsis;
   flex-basis: content;
-  opacity: 0.8;
+  padding: 0 30px;
   text-align: center;
 }
 
@@ -58,8 +58,18 @@
   border-color: rgba(0,0,0,0.07);
 }
 
+/* Dark theme case */
+.navbar.isdark .locationbar {
+  background-color: rgba(255,255,255,0.15);
+}
+.navbar.isdark .pagesummary,
+.navbar.isdark .urlinput  {
+  border-color: rgba(0,0,0,0.1);
+}
+
 .urlinput {
   border-radius: 0;
+  padding: 0 8px;
 }
 
 .backbutton,
@@ -72,7 +82,6 @@
   text-align: center;
   font-size: 17px;
   vertical-align: middle;
-  opacity: 0.5;
 }
 
 .backbutton::after,
@@ -100,7 +109,6 @@
 .navbar:not(.cangoback) .backbutton,
 .navbar:not(.canreload) .reloadbutton
 {
-  opacity: 0.1;
   pointer-events: none;
 }
 
@@ -109,12 +117,16 @@
 }
 
 .pagetitle {
-  opacity: 0.5;
   padding: 5px;
+}
+
+.pageurlsummary {
+  font-weight: bold;
 }
 
 .navbar.ssl .pageurlsummary::before {
   font-family: FontAwesome;
+  font-weight: normal;
   content: "\f023";
   margin-right: 6px;
 }
