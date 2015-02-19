@@ -4,30 +4,11 @@
 
 define((require, exports, module) => {
 
-'use strict';
+  'use strict';
 
-const {fromJS, Set} = require('immutable');
-const {render} = require('./core');
-const {Browser} = require('./browser');
-const {open} = require('./web-viewer/actions');
+  const {render} = require('./core');
+  const {Browser} = require('./browser');
+  const {readSession, resetSession} = require('./actions');
 
-const initial = fromJS({
-  isDocumentFocused: document.hasFocus(),
-  os: navigator.platform.startsWith('Win') ? 'windows' :
-      navigator.platform.startsWith('Mac') ? 'osx' :
-      navigator.platform.startsWith('Linux') ? 'linux' :
-      '',
-  input: {value: '', isFocused: false},
-  tabStrip: {
-    isActive: false
-  },
-  webViewers: [open({id: 0,
-                     zoom: 1,
-                     isSelected: true,
-                     isFocused: true,
-                     uri: "https://github.com/mozilla/browser.html"})]
-});
-
-render(Browser, initial, document.body);
-
+  render(Browser, readSession() || resetSession(), document.body);
 });

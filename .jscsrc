@@ -19,7 +19,6 @@
     "case",
     "try",
     "catch",
-    "void",
     "while",
     "with",
     "return",
@@ -38,7 +37,6 @@
   "disallowSpacesInsideObjectBrackets": "all",
   "disallowSpacesInsideArrayBrackets": "all",
   "disallowSpacesInsideParentheses": true,
-  "disallowQuotedKeysInObjects": true,
   "disallowSpaceAfterObjectKeys": true,
   "requireCommaBeforeLineBreak": true,
   "requireOperatorBeforeLineBreak": [

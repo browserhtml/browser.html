@@ -3,9 +3,10 @@
  * file, you can obtain one at http://mozilla.org/mpl/2.0/. */
 
 define((require, exports, module) => {
-  "use strict";
 
-  const React = require("react");
+  'use strict';
+
+  const React = require('react');
 
   const isPreMountHook = field => field && field.mount;
 
@@ -85,33 +86,31 @@ define((require, exports, module) => {
     return React.createFactory(Type);
   };
 
-  // Option can be used to define attribute on the element
-  // that is set once before element is inserted into a
-  // document (mounted). Changes to this option are ignored
-  // & in general use of `Attribute` is preferred, this should
-  // be reserved only for attributes changes to which aren't picked
-  // up after node is in the tree.
-  // Example: Element("iframe", { browser: Option("mozbrowser") })
-  const Option = function(name) {
-    if (!(this instanceof Option)) {
-      return new Option(name);
-    }
+  // BeforeAppendAttribute can be used to define attribute on the
+  // element that is set once before element is inserted into a
+  // document (mounted). Changes to this property are ignored &
+  // in general use of `Attribute` is preferred, this should be
+  // reserved only for attributes changes to which aren't picked up
+  // after node is in the tree.
+  // Example: Element('iframe', { browser: BeforeAppendAttribute('mozbrowser') })
+  const BeforeAppendAttribute = function(name) { if (!(this instanceof BeforeAppendAttribute)) {
+  return new BeforeAppendAttribute(name); }
 
     this.name = name;
   }
-  Option.prototype = {
-    constructor: Option,
+  BeforeAppendAttribute.prototype = {
+    constructor: BeforeAppendAttribute,
     mount(node, value) {
       node.setAttribute(this.name, value);
     }
   };
-  Element.Option = Option;
+  Element.BeforeAppendAttribute = BeforeAppendAttribute;
 
   // Attribute can be used to define field mapped to a
   // DOM attribute with a given `name`. If the field is
   // set to `undefined` or `null` attribute is removed
   // othrewise it's set to given value.
-  // Example: Element("hbox", {flex: Attribute("flex")})
+  // Example: Element('hbox', {flex: Attribute('flex')})
   const Attribute = function(name) {
     if (!(this instanceof Attribute)) {
       return new Attribute(name);
@@ -130,8 +129,7 @@ define((require, exports, module) => {
       if (present != past) {
         if (present == void(0)) {
           node.removeAttribute(this.name);
-        }
-        else {
+        } else {
           node.setAttribute(this.name, present);
         }
       }
@@ -147,7 +145,7 @@ define((require, exports, module) => {
   // render `past` will be `void(0)`.
   //
   // Example:
-  // Element("iframe", {focused: (node, current, past) => {
+  // Element('iframe', {focused: (node, current, past) => {
   //   if (current) {
   //     node.focus()
   //   }
@@ -173,7 +171,7 @@ define((require, exports, module) => {
   // second argument, in which case event handler will be
   // invoked with `read(event)` instead of `event`.
   // Example:
-  // Element("iframe", {onTitleChange: Event("mozbrowsertitlechange")})
+  // Element('iframe', {onTitleChange: Event('mozbrowsertitlechange')})
   const Event = function(type, read, capture=false) {
     if (!(this instanceof Event)) {
       return new Event(type, read);
@@ -226,7 +224,7 @@ define((require, exports, module) => {
   exports.isUpdateHook = isUpdateHook;
   exports.isConstractorHook = isConstractorHook;
   exports.Element = Element;
-  exports.Option = Option;
+  exports.BeforeAppendAttribute = BeforeAppendAttribute;
   exports.Attribute = Attribute;
   exports.Field = Field;
   exports.Event = Event;

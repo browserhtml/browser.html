@@ -4,67 +4,68 @@
 
 define((require, exports, module) => {
 
-'use strict';
+  'use strict';
 
-const {isFocused} = require('./focusable');
-const {Element, Option, Field, Event} = require('./element');
-const {Component, createFactory} = require("react");
+  const {isFocused} = require('./focusable');
+  const {Element, BeforeAppendAttribute, Field, Event} = require('./element');
+  const {Component, createFactory} = require('react');
 
-const selection = Field((node, current, past) => {
-  if (current != past) {
-    if (current === true) {
-      node.select();
-    } else if (current === false) {
-      node.selectionStart = node.selectionEnd;
-    } else if (current) {
-      if ("start" in current) {
-        node.selectionStart = current.start;
-      }
+  const selection = Field((node, current, past) => {
+    if (current != past) {
+      if (current === true) {
+        node.select();
+      } else if (current === false) {
+        node.selectionStart = node.selectionEnd;
+      } else if (current) {
+        if ('start' in current) {
+          node.selectionStart = current.start;
+        }
 
-      if ("end" in current) {
-        node.selectionEnd = current.end;
-      }
+        if ('end' in current) {
+          node.selectionEnd = current.end;
+        }
 
-      if (current.direction == "forward") {
-        node.selectionDirection = "forward";
-      }
+        if (current.direction == 'forward') {
+          node.selectionDirection = 'forward';
+        }
 
-      if (current.direction == "backward") {
-        node.selectionDirection = "backward";
-      }
+        if (current.direction == 'backward') {
+          node.selectionDirection = 'backward';
+        }
 
-      if (current.direction == "none") {
-        node.selectionDirection = "none";
+        if (current.direction == 'none') {
+          node.selectionDirection = 'none';
+        }
       }
     }
+  });
+
+  const InputElement = Element('input', {
+    isFocused: isFocused,
+    selection: selection
+  });
+
+  const InputField = function(immutableState) {
+    this.onKeyDown = this.onKeyDown.bind(this);
+    Component.call(this);
   }
-});
 
-const InputElement = Element("input", {
-  isFocused: isFocused,
-  selection: selection
-});
-
-const InputField = function(options) {
-  this.onKeyDown = this.onKeyDown.bind(this);
-  Component.call(this);
-}
-InputField.prototype = {
-  __proto__: Component.prototype,
-  constructor: InputField,
-  onKeyDown(event) {
-    if (event.key == this.props.submitKey) {
-      this.props.onSubmit(event);
+  InputField.prototype = {
+    __proto__: Component.prototype,
+    constructor: InputField,
+    onKeyDown(event) {
+      if (event.key == this.props.submitKey) {
+        this.props.onSubmit(event);
+      }
+    },
+    render() {
+      return InputElement(Object.assign({onKeyDown: this.onKeyDown}, this.props));
     }
-  },
-  render() {
-    return InputElement(Object.assign({onKeyDown: this.onKeyDown}, this.props));
-  }
-};
+  };
 
-// Exports:
+  // Exports:
 
-exports.selection = selection;
-exports.InputField = createFactory(InputField);
+  exports.selection = selection;
+  exports.InputField = createFactory(InputField);
 
 });

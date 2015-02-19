@@ -5,18 +5,19 @@
 // Manages events coming from gecko.
 
 (function() {
+
   'use strict';
 
   function handleEvent(evt) {
     let type = evt.detail.type;
 
-    switch(type) {
+    switch (type) {
       case 'remote-debugger-prompt':
         // Always allow remote debugging for now.
         let event = document.createEvent('CustomEvent');
         event.initCustomEvent('mozContentEvent', true, true,
-                              { type: 'remote-debugger-prompt',
-                                value: true });
+                              {type: 'remote-debugger-prompt',
+                               value: true});
         window.dispatchEvent(event);
         break;
       default:
@@ -25,4 +26,5 @@
   }
 
   window.addEventListener('mozChromeEvent', handleEvent, false);
+
 })();

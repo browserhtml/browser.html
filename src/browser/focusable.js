@@ -4,23 +4,22 @@
 
 define((require, exports, module) => {
 
-"use strict";
+  'use strict';
 
-const {Field} = require("./element");
+  const {Field} = require('./element');
 
-const isFocused = new Field((node, current, past) => {
-  if (current != past) {
-    if (current) {
-      node.focus();
+  const isFocused = new Field((node, current, past) => {
+    if (current != past) {
+      if (current) {
+        node.focus();
+      } else {
+        node.blur();
+      }
     }
-    else {
-      node.blur();
-    }
-  }
-});
+  });
 
-// Exports:
+  // Exports:
 
-exports.isFocused = isFocused;
+  exports.isFocused = isFocused;
 
 });

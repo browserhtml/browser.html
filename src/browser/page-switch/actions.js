@@ -4,9 +4,9 @@
 
 define((require, exports, module) => {
 
-'use strict';
+  'use strict';
 
-const open = () => {
-};
+  const open = () => {
+  };
 
 });
