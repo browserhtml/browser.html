@@ -18,6 +18,7 @@ const {zoomIn, zoomOut, zoomReset, open,
 const {focus, showTabStrip, hideTabStrip} = require('./actions');
 const {selectedIndex, selectNext, selectPrevious,
        remove, toggle, append, select} = require('./deck/actions');
+const {readTheme} = require('./theme');
 
 const getOwnerWindow = node => node.ownerDocument.defaultView;
 // Define custom `main` element with a custom `scrollGrab` attribute
@@ -35,7 +36,6 @@ const Main = Element('main', {
   onDocumentKeyDown: Event('keydown', getOwnerWindow),
   onDocumentKeyUp: Event('keyup', getOwnerWindow)
 });
-exports.Main = Main;
 
 const onNavigation = KeyBindings({
   'accel l': focus,
@@ -106,18 +106,18 @@ const Browser = Component(options => {
   const isTabStripVisible = tabStrip.get('isActive') &&
                             webViewers.count() > 1;
 
+  const theme = readTheme(webViewer);
+
   return  Main({
     os: options.get('os'),
     title: webViewer.get('uri'),
     scrollGrab: true,
-    className: 'scrollgrab moz-noscrollbars' +
-               (options.get('isScrolled') ? ' scrolled' : '') +
+    className: 'moz-noscrollbars' +
+               (theme.isDark ? ' isdark' : '') +
                (options.get('isDocumentFocused') ? ' windowFocused' : '') +
                (isTabStripVisible ? ' showtabstrip' : ''),
-    onScroll: event => options.set('isScrolled', event.target.scrollTop != 0),
     onDocumentFocus: event => options.set('isDocumentFocused', true),
     onDocumentBlur: event => options.set('isDocumentFocused', false),
-
     onDocumentKeyDown: compose(onNavigation(input),
                                onTabStripKeyDown(tabStrip),
                                onViewerBinding(webViewer),
@@ -126,10 +126,11 @@ const Browser = Component(options => {
   }, [
     NavigationPanel({
       key: 'navigation',
-      input, webViewer, tabStrip,
+      input, webViewer, tabStrip, theme,
       title: webViewer.get('title'),
     }),
     DOM.div({key: 'tabstrip',
+             style: theme.tabstrip,
              className: 'tabstripcontainer'}, [
       Tab.Deck({key: 'tabstrip',
                 className: 'tabstrip',
@@ -140,10 +141,14 @@ const Browser = Component(options => {
              onMouseEnter: event => tabStrip.set("isActive", false)}),
 
     WebViewer.Deck({key: 'deck',
-                    className: 'iframes deck',
+                    className: 'iframes',
                     items: webViewers}),
   ]);
 });
+
+// Exports:
+
+exports.Main = Main;
 exports.Browser = Browser;
 
 });

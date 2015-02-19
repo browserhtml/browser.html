@@ -32,7 +32,11 @@ const Tab = Component(({items, item}) =>
       }
     }
   }));
-exports.Tab = Tab;
 Tab.Deck = Deck(Tab);
+
+
+// Exports:
+
+exports.Tab = Tab;
 
 });

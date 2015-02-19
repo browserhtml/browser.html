@@ -1,9 +1,3 @@
-/***************************************
- *                                     *
- *            TABSTRIP                 *
- *                                     *
- ***************************************/
-
 .tabstripcontainer {
   -moz-window-dragging: drag;
   display: flex;
@@ -57,7 +51,7 @@ main.showtabstrip iframes {
   margin: 15px 0 0;
   height: 62.5px;
   width: 100px;
-  border: 1px solid #EEE;
+  border: 1px solid rgba(0,0,0,0.07);
   border-radius: 4px;
   background-color: white;
   transform: scale(0.8);

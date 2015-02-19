@@ -8,7 +8,6 @@ define((require, exports, module) => {
 
 // Return `true` if given deck item is selected one.
 const isSelected = item => item.get("isSelected");
-exports.isSelected = isSelected;
 
 // Takes `f` edit function and returs the function that
 // takes `items` list and optional `isMatch` function, invoking
@@ -19,29 +18,22 @@ const edit = f => (items, isMatch=isSelected) => {
   const index = items.findIndex(isMatch);
   return items.set(index, f(items.get(index)));
 }
-exports.edit = edit;
 
 // Takes item and toggles it's selection state, meaning if it is
 // selected it will be updated not to, and if it isn't it will update
 // to be selected.
 const toggle = item => item.set("isSelected", !isSelected(item));
-exports.toggle = toggle;
-
 // Takes `items` and returs the index of the selected one.
 const selectedIndex = items => items.findIndex(isSelected);
-exports.selectedIndex = selectedIndex;
 
 // Takes `items` and returs the selected one.
 const selected = items => items.find(isSelected);
-exports.selected = selected;
 
 // Takes `items` and switches selection `from` index `to` given index.
 const switchSelected = (items, from, to) =>
   from == to ? items : items.withMutations(items =>
     items.update(from, toggle)
          .update(to, toggle));
-exports.switchSelected = switchSelected;
-
 // Takes `items` and select item next to currently selected one,
 // unless it's last one in which case it selects the first item.
 // If only item is contained nothing happens.
@@ -52,7 +44,6 @@ const selectNext = items => {
 
   return switchSelected(items, from, to);
 };
-exports.selectNext = selectNext;
 
 // Takes `items` and selects item previous to currently selected one.
 // If selected item is first item, then last item is selected.
@@ -63,7 +54,6 @@ const selectPrevious = items => {
 
   return switchSelected(items, from, to);
 };
-exports.selectPrevious = selectPrevious;
 
 // Takes `items` and `shouldSelecet` predicate and switches selection
 // from currently selected item to the first item for which `shouldSelect(item)`
@@ -73,7 +63,6 @@ const select = (items, shouldSelect) => {
   const to = items.findIndex(shouldSelect);
   return switchSelected(items, from, to);
 };
-exports.select = select;
 
 // Take an `items` and optionally `shouldClose` function and updates items
 // to exclude first one for which `shouldClose(item)` is `true`. If `shouldClose`
@@ -90,7 +79,6 @@ const remove = (items, shouldClose=isSelected) => {
                      selectNext(items);
   return reselected.remove(closing);
 };
-exports.remove = remove;
 
 // Returns index of the last item from the given `items`.
 const isLast = (item, items) => item.equals(items.last());
@@ -101,10 +89,8 @@ const insertAfter = (items, item, shouldFollow=isLast) => items => {
   const after = items.findIndex(item => shouldFollow(item, items));
   return items.slice(0, after).push(item).concat(items.slice(after));
 };
-exports.insertAfter = insertAfter;
 
 const append = (items, item) => items.push(item);
-exports.append = append;
 
 const isFirst = (item, items) => item.equals(items.first());
 
@@ -115,9 +101,24 @@ const insertBefore = (items, item, shouldLead=isFirst) => items => {
   return before == 0 ? items.unshift(item) :
          items.slice(0, before - 1).push(item).concat(items.slice(before - 1));
 };
-exports.insertBefore = insertBefore;
 
 const prepend = (items, item) => items.unshift(item);
+
+// Exports:
+
+exports.isSelected = isSelected;
+exports.edit = edit;
+exports.toggle = toggle;
+exports.selectedIndex = selectedIndex;
+exports.selected = selected;
+exports.switchSelected = switchSelected;
+exports.selectNext = selectNext;
+exports.selectPrevious = selectPrevious;
+exports.select = select;
+exports.remove = remove;
+exports.insertAfter = insertAfter;
+exports.append = append;
+exports.insertBefore = insertBefore;
 exports.prepend = prepend;
 
 });

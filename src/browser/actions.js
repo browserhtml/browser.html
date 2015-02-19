@@ -10,25 +10,28 @@ const url = require('./util/url');
 
 const makeSearchURL = input =>
   `https://search.yahoo.com/search?p=${encodeURIComponent(input)}`;
-exports.makeSearchURL = makeSearchURL;
 
 const readInputURL = input =>
   url.isNotURL(input) ? makeSearchURL(input) :
   !url.hasScheme(input) ? `http://${input}` :
   input;
-exports.readInputURL = readInputURL;
 
-// Action takes state cursor for the web viwer and input location
-// and navigates that webViewr to that location (if it's not valid
+// Action takes state cursor for the web viewer and input location
+// and navigates that webViewer to that location (if it's not valid
 // url either normalizes it or converts to search). Optional `focus`
 // can be passed as `false` to navigate to a url but not focus it.
 const navigateTo = ({input, webViewer}, location, focus=true) => {
   input.set("value", null);
   webViewer.merge({uri: readInputURL(location), isFocused: focus});
 }
-exports.navigateTo = navigateTo;
 
+// Exports:
+
+exports.makeSearchURL = makeSearchURL;
+exports.readInputURL = readInputURL;
+exports.navigateTo = navigateTo;
 exports.focus = focusable => focusable.set('isFocused', true);
 exports.showTabStrip = input => input.set('isActive', true);
 exports.hideTabStrip = input => input.set('isActive', false);
+
 });

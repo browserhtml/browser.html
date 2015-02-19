@@ -14,6 +14,7 @@ const Component = require('omniscient');
 const {Deck} = require('./deck');
 const {open} = require('./web-viewer/actions');
 const {remove, append} = require('./deck/actions');
+const {getHardcodedColors} = require('./theme');
 
 const IFrame = Element('iframe', {
   isFocused: isFocused,
@@ -166,7 +167,6 @@ WebViewer.onLoadStart = state => event => state.merge({
   icons: null,
   title: null,
   location: null,
-  backgroundColor: null,
   securityState: 'insecure',
   securityExtendedValidation: false,
   canGoBack: false,
@@ -175,14 +175,13 @@ WebViewer.onLoadStart = state => event => state.merge({
 
 WebViewer.onLoadEnd = state => event => state.merge({
   readyState: 'loaded',
-  isLoading: false,
-  backgroundColor: event.detail.backgroundColor
+  isLoading: false
 });
 
 WebViewer.onTitleChange = state => event => state.set('title', event.detail);
 
-WebViewer.onLocationChange = state => event =>
-  state.set('location', event.detail);
+WebViewer.onLocationChange = state => event => state.merge(
+  Object.assign({location: event.detail}, getHardcodedColors(event.detail)));
 
 WebViewer.onIconChange = state => event =>
   state.set(['icons', event.detail.href], event.detail);
@@ -208,6 +207,8 @@ WebViewer.onSecurityChange = state => event =>
                securityExtendedValidation: event.detail.extendedValidation});
 
 WebViewer.Deck = Deck(WebViewer);
+
+// Exports:
 
 exports.WebViewer = WebViewer;
 

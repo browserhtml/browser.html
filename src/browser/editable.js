@@ -39,7 +39,6 @@ const selection = Field((node, current, past) => {
     }
   }
 });
-exports.selection = selection;
 
 const InputElement = Element("input", {
   isFocused: isFocused,
@@ -63,7 +62,9 @@ InputField.prototype = {
   }
 };
 
-exports.InputField = createFactory(InputField);
+// Exports:
 
+exports.selection = selection;
+exports.InputField = createFactory(InputField);
 
 });

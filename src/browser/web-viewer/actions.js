@@ -22,6 +22,8 @@ const initial = fromJS({
   icons: {},
   meta: {},
   backgroundColor: null,
+  foregroundColor: null,
+  isDark: false,
   securityState: 'insecure',
   securityExtendedValidation: false,
   canGoBack: false,
@@ -30,19 +32,13 @@ const initial = fromJS({
 
 const open = (options={}) => initial.merge({id: uuid()})
                                     .merge(options);
-exports.open = open;
-
 const reload = viewer => viewer.set('readyState', 'reload');
-exports.reload = reload;
 
 const stop = viewer => viewer.set('readyState', 'stop');
-exports.stop = stop;
 
 const goBack = viewer => viewer.set('readyState', 'goBack');
-exports.goBack = goBack;
 
 const goForward = viewer => viewer.set('readyState', 'goForward');
-exports.goForward = goForward;
 
 const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 2;
@@ -50,14 +46,22 @@ const ZOOM_STEP = 0.1;
 
 const zoomIn = viewer =>
   viewer.update('zoom', zoom => Math.min(ZOOM_MAX, zoom + ZOOM_STEP));
-exports.zoomIn = zoomIn;
 
 const zoomOut = viewer =>
   viewer.update('zoom', zoom => Math.max(ZOOM_MIN, zoom - ZOOM_STEP));
-exports.zoomOut = zoomOut;
 
 const zoomReset = viewer =>
   viewer.set('zoom', 1);
+
+// Exports:
+
+exports.open = open;
+exports.reload = reload;
+exports.stop = stop;
+exports.goBack = goBack;
+exports.goForward = goForward;
+exports.zoomIn = zoomIn;
+exports.zoomOut = zoomOut;
 exports.zoomReset = zoomReset;
 
 });

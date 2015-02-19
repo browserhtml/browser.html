@@ -8,16 +8,12 @@ define((require, exports, module) => {
   const React = require("react");
 
   const isPreMountHook = field => field && field.mount;
-  exports.isPreMountHook = isPreMountHook;
 
   const isPostMountHook = field => field && field.mounted;
-  exports.isPostMountHook = isPostMountHook;
 
   const isUpdateHook = field => field && field.write;
-  exports.isUpdateHook = isUpdateHook;
 
   const isConstractorHook = field => field && field.construct;
-  exports.isConstractorHook = isConstractorHook;
 
   const Element = (name, fields={}) => {
     // In react you can actually define custom HTML element it's
@@ -88,7 +84,6 @@ define((require, exports, module) => {
     })
     return React.createFactory(Type);
   };
-  exports.Element = Element;
 
   // Option can be used to define attribute on the element
   // that is set once before element is inserted into a
@@ -111,7 +106,6 @@ define((require, exports, module) => {
     }
   };
   Element.Option = Option;
-  exports.Option = Option;
 
   // Attribute can be used to define field mapped to a
   // DOM attribute with a given `name`. If the field is
@@ -144,7 +138,6 @@ define((require, exports, module) => {
     }
   }
   Element.Attribute = Attribute;
-  exports.Attribute = Attribute;
 
   // Field can be used to define fields that can't be
   // mapped to an attribute in the DOM. Field is defined
@@ -172,7 +165,6 @@ define((require, exports, module) => {
     }
   };
   Element.Field = Field;
-  exports.Field = Field;
 
   // Event can be used to define event handler fields, for
   // the given event `type`. When event of that type occurs
@@ -211,7 +203,6 @@ define((require, exports, module) => {
     }
   };
   Element.Event = Event;
-  exports.Event = Event;
 
   // CapturedEvent can be used same as `Event` with a difference
   // that events listeners will be added with a capture `true`.
@@ -226,5 +217,18 @@ define((require, exports, module) => {
   }
   CapturedEvent.prototype = Event.prototype;
   Element.CapturedEvent = CapturedEvent;
+
+
+  // Exports:
+
+  exports.isPreMountHook = isPreMountHook;
+  exports.isPostMountHook = isPostMountHook;
+  exports.isUpdateHook = isUpdateHook;
+  exports.isConstractorHook = isConstractorHook;
+  exports.Element = Element;
+  exports.Option = Option;
+  exports.Attribute = Attribute;
+  exports.Field = Field;
+  exports.Event = Event;
   exports.CapturedEvent = CapturedEvent;
 });

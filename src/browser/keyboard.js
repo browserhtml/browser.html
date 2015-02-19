@@ -27,7 +27,6 @@ const readModifiers = ({metaKey, shiftKey, altKey, ctrlKey}) => {
   }
   return modifiers;
 };
-exports.readModifiers = readModifiers;
 
 
 const readKey = key => readKey.table[key] || key;
@@ -40,7 +39,6 @@ readKey.table = Object.assign(Object.create(null), {
   'ArrowDown': 'down',
   'esc': 'escape'
 });
-exports.readKey = readKey;
 
 const readChord = input =>
   input.trim().
@@ -49,7 +47,6 @@ const readChord = input =>
   map(readKey).
   sort().
   join(" ");
-exports.readChord = readChord;
 
 const writeChord = event =>
   [...new Set([...readModifiers(event), readKey(event.key)])].
@@ -58,7 +55,6 @@ const writeChord = event =>
     split(" ").
     sort().
     join(" ");
-exports.writeChord = writeChord;
 
 
 const KeyBindings = (handlers) => {
@@ -78,6 +74,14 @@ const KeyBindings = (handlers) => {
     return event;
   }
 }
+
+
+// Exports:
+
+exports.readModifiers = readModifiers;
+exports.readKey = readKey;
+exports.readChord = readChord;
+exports.writeChord = writeChord;
 exports.KeyBindings = KeyBindings;
 
 });

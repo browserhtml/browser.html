@@ -9,6 +9,7 @@ define((require, exports, module) => {
 const {fromJS, Set} = require('immutable');
 const {render} = require('./core');
 const {Browser} = require('./browser');
+const {open} = require('./web-viewer/actions');
 
 const initial = fromJS({
   isDocumentFocused: document.hasFocus(),
@@ -20,11 +21,11 @@ const initial = fromJS({
   tabStrip: {
     isActive: false
   },
-  webViewers: [{id: 0,
-                zoom: 1,
-                isSelected: true,
-                isFocused: true,
-                uri: "https://github.com/mozilla/browser.html"}]
+  webViewers: [open({id: 0,
+                     zoom: 1,
+                     isSelected: true,
+                     isFocused: true,
+                     uri: "https://github.com/mozilla/browser.html"})]
 });
 
 render(Browser, initial, document.body);

@@ -18,7 +18,9 @@ const isFocused = new Field((node, current, past) => {
     }
   }
 });
-exports.isFocused = isFocused;
 
+// Exports:
+
+exports.isFocused = isFocused;
 
 });

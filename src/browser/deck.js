@@ -16,6 +16,9 @@ Deck.Render = (Item, options) => item => Item(Object.assign({}, options, {
   key: `deck-item-${item.get("id")}`,
   item: item
 }));
+
+// Exports:
+
 exports.Deck = Deck;
 
 });
