@@ -46,10 +46,14 @@ define((require, exports, module) => {
 
   const onTabStripKeyDown = KeyBindings({
     'control tab': showTabStrip,
-    'control shift tab': showTabStrip
+    'control shift tab': showTabStrip,
+    'meta shift ]': showTabStrip,
+    'meta shift [': showTabStrip,
+    'meta t': showTabStrip,
   });
   const onTabStripKeyUp = KeyBindings({
-    'control': hideTabStrip
+    'control': hideTabStrip,
+    'meta shift': hideTabStrip
   });
 
   const onViewerBinding = KeyBindings({
@@ -105,7 +109,7 @@ define((require, exports, module) => {
     const webViewersCursor = immutableState.cursor('webViewers');
     const selectedWebViewerCursor = webViewersCursor.cursor(index);
 
-    const tabStripCursor = selectedWebViewerCursor.cursor('tabStrip');
+    const tabStripCursor = immutableState.cursor('tabStrip');
     const inputCursor = immutableState.cursor('input');
 
     const isTabStripVisible = tabStripCursor.get('isActive') &&
@@ -148,7 +152,7 @@ define((require, exports, module) => {
       ]),
       DOM.div({key: 'tabstripkillzone',
                className: 'tabstripkillzone',
-               onMouseEnter: event => tabStripCursor.set('isActive', false)}),
+               onMouseEnter: event => hideTabStrip(tabStripCursor)}),
 
       WebViewer.Deck({key: 'deck',
                       className: 'iframes',

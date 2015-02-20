@@ -30,7 +30,7 @@
     "immutable": "git://github.com/jcranendonk/immutable-js.git#0986651df9398187390f4638424adb532985439f",
     "node-uuid": "^1.4.2",
     "omniscient": "git://github.com/Gozala/omniscient.git#unboxing",
-    "react": "^0.13.0-beta.1",
+    "react": "0.13.0-beta.1",
     "requirejs": "^2.1.15"
   }
 }

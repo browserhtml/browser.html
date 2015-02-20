@@ -69,8 +69,10 @@ define((require, exports, module) => {
   exports.readInputURL = readInputURL;
   exports.navigateTo = navigateTo;
   exports.focus = focusable => focusable.set('isFocused', true);
-  exports.showTabStrip = input => input.set('isActive', true);
-  exports.hideTabStrip = input => input.set('isActive', false);
+  exports.showTabStrip = tabStripCursor =>
+    tabStripCursor.set('isActive', true);
+  exports.hideTabStrip = tabStripCursor =>
+    tabStripCursor.set('isActive', false);
   exports.resetSession = resetSession;
   exports.readSession = readSession;
   exports.writeSession = writeSession;

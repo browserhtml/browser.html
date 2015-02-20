@@ -46,7 +46,7 @@ define((require, exports, module) => {
                                          selectedWebViewerCursor, title, theme}) =>
     DOM.div({
       className: 'locationbar',
-      onMouseEnter: event => tabStripCursor.set('isActive', true)
+      onMouseEnter: event => showTabStrip(tabStripCursor)
     }, [
       DOM.div({className: 'backbutton',
                style: theme.backButton,
