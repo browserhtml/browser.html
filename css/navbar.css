@@ -4,6 +4,7 @@
   padding: 5px;
   justify-content: space-between;
   scroll-snap-coordinate: 0 0;
+  transition: background-color 200ms ease;
 }
 
 .freeendspacer {

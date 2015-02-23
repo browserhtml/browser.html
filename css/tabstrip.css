@@ -11,7 +11,7 @@
   z-index: 43;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 200ms ease;
+  transition: opacity 200ms ease, background-color 200ms ease;
 }
 
 main.ctrlpressed .tabstripcontainer,
