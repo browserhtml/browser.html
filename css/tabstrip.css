@@ -48,15 +48,22 @@ main.showtabstrip iframes {
 }
 
 .tab {
-  margin: 15px 0 0;
-  height: 62.5px;
+  /* Keep buffer space around the visual thumbnail to make them easier
+  to click. */
+  height: 100px;
   width: 100px;
+}
+
+.tab-thumbnail {
+  background: white;
+  background-size: 100% auto;
   border: 1px solid rgba(0,0,0,0.07);
   border-radius: 4px;
-  background-color: white;
+  height: 62.5px;
+  margin: 16px 0 0;
   transform: scale(0.8);
   transition: transform 150ms ease;
-  background-size: 100% 100%;
+  width: 100px;
 }
 
 .tab:first-of-type {
@@ -67,10 +74,10 @@ main.showtabstrip iframes {
   margin-right: 0;
 }
 
-.tab:hover {
+.tab:hover .tab-thumbnail {
   transform: scale(1);
 }
 
-.tabstrip:not(:hover) .tab.selected {
+.tabstrip:not(:hover) .tab.selected .tab-thumbnail {
   transform: scale(1);
 }

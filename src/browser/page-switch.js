@@ -22,9 +22,6 @@ define((require, exports, moudle) => {
       key: `tab-${item.get('id')}`,
       className: 'tab' +
                  (item.get('isSelected') ? ' selected' : ''),
-      style: {
-        backgroundImage: readThumbnailURI(item.get('location'))
-      },
       onMouseDown: event => select(items, equals(item)),
       onMouseUp: event => {
         if (event.button == 1) {
@@ -32,7 +29,13 @@ define((require, exports, moudle) => {
           remove(items, equals(item));
         }
       }
-    }));
+    }, [
+      DOM.span({
+        key: 'thumbnail',
+        className: 'tab-thumbnail',
+        style: {backgroundImage: readThumbnailURI(item.get('location'))},
+      })
+    ]));
   Tab.Deck = Deck(Tab);
 
 
