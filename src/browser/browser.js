@@ -112,8 +112,7 @@ define((require, exports, module) => {
     const tabStripCursor = immutableState.cursor('tabStrip');
     const inputCursor = immutableState.cursor('input');
 
-    const isTabStripVisible = tabStripCursor.get('isActive') &&
-                              webViewersCursor.count() > 1;
+    const isTabStripVisible = tabStripCursor.get('isActive');
 
     const theme = readTheme(selectedWebViewerCursor);
 
