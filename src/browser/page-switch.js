@@ -10,34 +10,31 @@ define((require, exports, moudle) => {
   const Component = require('omniscient');
   const url = require('./util/url');
   const {Deck} = require('./deck');
-  const {select, remove} = require('./deck/actions');
+  const {isSelected} = require('./deck/actions');
 
   const readThumbnailURI = uri =>
     'none' && `url(/tiles/${url.getDomainName(uri)}.png)`;
 
-  const equals = x => y => x.equals(y)
-
-  const Tab = Component(({items, item}) =>
+  const Tab = Component('Tab', ({item: webViewerCursor, onSelect, onActivate, onClose}) =>
     DOM.div({
-      key: `tab-${item.get('id')}`,
       className: 'tab' +
-                 (item.get('isSelected') ? ' selected' : ''),
-      onMouseDown: event => select(items, equals(item)),
+                 (isSelected(webViewerCursor) ? ' selected' : ''),
+      onMouseOver: event => onSelect(webViewerCursor),
+      onMouseDown: event => onActivate(),
       onMouseUp: event => {
         if (event.button == 1) {
           event.stopPropagation();
-          remove(items, equals(item));
+          onClose(webViewerCursor);
         }
       }
     }, [
       DOM.span({
         key: 'thumbnail',
         className: 'tab-thumbnail',
-        style: {backgroundImage: readThumbnailURI(item.get('location'))},
+        style: {backgroundImage: readThumbnailURI(webViewerCursor.get('location'))},
       })
     ]));
   Tab.Deck = Deck(Tab);
-
 
   // Exports:
 

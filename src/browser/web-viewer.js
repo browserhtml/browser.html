@@ -9,25 +9,25 @@ define((require, exports, module) => {
   const Component = require('omniscient');
   const {Deck} = require('./deck');
   const {open} = require('./web-viewer/actions');
-  const {remove, append} = require('./deck/actions');
+  const {isActive, isSelected} = require('./deck/actions');
   const {getHardcodedColors} = require('./theme');
   const {IFrame} = require('./iframe');
+  const {DOM} = require('react');
 
-  const WebViewer = Component(({item: webViewerCursor,
-                                items: webViewersCursor }) => {
+  const WebViewer = Component('WebViewer', ({item: webViewerCursor, onOpen, onClose}) => {
 
     // Do not render anything unless viewer has any `uri`
     if (!webViewerCursor.get('uri')) return null;
     return IFrame({
       className: 'frame flex-1 webviewer' +
                   (webViewerCursor.get('contentOverflows') ? ' contentoverflows' : ''),
-      key: `frame-${webViewerCursor.get('id')}`,
+      key: webViewerCursor.get('id'),
       isBrowser: true,
       isRemote: true,
       allowFullScreen: true,
 
-      isVisible: webViewerCursor.get('isSelected'),
-      hidden: !webViewerCursor.get('isSelected'),
+      isVisible: isActive(webViewerCursor) || isSelected(webViewerCursor),
+      hidden: !isActive(webViewerCursor),
       zoom: webViewerCursor.get('zoom'),
       isFocused: webViewerCursor.get('isFocused'),
       src: webViewerCursor.get('uri'),
@@ -38,8 +38,8 @@ define((require, exports, module) => {
       onBlur: WebViewer.onBlur(webViewerCursor),
       onFocus: WebViewer.onFocus(webViewerCursor),
       // onAsyncScroll: WebViewer.onUnhandled,
-      onClose: event => remove(webViewersCursor, x => x.equals(webViewerCursor)),
-      onOpenWindow: WebViewer.onOpenWindow(webViewersCursor),
+      onClose: event => onClose(webViewerCursor),
+      onOpenWindow: event => onOpen(open({uri: event.detail.url})),
       onContextMenu: WebViewer.onUnhandled,
       onError: event => console.error(event),
       onLoadStart: WebViewer.onLoadStart(webViewerCursor),
@@ -56,14 +56,16 @@ define((require, exports, module) => {
   });
 
   WebViewer.onUnhandled = event => console.log(event)
-  WebViewer.onBlur = webViewerCursor => event => webViewerCursor.set('isFocused', false);
+  WebViewer.onBlur = webViewerCursor => event =>
+    webViewerCursor.set('isFocused', false);
 
-  WebViewer.onFocus = webViewerCursor => event => webViewerCursor.set('isFocused', true);
+  WebViewer.onFocus = webViewerCursor => event =>
+    webViewerCursor.set('isFocused', true);
 
   WebViewer.onLoadStart = webViewerCursor => event => webViewerCursor.merge({
     readyState: 'loading',
     isLoading: true,
-    icons: null,
+    icons: {},
     title: null,
     location: null,
     securityState: 'insecure',
@@ -77,16 +79,15 @@ define((require, exports, module) => {
     isLoading: false
   });
 
-  WebViewer.onOpenWindow = webViewersCursor => event => webViewersCursor.update(
-    webViewersCursor => append(webViewersCursor, open({uri: event.detail.url})));
+  WebViewer.onTitleChange = webViewerCursor => event =>
+    webViewerCursor.set('title', event.detail);
 
-  WebViewer.onTitleChange = webViewerCursor => event => webViewerCursor.set('title', event.detail);
-
-  WebViewer.onLocationChange = webViewerCursor => event => webViewerCursor.merge(
-    Object.assign({location: event.detail}, getHardcodedColors(event.detail)));
+  WebViewer.onLocationChange = webViewerCursor => event =>
+    webViewerCursor.merge(Object.assign({location: event.detail},
+                                        getHardcodedColors(event.detail)));
 
   WebViewer.onIconChange = webViewerCursor => event =>
-    webViewerCursor.set(['icons', event.detail.href], event.detail);
+    webViewerCursor.setIn(['icons', event.detail.href], event.detail);
 
   WebViewer.onMetaChange = webViewerCursor => event =>
     webViewerCursor.set('metadata', event.detail);
@@ -100,6 +101,7 @@ define((require, exports, module) => {
   WebViewer.onPrompt = webViewerCursor => event => console.log(event);
 
   WebViewer.onAuthentificate = webViewerCursor => event => console.log(event);
+
   WebViewer.onScrollAreaChange = webViewerCursor => event =>
     webViewerCursor.set('contentOverflows',
               event.detail.height > event.target.parentNode.clientHeight);
@@ -109,7 +111,6 @@ define((require, exports, module) => {
                            securityExtendedValidation: event.detail.extendedValidation});
 
   WebViewer.Deck = Deck(WebViewer);
-
   // Exports:
 
   exports.WebViewer = WebViewer;

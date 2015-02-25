@@ -11,19 +11,23 @@ define((require, exports, module) => {
              navigator.platform.startsWith('Linux') ? 'linux' :
              '';
 
-  const readModifiers = ({metaKey, shiftKey, altKey, ctrlKey}) => {
+  const readModifiers = ({type, metaKey, shiftKey, altKey, ctrlKey}) => {
     const modifiers = [];
-    if (metaKey) {
-      modifiers.push('Meta');
-    }
-    if (ctrlKey) {
-      modifiers.push('Control');
-    }
-    if (altKey) {
-      modifiers.push('Alt');
-    }
-    if (shiftKey) {
-      modifiers.push('Shift');
+    // Modifier fields indicate if relevant modifier is pressed, in case
+    // of 'keyup' event including those does not make sense.
+    if (type != 'keyup') {
+      if (metaKey) {
+        modifiers.push('Meta');
+      }
+      if (ctrlKey) {
+        modifiers.push('Control');
+      }
+      if (altKey) {
+        modifiers.push('Alt');
+      }
+      if (shiftKey) {
+        modifiers.push('Shift');
+      }
     }
     return modifiers;
   };
@@ -67,6 +71,11 @@ define((require, exports, module) => {
       if (event) {
         const chord = writeChord(event);
         const binding = bindings[chord];
+
+        if (window.debug) {
+          console.log(`${event.type}: ${chord} @ ${event.timeStamp}`);
+        }
+
         if (binding) {
           binding(...args);
         }

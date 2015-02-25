@@ -3,20 +3,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 define((require, exports, module) => {
-
   'use strict';
 
   const {DOM} = require('react');
   const Component = require('omniscient');
+  const dispatch = require('shims/omniscient-dispatch');
 
-  const Deck = Item => Component(immutableState =>
-      DOM.div(immutableState,
-              immutableState.items.map(Deck.Render(Item, immutableState))));
+  const renderItem = (Item, item, options) =>
+    Item(Object.assign({}, options, {key: item.get('id'), item, items: null}));
 
-  Deck.Render = (Item, immutableState) => item => Item(Object.assign({}, immutableState, {
-    key: `deck-item-${item.get('id')}`,
-    item: item
-  }));
+  const Deck = Item => Component('Deck', [dispatch], options =>
+    DOM.div(options, options.items.map(item => renderItem(Item, item, options))));
 
   // Exports:
 

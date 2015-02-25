@@ -5,5 +5,4 @@ define((require, exports, module) => {
   // For details see https://github.com/omniscientjs/omniscient/issues/45
 
   window.React = require('react');
-
 });

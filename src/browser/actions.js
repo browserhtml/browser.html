@@ -9,9 +9,10 @@ define((require, exports, module) => {
   const url = require('./util/url');
   const {fromJS} = require('immutable');
   const {open} = require('./web-viewer/actions');
+  const {select, active} = require('./deck/actions');
   // TODO: Should be `const {version} = require('package.json`);` instead but require.js
   // does not supports that.
-  const version = '0.0.0';
+  const version = '0.0.1';
 
 
   const makeSearchURL = input =>
@@ -39,12 +40,9 @@ define((require, exports, module) => {
     navigator.platform.startsWith('Linux') ? 'linux' :
     '',
     input: {value: '', isFocused: false},
-    tabStrip: {
-      isActive: false
-    },
-    webViewers: [open({id: 0,
-                       zoom: 1,
-                       isSelected: true,
+    tabStrip: {isActive: false},
+    webViewers: [open({isSelected: true,
+                       isActive: true,
                        isFocused: true,
                        uri: 'https://github.com/mozilla/browser.html'})]
   });
@@ -69,10 +67,13 @@ define((require, exports, module) => {
   exports.readInputURL = readInputURL;
   exports.navigateTo = navigateTo;
   exports.focus = focusable => focusable.set('isFocused', true);
+  exports.blur = focusable => focusable.set('isFocused', false);
   exports.showTabStrip = tabStripCursor =>
     tabStripCursor.set('isActive', true);
   exports.hideTabStrip = tabStripCursor =>
     tabStripCursor.set('isActive', false);
+  exports.resetSelected = webViewersCursor =>
+    webViewersCursor.update(items => select(items, active(items)));
   exports.resetSession = resetSession;
   exports.readSession = readSession;
   exports.writeSession = writeSession;

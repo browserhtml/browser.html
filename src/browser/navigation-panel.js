@@ -14,7 +14,7 @@ define((require, exports, module) => {
   const {KeyBindings} = require('./keyboard');
   const url = require('./util/url');
 
-  const WindowControls = Component(({theme}) =>
+  const WindowControls = Component('WindowControls', ({theme}) =>
     DOM.div({className: 'windowctrls'}, [
       DOM.div({className: 'windowctrl win-close-button',
                style: theme.windowCloseButton,
@@ -42,8 +42,8 @@ define((require, exports, module) => {
   const inputBindings = KeyBindings({'escape': focus});
 
 
-  const NavigationControls = Component(({inputCursor, tabStripCursor,
-                                         selectedWebViewerCursor, title, theme}) =>
+  const NavigationControls = Component('NavigationControls', ({inputCursor, tabStripCursor,
+                                         webViewerCursor, theme}) =>
     DOM.div({
       className: 'locationbar',
       onMouseEnter: event => showTabStrip(tabStripCursor)
@@ -51,13 +51,13 @@ define((require, exports, module) => {
       DOM.div({className: 'backbutton',
                style: theme.backButton,
                key: 'back',
-               onClick: event => selectedWebViewerCursor.set('readyState', 'goBack')}),
+               onClick: event => webViewerCursor.set('readyState', 'goBack')}),
       InputField({
         key: 'input',
         className: 'urlinput',
         style: theme.urlInput,
         placeholder: 'Search or enter address',
-        value: inputCursor.get('value') || selectedWebViewerCursor.get('location'),
+        value: inputCursor.get('value') || webViewerCursor.get('location'),
         type: 'text',
         submitKey: 'Enter',
         isFocused: inputCursor.get('isFocused'),
@@ -65,8 +65,8 @@ define((require, exports, module) => {
         onFocus: _ => inputCursor.set('isFocused', true),
         onBlur: _ => inputCursor.set('isFocused', false),
         onChange: event => inputCursor.set('value', event.target.value),
-        onSubmit: event => navigateTo({inputCursor, webViewerCursor: selectedWebViewerCursor}, event.target.value, true),
-        onKeyUp: inputBindings(selectedWebViewerCursor),
+        onSubmit: event => navigateTo({inputCursor, webViewerCursor: webViewerCursor}, event.target.value, true),
+        onKeyUp: inputBindings(webViewerCursor),
       }),
       DOM.p({key: 'page-info',
              className: 'pagesummary',
@@ -75,39 +75,39 @@ define((require, exports, module) => {
         DOM.span({key: 'location',
                   style: theme.locationText,
                   className: 'pageurlsummary'},
-                 selectedWebViewerCursor.get('location') ? url.getDomainName(selectedWebViewerCursor.get('location')) : ''),
+                 webViewerCursor.get('location') ? url.getDomainName(webViewerCursor.get('location')) : ''),
         DOM.span({key: 'title',
                   className: 'pagetitle',
                   style: theme.titleText},
-                 title ? title :
-                 selectedWebViewerCursor.get('isLoading') ? 'Loading...' :
-                 selectedWebViewerCursor.get('location') ? selectedWebViewerCursor.get('location') :
+                 webViewerCursor.get('title') ? webViewerCursor.get('title') :
+                 webViewerCursor.get('isLoading') ? 'Loading...' :
+                 webViewerCursor.get('location') ? webViewerCursor.get('location') :
                  'New Tab')
       ]),
       DOM.div({key: 'reload-button',
                className: 'reloadbutton',
                style: theme.reloadButton,
-               onClick: event => selectedWebViewerCursor.set('readyState', 'reload')}),
+               onClick: event => webViewerCursor.set('readyState', 'reload')}),
       DOM.div({key: 'stop-button',
                className: 'stopbutton',
                style: theme.stopButton,
-               onClick: event => selectedWebViewerCursor.set('readyState', 'stop')}),
+               onClick: event => webViewerCursor.set('readyState', 'stop')}),
     ]));
 
-  const NavigationPanel = Component(({key, inputCursor, tabStripCursor, selectedWebViewerCursor, title, theme}) => {
+  const NavigationPanel = Component('NavigationPanel', ({key, inputCursor, tabStripCursor, webViewerCursor, title, theme}) => {
     return DOM.div({
       key,
       style: theme.navigationPanel,
       className: 'navbar' + (inputCursor.get('isFocused') ? ' urledit' : '') +
-                            (selectedWebViewerCursor.get('canGoBack') ? ' cangoback' : '') +
-                            (selectedWebViewerCursor.get('location') ? ' canreload' : '') +
-                            (selectedWebViewerCursor.get('isLoading') ? ' loading' : '') +
-                            (selectedWebViewerCursor.get('securityState') == 'secure' ? ' ssl' : '') +
-                            (selectedWebViewerCursor.get('securityExtendedValidation') ? ' sslv' : '')
+                            (webViewerCursor.get('canGoBack') ? ' cangoback' : '') +
+                            (webViewerCursor.get('location') ? ' canreload' : '') +
+                            (webViewerCursor.get('isLoading') ? ' loading' : '') +
+                            (webViewerCursor.get('securityState') == 'secure' ? ' ssl' : '') +
+                            (webViewerCursor.get('securityExtendedValidation') ? ' sslv' : '')
     }, [
       WindowControls({key: 'controls', theme}),
       NavigationControls({key: 'navigation', inputCursor, tabStripCursor,
-                          selectedWebViewerCursor, title, theme}),
+                          webViewerCursor, title, theme}),
       DOM.div({key: 'spacer', className: 'freeendspacer'})
     ])
   });

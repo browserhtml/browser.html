@@ -17,6 +17,18 @@ define(function(require, exports, module) {
   var render = (Component, initial, target) => {
     let current = null;
 
+    const draw = () => {
+      window.state = current;
+      if (window.debug) {
+        console.log('! render', current.toJSON());
+      }
+      // create a cursor for a current up to date state with a
+      // step as change handler, to retriger render loop on change.
+      const cursor = Cursor.from(current, step);
+      // Finally use React to render current state with a component.
+      React.render(Component(cursor), target);
+    }
+
     const step = (to, from, path) => {
       // Note that only components that rely on state that changed
       // will be retriggered during rendering. This implies that some components
@@ -45,15 +57,16 @@ define(function(require, exports, module) {
         }
       }
 
-      // create a cursor for a current up to date state with a
-      // step as change handler, to retriger render loop on change.
-      const cursor = Cursor.from(current, step);
-      // Finally use React to render current state with a component.
-      React.render(Component(cursor), target);
+      if (window.debug) {
+        console.log('! update', path.join('.'), current.toJSON());
+      }
+
+
+      draw();
     }
 
     // Spawn render loop by stepping into!
-    step(initial, null);
+    step(initial, null, []);
   };
 
   // Exports:
