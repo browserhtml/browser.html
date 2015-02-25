@@ -89,7 +89,8 @@ define((require, exports, module) => {
     onAuthentificate: Event('mozbrowserusernameandpasswordrequired'),
     onCanGoBackChange: Event('mozbrowsercangobackchange'),
     onCanGoForwardChange: Event('mozbrowsercangoforwardchange'),
-    onScrollAreaChange: Event('mozbrowserscrollareachanged')
+    onScrollAreaChange: Event('mozbrowserscrollareachanged'),
+    onLoadProgressChange: Event('mozbrowserloadprogresschanged')
   });
 
   IFrame.onCanGoBackChange = node => request => {

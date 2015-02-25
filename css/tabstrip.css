@@ -52,6 +52,7 @@ main.showtabstrip iframes {
   to click. */
   height: 100px;
   width: 100px;
+  position: relative;
 }
 
 .tab-thumbnail {
@@ -76,4 +77,32 @@ main.showtabstrip iframes {
 
 .tab.selected .tab-thumbnail {
   transform: scale(1);
+}
+
+.tab-close-button {
+  font-family: FontAwesome;
+  text-align: center;
+  font-size: 16px;
+  line-height: 18px;
+  width: 18px;
+  height: 18px;
+  position: absolute;
+  top: 7px;
+  right: -9px;
+  background: #222;
+  color: white;
+
+  z-index: 2;
+  border-radius: 50%;
+
+  display: none;
+}
+
+
+.tab-close-button:after {
+  content: "\f00d";
+}
+
+.tab:hover .tab-close-button {
+  display: block;
 }

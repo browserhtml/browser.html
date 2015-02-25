@@ -45,7 +45,7 @@
 main {
   height: 100vh;
   width: 100vw;
-  overflow-y: scroll;
+  overflow-y: hidden;
   flex-flow: column;
   background-color: var(--bg);
   color: black;
@@ -57,6 +57,10 @@ main {
 
 main * {
   display: flex;
+}
+
+main.scrollable {
+  overflow-y: scroll;
 }
 
 tab-iframe {

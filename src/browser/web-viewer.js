@@ -51,7 +51,8 @@ define((require, exports, module) => {
       onTitleChange: WebViewer.onTitleChange(webViewerCursor),
       onPrompt: WebViewer.onPrompt(webViewerCursor),
       onAuthentificate: WebViewer.onAuthentificate(webViewerCursor),
-      onScrollAreaChange: WebViewer.onScrollAreaChange(webViewerCursor)
+      onScrollAreaChange: WebViewer.onScrollAreaChange(webViewerCursor),
+      onLoadProgressChange: WebViewer.onLoadProgressChange(webViewerCursor)
     })
   });
 
@@ -65,6 +66,10 @@ define((require, exports, module) => {
   WebViewer.onLoadStart = webViewerCursor => event => webViewerCursor.merge({
     readyState: 'loading',
     isLoading: true,
+    isConnecting: true,
+    startLoadingTime: performance.now(),
+    progress: 0,
+    icons: null,
     icons: {},
     title: null,
     location: null,
@@ -74,10 +79,21 @@ define((require, exports, module) => {
     canGoForward: false
   });
 
-  WebViewer.onLoadEnd = webViewerCursor => event => webViewerCursor.merge({
-    readyState: 'loaded',
-    isLoading: false
-  });
+  WebViewer.onLoadEnd = webViewerCursor => event => {
+    // When the progressbar of a viewer is visible,
+    // we want to animate the progress to 1 on load. This
+    // is handled in the progressbar code. We only set
+    // progress to 1 for non selected viewers.
+    if (!isSelected(webViewerCursor)) {
+      webViewerCursor = webViewerCursor.set('progress', 1);
+    }
+    return webViewerCursor.merge({
+      isConnecting: false,
+      connectedAt: performance.now(),
+      readyState: 'loaded',
+      isLoading: false
+    });
+  };
 
   WebViewer.onTitleChange = webViewerCursor => event =>
     webViewerCursor.set('title', event.detail);
@@ -109,6 +125,13 @@ define((require, exports, module) => {
   WebViewer.onSecurityChange = webViewerCursor => event =>
     webViewerCursor.merge({securityState: event.detail.state,
                            securityExtendedValidation: event.detail.extendedValidation});
+
+  WebViewer.onLoadProgressChange = webViewerCursor => event => {
+    if (webViewerCursor.get('isConnecting')) {
+      webViewerCursor = webViewerCursor.set('isConnecting', false);
+      return webViewerCursor.set('connectedAt', performance.now());
+    }
+  }
 
   WebViewer.Deck = Deck(WebViewer);
   // Exports:

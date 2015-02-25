@@ -16,7 +16,13 @@ define((require, exports, module) => {
     // 'loading'|'loaded'|'stop'|'reload'|'goBack'|'goForward'
     readyState: null,
     // `true` if web content is currently loading.
-    loading: false,
+    isLoading: false,
+    // Position of the progressbar (0..1)
+    progress: 1,
+    // Has the server replied yet
+    isConnecting: false,
+    // When the server replied first (while loading)
+    connectedAt: null,
     // `true` if web content has a focus.
     isFocused: false,
     // `true` if this is currently active web viewer, in other words

@@ -23,7 +23,8 @@ define((require, exports, module) => {
     titleText: {color: 'rgba(0,0,0,0.5)'},
     pageInfoText: {color: 'rgba(0,0,0,0.5)'},
     tabstrip: {backgroundColor: '#fff'},
-    navigationPanel: {backgroundColor: '#fff'}
+    navigationPanel: {backgroundColor: '#fff'},
+    progressbar: {color: '#82D3FD'}
   });
 
   const IS_DARK = true;
@@ -72,7 +73,8 @@ define((require, exports, module) => {
     titleText: {color: foregroundColor},
     pageInfoText: {color: foregroundColor},
     tabstrip: {backgroundColor: backgroundColor},
-    navigationPanel: {backgroundColor: backgroundColor}
+    navigationPanel: {backgroundColor: backgroundColor},
+    progressbar: {color: foregroundColor}
   });
 
   // Derive theme object from webViewer object.

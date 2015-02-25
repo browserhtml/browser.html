@@ -13,6 +13,7 @@ define((require, exports, module) => {
   const {navigateTo, showTabStrip, focus} = require('./actions');
   const {KeyBindings} = require('./keyboard');
   const url = require('./util/url');
+  const {ProgressBar} = require('./progressbar');
 
   const WindowControls = Component('WindowControls', ({theme}) =>
     DOM.div({className: 'windowctrls'}, [
@@ -48,6 +49,7 @@ define((require, exports, module) => {
       className: 'locationbar',
       onMouseEnter: event => showTabStrip(tabStripCursor)
     }, [
+      ProgressBar({key: 'progressbar', webViewerCursor, theme}),
       DOM.div({className: 'backbutton',
                style: theme.backButton,
                key: 'back',

@@ -6,18 +6,25 @@
   border-radius: 3px;
   line-height: 30px;
   background-color: rgba(0,0,0,0.07);
+  position: relative;
+  overflow: hidden;
 }
 
-.navbar.loading .locationbar {
-  background-image: linear-gradient(110deg, #82D3FD, #82D3FD 80%, transparent 80%);
-  background-size: 600px 30px;
-  background-position: -460px 0;
-  background-repeat: no-repeat;
-  animation: urlloading 2s ease-out;
-  animation-fill-mode: forwards;
+.locationbar > * {
+  z-index: 100;
 }
 
-@keyframes urlloading { to { background-position: 0 0 } }
+.progressbar {
+  z-index: 99;
+  display: block;
+  width: 500px;
+  height: 30px;
+  background-image: linear-gradient(110deg, var(--progressbar-color), var(--progressbar-color) 460px, transparent 460px);
+  background-size: 500px 30px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
 
 .urlinput,
 .pagesummary {

@@ -139,7 +139,8 @@ define((require, exports, module) => {
       className: 'moz-noscrollbars' +
                  (theme.isDark ? ' isdark' : '') +
                  (immutableState.get('isDocumentFocused') ? ' windowFocused' : '') +
-                 (isTabStripVisible ? ' showtabstrip' : ''),
+                 (isTabStripVisible ? ' showtabstrip' : '') +
+                 (inputCursor.get('isFocused') ? '' : ' scrollable'),
       onDocumentUnload: event => writeSession(immutableState),
       onDocumentFocus: event => immutableState.set('isDocumentFocused', true),
       onDocumentBlur: event => immutableState.set('isDocumentFocused', false),

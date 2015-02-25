@@ -14,7 +14,7 @@
   "scripts": {
     "test": "jscs ./",
     "server": "python -m SimpleHTTPServer 8080",
-    "start": "/Applications/B2G.app/Contents/MacOS/b2g --start-manifest=http://localhost:8080/manifest.webapp"
+    "start": "/Applications/B2G.app/Contents/MacOS/graphene --start-manifest=http://localhost:8080/manifest.webapp"
   },
   "devDependencies": {
     "jscs": "^1.8.1"
