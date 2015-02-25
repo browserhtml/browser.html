@@ -132,6 +132,13 @@ define((require, exports, module) => {
 
     const theme = readTheme(activeWebViewerCursor);
 
+    const onNavigationPanelVisible = () => {
+    }
+
+    const onNavigationPanelHidden = () => {
+      focus(activeWebViewerCursor);
+    }
+
     return Main({
       os: immutableState.get('os'),
       windowTitle: title(selectedWebViewerCursor),
@@ -150,7 +157,14 @@ define((require, exports, module) => {
                                  onDeckBinding(webViewersCursor),
                                  onBrowserBinding(immutableState)),
       onDocumentKeyUp: compose(onTabStripKeyUp(tabStripCursor),
-                               onDeckBindingRelease(webViewersCursor))
+                               onDeckBindingRelease(webViewersCursor)),
+      onScroll: event => {
+        if (event.target.scrollTop < 20) {
+          onNavigationPanelVisible();
+        } else {
+          onNavigationPanelHidden();
+        }
+      }
     }, [
       NavigationPanel({
         key: 'navigation',
