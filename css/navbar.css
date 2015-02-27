@@ -2,6 +2,7 @@
   background-color: inherit;
   -moz-window-dragging: drag;
   padding: 5px;
+  position: relative;
   justify-content: space-between;
   scroll-snap-coordinate: 0 0;
   transition: background-color 200ms ease;
