@@ -1,21 +1,16 @@
 .tabstripcontainer {
-  -moz-window-dragging: drag;
-  display: flex;
+  justify-content: center;
+  width: 100vw;
+  height: 100px;
   position: absolute;
   top: 40px;
   left: 0;
-  width: 100vw;
-  height: 100px;
-  background-color: white;
-  justify-content: center;
   z-index: 43;
   pointer-events: none;
   opacity: 0;
   transition: opacity 200ms ease, background-color 200ms ease;
 }
 
-main.ctrlpressed .tabstripcontainer,
-main.cmdpressed .tabstripcontainer,
 main.showtabstrip .tabstripcontainer {
   pointer-events: auto;
   opacity: 1;
@@ -34,17 +29,13 @@ main.showtabstrip .tabstripcontainer {
   z-index: 42;
 }
 
-main.ctrlpressed .tabstripkillzone,
-main.cmdpressed .tabstripkillzone,
 main.showtabstrip .tabstripkillzone {
   pointer-events: auto;
   background-color: rgba(0,0,0,0.05);
 }
 
-main.ctrlpressed iframes,
-main.cmdpressed iframes,
-main.showtabstrip iframes {
-  pointer-events: none;
+main.showtabstrip .tab-thumbnail {
+  will-change: transform;
 }
 
 .tab {
@@ -57,7 +48,7 @@ main.showtabstrip iframes {
 
 .tab-thumbnail {
   background: white;
-  background-size: 100% auto;
+  background-size: cover;
   border: 1px solid rgba(0,0,0,0.07);
   border-radius: 4px;
   height: 62.5px;
@@ -80,29 +71,33 @@ main.showtabstrip iframes {
 }
 
 .tab-close-button {
-  font-family: FontAwesome;
-  text-align: center;
-  font-size: 16px;
-  line-height: 18px;
-  width: 18px;
-  height: 18px;
   position: absolute;
-  top: 7px;
-  right: -9px;
-  background: #222;
-  color: white;
-
+  align-items: center;
+  justify-content: center;
   z-index: 2;
-  border-radius: 50%;
-
-  display: none;
+  height: 36px; /* big hitzone */
+  width: 36px;
+  right: -18px; /* (hitzone / 2) */
+  top: -2px; /* 16px - (hitzone / 2) see thumbnail margin top */
+  opacity: 0;
+  pointer-events: none;
 }
 
-
-.tab-close-button:after {
-  content: "\f00d";
+.tab-close-button::after {
+  cursor: default;
+  content: "×";
+  display: block;
+  text-align: center;
+  font-size: 14px;
+  line-height: 18px;
+  width: 18px;
+  background-color: #444;
+  border-radius: 50%;
+  color: white;
 }
 
 .tab:hover .tab-close-button {
-  display: block;
+  opacity: 1;
+  transition: opacity 150ms 250ms ease;
+  pointer-events: auto;
 }

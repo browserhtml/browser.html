@@ -8,12 +8,13 @@ define((require, exports, module) => {
 
   const {DOM} = require('react')
   const Component = require('omniscient');
-  const {InputField} = require('./editable');
+  const {InputVirtualAttribute} = require('./editable');
   const {Element} = require('./element');
   const {navigateTo, showTabStrip, focus} = require('./actions');
   const {KeyBindings} = require('./keyboard');
   const url = require('./util/url');
   const {ProgressBar} = require('./progressbar');
+  const ClassSet = require('./util/class-set');
 
   const WindowControls = Component('WindowControls', ({theme}) =>
     DOM.div({className: 'windowctrls'}, [
@@ -54,7 +55,7 @@ define((require, exports, module) => {
                style: theme.backButton,
                key: 'back',
                onClick: event => webViewerCursor.set('readyState', 'goBack')}),
-      InputField({
+      InputVirtualAttribute({
         key: 'input',
         className: 'urlinput',
         style: theme.urlInput,
@@ -100,12 +101,15 @@ define((require, exports, module) => {
     return DOM.div({
       key,
       style: theme.navigationPanel,
-      className: 'navbar' + (inputCursor.get('isFocused') ? ' urledit' : '') +
-                            (webViewerCursor.get('canGoBack') ? ' cangoback' : '') +
-                            (webViewerCursor.get('location') ? ' canreload' : '') +
-                            (webViewerCursor.get('isLoading') ? ' loading' : '') +
-                            (webViewerCursor.get('securityState') == 'secure' ? ' ssl' : '') +
-                            (webViewerCursor.get('securityExtendedValidation') ? ' sslv' : '')
+      className: ClassSet({
+        navbar: true,
+        urledit: inputCursor.get('isFocused'),
+        cangoback: webViewerCursor.get('canGoBack'),
+        canreload: webViewerCursor.get('location'),
+        loading: webViewerCursor.get('isLoading'),
+        ssl: webViewerCursor.get('securityState') == 'secure',
+        sslv: webViewerCursor.get('securityExtendedValidation')
+      })
     }, [
       WindowControls({key: 'controls', theme}),
       NavigationControls({key: 'navigation', inputCursor, tabStripCursor,

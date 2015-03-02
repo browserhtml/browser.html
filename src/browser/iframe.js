@@ -7,14 +7,15 @@ define((require, exports, module) => {
   'use strict';
 
   const {isFocused} = require('./focusable');
-  const {Element, BeforeAppendAttribute, Field, Event} = require('./element');
+  const {Element, BeforeAppendAttribute,
+         VirtualAttribute, Event, VirtualEvent} = require('./element');
 
   const IFrame = Element('iframe', {
     isFocused: isFocused,
     isRemote: new BeforeAppendAttribute('remote'),
     isBrowser: new BeforeAppendAttribute('mozbrowser'),
     allowFullScreen: new BeforeAppendAttribute('mozallowfullscreen'),
-    src: Field((node, current, past) => {
+    src: VirtualAttribute((node, current, past) => {
       if (current != past) {
         if (node.setVisible) {
           node.src = current;
@@ -23,21 +24,21 @@ define((require, exports, module) => {
         }
       }
     }),
-    isVisible: Field((node, current, past) => {
+    isVisible: VirtualAttribute((node, current, past) => {
       if (current != past) {
         if (node.setVisible) {
           node.setVisible(current);
         }
       }
     }),
-    zoom: Field((node, current, past) => {
+    zoom: VirtualAttribute((node, current, past) => {
       if (current != past) {
         if (node.zoom) {
           node.zoom(current);
         }
       }
     }),
-    readyState: Field((node, current, past) => {
+    readyState: VirtualAttribute((node, current, past) => {
       if (current == 'reload') {
         if (node.reload) {
           node.reload();
@@ -61,15 +62,6 @@ define((require, exports, module) => {
           node.goForward();
         }
       }
-
-      // Note that goBack / goForward won't trigger load events so we need
-      // to re request canGoBack / canGoForward over on each state change.
-      if (node.getCanGoBack) {
-        node.getCanGoBack().onsuccess = IFrame.onCanGoBackChange(node)
-      }
-      if (node.getCanGoForward) {
-        node.getCanGoForward().onsuccess = IFrame.onCanGoForwardChange(node)
-      }
     }),
     onAsyncScroll: Event('mozbrowserasyncscroll'),
     onClose: Event('mozbrowserclose'),
@@ -87,23 +79,25 @@ define((require, exports, module) => {
     onTitleChange: Event('mozbrowsertitlechange'),
     onPrompt: Event('mozbrowsershowmodalprompt'),
     onAuthentificate: Event('mozbrowserusernameandpasswordrequired'),
-    onCanGoBackChange: Event('mozbrowsercangobackchange'),
-    onCanGoForwardChange: Event('mozbrowsercangoforwardchange'),
     onScrollAreaChange: Event('mozbrowserscrollareachanged'),
-    onLoadProgressChange: Event('mozbrowserloadprogresschanged')
+    onLoadProgressChange: Event('mozbrowserloadprogresschanged'),
+    onCanGoBackChange: VirtualEvent((target, dispatch) => {
+      const onsuccess = request =>
+        dispatch({target, detail: request.target.result});
+
+      target.addEventListener('mozbrowserlocationchange', event => {
+        target.getCanGoBack().onsuccess = onsuccess;
+      });
+    }),
+    onCanGoForwardChange: VirtualEvent((target, dispatch) => {
+      const onsuccess = request =>
+        dispatch({target, detail: request.target.result});
+
+      target.addEventListener('mozbrowserlocationchange', event => {
+        target.getCanGoForward().onsuccess = onsuccess;
+      });
+    })
   });
-
-  IFrame.onCanGoBackChange = node => request => {
-    node.dispatchEvent(new CustomEvent('mozbrowsercangobackchange', {
-      detail: request.target.result
-    }));
-  }
-
-  IFrame.onCanGoForwardChange = node => request => {
-    node.dispatchEvent(new CustomEvent('mozbrowsercangoforwardchange', {
-      detail: request.target.result
-    }));
-  }
 
   // Exports:
 

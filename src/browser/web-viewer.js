@@ -13,14 +13,19 @@ define((require, exports, module) => {
   const {getHardcodedColors} = require('./theme');
   const {IFrame} = require('./iframe');
   const {DOM} = require('react');
+  const ClassSet = require('./util/class-set');
 
   const WebViewer = Component('WebViewer', ({item: webViewerCursor, onOpen, onClose}) => {
 
     // Do not render anything unless viewer has any `uri`
     if (!webViewerCursor.get('uri')) return null;
     return IFrame({
-      className: 'frame flex-1 webviewer' +
-                  (webViewerCursor.get('contentOverflows') ? ' contentoverflows' : ''),
+      className: ClassSet({
+        frame: true,
+        'flex-1': true,
+        webviewer: true,
+        contentoverflows: webViewerCursor.get('contentOverflows')
+      }),
       key: webViewerCursor.get('id'),
       isBrowser: true,
       isRemote: true,

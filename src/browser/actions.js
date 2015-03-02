@@ -16,7 +16,8 @@ define((require, exports, module) => {
 
 
   const makeSearchURL = input =>
-    `https://search.yahoo.com/search?p=${encodeURIComponent(input)}`;
+    `https://duckduckgo.com/?q=${encodeURIComponent(input)}`;
+
 
   const readInputURL = input =>
     url.isNotURL(input) ? makeSearchURL(input) :

@@ -53,6 +53,7 @@ main {
   display: flex;
   scroll-snap-type: mandatory;
   scroll-snap-destination: 0 0;
+  position: relative;
 }
 
 main * {

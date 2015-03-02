@@ -15,11 +15,11 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const {Element, Field} = require('./element');
+  const {Element, VirtualAttribute} = require('./element');
   const Component = require('omniscient');
 
   const ProgressBarElement = Element('div', {
-    progressBarColor: Field((node, current, past) => {
+    progressBarColor: VirtualAttribute((node, current, past) => {
       if (current != past) {
         node.style.setProperty('--progressbar-color', current);
       }
@@ -92,14 +92,14 @@ define((require, exports, module) => {
     }
   }], ({key, webViewerCursor, theme}) => {
     const progress = webViewerCursor.get('progress');
-    const translateX = 500 * (progress - 1);
+    const percentProgress = 100 * progress;
     const opacity = progress < StartFading  ? 1 : 1 - Math.pow( (progress - StartFading) / (1 - StartFading), 1);
     return ProgressBarElement({
       key,
       className: 'progressbar',
-      progressBarColor: theme.progressbar.color,
       style: {
-        transform: `translateX(${translateX}px)`,
+        backgroundColor: theme.progressbar.color,
+        transform: `translateX(${percentProgress}%)`,
         opacity: opacity
       }});
   })

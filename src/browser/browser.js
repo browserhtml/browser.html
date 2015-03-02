@@ -12,7 +12,7 @@ define((require, exports, module) => {
   const {NavigationPanel} = require('./navigation-panel');
   const {WebViewer} = require('./web-viewer');
   const {Tab} = require('./page-switch');
-  const {Element, Event, Field, Attribute} = require('./element');
+  const {Element, Event, VirtualAttribute, Attribute} = require('./element');
   const {KeyBindings} = require('./keyboard');
   const {zoomIn, zoomOut, zoomReset, open,
          goBack, goForward, reload, stop, title} = require('./web-viewer/actions');
@@ -22,16 +22,17 @@ define((require, exports, module) => {
          selectNext, selectPrevious, select, activate,
          previewed, remove, append} = require('./deck/actions');
   const {readTheme} = require('./theme');
+  const ClassSet = require('./util/class-set');
 
   const getOwnerWindow = node => node.ownerDocument.defaultView;
   // Define custom `main` element with a custom `scrollGrab` attribute
   // that maps to same named proprety.
   const Main = Element('main', {
     os: Attribute('os'),
-    windowTitle: Field((node, current, past) => {
+    windowTitle: VirtualAttribute((node, current, past) => {
       node.ownerDocument.title = current;
     }),
-    scrollGrab: Field((node, current, past) => {
+    scrollGrab: VirtualAttribute((node, current, past) => {
       node.scrollgrab = current;
     }),
     onDocumentFocus: Event('focus', getOwnerWindow),
@@ -136,11 +137,13 @@ define((require, exports, module) => {
       os: immutableState.get('os'),
       windowTitle: title(selectedWebViewerCursor),
       scrollGrab: true,
-      className: 'moz-noscrollbars' +
-                 (theme.isDark ? ' isdark' : '') +
-                 (immutableState.get('isDocumentFocused') ? ' windowFocused' : '') +
-                 (isTabStripVisible ? ' showtabstrip' : '') +
-                 (inputCursor.get('isFocused') ? '' : ' scrollable'),
+      className: ClassSet({
+        'moz-noscrollbars': true,
+        isdark: theme.isDark,
+        windowFocused: immutableState.get('isDocumentFocused'),
+        showtabstrip: isTabStripVisible,
+        scrollable: !inputCursor.get('isFocused') && !isTabStripVisible
+      }),
       onDocumentUnload: event => writeSession(immutableState),
       onDocumentFocus: event => immutableState.set('isDocumentFocused', true),
       onDocumentBlur: event => immutableState.set('isDocumentFocused', false),

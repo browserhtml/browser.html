@@ -11,14 +11,17 @@ define((require, exports, moudle) => {
   const url = require('./util/url');
   const {Deck} = require('./deck');
   const {isSelected} = require('./deck/actions');
+  const ClassSet = require('./util/class-set');
 
   const readThumbnailURI = uri =>
     'none' && `url(/tiles/${url.getDomainName(uri)}.png)`;
 
   const Tab = Component('Tab', ({item: webViewerCursor, onSelect, onActivate, onClose}) =>
     DOM.div({
-      className: 'tab' +
-                 (isSelected(webViewerCursor) ? ' selected' : ''),
+      className: ClassSet({
+        tab: true,
+        selected: isSelected(webViewerCursor)
+      }),
       onMouseOver: event => onSelect(webViewerCursor),
       onMouseDown: event => onActivate(),
       onMouseUp: event => {
@@ -33,7 +36,7 @@ define((require, exports, moudle) => {
         className: 'tab-thumbnail',
         style: {backgroundImage: readThumbnailURI(webViewerCursor.get('location'))},
       }),
-      DOM.button({
+      DOM.div({
         key: 'close-button',
         onClick: event => onClose(webViewerCursor),
         className: "tab-close-button fa fa-times",

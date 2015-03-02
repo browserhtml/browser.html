@@ -7,10 +7,10 @@ define((require, exports, module) => {
   'use strict';
 
   const {isFocused} = require('./focusable');
-  const {Element, BeforeAppendAttribute, Field, Event} = require('./element');
+  const {Element, BeforeAppendAttribute, VirtualAttribute, Event} = require('./element');
   const {Component, createFactory} = require('react');
 
-  const selection = Field((node, current, past) => {
+  const selection = VirtualAttribute((node, current, past) => {
     if (current != past) {
       if (current === true) {
         node.select();
@@ -45,14 +45,14 @@ define((require, exports, module) => {
     selection: selection
   });
 
-  const InputField = function(immutableState) {
+  const InputVirtualAttribute = function(immutableState) {
     this.onKeyDown = this.onKeyDown.bind(this);
     Component.call(this);
   }
 
-  InputField.prototype = {
+  InputVirtualAttribute.prototype = {
     __proto__: Component.prototype,
-    constructor: InputField,
+    constructor: InputVirtualAttribute,
     onKeyDown(event) {
       if (event.key == this.props.submitKey) {
         this.props.onSubmit(event);
@@ -66,6 +66,6 @@ define((require, exports, module) => {
   // Exports:
 
   exports.selection = selection;
-  exports.InputField = createFactory(InputField);
+  exports.InputVirtualAttribute = createFactory(InputVirtualAttribute);
 
 });
