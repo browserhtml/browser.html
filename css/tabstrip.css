@@ -11,7 +11,7 @@
   transition: opacity 200ms ease, background-color 200ms ease;
 }
 
-main.showtabstrip .tabstripcontainer {
+.showtabstrip .tabstripcontainer {
   pointer-events: auto;
   opacity: 1;
 }
@@ -23,20 +23,20 @@ main.showtabstrip .tabstripcontainer {
   left: 0;
   height: calc(100vh - 40px);
   width: 100vw;
-  background-color: rgba(0,0,0,0);
+  background-color: rgba(0,0,0,0.05);
   transition: background-color 200ms ease;
-  pointer-events: none;
   z-index: 42;
 }
 
-main.showtabstrip .tabstripkillzone {
-  pointer-events: auto;
-  background-color: rgba(0,0,0,0.05);
+.tabstripkillzone-hidden {
+  background-color: rgba(0,0,0,0);
+  pointer-events: none;  
 }
 
-main.showtabstrip .tab-thumbnail {
+.showtabstrip .tab-thumbnail {
   will-change: transform;
 }
+
 
 .tab {
   /* Keep buffer space around the visual thumbnail to make them easier

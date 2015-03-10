@@ -33,11 +33,52 @@ define((require, exports, module) => {
     webViewerCursor.merge({uri: readInputURL(location), isFocused: focus});
   }
 
+  // We'll hard-code dashboard items for now.
+  const dashboardItems = [
+    {image: '/tiles/facebook.com.png',
+     uri: 'https://facebook.com',
+     title: 'facebook.com'},
+    {image: '/tiles/youtube.com.png',
+     uri: 'https://youtube.com',
+     title: 'youtube.com'},
+    {image: '/tiles/amazon.com.png',
+     uri: 'https://amazon.com',
+     title: 'amazon.com'},
+    {image: '/tiles/wikipedia.org.png',
+     uri: 'https://wikipedia.org',
+     title: 'wikipedia.org'},
+    {image: '/tiles/twitter.com.png',
+     uri: 'https://twitter.com',
+     title: 'twitter.com'},
+    {image: '/tiles/mail.google.com.png',
+     uri: 'https://mail.google.com',
+     title: 'mail.google.com'},
+    {image: '/tiles/nytimes.com.png',
+     uri: 'https://nytimes.com',
+     title: 'nytimes.com'},
+    {image: '/tiles/qz.com.png',
+     uri: 'http://qz.com',
+     title: 'qz.com'},
+    {image: '/tiles/github.com.png',
+     uri: 'https://github.com',
+     title: 'github.com'},
+    {image: '/tiles/dropbox.com.png',
+     uri: 'https://dropbox.com',
+     title: 'dropbox.com'},
+    {image: '/tiles/linkedin.com.png',
+     uri: 'https://linkedin.com',
+     title: 'linkedin.com'},
+    {image: '/tiles/yahoo.com.png',
+     uri: 'https://yahoo.com',
+     title: 'yahoo.com'}
+  ];
+
   // Creates a blank session. Returns immutable map.
   const resetSession = () => fromJS({
     isDocumentFocused: document.hasFocus(),
     input: {value: '', isFocused: false},
     tabStrip: {isActive: false},
+    dashboard: {items: dashboardItems},
     rfa: {id: -1},
     webViewers: [open({isSelected: true,
                        isActive: true,

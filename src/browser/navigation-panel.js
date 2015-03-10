@@ -44,8 +44,8 @@ define((require, exports, module) => {
   const inputBindings = KeyBindings({'escape': focus});
 
 
-  const NavigationControls = Component('NavigationControls', ({inputCursor, tabStripCursor,
-                                         webViewerCursor, theme}) =>
+  const NavigationControls = Component('NavigationControls',
+    ({inputCursor, tabStripCursor, webViewerCursor, theme}) =>
     DOM.div({
       className: 'locationbar',
       onMouseEnter: event => showTabStrip(tabStripCursor)
@@ -96,9 +96,10 @@ define((require, exports, module) => {
                onClick: event => webViewerCursor.set('readyState', 'stop')}),
     ]));
 
-  const NavigationPanel = Component('NavigationPanel', ({key, inputCursor, tabStripCursor,
-                                     webViewerCursor, title, rfaCursor, theme}) => {
-    return DOM.div({
+  const NavigationPanel = Component('NavigationPanel',
+    ({key, inputCursor, tabStripCursor, webViewerCursor,
+      title, rfaCursor, theme}) =>
+    DOM.div({
       key,
       style: theme.navigationPanel,
       className: ClassSet({
@@ -116,8 +117,7 @@ define((require, exports, module) => {
                           webViewerCursor, title, theme}),
       ProgressBar({key: 'progressbar', rfaCursor, webViewerCursor, theme}),
       DOM.div({key: 'spacer', className: 'freeendspacer'})
-    ])
-  });
+    ]));
 
   // Exports:
 
