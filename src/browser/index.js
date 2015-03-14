@@ -6,12 +6,15 @@ define((require, exports, module) => {
 
   'use strict';
 
+  require('./github'); // Pull updates from github
+
   const {render} = require('./core');
   const {Browser} = require('./browser');
   const {readSession, resetSession} = require('./actions');
 
   // See issue #218
-  // render(Browser, readSession() || resetSession(), document.body);
-  render(Browser, resetSession(), document.body);
+  let session = readSession() || resetSession();
+  session = session.set('appUpdateAvailable', false);
+  render(Browser, session , document.body);
 
 });

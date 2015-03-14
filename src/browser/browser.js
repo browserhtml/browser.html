@@ -41,7 +41,8 @@ define((require, exports, module) => {
     onDocumentBlur: Event('blur', getOwnerWindow),
     onDocumentKeyDown: Event('keydown', getOwnerWindow),
     onDocumentKeyUp: Event('keyup', getOwnerWindow),
-    onDocumentUnload: Event('unload', getOwnerWindow)
+    onDocumentUnload: Event('unload', getOwnerWindow),
+    onAppUpdateAvailable: Event('app-update-available', getOwnerWindow)
   });
 
   const onNavigation = KeyBindings({
@@ -178,7 +179,8 @@ define((require, exports, module) => {
 
     const suggestionsCursor = immutableState.cursor('suggestions');
 
-    return Main({
+    return DOM.div({
+    }, [Main({
       windowTitle: title(selectedWebViewerCursor),
       scrollGrab: true,
       className: ClassSet({
@@ -198,7 +200,8 @@ define((require, exports, module) => {
                                  onTabSwitch(webViewersCursor),
                                  onBrowserBinding(immutableState)),
       onDocumentKeyUp: compose(onTabStripKeyUp(tabStripCursor),
-                               onDeckBindingRelease(webViewersCursor))
+                               onDeckBindingRelease(webViewersCursor)),
+      onAppUpdateAvailable: event => immutableState.set('appUpdateAvailable', true),
     }, [
       NavigationPanel({
         key: 'navigation',
@@ -256,8 +259,22 @@ define((require, exports, module) => {
         onClose: item => webViewersCursor.update(closeTab(item)),
         onOpen: item => webViewersCursor.update(addTab(item))
       })
-    ]);
-  });
+    ]),
+    DOM.div({
+      key: 'appUpdateBanner',
+      className: ClassSet({
+        appupdatebanner: true,
+        active: immutableState.get('appUpdateAvailable')
+      }),
+    }, [
+      'Hey! An update just for you!',
+      DOM.div({
+        key: 'appUpdateButton',
+        className: 'appupdatebutton',
+        onClick: e => window.location.reload(true)
+      }, 'Apply')
+    ])]);
+  })
   // Create a version of readTheme that will return from cache
   // on repeating calls with an equal cursor.
   Browser.readTheme = Component.cached(readTheme);
