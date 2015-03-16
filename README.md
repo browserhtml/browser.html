@@ -14,6 +14,7 @@ Browser.html: an experimental Desktop browser, based on Firefox Desktop and Fire
 
 Serve code via a HTTP server:
 ```
+npm install 
 python -m SimpleHTTPServer 8000
 ```
 
