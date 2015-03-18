@@ -7,67 +7,73 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const API = 'https://api.github.com/repos/mozilla/browser.html/events';
-  const REF = 'refs/heads/gh-pages';
-  const HOSTNAME = 'mozilla.github.io';
-  const MIN_INTERVAL = 60000;
-  const knownEvents = new Set();
+  const PROD = location.hostname == 'mozilla.github.io';
+  const API_URL = 'https://api.github.com/repos/mozilla/browser.html/contents/HEAD?ref=refs/heads/gh-pages';
+  const MIN_INTERVAL = 60000 * 10; // 10 mins
 
   let etag;
   let interval = MIN_INTERVAL;
 
+  let timeout;
+
   const pull = (resolve, reject) => {
-    if (location.hostname != HOSTNAME) {
-      reject();
-      return;
+    if (!PROD) {
+      return reject();
     }
     let headers = {};
     if (etag) {
-      headers = { "If-None-Match": etag }
+      headers = { "If-None-Match": etag } // will tell github to return 304 (Not Modified) if nothing changed
     }
-    fetch(API, { headers }).then(response => {
+    fetch(API_URL, { headers }).then(response => {
       if (response.status == 200) {
-        console.log('github: new events');
+        // Make sure we don't pull too often
         let xPoll = response.headers.get('X-Poll-Interval');
-        etag = response.headers.get('ETag');
         if (xPoll) {
           interval = Math.max(xPoll * 1000, MIN_INTERVAL);
         }
-        response.json().then((allEvents) => {
-          // Basic check. If there's an unknown push event, update!
-          const unkownEvents = allEvents.filter(e => e.type == 'PushEvent')
-                                        .filter(e => !knownEvents.has(e.id));
-          // Because initially we don't have any know events, let's use the
-          // first events as a record of what happened in the past. We will
-          // obviously miss events, so we need to save the latest known
-          // events/commits/whatever, but we'll do that once we know exactly
-          // how we want to handle updates (probably in a service worker).
-          if (knownEvents.size > 0) {
-            if (unkownEvents.some(e => e.payload.ref == REF)) {
-              console.log('github: new push to gh-pages');
+        etag = response.headers.get('ETag');
+        response.json().then((data) => {
+          let remoteHEAD = atob(data.content);
+          console.log(`Github: remote: ${remoteHEAD}`);
+          localHEAD.then(localHEAD => {
+            console.log(`Github: local: ${localHEAD}`);
+            if (localHEAD != remoteHEAD) {
               resolve();
             }
-          }
-          unkownEvents.forEach(e => knownEvents.add(e.id));
+          })
         });
       }
-      if (response.status == 304) {
-        console.log('github: no events');
-      }
       if (response.status != 200 && response.status != 304) {
-        console.error("Unexpected status", response.status, response.statusText);
+        console.error("Github: Unexpected status", response.status, response.statusText);
+      } else {
+        console.log('Github:', response.status);
       }
-      console.log(`pulling in ${interval}ms`);
-      setTimeout(() => pull(resolve), interval);
+      console.log(`Github: pulling in ${interval}ms`);
+      timeout = setTimeout(() => pull(resolve), interval);
     }).catch(error => {
-      console.error("fetch error", error);
-      console.log(`pulling in ${interval}ms`);
-      setTimeout(() => pull(resolve), interval);
+      console.error("Github: fetch error", error);
+      console.log(`Github: pulling in ${interval}ms`);
+      timeout = setTimeout(() => pull(resolve), interval);
     });
   };
 
+  const localHEAD = new Promise((resolve, reject) => {
+    if (!PROD) {
+      return reject();
+    }
+    fetch('HEAD').then(response => {
+      if (response.status == 200) {
+        response.text().then(resolve, reject);
+      } else {
+        reject(`Can\'t reach HEAD: ${response.statusText}`);
+      }
+    }).catch(reject);
+  });
 
-  exports.appUpdateAvailable = new Promise(pull);
+  const appUpdateAvailable = new Promise(pull);
 
+  appUpdateAvailable.then(() => clearTimeout(timeout));
+
+  exports.appUpdateAvailable = appUpdateAvailable;
 
 });

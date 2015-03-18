@@ -30,7 +30,7 @@
         break;
       case 'update-downloaded':
       case 'update-prompt-apply':
-        // TODO: Prompt the user to restart?
+        dispatchEvent(new CustomEvent('runtime-update-available'));
         break;
       default:
         console.log('Unknown mozChromeEvent: ' + type);

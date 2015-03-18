@@ -3,18 +3,19 @@
   position: absolute;
   justify-content: space-between;
   bottom: 10px;
-  width: 300px;
-  left: calc(50vw - 150px);
+  width: 400px;
+  left: calc(50vw - 200px);
   background-color: rgba(36,60,83,0.95);
   border-radius: 4px;
   padding: 8px 8px 8px 20px;
   color: white;
   align-items: center;
-  transition: transform 500ms ease-in;
+  transition: opacity 500ms ease-in;
 }
 
 .appupdatebanner:not(.active) {
-  transform: translateY(200px);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .appupdatebanner > span {
