@@ -1,3 +1,11 @@
 language: node_js
 node_js:
-  - "0.10"
+  - '0.10'
+script: npm run-script deploy
+branches:
+  only:
+    - master
+env:
+  global:
+  - GH_REF: github.com/mozilla/browser.html.git
+  - secure: HVI/ynSYdnb6GGm6uBP/+9G0ZMn/cW95iiyLoz6C2uNS62Ec7F0u3tAkNaIaOXXU18bJ4i3Y3w0Vcw7FRYOXR60MI3J9SRtkuVjhhetE/S8UI1iEgfW/1/+e/poQzRXMut/1o5xS4V8t1ZDSwet5BtWIDdy9K6GUES5b3hSdQjk=
