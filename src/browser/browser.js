@@ -46,7 +46,8 @@ define((require, exports, module) => {
     onDocumentKeyDown: Event('keydown', getOwnerWindow),
     onDocumentKeyUp: Event('keyup', getOwnerWindow),
     onDocumentUnload: Event('unload', getOwnerWindow),
-    onAppUpdateAvailable: Event('app-update-available', getOwnerWindow)
+    onAppUpdateAvailable: Event('app-update-available', getOwnerWindow),
+    onRuntimeUpdateAvailable: Event('runtime-update-available', getOwnerWindow)
   });
 
   const onNavigation = KeyBindings({
@@ -233,6 +234,7 @@ define((require, exports, module) => {
       onDocumentKeyUp: compose(onTabStripKeyUp(tabStripCursor),
                                onDeckBindingRelease(webViewersCursor)),
       onAppUpdateAvailable: event => immutableState.set('appUpdateAvailable', true),
+      onRuntimeUpdateAvailable: event => immutableState.set('runtimeUpdateAvailable', true),
     }, [
       NavigationPanel({
         key: 'navigation',
@@ -304,15 +306,27 @@ define((require, exports, module) => {
       key: 'appUpdateBanner',
       className: ClassSet({
         appupdatebanner: true,
-        active: immutableState.get('appUpdateAvailable')
+        active: immutableState.get('appUpdateAvailable') || immutableState.get('runtimeUpdateAvailable')
       }),
     }, [
       'Hey! An update just for you!',
       DOM.div({
         key: 'appUpdateButton',
         className: 'appupdatebutton',
-        onClick: e => sendEventToChrome('clear-cache-and-reload')
-      }, 'Apply')
+        onClick: e => {
+          if (immutableState.get('runtimeUpdateAvailable') && immutableState.get('appUpdateAvailable')) {
+            // FIXME: Not supported yet
+            sendEventToChrome('clear-cache-and-restart')
+          }
+          if (immutableState.get('runtimeUpdateAvailable') && !immutableState.get('appUpdateAvailable')) {
+            // FIXME: Not supported yet
+            sendEventToChrome('restart')
+          }
+          if (!immutableState.get('runtimeUpdateAvailable') && immutableState.get('appUpdateAvailable')) {
+            sendEventToChrome('clear-cache-and-reload')
+          }
+        }
+      }, 'Apply' + (immutableState.get('runtimeUpdateAvailable') ? ' (restart required)' : ''))
     ])]);
   })
   // Create a version of readTheme that will return from cache

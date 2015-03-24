@@ -101,6 +101,7 @@ define((require, exports, module) => {
     session = session.
       setIn(['rfa', 'id'], -1).
       set('appUpdateAvailable', false).
+      set('runtimeUpdateAvailable', false).
       // Reset state of each web viewer that can't be carried across the sessions.
       updateIn(['webViewers'], viewers => viewers.map(viewer => viewer.merge({
         uri: viewer.get('location') || viewer.get('uri'),
