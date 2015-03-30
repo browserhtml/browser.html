@@ -9,20 +9,24 @@ define((require, exports, module) => {
   const Component = require('omniscient');
   const {identity} = require('../lang/functional');
   const {readDashboardTheme, readWallpaperTheme,
+         getDashboardThemePatch,
          getWallpaperSwatches} = require('./dashboard/actions');
 
   const readBackground = uri => ('none' && `url(${uri})`);
+
+  const changeWallpaper = key => dashboard =>
+    dashboard.merge(getDashboardThemePatch(key));
 
   const List = (Item, a2b) => Component('List', (options, handlers) =>
     DOM.div(options, options.items.map(options =>
       Item(a2b(options), handlers))));
 
-  const WallpaperSwatch = ({key, backgroundColor}, {onWallpaperChange}) =>
+  const WallpaperSwatch = ({key, backgroundColor}, {edit}) =>
     DOM.div({
       key,
       className: 'wallpaper-swatch',
       style: {backgroundColor},
-      onClick: event => onWallpaperChange(key)
+      onClick: event => edit(changeWallpaper(key))
     });
 
   const WallpaperSwatches = List(WallpaperSwatch, identity);
@@ -45,7 +49,7 @@ define((require, exports, module) => {
   }));
 
   const Dashboard = Component('Dashboard',
-    ({dashboard, hidden}, {onOpen, onWallpaperChange}) =>
+    ({dashboard, hidden}, {onOpen, edit}) =>
     DOM.div({
       style: readDashboardTheme(dashboard),
       className: 'dashboard',
@@ -60,7 +64,7 @@ define((require, exports, module) => {
         key: 'wallpaper-swatches',
         className: 'wallpaper-swatches',
         items: getWallpaperSwatches()
-      }, {onWallpaperChange})
+      }, {edit})
     ]));
 
   // Exports:

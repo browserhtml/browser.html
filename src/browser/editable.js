@@ -62,7 +62,7 @@ define((require, exports, module) => {
   exports.selection = selection;
   exports.InputField = createFactory(InputField);
 
-  exports.select = (input, start=0, end=Infinity, direction='forward') =>
+  exports.select = (start=0, end=Infinity, direction='forward') => input =>
     input.set('selection', {start, end, direction});
 
 });

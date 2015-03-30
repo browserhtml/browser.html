@@ -11,7 +11,8 @@ define((require, exports, module) => {
   const {readSession, resetSession} = require('./actions');
   const {appUpdateAvailable} = require('./github');
 
-  render(Browser, readSession() || resetSession(), document.body);
+  window.renderer = render(Browser, readSession() || resetSession(),
+                           document.body);
 
   appUpdateAvailable.then(() => {
     dispatchEvent(new CustomEvent('app-update-available'));

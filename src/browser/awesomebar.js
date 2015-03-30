@@ -9,22 +9,21 @@ define((require, exports, module) => {
   const MAX_RESULTS = 6;
 
   const {DOM} = require('react')
-  const {fromJS} = require('immutable');
+  const {List, Map} = require('immutable');
   const Component = require('omniscient');
   const {Element} = require('./element');
   const ClassSet = require('./util/class-set');
 
-  const Awesomebar = Component('Awesomebar', (
-    {suggestionsCursor, inputCursor, theme},
-    {onOpen}) => {
+  const Awesomebar = Component(function Awesomebar({suggestions, input, theme},
+                                                   {onOpen}) {
 
-    const selectedIndex = suggestionsCursor.get('selectedIndex');
-    const list = suggestionsCursor.get('list').toJSON();
+    const selectedIndex = suggestions.get('selectedIndex');
+    const list = suggestions.get('list').toJSON();
 
     return DOM.div({
       className: ClassSet({
         suggestionscontainer: true,
-        isActive: list.length > 0 && inputCursor.get('isFocused')
+        isActive: list.length > 0 && input.get('isFocused')
       }),
       key: 'suggestionscontainer',
       style: theme.awesomebarSuggestions
@@ -46,7 +45,7 @@ define((require, exports, module) => {
   let xhrSearch;
   let xhrHistory;
 
-  const computeSuggestions = (textInput, suggestionsCursor) => {
+  const computeSuggestions = (textInput, submit) => {
 
     if (xhrSearch) xhrSearch.abort();
     if (xhrHistory) xhrHistory.abort();
@@ -54,7 +53,7 @@ define((require, exports, module) => {
     textInput = textInput.trim();
 
     if (!textInput) {
-      resetSuggestions(suggestionsCursor);
+      submit(resetSuggestions);
       return;
     }
 
@@ -62,20 +61,8 @@ define((require, exports, module) => {
     xhrSearch.open('GET', `https://ac.duckduckgo.com/ac/?q=${textInput}&type=list`, true);
     xhrSearch.responseType = 'json';
     xhrSearch.send();
-    xhrSearch.onload = () => {
-      const search = xhrSearch.response[1];
-      const other = suggestionsCursor.get('list').filter(e => e.get('type') != 'search').toJSON();
-      const searchCount = Math.min(search.length, MAX_RESULTS - Math.min(MAX_RESULTS / 2, other.length));
-      suggestionsCursor = suggestionsCursor.set('list', fromJS([
-      ...other,
-      ...search.slice(0, searchCount)
-            .map(e => { return {
-              text: e,
-              href: `https://duckduckgo.com/?q=${encodeURIComponent(e)}`,
-              type: 'search'
-            }})
-      ].slice(-MAX_RESULTS)));
-    }
+    xhrSearch.onload = () =>
+      submit(updateSearchSuggestions(xhrSearch.response[1]));
 
     xhrHistory = new XMLHttpRequest();
     xhrHistory.open('GET', 'src/alexa.json', true);
@@ -83,28 +70,47 @@ define((require, exports, module) => {
     xhrHistory.send();
     xhrHistory.onload = () => {
       const history = xhrHistory.response.filter(e => e.startsWith(textInput));
-      const other = suggestionsCursor.get('list').filter(e => e.get('type') != 'history').toJSON();
-      const historyCount = Math.min(history.length, MAX_RESULTS - Math.min(MAX_RESULTS / 2, other.length));
-      suggestionsCursor = suggestionsCursor.set('list', fromJS([
-      ...history.slice(0, historyCount)
-            .map(e => { return {
-              text: e,
-              href: 'http://' + e,
-              type: 'history'
-            }}),
-      ...other
-      ].slice(0, MAX_RESULTS)));
-
-    }
+      submit(updateHistorySuggestions(history));
+    };
   }
 
-  const resetSuggestions = (suggestionsCursor) => {
+  const isntSearch = entry => entry.get('type') !== 'search';
+  const isntHistory = entry => entry.get('type') !== 'history';
+
+  const SearchSuggestion = entry => Map({
+    type: 'search',
+    href: `https://duckduckgo.com/?q=${encodeURIComponent(entry)}`,
+    text: entry
+  });
+
+  const HistorySuggestion = entry => Map({
+    type: 'history',
+    text: entry,
+    href: `http://${entry}`
+  });
+
+  const updateSearchSuggestions = search => suggestions =>
+    suggestions.update('list', entries => {
+      const other = entries.filter(isntSearch);
+      const count = Math.min(search.length, MAX_RESULTS - Math.min(MAX_RESULTS / 2, other.count()));
+      return other.concat(search.slice(0, count).map(SearchSuggestion))
+                  .slice(-MAX_RESULTS)
+    });
+
+  const updateHistorySuggestions = history => suggestions =>
+    suggestions.update('list', entries => {
+      const other = entries.filter(isntHistory);
+      const count = Math.min(history.length, MAX_RESULTS - Math.min(MAX_RESULTS / 2, other.count()));
+      return other.concat(history.slice(0, count).map(HistorySuggestion))
+                  .slice(0, MAX_RESULTS)
+    });
+
+
+
+  const resetSuggestions = suggestions => {
     if (xhrSearch) xhrSearch.abort();
     if (xhrHistory) xhrHistory.abort();
-    suggestionsCursor.merge({
-      'selectedIndex': -1,
-      'list': fromJS([]),
-    });
+    return suggestions.merge({selectedIndex: -1, list: List()});
   }
 
   exports.Awesomebar = Awesomebar;

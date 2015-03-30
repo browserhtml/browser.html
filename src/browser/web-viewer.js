@@ -16,6 +16,7 @@ define((require, exports, module) => {
   const makeTileURI = input =>
     `tiles/${url.getDomainName(input)}.png`;
   const {fromDOMRequest, fromEvent} = require('lang/promise');
+  const {compose} = require('lang/functional');
 
 
 
@@ -202,12 +203,12 @@ define((require, exports, module) => {
   const id = item => item.get('id');
   // WebViewer deck will always inject frames by order of their id. That way
   // no iframes will need to be removed / injected when order of tabs change.
-  WebViewer.Deck = Component('WebViewerDeck', (options, {onOpen, onClose}) => {
-    const {items} = options;
-    return DOM.div(options, items.sortBy(id).map(cursor => WebViewer({
-      key: cursor.get('id'),
-      state: cursor.deref(),
-    }, {onOpen, onClose, edit(step) {cursor.update(step)}})));
+  WebViewer.Deck = Component('WebViewerDeck', (options, {onOpen, onClose, edit}) => {
+    const {items, In} = options;
+    return DOM.div(options, items.sortBy(id).map(item => WebViewer({
+      key: item.get('id'),
+      state: item,
+    }, {onOpen, onClose, edit: compose(edit, In(items.indexOf(item)))})));
   });
 
   // Exports:

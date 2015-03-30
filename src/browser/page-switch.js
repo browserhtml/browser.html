@@ -51,11 +51,11 @@ define((require, exports, moudle) => {
   });
   const id = item => item.get('id');
   Tab.Deck = Component('Deck', (options, handlers) => {
-    const {items} = options;
-    return DOM.div(options, items.sortBy(id).map(cursor => Tab({
-      key: id(cursor),
-      order: items.indexOf(cursor),
-      state: cursor.deref()
+    const {items, In} = options;
+    return DOM.div(options, items.sortBy(id).map(item => Tab({
+      key: id(item),
+      order: items.indexOf(item),
+      state: item
     }, handlers)))
   });
 

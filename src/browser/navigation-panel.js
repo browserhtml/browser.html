@@ -11,7 +11,8 @@ define((require, exports, module) => {
   const Component = require('omniscient');
   const {InputField, select} = require('./editable');
   const {Element} = require('./element');
-  const {showTabStrip, blur, focus, sendEventToChrome} = require('./actions');
+  const {activate, blur, focus, sendEventToChrome} = require('./actions');
+  const {goBack, reload, stop} = require('./web-viewer/actions');
   const {KeyBindings} = require('./keyboard');
   const url = require('./util/url');
   const {ProgressBar} = require('./progressbar');
@@ -74,124 +75,122 @@ define((require, exports, module) => {
 
   // Bindings for navigation suggestions.
   const onSuggetionNavigation = KeyBindings({
-    'up': selectPrevious,
-    'control p': selectPrevious,
-    'down': selectNext,
-    'control n': selectNext,
-    'enter': unselect
+    'up': edit => edit(selectPrevious),
+    'control p': edit => edit(selectPrevious),
+    'down': edit => edit(selectNext),
+    'control n': edit => edit(selectNext),
+    'enter': edit => edit(unselect)
   });
 
   // General input keybindings.
   const onInputNavigation = KeyBindings({
-    'escape': (inputCursor, webViewerCursor) => {
-      focus(webViewerCursor);
+    'escape': (editInput, editSelectedViewer) => {
+      editSelectedViewer(focus);
       // TODO: This should not be necessary but since in case of dashboard focus
       // is passed to a hidden iframe DOM ignores that and we end up with focus
-      // still in `inputCursor`. As a workaround for now we manually `blur` input.
-      blur(inputCursor);
+      // still in an `input`. As a workaround for now we manually `blur` input.
+      editInput(blur);
     },
-    'accel l': arity(1, select)
+    'accel l': (editInput, _) => editInput(select())
   });
 
-  const NavigationControls = Component('NavigationControls', ({inputCursor, tabStripCursor,
-                                         webViewerCursor, suggestionsCursor, theme},
-                                       {onNavigate}) => {
+  const NavigationControls = Component('NavigationControls', ({input, tabStrip,
+                                         webViewer, suggestions, theme},
+                                       {onNavigate, editTabStrip, onGoBack,
+                                        editSelectedViewer, editInput, editSuggestions}) => {
     return DOM.div({
       className: 'locationbar',
       style: theme.locationBar,
-      onMouseEnter: event => showTabStrip(tabStripCursor),
+      onMouseEnter: event => editTabStrip(activate)
     }, [
       DOM.div({className: 'backbutton',
                style: theme.backButton,
                key: 'back',
-               onClick: event => webViewerCursor.set('readyState', 'goBack')}),
+               onClick: event => editSelectedViewer(goBack)}),
       InputField({
         key: 'input',
         className: 'urlinput',
         style: theme.urlInput,
         placeholder: 'Search or enter address',
-        value: selected(suggestionsCursor) ||
-               webViewerCursor.get('userInput'),
+        value: selected(suggestions) ||
+               webViewer.get('userInput'),
         type: 'text',
         submitKey: 'Enter',
-        isFocused: inputCursor.get('isFocused'),
-        selection: inputCursor.get('selection'),
+        isFocused: input.get('isFocused'),
+        selection: input.get('selection'),
         onFocus: event => {
-          computeSuggestions(event.target.value, suggestionsCursor);
-          inputCursor.set('isFocused', true);
+          computeSuggestions(event.target.value, editSuggestions);
+          editInput(focus);
         },
         onBlur: event => {
-          resetSuggestions(suggestionsCursor);
-          inputCursor.set('isFocused', false);
+          editSuggestions(resetSuggestions);
+          editInput(blur);
         },
-        onSelect: event => {
-          inputCursor.set('selection', {
-            start: event.target.selectionStart,
-            end: event.target.selectionEnd,
-            direction: event.target.selectionDirection
-          });
-        },
+        onSelect: event => editInput(select(event.target.selectionStart,
+                                            event.target.selectionEnd,
+                                            event.target.selectionDirection)),
         onChange: event => {
           // Reset suggestions & compute new ones from the changed input value.
-          unselect(suggestionsCursor);
-          computeSuggestions(event.target.value, suggestionsCursor);
+          editSuggestions(unselect);
+          computeSuggestions(event.target.value, editSuggestions);
           // Also reflect changed value onto webViewers useInput.
-          webViewerCursor.set('userInput', event.target.value);
+          editSelectedViewer(viewer => viewer.set('userInput', event.target.value));
         },
         onSubmit: event => {
-          resetSuggestions(suggestionsCursor);
+          editSuggestions(resetSuggestions);
           onNavigate(event.target.value);
         },
-        onKeyDown: compose(onInputNavigation(inputCursor, webViewerCursor),
-                           onSuggetionNavigation(suggestionsCursor))
+        onKeyDown: compose(onInputNavigation(editInput, editSelectedViewer),
+                           onSuggetionNavigation(editSuggestions))
       }),
       DOM.p({key: 'page-info',
              className: 'pagesummary',
              style: theme.pageInfoText,
-             onClick: event => inputCursor.set('isFocused', true)}, [
+             onClick: event => editInput(compose(select(), focus))}, [
         DOM.span({key: 'location',
                   style: theme.locationText,
                   className: 'pageurlsummary'},
-                 webViewerCursor.get('location') ? url.getDomainName(webViewerCursor.get('location')) : ''),
+                 webViewer.get('location') ? url.getDomainName(webViewer.get('location')) : ''),
         DOM.span({key: 'title',
                   className: 'pagetitle',
                   style: theme.titleText},
-                 webViewerCursor.get('title') ? webViewerCursor.get('title') :
-                 webViewerCursor.get('isLoading') ? 'Loading...' :
-                 webViewerCursor.get('location') ? webViewerCursor.get('location') :
+                 webViewer.get('title') ? webViewer.get('title') :
+                 webViewer.get('isLoading') ? 'Loading...' :
+                 webViewer.get('location') ? webViewer.get('location') :
                  'New Tab')
       ]),
       DOM.div({key: 'reload-button',
                className: 'reloadbutton',
                style: theme.reloadButton,
-               onClick: event => webViewerCursor.set('readyState', 'reload')}),
+               onClick: event => editSelectedViewer(reload)}),
       DOM.div({key: 'stop-button',
                className: 'stopbutton',
                style: theme.stopButton,
-               onClick: event => webViewerCursor.set('readyState', 'stop')}),
+               onClick: event => editSelectedViewer(stop)}),
     ])});
 
-  const NavigationPanel = Component('NavigationPanel', ({key, inputCursor, tabStripCursor,
-                                     webViewerCursor, suggestionsCursor, title, rfaCursor, theme},
+  const NavigationPanel = Component('NavigationPanel', ({key, input, tabStrip,
+                                     webViewer, suggestions, title, rfa, theme},
                                      handlers) => {
     return DOM.div({
       key,
       style: theme.navigationPanel,
       className: ClassSet({
         navbar: true,
-        urledit: inputCursor.get('isFocused'),
-        cangoback: webViewerCursor.get('canGoBack'),
-        canreload: webViewerCursor.get('location'),
-        loading: webViewerCursor.get('isLoading'),
-        ssl: webViewerCursor.get('securityState') == 'secure',
-        sslv: webViewerCursor.get('securityExtendedValidation')
+        urledit: input.get('isFocused'),
+        cangoback: webViewer.get('canGoBack'),
+        canreload: webViewer.get('location'),
+        loading: webViewer.get('isLoading'),
+        ssl: webViewer.get('securityState') == 'secure',
+        sslv: webViewer.get('securityExtendedValidation')
       })
     }, [
       WindowControls({key: 'controls', theme}),
-      NavigationControls({key: 'navigation', inputCursor, tabStripCursor,
-                          webViewerCursor, suggestionsCursor, title, theme},
+      NavigationControls({key: 'navigation', input, tabStrip,
+                          webViewer, suggestions, title, theme},
                           handlers),
-      ProgressBar({key: 'progressbar', rfaCursor, webViewerCursor, theme}),
+      ProgressBar({key: 'progressbar', rfa, webViewer, theme},
+                  {editRfa: handlers.editRfa}),
       DOM.div({key: 'spacer', className: 'freeendspacer'})
     ])
   });

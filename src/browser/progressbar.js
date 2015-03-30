@@ -54,13 +54,15 @@ define((require, exports, module) => {
     return Math.min(1, progress);
   }
 
+  const resetRfa = rfa => rfa.set('id', -1);
+
   const ProgressBar = Component([{
     step() {
-      let rfa = requestAnimationFrame(() => this.step());
-      this.props.rfaCursor.set('id', rfa);
+      let id = requestAnimationFrame(() => this.step());
+      this.props.statics.editRfa(rfa => rfa.set('id', id));
     },
     componentDidUpdate() {
-      const viewer = this.props.webViewerCursor;
+      const viewer = this.props.webViewer;
       if (!viewer.get('readyState')) {
         // No empty webviewer
         this.stopRFALoop();
@@ -77,22 +79,22 @@ define((require, exports, module) => {
       }
     },
     startRFALoopIfNeeded() {
-      if (this.props.rfaCursor.get('id') == -1) {
+      if (this.props.rfa.get('id') == -1) {
         this.step();
       }
     },
     stopRFALoop() {
-      if (this.props.rfaCursor.get('id') != -1) {
-        cancelAnimationFrame(this.props.rfaCursor.get('id'));
-        this.props.rfaCursor.set('id', -1);
+      if (this.props.rfa.get('id') != -1) {
+        cancelAnimationFrame(this.props.rfa.get('id'));
+        this.props.statics.editRfa(resetRfa);
       }
     },
     componentDidMount() {
       this.stopRFALoop(); // force rfa to be set to -1 (rfa value is restored by session restor)
       this.startRFALoopIfNeeded();
     },
-  }], ({key, webViewerCursor, theme}) => {
-    const progress = ComputeProgress(webViewerCursor);
+  }], ({key, webViewer, theme}) => {
+    const progress = ComputeProgress(webViewer);
     const StartFading = 0.8;    // When does opacity starts decreasing to 0
     const percentProgress = 100 * progress;
     const opacity = progress < StartFading  ? 1 : 1 - Math.pow( (progress - StartFading) / (1 - StartFading), 1);
