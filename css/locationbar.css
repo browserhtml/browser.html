@@ -103,10 +103,18 @@
   font-weight: bold;
 }
 
-.navbar.ssl .pageurlsummary::before {
+.navbar.ssl .pageurlsummary::before,
+.navbar.privileged .pageurlsummary::before {
   font-family: FontAwesome;
   font-weight: normal;
-  content: "\f023";
   margin-right: 6px;
   vertical-align: middle;
+}
+
+.navbar.ssl .pageurlsummary::before {
+  content: "\f023";
+}
+
+.navbar.privileged .pageurlsummary::before {
+  content: "\f013";
 }

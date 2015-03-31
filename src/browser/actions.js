@@ -18,10 +18,14 @@ define((require, exports, module) => {
   const makeSearchURL = input =>
     `https://duckduckgo.com/?q=${encodeURIComponent(input)}`;
 
+  const makeAboutURL = input =>
+    url.getBaseURI() + 'src/about/' + input.replace('about:', '') + '/index.html';
+
   const sendEventToChrome = type => dispatchEvent(new CustomEvent('mozContentEvent',
     { bubbles: true, cancelable: false, detail: { type }}))
 
   const readInputURL = input =>
+    url.isAboutURL(input) ? makeAboutURL(input) :
     url.isNotURL(input) ? makeSearchURL(input) :
     !url.hasScheme(input) ? `http://${input}` :
     input;

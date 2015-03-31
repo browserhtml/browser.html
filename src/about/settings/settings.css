@@ -1,0 +1,17 @@
+body {
+  font-size: 12px;
+}
+
+.row {
+  border-bottom: 1px solid #DDD;
+  padding: 5px;
+  white-space: nowrap;
+}
+
+.name, .value {
+  display: inline-block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: 300px;
+}

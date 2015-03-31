@@ -25,6 +25,7 @@ define((require, exports, module) => {
 
     // Do not render anything unless viewer has any `uri`
     if (!state.get('uri')) return null;
+
     return IFrame({
       className: ClassSet({
         'iframes-frame': true,
@@ -34,9 +35,9 @@ define((require, exports, module) => {
         // to workaround #266 & be able to capture screenshots.
         rendered: state.get('thumbnail')
       }),
-      key: state.get('id'),
       isBrowser: true,
       isRemote: true,
+      mozApp: url.isPrivileged(state.get('uri')) ? url.getManifestURL() : null,
       allowFullScreen: true,
 
       isVisible: isActive(state) ||
@@ -69,7 +70,7 @@ define((require, exports, module) => {
       onAuthentificate: WebViewer.onAuthentificate(edit),
       onScrollAreaChange: WebViewer.onScrollAreaChange(edit),
       onLoadProgressChange: WebViewer.onLoadProgressChange(edit)
-    })
+    });
   });
 
 

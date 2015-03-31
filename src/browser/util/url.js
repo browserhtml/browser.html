@@ -37,6 +37,12 @@ define(function() {
       return this.a.origin;
     },
 
+    getBaseURI: function urlHelper_getBaseURI() {
+      // http://example.com/foo/index.html -> http://example.com/foo/
+      // http://example.com/foo/ -> http://example.com/foo/
+      return location.href.replace(/\/[^/]*$/, '/');
+    },
+
     getHostname: function urlHelper_getHostname(url) {
       this.a = this.a || document.createElement('a');
       this.a.href = url;
@@ -85,6 +91,23 @@ define(function() {
       }
       this.urlValidate.setAttribute('value', str);
       return !this.urlValidate.validity.valid;
+    },
+
+    isAboutURL: function(url) {
+      try {
+        return new URL(url).protocol == 'about:';
+      } catch(e) {
+        return false;
+      }
+    },
+
+    isPrivileged: function urlHelper_isPrivilegedURI(uri) {
+      // FIXME: not safe. White list?
+      return uri && uri.startsWith(this.getBaseURI() + 'src/about/');
+    },
+
+    getManifestURL: function urlHelper_getManifestURL() {
+      return this.getBaseURI() + 'manifest.webapp';
     },
 
     trim: function(input) {

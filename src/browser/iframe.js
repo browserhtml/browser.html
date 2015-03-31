@@ -14,6 +14,7 @@ define((require, exports, module) => {
     isFocused: isFocused,
     isRemote: new BeforeAppendAttribute('remote'),
     isBrowser: new BeforeAppendAttribute('mozbrowser'),
+    mozApp: new BeforeAppendAttribute('mozapp'),
     allowFullScreen: new BeforeAppendAttribute('mozallowfullscreen'),
     src: VirtualAttribute((node, current, past) => {
       if (current != past) {

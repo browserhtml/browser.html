@@ -102,6 +102,12 @@ define((require, exports, module) => {
     constructor: BeforeAppendAttribute,
     mount(node, value) {
       node.setAttribute(this.name, value);
+    },
+    write(node, present, past) {
+      Attribute.prototype.write.call(this, node, present, past)
+      if (present !== past) {
+        node.parentNode.replaceChild(node, node)
+      }
     }
   };
   Element.BeforeAppendAttribute = BeforeAppendAttribute;

@@ -182,7 +182,8 @@ define((require, exports, module) => {
         canreload: webViewer.get('location'),
         loading: webViewer.get('isLoading'),
         ssl: webViewer.get('securityState') == 'secure',
-        sslv: webViewer.get('securityExtendedValidation')
+        sslv: webViewer.get('securityExtendedValidation'),
+        privileged: url.isPrivileged(webViewer.get('location'))
       })
     }, [
       WindowControls({key: 'controls', theme}),
