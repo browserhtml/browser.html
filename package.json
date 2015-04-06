@@ -12,11 +12,13 @@
     "url": "http://github.com/mozilla/browser.html/issues/"
   },
   "scripts": {
-    "server": "python -m SimpleHTTPServer 8080",
-    "start": "/Applications/B2G.app/Contents/MacOS/graphene --start-manifest=http://localhost:8080/manifest.webapp",
+    "start-server": "ecstatic . --port 6060",
+    "start-app": "/Applications/B2G.app/Contents/MacOS/graphene --start-manifest=http://localhost:6060/manifest.webapp",
+    "start": "npm run start-server & npm run start-app",
     "deploy": "./deploy.sh"
   },
   "devDependencies": {
+    "ecstatic": "^0.7.1",
     "jscs": "^1.8.1"
   },
   "licenses": [

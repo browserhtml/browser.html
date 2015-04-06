@@ -98,6 +98,9 @@ define((require, exports, module) => {
                               isActive: true}),
                  isntPinned);
 
+  const openTabBg = uri => items =>
+    insertBefore(items, open({uri}), isntPinned);
+
   const clearActiveInput = viewers =>
     viewers.setIn([indexOfActive(viewers), 'userInput'], '');
 
@@ -307,6 +310,7 @@ define((require, exports, module) => {
       }, {
         onClose: id => editViewers(closeTab(id)),
         onOpen: uri => editViewers(openTab(uri)),
+        onOpenBg: uri => editViewers(openTabBg(uri)),
         edit: editViewers
       })
     ]),

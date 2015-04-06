@@ -67,6 +67,7 @@ define((require, exports, module) => {
     onAsyncScroll: Event('mozbrowserasyncscroll'),
     onClose: Event('mozbrowserclose'),
     onOpenWindow: Event('mozbrowseropenwindow'),
+    onOpenTab: Event('mozbrowseropentab'),
     onContextMenu: Event('mozbrowsercontextmenu'),
     onError: Event('mozbrowsererror'),
     onLoadStart: Event('mozbrowserloadstart'),

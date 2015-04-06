@@ -21,7 +21,7 @@ define((require, exports, module) => {
 
 
 
-  const WebViewer = Component('WebViewer', ({state}, {onOpen, onClose, edit}) => {
+  const WebViewer = Component('WebViewer', ({state}, {onOpen, onOpenBg, onClose, edit}) => {
 
     // Do not render anything unless viewer has any `uri`
     if (!state.get('uri')) return null;
@@ -37,7 +37,7 @@ define((require, exports, module) => {
       }),
       isBrowser: true,
       isRemote: true,
-      mozApp: url.isPrivileged(state.get('uri')) ? url.getManifestURL() : null,
+      mozApp: url.isPrivileged(state.get('uri')) ? url.getManifestURL().href : null,
       allowFullScreen: true,
 
       isVisible: isActive(state) ||
@@ -57,6 +57,7 @@ define((require, exports, module) => {
       // onAsyncScroll: WebViewer.onUnhandled,
       onClose: event => onClose(state.get('id')),
       onOpenWindow: event => onOpen(event.detail.url),
+      onOpenTab: event => onOpenBg(event.detail.url),
       onContextMenu: WebViewer.onUnhandled,
       onError: event => console.error(event),
       onLoadStart: WebViewer.onLoadStart(edit),
@@ -204,12 +205,12 @@ define((require, exports, module) => {
   const id = item => item.get('id');
   // WebViewer deck will always inject frames by order of their id. That way
   // no iframes will need to be removed / injected when order of tabs change.
-  WebViewer.Deck = Component('WebViewerDeck', (options, {onOpen, onClose, edit}) => {
+  WebViewer.Deck = Component('WebViewerDeck', (options, {onOpen, onOpenBg, onClose, edit}) => {
     const {items, In} = options;
     return DOM.div(options, items.sortBy(id).map(item => WebViewer({
       key: item.get('id'),
       state: item,
-    }, {onOpen, onClose, edit: compose(edit, In(items.indexOf(item)))})));
+    }, {onOpen, onOpenBg, onClose, edit: compose(edit, In(items.indexOf(item)))})));
   });
 
   // Exports:

@@ -1,6 +1,6 @@
 [![build](https://travis-ci.org/mozilla/browser.html.svg?branch=master)](https://travis-ci.org/mozilla/browser.html)
 
-*browser.html* is a platform research project closely related to Servo. Its not a product.
+*browser.html* is a platform research project closely related to [Servo](https://github.com/servo/servo). It's not a product.
 We are exploring future UI paradigms strictly only because we are curious what future needs
 will be on our platform and processes to build our platform, which we want to evolve.
 
@@ -8,7 +8,6 @@ will be on our platform and processes to build our platform, which we want to ev
 
 ```
 npm install
-npm run server
 npm start
 ```
 
