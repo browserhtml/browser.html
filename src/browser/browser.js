@@ -158,6 +158,18 @@ define((require, exports, module) => {
   const In = (...path) => edit => state =>
     state.updateIn(path, edit);
 
+  const setHotzone = value => state =>
+    state.get('isFloating') ? state :
+    state.get('isSnapped') ? state :
+    state.set('isFloating', value)
+
+  const setSnapping = value => state =>
+    state.merge({isSnapped: value === 0,
+                 isSnapping: value < 50 && value > 0,
+                 // Change floating state if it was already in such state
+                 // to non floating state if it just snapped.
+                 isFloating: state.get('isFloating') && value !== 0})
+
   // Browser is a root component for our application that just delegates
   // to a core sub-components here.
   const Browser = Component('Browser', (state, {step: edit}) => {
@@ -207,12 +219,17 @@ define((require, exports, module) => {
       windowTitle: selectedWebView.title || selectedWebView.uri,
       scrollGrab: true,
       className: ClassSet({
+        floating: state.get('isFloating'),
+        snapped: state.get('isSnapped'),
+        snapping: state.get('isSnapping'),
         'moz-noscrollbars': true,
         isdark: theme.isDark,
         windowFocused: isDocumentFocused,
         showtabstrip: isTabStripVisible,
         scrollable: !input.get('isFocused') && !isTabStripVisible
       }),
+      onScroll: event => edit(setSnapping(event.target.scrollTop)),
+      onMouseMove: event => edit(setHotzone(event.clientY < 400)),
       onDocumentUnload: event => writeSession(state),
       onDocumentFocus: event => edit(state => state.set('isDocumentFocused', true)),
       onDocumentBlur: event => edit(state => state.set('isDocumentFocused', false)),

@@ -75,6 +75,8 @@ define((require, exports, module) => {
   // Creates a blank session. Returns immutable map.
   const resetSession = () => fromJS({
     isDocumentFocused: document.hasFocus(),
+    isSnapped: true,
+    isFloating: false,
     // TODO: `isFocuse` should be `true` but that causes
     // issues when app iframe isn't focused. Can be fixed
     // once #239 is resolved.

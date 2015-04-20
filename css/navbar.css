@@ -5,7 +5,8 @@
   position: relative;
   justify-content: space-between;
   scroll-snap-coordinate: 0 0;
-  transition: background-color 200ms ease;
+  transition: background-color 200ms ease,
+              opacity 300ms ease;
 }
 
 .freeendspacer {
