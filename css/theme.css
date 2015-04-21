@@ -108,3 +108,33 @@ negative index and absolute position.
   width: 100%;
   height: 100%;
 }
+
+
+main.snapping .navbar,
+main.snapped .navbar,
+main.floating .navbar {
+  opacity: 1;
+}
+
+main.floating .navbar {
+  position: fixed;
+  width: 100vw;
+  top: 0;
+  position: fixed;
+  animation-duration: 0.5s;
+  animation-name: fade-in;
+}
+
+main.floating {
+  padding-top: 50px;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
