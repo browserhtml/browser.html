@@ -6,7 +6,7 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const platform = require('os').platform();
+  const platform = require('common/os').platform();
 
   const readModifiers = ({type, metaKey, shiftKey, altKey, ctrlKey}) => {
     const modifiers = [];
@@ -42,20 +42,20 @@ define((require, exports, module) => {
   });
 
   const readChord = input =>
-    input.trim().
-    toLowerCase().
-    split(/\s+/).
-    map(readKey).
-    sort().
-    join(' ');
+    input.trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .map(readKey)
+    .sort()
+    .join(' ');
 
   const writeChord = event =>
-    [...new Set([...readModifiers(event), readKey(event.key)])].
-      join(' ').
-      toLowerCase().
-      split(' ').
-      sort().
-      join(' ');
+    [...new Set([...readModifiers(event), readKey(event.key)])]
+      .join(' ')
+      .toLowerCase()
+      .split(' ')
+      .sort()
+      .join(' ');
 
 
   const KeyBindings = (handlers) => {

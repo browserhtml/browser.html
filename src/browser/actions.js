@@ -6,28 +6,30 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const url = require('./util/url');
   const {fromJS, List} = require('immutable');
-  const {open} = require('./web-viewer/actions');
+  const {isAboutURL, isNotURL, hasScheme, getBaseURI} = require('common/url-helper');
   const {select, active} = require('./deck/actions');
   const {initDashboard} = require('./dashboard/actions');
+  const {Suggestions} = require('./suggestion-box');
+  const {Editable} = require('common/editable');
+  const {WebView, WebViews} = require('./web-view');
   // TODO: Should be `const {version} = require('package.json`);` instead but require.js
   // does not supports that.
-  const version = '0.0.3';
+  const version = '0.0.5';
 
   const makeSearchURL = input =>
     `https://duckduckgo.com/?q=${encodeURIComponent(input)}`;
 
   const makeAboutURL = input =>
-    url.getBaseURI() + 'src/about/' + input.replace('about:', '') + '/index.html';
+    getBaseURI() + 'src/about/' + input.replace('about:', '') + '/index.html';
 
   const sendEventToChrome = type => dispatchEvent(new CustomEvent('mozContentEvent',
-    { bubbles: true, cancelable: false, detail: { type }}))
+    {bubbles: true, cancelable: false, detail: {type}}))
 
   const readInputURL = input =>
-    url.isAboutURL(input) ? makeAboutURL(input) :
-    url.isNotURL(input) ? makeSearchURL(input) :
-    !url.hasScheme(input) ? `http://${input}` :
+    isAboutURL(input) ? makeAboutURL(input) :
+    isNotURL(input) ? makeSearchURL(input) :
+    !hasScheme(input) ? `http://${input}` :
     input;
 
   // We'll hard-code dashboard items for now.
@@ -76,55 +78,39 @@ define((require, exports, module) => {
     // TODO: `isFocuse` should be `true` but that causes
     // issues when app iframe isn't focused. Can be fixed
     // once #239 is resolved.
-    input: {value: '', isFocused: false},
+    input: Editable(),
     tabStrip: {isActive: false},
     dashboard: initDashboard({items: dashboardItems}),
     rfa: {id: -1},
-    suggestions: {
-      selectedIndex: -1,
-      list: []
-    },
-    webViewers: [open({id: "about:blank",
-                       isPinned: true,
-                       isSelected: true,
-                       isActive: true,
-                       isFocused: false})]
+    suggestions: Suggestions(),
+    webViews: [WebView({id: 'about:blank',
+                        isPinned: true,
+                        isSelected: true,
+                        isActive: true,
+                        isFocused: false})]
   });
 
   // Reads stored session. Returns either immutable data for the
   // session or null.
   const readSession = () => {
     try {
-      return fromJS(JSON.parse(localStorage[`session@${version}`]));
-    } catch(error) {
+      return fromJS(JSON.parse(localStorage[`session@${version}`]))
+             .update('suggestions', Suggestions)
+             .update('input', Editable)
+             .update('webViews', WebViews)
+    } catch (error) {
       return null;
     }
   };
 
   const writeSession = session => {
-    const data = session.
-      setIn(['rfa', 'id'], -1).
-      set('appUpdateAvailable', false).
-      set('runtimeUpdateAvailable', false).
+    const data = session
+      .setIn(['rfa', 'id'], -1)
+      .set('appUpdateAvailable', false)
+      .set('runtimeUpdateAvailable', false)
       // Reset state of each web viewer that can't be carried across the sessions.
-      updateIn(['webViewers'], viewers => viewers.map(viewer => viewer.merge({
-        uri: viewer.get('location') || viewer.get('uri'),
-        thumbnail: null,
-        location: null,
-        readyState: null,
-        isLoading: false,
-        isConnecting: false,
-        connectedAt: null,
-        title: null,
-        backgroundColor: null,
-        foregroundColor: null,
-        isDark: false,
-        securityState: 'insecure',
-        securityExtendedValidation: false,
-        canGoBack: false,
-        canGoForward: false
-      }))).
-      toJSON();
+      .updateIn(['webViews'], viewers => viewers.map(WebView.persistent))
+      .toJSON();
     localStorage[`session@${version}`] = JSON.stringify(data);
     return session;
   };
@@ -133,8 +119,6 @@ define((require, exports, module) => {
 
   exports.makeSearchURL = makeSearchURL;
   exports.readInputURL = readInputURL;
-  exports.focus = focusable => focusable.set('isFocused', true);
-  exports.blur = focusable => focusable.set('isFocused', false);
   exports.activate = state => state.set('isActive', true);
   exports.deactivate = state => state.set('isActive', false);
   exports.resetSession = resetSession;

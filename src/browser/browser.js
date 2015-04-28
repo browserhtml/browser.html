@@ -9,52 +9,37 @@ define((require, exports, module) => {
   const Component = require('omniscient');
   const {DOM} = require('react');
   const {compose, throttle, curry} = require('lang/functional');
-  const {NavigationPanel} = require('./navigation-panel');
-  const {Awesomebar} = require('./awesomebar');
-  const {WebViewer} = require('./web-viewer');
-  const {Tab} = require('./page-switch');
+  const {Editable} = require('common/editable');
+  const {KeyBindings} = require('common/keyboard');
+  const ClassSet = require('common/class-set');
+  const {mix} = require('common/style');
+  const os = require('common/os');
+  const {WindowBar} = require('./window-bar');
+  const {LocationBar} = require('./location-bar');
+  const {Suggestions} = require('./suggestion-box');
+  const {Previews} = require('./preview-box');
+  const {WebViewBox, WebView} = require('./web-view');
   const {Dashboard} = require('./dashboard');
   const {readDashboardNavigationTheme} = require('./dashboard/actions');
-  const {Element, Event, VirtualAttribute, Attribute} = require('./element');
-  const {select: selectField} = require('./editable');
-  const {KeyBindings} = require('./keyboard');
-  const {zoomIn, zoomOut, zoomReset, open,
-         goBack, goForward, reload, stop, title} = require('./web-viewer/actions');
-  const {focus, activate: activateStrip, readInputURL, sendEventToChrome,
+  const {activate: activateStrip, readInputURL, sendEventToChrome,
          deactivate, writeSession, resetSession, resetSelected} = require('./actions');
   const {indexOfSelected, indexOfActive, isActive, active, selected,
          selectNext, selectPrevious, select, activate,
          reorder, reset, remove, insertBefore,
          isntPinned, isPinned} = require('./deck/actions');
   const {readTheme} = require('./theme');
-  const ClassSet = require('./util/class-set');
-  const os = require('os');
+  const {Main} = require('./main');
 
-  const editWith = edit => submit => submit(edit);
-
-
-  const getOwnerWindow = node => node.ownerDocument.defaultView;
-  // Define custom `main` element with a custom `scrollGrab` attribute
-  // that maps to same named proprety.
-  const Main = Element('main', {
-    windowTitle: VirtualAttribute((node, current, past) => {
-      node.ownerDocument.title = current;
-    }),
-    scrollGrab: VirtualAttribute((node, current, past) => {
-      node.scrollgrab = current;
-    }),
-    onDocumentFocus: Event('focus', getOwnerWindow),
-    onDocumentBlur: Event('blur', getOwnerWindow),
-    onDocumentKeyDown: Event('keydown', getOwnerWindow),
-    onDocumentKeyUp: Event('keyup', getOwnerWindow),
-    onDocumentUnload: Event('unload', getOwnerWindow),
-    onAppUpdateAvailable: Event('app-update-available', getOwnerWindow),
-    onRuntimeUpdateAvailable: Event('runtime-update-available', getOwnerWindow)
-  });
+  const editWith = edit => {
+    if (typeof (edit) !== 'function') {
+      throw TypeError('Must be a function')
+    }
+    return submit => submit(edit);
+  }
 
   const onNavigation = KeyBindings({
-    'accel l': editWith(compose(selectField(), focus)),
-    'accel t': editWith(focus)
+    'accel l': editWith(LocationBar.enter),
+    'accel t': editWith(Editable.focus)
   });
 
   const onTabStripKeyDown = KeyBindings({
@@ -69,21 +54,19 @@ define((require, exports, module) => {
     'meta': editWith(deactivate)
   });
 
-  let onViewerBinding;
-  {
+  const onViewerBinding = (() => {
     const modifier = os.platform() == 'linux' ? 'alt' : 'accel';
-
-    onViewerBinding = KeyBindings({
-      'accel =': editWith(zoomIn),
-      'accel -': editWith(zoomOut),
-      'accel 0': editWith(zoomReset),
-      [`${modifier} left`]: editWith(goBack),
-      [`${modifier} right`]: editWith(goForward),
-      'escape': editWith(stop),
-      'accel r': editWith(reload),
-      'F5': editWith(reload),
+    return KeyBindings({
+      'accel =': editWith(WebView.zoomIn),
+      'accel -': editWith(WebView.zoomOut),
+      'accel 0': editWith(WebView.zoomReset),
+      [`${modifier} left`]: editWith(WebView.goBack),
+      [`${modifier} right`]: editWith(WebView.goForward),
+      'escape': editWith(WebView.stop),
+      'accel r': editWith(WebView.reload),
+      'F5': editWith(WebView.reload),
     });
-  };
+  })();
 
   const loadURI = (uri, viewer) => viewers => {
     const target = viewer || active(viewers);
@@ -92,14 +75,15 @@ define((require, exports, module) => {
   }
 
   const openTab = uri => items =>
-    insertBefore(items, open({uri,
-                              isSelected: true,
-                              isFocused: true,
-                              isActive: true}),
+    insertBefore(items,
+                 WebView.open({uri,
+                               isSelected: true,
+                               isFocused: true,
+                               isActive: true}),
                  isntPinned);
 
   const openTabBg = uri => items =>
-    insertBefore(items, open({uri}), isntPinned);
+    insertBefore(items, WebView.open({uri}), isntPinned);
 
   const clearActiveInput = viewers =>
     viewers.setIn([indexOfActive(viewers), 'userInput'], '');
@@ -123,18 +107,16 @@ define((require, exports, module) => {
 
 
   const switchTab = (items, to) =>
-    to ? activate(select(items, to)) : items;
+    to ? activate(select(items, tab => tab === to)) : items;
 
   switchTab.toIndex = index => items => switchTab(items, items.get(index));
   switchTab.toLast = items => switchTab(items, items.last());
   switchTab.toDashboard = switchTab.toIndex(0);
 
 
-  let onTabSwitch;
-  {
+  const onTabSwitch = (() => {
     const modifier = os.platform() == 'darwin' ? 'meta' : 'alt';
-
-    onTabSwitch = KeyBindings({
+    return KeyBindings({
       [`${modifier} 1`]: editWith(switchTab.toIndex(1)),
       [`${modifier} 2`]: editWith(switchTab.toIndex(2)),
       [`${modifier} 3`]: editWith(switchTab.toIndex(3)),
@@ -145,7 +127,7 @@ define((require, exports, module) => {
       [`${modifier} 8`]: editWith(switchTab.toIndex(8)),
       [`${modifier} 9`]: editWith(switchTab.toLast),
     });
-  };
+  })();
 
   const onDeckBinding = KeyBindings({
     'accel t': editWith(switchTab.toDashboard),
@@ -167,123 +149,130 @@ define((require, exports, module) => {
     'accel shift backspace': editWith(resetSession),
     'accel shift s': editWith(writeSession),
     'accel u': edit => edit(state =>
-      state.updateIn('webViewers', openTab(`data:application/json,${JSON.stringify(root, null, 2)}`)))
+      state.updateIn('webViews', openTab(`data:application/json,${JSON.stringify(root, null, 2)}`)))
   });
 
   const In = (...path) => edit => state =>
     state.updateIn(path, edit);
 
+  // CSS
+
+  const styleMain = {
+    height: '100vh',
+    width: '100vw',
+    color: 'black',
+    overflowY: 'scroll',
+    scrollSnapType: 'mandatory',
+    scrollSnapDestination: '0 0',
+    position: 'relative'
+  };
+
   // Browser is a root component for our application that just delegates
   // to a core sub-components here.
   const Browser = Component('Browser', (state, {step: edit}) => {
-    const webViewers = state.get('webViewers');
+    const webViews = state.get('webViews');
 
-    const editViewers = compose(edit, In('webViewers'));
-    const editSelectedViewer = compose(edit, In('webViewers',
-                                                indexOfSelected(webViewers)));
+    const editWebViews = compose(edit, In('webViews'));
+    const editSelectedWebView = compose(edit, In('webViews',
+                                                indexOfSelected(webViews)));
     const editTabStrip = compose(edit, In('tabStrip'));
     const editInput = compose(edit, In('input'));
     const editRfa = compose(edit, In('rfa'));
     const editDashboard = compose(edit, In('dashboard'));
     const editSuggestions = compose(edit, In('suggestions'));
 
-    const selectedWebViewer = selected(webViewers);
-    const activeWebViewer = active(webViewers);
+    const selectedWebView = selected(webViews);
+    const activeWebView = active(webViews);
     const tabStrip = state.get('tabStrip');
     const input = state.get('input');
     const rfa = state.get('rfa');
     const dashboard = state.get('dashboard');
     const suggestions = state.get('suggestions');
+    const isDocumentFocused = state.get('isDocumentFocused');
 
-
-    const isDashboardActive = activeWebViewer.get('uri') === null;
-    const isAwesomebarActive = input.get('isFocused');
+    const isDashboardActive = activeWebView.get('uri') === null;
+    const isLocationBarActive = input.get('isFocused');
     const isTabStripActive = tabStrip.get('isActive');
 
     const isTabStripVisible = isDashboardActive ||
-                              (isTabStripActive && !isAwesomebarActive);
+                              (isTabStripActive && !isLocationBarActive);
 
     const isTabstripkillzoneVisible = (
       // Show when tabstrip is visible, except on dashboard
       (isTabStripActive && !isDashboardActive) ||
       // Also show when Awesomebar is active
-      isAwesomebarActive
+      isLocationBarActive
     );
 
     const theme = isDashboardActive ?
       readDashboardNavigationTheme(dashboard) :
-      Browser.readTheme(activeWebViewer);
-
+      Browser.readTheme(activeWebView);
 
     return DOM.div({
       key: 'root',
     }, [Main({
       key: 'main',
-      windowTitle: title(selectedWebViewer),
+      windowTitle: selectedWebView.title || selectedWebView.uri,
       scrollGrab: true,
+      style: mix(styleMain,
+                 (input.get('isFocused') || isTabStripVisible) ?
+                   {overflowY: 'hidden'} : {}),
       className: ClassSet({
         'moz-noscrollbars': true,
-        isdark: theme.isDark,
-        windowFocused: state.get('isDocumentFocused'),
+        windowFocused: isDocumentFocused,
         showtabstrip: isTabStripVisible,
-        scrollable: !input.get('isFocused') && !isTabStripVisible
       }),
       onDocumentUnload: event => writeSession(state),
-      onDocumentFocus: event => state.set('isDocumentFocused', true),
-      onDocumentBlur: event => state.set('isDocumentFocused', false),
+      onDocumentFocus: event => edit(state => state.set('isDocumentFocused', true)),
+      onDocumentBlur: event => edit(state => state.set('isDocumentFocused', false)),
       onDocumentKeyDown: compose(onNavigation(editInput),
                                  onTabStripKeyDown(editTabStrip),
-                                 onViewerBinding(editSelectedViewer),
-                                 onDeckBinding(editViewers),
-                                 onTabSwitch(editViewers),
+                                 onViewerBinding(editSelectedWebView),
+                                 onDeckBinding(editWebViews),
+                                 onTabSwitch(editWebViews),
                                  onBrowserBinding(edit)),
       onDocumentKeyUp: compose(onTabStripKeyUp(editTabStrip),
-                               onDeckBindingRelease(editViewers)),
+                               onDeckBindingRelease(editWebViews)),
       onAppUpdateAvailable: event =>
         edit(state => state.set('appUpdateAvailable', true)),
       onRuntimeUpdateAvailable: event =>
         edit(state => state.set('runtimeUpdateAvailable', true)),
     }, [
-      NavigationPanel({
+      WindowBar({
         key: 'navigation',
         input,
         tabStrip,
         theme,
         rfa,
         suggestions,
-        webViewer: selectedWebViewer,
+        isDocumentFocused,
+        webView: selectedWebView,
       }, {
-        onNavigate: location => editViewers(navigateTo(location)),
+        onNavigate: location => editWebViews(navigateTo(location)),
         editTabStrip,
-        editSelectedViewer,
+        editSelectedWebView,
         editRfa,
         editInput,
         editSuggestions
       }),
-      DOM.div({key: 'tabstrip',
-               style: theme.tabstrip,
-               className: 'tabstripcontainer'}, [
-        Tab.Deck({
-          key: 'tabstrip',
-          className: 'tabstrip',
-          items: webViewers,
-          In
-        }, {
-          onMouseLeave: event => editViewers(compose(reorder, reset)),
-          onSelect: item => editViewers(items => select(items, item)),
-          onActivate: _ => editViewers(activate),
-          onClose: id => editViewers(closeTab(id)),
-          edit: editViewers
-        })
-      ]),
-      Awesomebar({
+      Previews.render(Previews({
+        items: webViews,
+        theme
+      }), {
+        onMouseLeave: event => editWebViews(compose(reorder, reset)),
+        onSelect: id => editWebViews(items => select(items, item => item.get('id') == id)),
+        onActivate: id => editWebViews(items => activate(items, item => item.get('id') == id)),
+        onClose: id => editWebViews(closeTab(id)),
+        edit: editWebViews,
+        theme
+      }),
+      Suggestions.render({
         key: 'awesomebar',
+        isLocationBarActive,
         suggestions,
-        input,
-        isAwesomebarActive,
         theme
       }, {
-        onOpen: uri => editViewers(navigateTo(uri))
+        onOpen: uri => editWebViews(navigateTo(uri))
       }),
       DOM.div({
         key: 'tabstripkillzone',
@@ -291,27 +280,27 @@ define((require, exports, module) => {
           tabstripkillzone: true,
           'tabstripkillzone-hidden': !isTabstripkillzoneVisible
         }),
-        onMouseEnter: event => editTabStrip(deactivate)
+        onMouseEnter: event => {
+          editWebViews(reset);
+          editTabStrip(deactivate);
+        }
       }),
       Dashboard({
         key: 'dashboard',
         dashboard,
         hidden: !isDashboardActive
       }, {
-        onOpen: uri => editViewers(openTab(uri)),
+        onOpen: uri => editWebViews(openTab(uri)),
         edit: editDashboard
       }),
-      WebViewer.Deck({
-        key: 'web-viewers',
-        className: 'iframes',
-        hidden: isDashboardActive,
-        items: webViewers,
-        In
-      }, {
-        onClose: id => editViewers(closeTab(id)),
-        onOpen: uri => editViewers(openTab(uri)),
-        onOpenBg: uri => editViewers(openTabBg(uri)),
-        edit: editViewers
+      WebViewBox.render('web-view-box', WebViewBox({
+        isActive: !isDashboardActive,
+        items: webViews,
+      }), {
+        onClose: id => editWebViews(closeTab(id)),
+        onOpen: uri => editWebViews(openTab(uri)),
+        onOpenBg: uri => editWebViews(openTabBg(uri)),
+        edit: editWebViews
       })
     ]),
     DOM.div({
@@ -322,7 +311,10 @@ define((require, exports, module) => {
                 state.get('runtimeUpdateAvailable')
       }),
     }, [
-      'Hey! An update just for you!',
+      DOM.div({
+        key: 'appUpdateMessage',
+        className: 'appupdatemessage',
+      }, 'Hey! An update just for you!'),
       DOM.div({
         key: 'appUpdateButton',
         className: 'appupdatebutton',
@@ -348,7 +340,6 @@ define((require, exports, module) => {
 
   // Exports:
 
-  exports.Main = Main;
   exports.Browser = Browser;
 
 });

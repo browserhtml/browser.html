@@ -1,4 +1,5 @@
 .dashboard {
+  display: flex;
   background-position: center center;
   background-size: cover;
   align-items: center;
@@ -8,9 +9,16 @@
   /* The top padding places the dashboard below the tabstrip */
   margin-top: 90px;
   transition: background-color 200ms ease;
+  /* tabstrip + navbar */
+  height: calc(100vh - 90px - 50px);
+}
+
+.dashboard[hidden] {
+  display: none;
 }
 
 .dashboard-tiles {
+  display: flex;
   align-content: center;
   flex: 1 0 auto;
   flex-flow: row wrap;
@@ -21,6 +29,7 @@
 }
 
 .tile-large {
+  display: flex;
   align-items: center;
   /* Setting the flex property on tiles is important to ensure that large titles
   don't blow up the grid. */
@@ -60,6 +69,7 @@
 }
 
 .wallpaper-swatches {
+  display: flex;
   flex-flow: row nowrap;
 }
 

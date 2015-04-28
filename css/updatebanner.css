@@ -1,15 +1,13 @@
 .appupdatebanner {
-  display: flex;
+  display: block;
   position: absolute;
-  justify-content: space-between;
   bottom: 10px;
   width: 400px;
   left: calc(50vw - 200px);
   background-color: rgba(36,60,83,0.95);
   border-radius: 4px;
-  padding: 8px 8px 8px 20px;
+  padding: 8px;
   color: white;
-  align-items: center;
   transition: opacity 500ms ease-in;
 }
 
@@ -18,17 +16,21 @@
   pointer-events: none;
 }
 
-.appupdatebanner > span {
+.appupdatebanner > div {
   font-weight: 100;
   cursor: default;
 }
 
+.appupdatemessage {
+  padding: 8px;
+  float: left;
+}
+
 .appupdatebutton {
-  background-color: rgb(115,206,113);
   padding: 8px 20px;
-  font-weight: 100;
+  background-color: rgb(115,206,113);
   border-radius: 4px;
-  cursor: default;
+  float: right;
 }
 
 .appupdatebutton:hover {

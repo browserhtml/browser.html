@@ -20,6 +20,8 @@ define((require, exports, module) => {
 
   // Exports:
 
+  exports.focus = focusable => focusable.set('isFocused', true);
+  exports.blur = focusable => focusable.set('isFocused', false);
   exports.isFocused = isFocused;
 
 });

@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 define((require, exports, module) => {
-  "use strict";
+  'use strict';
 
   const compose = (...lambdas) => {
     /**
@@ -26,7 +26,7 @@ define((require, exports, module) => {
     return (...args) => {
       let index = lambdas.length;
       let result = lambdas[--index](...args);
-      while (0 <= --index) {
+      while (--index >= 0) {
         result = lambdas[index](result);
       }
       return result;

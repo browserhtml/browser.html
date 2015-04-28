@@ -3,8 +3,8 @@ require.config({
   baseUrl: '../../../node_modules/',
   nodeIdCompat: true,
   paths: {
-    settings: '../src/about/settings',
-    browser: '../src/browser',
+    common: '../src/common',
+    lang: '../src/lang',
     shims: '../src/shims',
     react: 'react/dist/react',
     immutable: 'immutable/dist/immutable',
@@ -17,4 +17,4 @@ require.config({
   }
 });
 
-require(['settings/index']);
+require(['../src/about/settings/index']);

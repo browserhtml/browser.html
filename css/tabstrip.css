@@ -1,5 +1,5 @@
 .tabstripcontainer {
-  justify-content: center;
+  text-align: center;
   width: 100vw;
   height: 90px;
   position: absolute;
@@ -9,6 +9,16 @@
   pointer-events: none;
   opacity: 0;
   transition: background-color 200ms ease;
+}
+
+.tabstrip {
+  display: inline-block;
+
+  /* Temporary fix. We use order:n to sort tabs,
+   * so we need to keep using the flex box model
+   * here. */
+  display: flex;
+  justify-content: center;
 }
 
 .showtabstrip .tabstripcontainer {
@@ -37,7 +47,6 @@
   will-change: transform;
 }
 
-
 .tab {
   /* Keep buffer space around the visual thumbnail to make them easier
   to click. */
@@ -47,6 +56,7 @@
 }
 
 .tab-thumbnail {
+  display: inline-block;
   background-color: #fff;
   background-size: cover;
   background-clip: content-box;
@@ -60,6 +70,9 @@
   overflow: hidden;
 }
 
+.tab-thumbnail > img {
+  width: 100%;
+}
 
 .tab:first-of-type {
   margin-left: 0;
@@ -74,11 +87,12 @@
 }
 
 .tab-close-button {
+  display: block;
   position: absolute;
-  align-items: center;
-  justify-content: center;
   z-index: 2;
-  height: 36px; /* big hitzone */
+  line-height: 36px; /* big hitzone */
+  vertical-align: middle;
+  text-align: center;
   width: 36px;
   right: -18px; /* (hitzone / 2) */
   top: -9px; /* 9px - (hitzone / 2) see thumbnail margin top */
@@ -89,7 +103,7 @@
 .tab-close-button::after {
   cursor: default;
   content: "×";
-  display: block;
+  display: inline-block;
   text-align: center;
   font-size: 14px;
   line-height: 18px;
@@ -127,10 +141,10 @@
   border: 1px solid rgba(0,0,0,0.1);
 }
 
-.isdark .tab-dashboard .tab-thumbnail::after {
+.tabstripcontainer.isdark .tab-thumbnail::after {
   color: rgba(255,255,255,0.4);
 }
 
-.isdark .tab-dashboard .tab-thumbnail {
+.tabstripcontainer.isdark .tab-thumbnail {
   border: 1px solid rgba(255,255,255,0.2);
 }

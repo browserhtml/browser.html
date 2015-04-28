@@ -22,9 +22,9 @@ define((require, exports, module) => {
     }
     let headers = {};
     if (etag) {
-      headers = { "If-None-Match": etag } // will tell github to return 304 (Not Modified) if nothing changed
+      headers = {'If-None-Match': etag} // will tell github to return 304 (Not Modified) if nothing changed
     }
-    fetch(API_URL, { headers }).then(response => {
+    fetch(API_URL, {headers}).then(response => {
       if (response.status == 200) {
         // Make sure we don't pull too often
         let xPoll = response.headers.get('X-Poll-Interval');
@@ -44,14 +44,14 @@ define((require, exports, module) => {
         });
       }
       if (response.status != 200 && response.status != 304) {
-        console.error("Github: Unexpected status", response.status, response.statusText);
+        console.error('Github: Unexpected status', response.status, response.statusText);
       } else {
         console.log('Github:', response.status);
       }
       console.log(`Github: pulling in ${interval}ms`);
       timeout = setTimeout(() => pull(resolve), interval);
     }).catch(error => {
-      console.error("Github: fetch error", error);
+      console.error('Github: fetch error', error);
       console.log(`Github: pulling in ${interval}ms`);
       timeout = setTimeout(() => pull(resolve), interval);
     });

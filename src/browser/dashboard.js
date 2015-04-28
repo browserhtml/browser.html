@@ -3,14 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 define((require, exports, module) => {
+
   'use strict';
 
   const {DOM} = require('react')
   const Component = require('omniscient');
-  const {identity} = require('../lang/functional');
-  const {readDashboardTheme, readWallpaperTheme,
-         getDashboardThemePatch,
-         getWallpaperSwatches} = require('./dashboard/actions');
+  const {identity} = require('lang/functional');
+  const {readDashboardTheme, getDashboardThemePatch, getWallpaperSwatches} = require('./dashboard/actions');
 
   const readBackground = uri => ('none' && `url(${uri})`);
 

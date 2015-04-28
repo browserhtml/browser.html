@@ -4,10 +4,9 @@
 
 define((require, exports, module) => {
 
-  // Note that all functions of `url` need to be called as methods.
-  const url = require('./util/url.js');
-
   'use strict';
+
+  const {getDomainName} = require('common/url-helper');
 
   // Create a theme object, optionall merging your own custom properties on
   // top of the default theme.
@@ -86,16 +85,16 @@ define((require, exports, module) => {
       awesomebarSuggestions: {backgroundColor, color: foregroundColor}
     } : {});
 
-  // Derive theme object from webViewer object.
+  // Derive theme object from webView object.
   // If foreground and background are present, returns a custom theme object.
   // Otherwise, returns a copy of default theme object.
-  const readTheme = (webViewer) => expandCustomTheme(
-    webViewer.get('foregroundColor'),
-    webViewer.get('backgroundColor'),
-    webViewer.get('isDark')
+  const readTheme = (webView) => expandCustomTheme(
+    webView.foregroundColor,
+    webView.backgroundColor,
+    webView.isDark
   );
 
-  // Creates a state patch for webViewer from foregroundColor, backgroundColor,
+  // Creates a state patch for webView from foregroundColor, backgroundColor,
   // isDark.
   const makeColorPatch = (foregroundColor, backgroundColor, isDark) => ({
     foregroundColor: foregroundColor,
@@ -103,11 +102,11 @@ define((require, exports, module) => {
     isDark: isDark
   });
 
-  // Used to create a state patch for `webViewer`.
+  // Used to create a state patch for `webView`.
   // @FIXME this is a temporary measure until we have the full color matching
   // fallbacks in place.
   const getHardcodedColors = (urlString) => {
-    const hostname = url.getDomainName(urlString);
+    const hostname = getDomainName(urlString);
     const colors = hardcodedColors[hostname];
     return colors ? makeColorPatch(...colors) : makeColorPatch(null, null, !IS_DARK);
   }

@@ -41,8 +41,8 @@ define((require, exports, module) => {
 
       if (!viewer.get('isConnecting')) {
         // Zone B
-        const connectedAt = viewer.get('connectedAt');
-        progress += B * ApproachFunc(now - connectedAt, BPivot);
+        const connectedTime = viewer.get('connectedTime');
+        progress += B * ApproachFunc(now - connectedTime, BPivot);
         if (!viewer.get('isLoading')) {
           // Zone C
           const endLoadingTime = viewer.get('endLoadingTime');
@@ -62,9 +62,9 @@ define((require, exports, module) => {
       this.props.statics.editRfa(rfa => rfa.set('id', id));
     },
     componentDidUpdate() {
-      const viewer = this.props.webViewer;
+      const viewer = this.props.webView;
       if (!viewer.get('readyState')) {
-        // No empty webviewer
+        // No empty web view
         this.stopRFALoop();
       } else if (!viewer.get('isLoading')) {
         // Stop if loaded and had enough time to draw the final animation
@@ -93,15 +93,22 @@ define((require, exports, module) => {
       this.stopRFALoop(); // force rfa to be set to -1 (rfa value is restored by session restor)
       this.startRFALoopIfNeeded();
     },
-  }], ({key, webViewer, theme}) => {
-    const progress = ComputeProgress(webViewer);
+  }], ({key, webView, theme}) => {
+    const progress = ComputeProgress(webView);
     const StartFading = 0.8;    // When does opacity starts decreasing to 0
     const percentProgress = 100 * progress;
-    const opacity = progress < StartFading  ? 1 : 1 - Math.pow( (progress - StartFading) / (1 - StartFading), 1);
+    const opacity = progress < StartFading  ? 1 : 1 - Math.pow((progress - StartFading) / (1 - StartFading), 1);
     return DOM.div({
       key,
-      className: 'progressbar',
       style: {
+        zIndex: 99,
+        display: 'block',
+        width: '100%',
+        height: 3,
+        marginLeft: '-100%',
+        position: 'absolute',
+        top: 50,
+        left: 0,
         backgroundColor: theme.progressbar.color,
         transform: `translateX(${percentProgress}%)`,
         opacity: opacity

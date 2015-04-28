@@ -6,9 +6,8 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const {isFocused} = require('./focusable');
-  const {Element, BeforeAppendAttribute,
-         VirtualAttribute, Event, VirtualEvent} = require('./element');
+  const {isFocused} = require('common/focusable');
+  const {Element, BeforeAppendAttribute, VirtualAttribute, Event, VirtualEvent} = require('common/element');
 
   const IFrame = Element('iframe', {
     isFocused: isFocused,
@@ -16,12 +15,12 @@ define((require, exports, module) => {
     isBrowser: new BeforeAppendAttribute('mozbrowser'),
     mozApp: new BeforeAppendAttribute('mozapp'),
     allowFullScreen: new BeforeAppendAttribute('mozallowfullscreen'),
-    src: VirtualAttribute((node, current, past) => {
+    uri: VirtualAttribute((node, current, past) => {
       if (current != past) {
-        if (node.setVisible) {
-          node.src = current;
-        } else {
-          node.src = `data:text/html,${current}`
+        const uri = node.setVisible ? current : `data:text/html,${current}`
+        if (node.getAttribute('uri') !== uri) {
+          node.setAttribute('uri', uri);
+          node.src = uri;
         }
       }
     }),
@@ -76,7 +75,12 @@ define((require, exports, module) => {
     onUserActivityDone: Event('mozbrowseractivitydone'),
     onVisibilityChange: Event('mozbrowservisibilitychange'),
     onMetaChange: Event('mozbrowsermetachange'),
-    onLocationChange: Event('mozbrowserlocationchange'),
+    onLocationChange: VirtualEvent((target, dispatch) => {
+      target.addEventListener('mozbrowserlocationchange', event => {
+        target.setAttribute('uri', event.detail);
+        dispatch(event);
+      });
+    }),
     onSecurityChange: Event('mozbrowsersecuritychange'),
     onTitleChange: Event('mozbrowsertitlechange'),
     onPrompt: Event('mozbrowsershowmodalprompt'),

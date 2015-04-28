@@ -6,15 +6,15 @@ define((require, exports, module) => {
 
   'use strict';
 
+  const {render} = require('common/render');
   const Component = require('omniscient');
-  const {render} = require('browser/core');
   const {DOM} = require('react');
-
   const {Map} = require('immutable');
+
   const Table = Component('Table', state => {
 
     let rows = [];
-    for (let [name,value] of state) {
+    for (let [name, value] of state) {
       rows.push(DOM.div({
         key: name,
         className: 'row'

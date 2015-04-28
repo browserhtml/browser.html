@@ -6,7 +6,7 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const {render} = require('./core');
+  const {render} = require('common/render');
   const {Browser} = require('./browser');
   const {readSession, resetSession} = require('./actions');
   const {appUpdateAvailable} = require('./github');

@@ -91,8 +91,8 @@ define((require, exports, module) => {
   const switchSelected = transition(asUnselected, asSelected);
   const switchActive = transition(asInactive, asActive);
 
-  const select = (items, item) =>
-    switchSelected(items, selected(items), item);
+  const select = (items, p) =>
+    switchSelected(items, selected(items), items.find(p));
 
   //  Makes an item leading a `selected` item `selected`.
   const selectPrevious = advance(switchSelected,
@@ -105,11 +105,11 @@ define((require, exports, module) => {
                              next);
 
   // Makes `active` item `selected`.
-  const reset = items => select(items, active(items));
+  const reset = items => select(items, isActive);
 
   // Makes `selected` item `active`.
-  const activate = (items, item=selected(items)) =>
-    switchActive(items, active(items), item);
+  const activate = (items, p=isSelected) =>
+    switchActive(items, active(items), items.find(p));
 
   // Makes an item following a `selected` item both `selected` & `active`.
   const activateNext = compose(activate, selectNext);
@@ -149,16 +149,14 @@ define((require, exports, module) => {
         // a last one, activate previous and remove the target.
         if (target === items.last()) {
           return activatePrevious(items).remove(index);
-        }
-        // If target is selected & active item but isn't a
-        // a last on, activate next & remove the target.
-        else {
+        } else {
+          // If target is selected & active item but isn't a
+          // a last on, activate next & remove the target.
           return activateNext(items).remove(index);
         }
-      }
-      // If target is active but different one is selected then
-      // activate selected and remove this item.
-      else {
+      } else {
+        // If target is active but different one is selected then
+        // activate selected and remove this item.
         return activate(items).remove(index);
       }
     } else {
@@ -167,15 +165,13 @@ define((require, exports, module) => {
         // one, then select previous item and remove target.
         if (target === items.last()) {
           return selectPrevious(items).remove(index);
-        }
-        // If target isn't active but is selected and does not happen to be
-        // the last one, then select next item and remove target.
-        else {
+        } else {
+          // If target isn't active but is selected and does not happen to be
+          // the last one, then select next item and remove target.
           return selectNext(items).remove(index);
         }
-      }
-      // If target neither selected nor active just remove it.
-      else {
+      } else {
+        // If target neither selected nor active just remove it.
         return items.remove(index);
       }
     }
