@@ -8,7 +8,6 @@ define((require, exports, module) => {
 
   const {DOM} = require('react')
   const Component = require('omniscient');
-  const {isPrivileged} = require('common/url-helper');
   const ClassSet = require('common/class-set');
   const {mix} = require('common/style');
   const {ProgressBar} = require('./progress-bar');
@@ -33,13 +32,11 @@ define((require, exports, module) => {
       style: mix(navbarStyle, theme.navigationPanel),
       className: ClassSet({
         navbar: true,
-        urledit: input.get('isFocused'),
         cangoback: webView.canGoBack,
         canreload: webView.uri,
         loading: webView.isLoading,
         ssl: webView.securityState == 'secure',
         sslv: webView.securityExtendedValidation,
-        privileged: isPrivileged(webView.uri)
       })
     }, [
       WindowControls({

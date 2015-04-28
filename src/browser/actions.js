@@ -13,9 +13,10 @@ define((require, exports, module) => {
   const {Suggestions} = require('./suggestion-box');
   const {Editable} = require('common/editable');
   const {WebView, WebViews} = require('./web-view');
+  const {Updates} = require('./update-banner');
   // TODO: Should be `const {version} = require('package.json`);` instead but require.js
   // does not supports that.
-  const version = '0.0.5';
+  const version = '0.0.6';
 
   const makeSearchURL = input =>
     `https://duckduckgo.com/?q=${encodeURIComponent(input)}`;
@@ -75,7 +76,7 @@ define((require, exports, module) => {
   // Creates a blank session. Returns immutable map.
   const resetSession = () => fromJS({
     isDocumentFocused: document.hasFocus(),
-    // TODO: `isFocuse` should be `true` but that causes
+    // TODO: `isFocused` should be `true` but that causes
     // issues when app iframe isn't focused. Can be fixed
     // once #239 is resolved.
     input: Editable(),
@@ -83,6 +84,7 @@ define((require, exports, module) => {
     dashboard: initDashboard({items: dashboardItems}),
     rfa: {id: -1},
     suggestions: Suggestions(),
+    updates: Updates(),
     webViews: [WebView({id: 'about:blank',
                         isPinned: true,
                         isSelected: true,
@@ -98,6 +100,7 @@ define((require, exports, module) => {
              .update('suggestions', Suggestions)
              .update('input', Editable)
              .update('webViews', WebViews)
+             .update('updates', Updates())
     } catch (error) {
       return null;
     }
@@ -106,8 +109,6 @@ define((require, exports, module) => {
   const writeSession = session => {
     const data = session
       .setIn(['rfa', 'id'], -1)
-      .set('appUpdateAvailable', false)
-      .set('runtimeUpdateAvailable', false)
       // Reset state of each web viewer that can't be carried across the sessions.
       .updateIn(['webViews'], viewers => viewers.map(WebView.persistent))
       .toJSON();

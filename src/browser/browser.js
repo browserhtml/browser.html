@@ -8,7 +8,7 @@ define((require, exports, module) => {
 
   const Component = require('omniscient');
   const {DOM} = require('react');
-  const {compose, throttle, curry} = require('lang/functional');
+  const {compose} = require('lang/functional');
   const {Editable} = require('common/editable');
   const {KeyBindings} = require('common/keyboard');
   const ClassSet = require('common/class-set');
@@ -21,7 +21,7 @@ define((require, exports, module) => {
   const {WebViewBox, WebView} = require('./web-view');
   const {Dashboard} = require('./dashboard');
   const {readDashboardNavigationTheme} = require('./dashboard/actions');
-  const {activate: activateStrip, readInputURL, sendEventToChrome,
+  const {activate: activateStrip, readInputURL,
          deactivate, writeSession, resetSession, resetSelected} = require('./actions');
   const {indexOfSelected, indexOfActive, isActive, active, selected,
          selectNext, selectPrevious, select, activate,
@@ -29,6 +29,7 @@ define((require, exports, module) => {
          isntPinned, isPinned} = require('./deck/actions');
   const {readTheme} = require('./theme');
   const {Main} = require('./main');
+  const {Updates} = require('./update-banner');
 
   const editWith = edit => {
     if (typeof (edit) !== 'function') {
@@ -180,6 +181,7 @@ define((require, exports, module) => {
     const editRfa = compose(edit, In('rfa'));
     const editDashboard = compose(edit, In('dashboard'));
     const editSuggestions = compose(edit, In('suggestions'));
+    const editUpdates = compose(edit, In('updates'));
 
     const selectedWebView = selected(webViews);
     const activeWebView = active(webViews);
@@ -189,6 +191,7 @@ define((require, exports, module) => {
     const dashboard = state.get('dashboard');
     const suggestions = state.get('suggestions');
     const isDocumentFocused = state.get('isDocumentFocused');
+    const updates = state.get('updates');
 
     const isDashboardActive = activeWebView.get('uri') === null;
     const isLocationBarActive = input.get('isFocused');
@@ -219,7 +222,6 @@ define((require, exports, module) => {
                    {overflowY: 'hidden'} : {}),
       className: ClassSet({
         'moz-noscrollbars': true,
-        windowFocused: isDocumentFocused,
         showtabstrip: isTabStripVisible,
       }),
       onDocumentUnload: event => writeSession(state),
@@ -233,10 +235,8 @@ define((require, exports, module) => {
                                  onBrowserBinding(edit)),
       onDocumentKeyUp: compose(onTabStripKeyUp(editTabStrip),
                                onDeckBindingRelease(editWebViews)),
-      onAppUpdateAvailable: event =>
-        edit(state => state.set('appUpdateAvailable', true)),
-      onRuntimeUpdateAvailable: event =>
-        edit(state => state.set('runtimeUpdateAvailable', true)),
+      onAppUpdateAvailable: event => editUpdates(Updates.setAppUpdateAvailable),
+      onRuntimeUpdateAvailable: event => editUpdates(Updates.setRuntimeUpdateAvailable)
     }, [
       WindowBar({
         key: 'navigation',
@@ -303,36 +303,8 @@ define((require, exports, module) => {
         edit: editWebViews
       })
     ]),
-    DOM.div({
-      key: 'appUpdateBanner',
-      className: ClassSet({
-        appupdatebanner: true,
-        active: state.get('appUpdateAvailable') ||
-                state.get('runtimeUpdateAvailable')
-      }),
-    }, [
-      DOM.div({
-        key: 'appUpdateMessage',
-        className: 'appupdatemessage',
-      }, 'Hey! An update just for you!'),
-      DOM.div({
-        key: 'appUpdateButton',
-        className: 'appupdatebutton',
-        onClick: e => {
-          if (state.get('runtimeUpdateAvailable') && state.get('appUpdateAvailable')) {
-            // FIXME: Not supported yet
-            sendEventToChrome('clear-cache-and-restart')
-          }
-          if (state.get('runtimeUpdateAvailable') && !state.get('appUpdateAvailable')) {
-            // FIXME: Not supported yet
-            sendEventToChrome('restart')
-          }
-          if (!state.get('runtimeUpdateAvailable') && state.get('appUpdateAvailable')) {
-            sendEventToChrome('clear-cache-and-reload')
-          }
-        }
-      }, 'Apply' + (state.get('runtimeUpdateAvailable') ? ' (restart required)' : ''))
-    ])]);
+    Updates.render({key: 'updates-banner', updates})
+    ]);
   })
   // Create a version of readTheme that will return from cache
   // on repeating calls with an equal cursor.
