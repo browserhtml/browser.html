@@ -71,7 +71,7 @@ define((require, exports, module) => {
     canGoBack: Boolean(false),
     canGoForward: Boolean(false),
 
-    contentOverflows: Boolean(false),
+    contentOverflows: Maybe(Boolean),
     thumbnail: Maybe(String)
   });
 
@@ -101,7 +101,9 @@ define((require, exports, module) => {
     securityState: void(0),
     securityExtendedValidation: void(0),
     canGoBack: void(0),
-    canGoForward: void(0)
+    canGoForward: void(0),
+
+    contentOverflows: void(0)
   });
 
   WebView.blur = blur;
@@ -146,18 +148,21 @@ define((require, exports, module) => {
     startLoadingTime: performance.now(),
     icons: void(0),
     thumbnail: void(0),
+    contentOverflows: void(0),
     title: void(0),
     securityState: void(0),
     securityExtendedValidation: void(0),
     canGoBack: void(0),
     canGoForward: void(0)
   });
+
   WebView.endLoad = state => state.merge({
     isConnecting: false,
     endLoadingTime: performance.now(),
     readyState: 'loaded',
     isLoading: false
   });
+
   WebView.changeProgress = connectedTime => state =>
     !state.isConnecting ? state :
     state.merge({isConnecting: false,
@@ -208,13 +213,13 @@ define((require, exports, module) => {
     Until that's fixed on platform we just hide such elements with
     negative index and absolute position.
     */
-    if (!state.thumbnail) {
+    if (!state.isActive && !state.thumbnail) {
       style = mix(style, {
         zIndex: -1,
         display: 'block !important',
         position: 'absolute',
-        width: '100%',
-        height: '100%'
+        width: '100vw',
+        height: '100vh'
       });
     }
 
@@ -255,9 +260,9 @@ define((require, exports, module) => {
       onTitleChange: event => edit(WebView.setTitle(event.detail)),
       onPrompt: event => console.log(event),
       onAuthentificate: event => console.log(event),
-      onScrollAreaChange: event =>
+      onScrollAreaChange: state.contentOverflows == void(0) && (event =>
         edit(WebView.setContentOverflows(event.detail.height >
-                                         event.target.parentNode.clientHeight)),
+                                         event.target.parentNode.clientHeight))),
       onLoadProgressChange: event => edit(WebView.changeProgress(event))
     });
   });

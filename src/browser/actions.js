@@ -95,14 +95,17 @@ define((require, exports, module) => {
   // Reads stored session. Returns either immutable data for the
   // session or null.
   const readSession = () => {
+    const session = localStorage[`session@${version}`];
     try {
-      return fromJS(JSON.parse(localStorage[`session@${version}`]))
+      return session && fromJS(JSON.parse(session))
              .update('suggestions', Suggestions)
              .update('input', Editable)
              .update('webViews', WebViews)
-             .update('updates', Updates())
+             .update('updates', Updates);
     } catch (error) {
-      return null;
+      if (session) {
+        console.error(`Failed to restore a session`, error);
+      }
     }
   };
 
