@@ -293,7 +293,8 @@ define((require, exports, module) => {
         onOpen: uri => editWebViews(openTab(uri)),
         edit: editDashboard
       }),
-      WebViewBox.render('web-view-box', WebViewBox({
+      render(WebViewBox({
+        key: 'web-view-box',
         isActive: !isDashboardActive,
         items: webViews,
       }), {
