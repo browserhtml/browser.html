@@ -7,7 +7,6 @@ define((require, exports, moudle) => {
   'use strict';
 
   const {DOM, render} = require('common/component');
-  const Component = require('omniscient');
   const ClassSet = require('common/class-set');
   const {isSelected} = require('./deck/actions');
   const {Record, Maybe, Any, List} = require('typed-immutable/index');
@@ -16,7 +15,6 @@ define((require, exports, moudle) => {
 
   const Preview = Record({
     id: String,
-    key: String(''),
     order: Number(0),
     isPinned: Boolean(false),
     isSelected: Boolean(false),
@@ -24,6 +22,7 @@ define((require, exports, moudle) => {
     thumbnail: Maybe(String),
   });
   Preview.displayName = "Preview";
+  Preview.key = ({id}) => id;
 
   Preview.render = function(state, {onSelect, onActivate, onClose}) {
     return DOM.div({
@@ -82,10 +81,7 @@ define((require, exports, moudle) => {
         key: 'tabstrip',
         className: 'tabstrip',
       }, items.sortBy(id)
-              .map(item => render(item.merge({
-                key: item.id,
-                order: items.indexOf(item)
-              }), handlers)))]);
+              .map(item => render(item.set('order', items.indexOf(item)), handlers)))]);
   };
 
   Previews.activate = state => state.set('isActive', true);
