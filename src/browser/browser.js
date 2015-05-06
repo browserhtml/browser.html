@@ -30,6 +30,7 @@ define((require, exports, module) => {
   const {readTheme} = require('./theme');
   const {Main} = require('./main');
   const {Updates} = require('./update-banner');
+  const {render} = require('common/component');
 
   const editWith = edit => {
     if (typeof (edit) !== 'function') {
@@ -255,7 +256,7 @@ define((require, exports, module) => {
         editInput,
         editSuggestions
       }),
-      Previews.render(Previews({
+      render(Previews({
         items: webViews,
         theme
       }), {
@@ -263,8 +264,7 @@ define((require, exports, module) => {
         onSelect: id => editWebViews(items => select(items, item => item.get('id') == id)),
         onActivate: id => editWebViews(items => activate(items, item => item.get('id') == id)),
         onClose: id => editWebViews(closeTab(id)),
-        edit: editWebViews,
-        theme
+        edit: editWebViews
       }),
       Suggestions.render({
         key: 'awesomebar',

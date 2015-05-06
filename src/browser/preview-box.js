@@ -6,11 +6,11 @@ define((require, exports, moudle) => {
 
   'use strict';
 
-  const {DOM} = require('react');
+  const {DOM, render} = require('common/component');
   const Component = require('omniscient');
   const ClassSet = require('common/class-set');
   const {isSelected} = require('./deck/actions');
-  const {Record, Maybe} = require('typed-immutable/index');
+  const {Record, Maybe, Any, List} = require('typed-immutable/index');
 
   const id = x => x.id
 
@@ -23,8 +23,9 @@ define((require, exports, moudle) => {
     isActive: Boolean(false),
     thumbnail: Maybe(String),
   });
+  Preview.displayName = "Preview";
 
-  Preview.render = Component(function Preview(state, {onSelect, onActivate, onClose}) {
+  Preview.render = function(state, {onSelect, onActivate, onClose}) {
     return DOM.div({
       key: state.key,
       className: ClassSet({
@@ -59,24 +60,17 @@ define((require, exports, moudle) => {
         className: 'tab-close-button fa fa-times',
       })
     ])
-  });
+  };
 
   // Todo: Conver this to a record.
-  const Previews = function({items, theme}) {
-    return {
-      key: 'tabstrip',
-      theme,
-      items: items.map(webView => Preview({
-        id: webView.id,
-        isPinned: webView.isPinned,
-        isSelected: webView.isSelected,
-        isActive: webView.isActive,
-        thumbnail: webView.thumbnail,
-      }))
-    }
-  }
-  Previews.render = Component(function PreviewBox(state, handlers) {
-    const {theme, items} = Previews(state);
+  const Previews = Record({
+    key: String('tabstrip'),
+    theme: Any,
+    items: List(Preview)
+  });
+  Previews.displayName = "Previews";
+  Previews.render = function(state, handlers) {
+    const {theme, items} = state;
     return DOM.div({
       style: theme.tabstrip,
       className: ClassSet({
@@ -84,19 +78,18 @@ define((require, exports, moudle) => {
         isdark: theme.isDark
       }),
     }, [
-        DOM.div({
-          key: 'tabstrip',
-          className: 'tabstrip',
-        }, items.sortBy(id)
-                .map(item => Preview.render(item.merge({
-                  key: item.id,
-                  order: items.indexOf(item)
-                }).toJSON(), handlers)))]);
-  });
+      DOM.div({
+        key: 'tabstrip',
+        className: 'tabstrip',
+      }, items.sortBy(id)
+              .map(item => render(item.merge({
+                key: item.id,
+                order: items.indexOf(item)
+              }), handlers)))]);
+  };
 
   Previews.activate = state => state.set('isActive', true);
   Previews.deactivate = state => state.set('isActive', false);
-
 
   // Exports:
 
