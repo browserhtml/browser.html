@@ -111,7 +111,8 @@ define(function(require, exports, module) {
     const {constructor} = input;
     const component = constructor.component ||
           (constructor.component = Component.fromRecord(constructor));
-    return React.createElement(component, {key: input.key, input, output});
+    const key = constructor.key ? constructor.key(input) : input.key;
+    return React.createElement(component, {key, input, output});
   }
   render.debug = (debug=Component.defaultDebugger) => Component.debug(debug);
 
