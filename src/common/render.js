@@ -34,7 +34,13 @@ define(function(require, exports, module) {
       this.render();
     }
     render() {
+      const start = performance.now();
       React.render(this.component(this.state, {step: this.step}), this.target);
+      const time = performance.now() - start;
+
+      if (time > 16) {
+        console.warn(`Render took ${time}ms & will cause frame drop`);
+      }
 
       return this;
     }

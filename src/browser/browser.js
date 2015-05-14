@@ -30,6 +30,7 @@ define((require, exports, module) => {
   const {readTheme} = require('./theme');
   const {Main} = require('./main');
   const {Updates} = require('./update-banner');
+  const {render} = require('common/component');
 
   const editWith = edit => {
     if (typeof (edit) !== 'function') {
@@ -208,7 +209,7 @@ define((require, exports, module) => {
     );
 
     const theme = isDashboardActive ?
-      readDashboardNavigationTheme(dashboard) :
+      Browser.readDashboardNavigationTheme(dashboard) :
       Browser.readTheme(activeWebView);
 
     return DOM.div({
@@ -255,7 +256,7 @@ define((require, exports, module) => {
         editInput,
         editSuggestions
       }),
-      Previews.render(Previews({
+      render(Previews({
         items: webViews,
         theme
       }), {
@@ -263,8 +264,7 @@ define((require, exports, module) => {
         onSelect: id => editWebViews(items => select(items, item => item.get('id') == id)),
         onActivate: id => editWebViews(items => activate(items, item => item.get('id') == id)),
         onClose: id => editWebViews(closeTab(id)),
-        edit: editWebViews,
-        theme
+        edit: editWebViews
       }),
       Suggestions.render({
         key: 'awesomebar',
@@ -293,7 +293,8 @@ define((require, exports, module) => {
         onOpen: uri => editWebViews(openTab(uri)),
         edit: editDashboard
       }),
-      WebViewBox.render('web-view-box', WebViewBox({
+      render(WebViewBox({
+        key: 'web-view-box',
         isActive: !isDashboardActive,
         items: webViews,
       }), {
@@ -309,6 +310,7 @@ define((require, exports, module) => {
   // Create a version of readTheme that will return from cache
   // on repeating calls with an equal cursor.
   Browser.readTheme = Component.cached(readTheme);
+  Browser.readDashboardNavigationTheme = Component.cached(readDashboardNavigationTheme);
 
   // Exports:
 
