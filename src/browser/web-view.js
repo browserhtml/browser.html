@@ -71,7 +71,7 @@ define((require, exports, module) => {
     canGoBack: Boolean(false),
     canGoForward: Boolean(false),
 
-    contentOverflows: Maybe(Boolean),
+    contentOverflows: Boolean(false),
     thumbnail: Maybe(String)
   });
 
@@ -148,7 +148,7 @@ define((require, exports, module) => {
     startLoadingTime: performance.now(),
     icons: void(0),
     thumbnail: void(0),
-    contentOverflows: void(0),
+    contentOverflows: false,
     title: void(0),
     securityState: void(0),
     securityExtendedValidation: void(0),
@@ -195,7 +195,9 @@ define((require, exports, module) => {
     width: '100vw'
   };
 
-  WebView.render = Component('WebView', (state, {onOpen, onOpenBg, onClose, edit}) => {
+  WebView.render = Component('WebView', (state, handlers) => {
+    const {onOpen, onOpenBg, onClose, edit} = handlers;
+
     // Do not render anything unless viewer has an `uri`
     if (!state.uri) return null;
 
@@ -242,25 +244,53 @@ define((require, exports, module) => {
       onBlur: event => edit(WebView.blur),
       onFocus: event => edit(WebView.focus),
       // onAsyncScroll: WebView.onUnhandled,
-      onClose: event => onClose(state.id),
+      onClose: event => {
+        handlers.endVisit({webView: state,
+                           time: event.timeStamp});
+        onClose(state.id);
+      },
       onOpenWindow: event => onOpen(event.detail.url),
       onOpenTab: event => onOpenBg(event.detail.url),
       onContextMenu: event => console.log(event),
       onError: event => console.error(event),
-      onLoadStart: event => edit(WebView.startLoad),
-      onLoadEnd: event => edit(WebView.endLoad),
+      onLoadStart: event => {
+        edit(WebView.startLoad)
+      },
+      onLoadEnd: event => {
+        edit(WebView.endLoad);
+        handlers.beginVisit({webView: state,
+                             time: event.timeStamp});
+      },
       onMetaChange: event => edit(WebView.setMetaData(event.detail)),
-      onIconChange: event => edit(WebView.changeIcon(event.detail)),
+      onIconChange: event => {
+        edit(WebView.changeIcon(event.detail));
+        handlers.changeIcon({webView: state,
+                             icon: event.detail.href});
+      },
       onLocationChange: event => {
+        // Whe iframe src is set during page load location change event will
+        // be triggered but we do not interpret that as end of visit.
+        if (state.uri !== event.detail) {
+          handlers.endVisit({webView: state,
+                             time: event.timeStamp});
+        }
+
         edit(WebView.changeLocation(event.detail));
         requestThumbnail(event.target)
           .then(WebView.onThumbnailChanged(edit));
       },
       onSecurityChange: event => edit(WebView.changeSecurity(event.detail)),
-      onTitleChange: event => edit(WebView.setTitle(event.detail)),
+      onTitleChange: event => {
+        edit(WebView.setTitle(event.detail))
+        handlers.changeTitle({webView: state, title: event.detail});
+      },
       onPrompt: event => console.log(event),
       onAuthentificate: event => console.log(event),
-      onScrollAreaChange: state.contentOverflows == void(0) && (event =>
+      // This will trigger a resize. If the content react to the resize by changing its
+      // layout, this might change the scrollarea again, triggering a resize… infinite
+      // loop.
+      // So we only allow contentOverflows to transition from false (default value) to true.
+      onScrollAreaChange: !state.contentOverflows && (event =>
         edit(WebView.setContentOverflows(event.detail.height >
                                          event.target.parentNode.clientHeight))),
       onLoadProgressChange: event => edit(WebView.changeProgress(event))
@@ -325,7 +355,8 @@ define((require, exports, module) => {
   // WebView deck will always inject frames by order of their id. That way
   // no iframes will need to be removed / injected when order of tabs change.
   WebViewBox.render = Component(function WebViewsBox(state, handlers) {
-    const {onOpen, onOpenBg, onClose, edit} = handlers;
+    const {onOpen, onOpenBg, onClose, edit,
+           beginVisit, endVisit, changeIcon, changeTitle, changeImage} = handlers;
     const {items, isActive} = state;
 
     return DOM.div({
@@ -335,6 +366,7 @@ define((require, exports, module) => {
       },
     }, items.sortBy(id).map(webView => WebView.render(webView.id, webView, {
       onOpen, onOpenBg, onClose,
+      beginVisit, endVisit, changeIcon, changeTitle, changeImage,
       edit: compose(edit, In(items.indexOf(webView)))
     })))
   });

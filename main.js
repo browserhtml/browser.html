@@ -17,7 +17,8 @@ require.config({
     // http://omniscientjs.github.io
     omniscient: 'omniscient/dist/omniscient',
     // https://github.com/broofa/node-uuid
-    uuid: 'node-uuid/uuid'
+    uuid: 'node-uuid/uuid',
+    pouchdb: 'pouchdb/dist/pouchdb'
   },
   shim: {
     omniscient: {

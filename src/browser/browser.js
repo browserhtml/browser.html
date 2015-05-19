@@ -30,6 +30,7 @@ define((require, exports, module) => {
   const {readTheme} = require('./theme');
   const {Main} = require('./main');
   const {Updates} = require('./update-banner');
+  const {History, Page} = require('common/history');
 
   const editWith = edit => {
     if (typeof (edit) !== 'function') {
@@ -168,6 +169,32 @@ define((require, exports, module) => {
     position: 'relative'
   };
 
+
+  // History API hooks
+  const history = new History({trackTopPages: true});
+
+  const beginVisit = ({webView, time}) => {
+    history.edit(Page.from(webView), Page.beginVisit({id: webView.id, time}));
+  };
+
+  const endVisit = ({webView, time}) => {
+    history.edit(Page.from(webView), Page.endVisit({id: webView.id, time}));
+  };
+
+  const changeTitle = ({webView, title}) => {
+    history.edit(Page.from(webView), page => page.set('title', title));
+  };
+
+  const changeImage = ({webView, image}) => {
+    history.edit(Page.from(webView), page => page.set('image', image));
+  };
+
+  const changeIcon = ({webView, icon}) => {
+    history.edit(Page.from(webView), page => page.set('icon', icon))
+  };
+
+
+
   // Browser is a root component for our application that just delegates
   // to a core sub-components here.
   const Browser = Component('Browser', (state, {step: edit}) => {
@@ -236,7 +263,8 @@ define((require, exports, module) => {
       onDocumentKeyUp: compose(onTabStripKeyUp(editTabStrip),
                                onDeckBindingRelease(editWebViews)),
       onAppUpdateAvailable: event => editUpdates(Updates.setAppUpdateAvailable),
-      onRuntimeUpdateAvailable: event => editUpdates(Updates.setRuntimeUpdateAvailable)
+      onRuntimeUpdateAvailable: event => editUpdates(Updates.setRuntimeUpdateAvailable),
+      onOpenWindow: event => editWebViews(openTab(event.detail.url))
     }, [
       WindowBar({
         key: 'navigation',
@@ -297,6 +325,7 @@ define((require, exports, module) => {
         isActive: !isDashboardActive,
         items: webViews,
       }), {
+        beginVisit, endVisit, changeIcon, changeTitle, changeImage,
         onClose: id => editWebViews(closeTab(id)),
         onOpen: uri => editWebViews(openTab(uri)),
         onOpenBg: uri => editWebViews(openTabBg(uri)),

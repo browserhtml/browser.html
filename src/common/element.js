@@ -212,6 +212,32 @@ define((require, exports, module) => {
   };
   Element.Event = Event;
 
+  const ChromeEvent = function(type) {
+    if (!(this instanceof ChromeEvent)) {
+      return new ChromeEvent(type);
+    }
+    this.type = type;
+  };
+  ChromeEvent.prototype = {
+    constructor: ChromeEvent,
+    construct() {
+      return new this.constructor(this.type);
+    },
+    mounted(node, handler) {
+      this.handler = handler;
+      window.addEventListener('mozChromeEvent', this);
+    },
+    write(node, present) {
+      this.handler = present;
+    },
+    handleEvent(event) {
+      if (this.handler && this.type == event.detail.type) {
+        this.handler(event);
+      }
+    }
+  };
+  Element.ChromeEvent = ChromeEvent;
+
   // CapturedEvent can be used same as `Event` with a difference
   // that events listeners will be added with a capture `true`.
   const CapturedEvent = function(type, read) {
@@ -266,4 +292,5 @@ define((require, exports, module) => {
   exports.Event = Event;
   exports.CapturedEvent = CapturedEvent;
   exports.VirtualEvent = VirtualEvent;
+  exports.ChromeEvent = ChromeEvent;
 });

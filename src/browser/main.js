@@ -5,7 +5,7 @@
 define((require, exports, module) => {
 
   'use strict';
-  const {Element, Event, VirtualAttribute} = require('common/element');
+  const {Element, Event, ChromeEvent, VirtualAttribute} = require('common/element');
 
   const getOwnerWindow = node => node.ownerDocument.defaultView;
 
@@ -24,7 +24,8 @@ define((require, exports, module) => {
     onDocumentKeyUp: Event('keyup', getOwnerWindow),
     onDocumentUnload: Event('unload', getOwnerWindow),
     onAppUpdateAvailable: Event('app-update-available', getOwnerWindow),
-    onRuntimeUpdateAvailable: Event('runtime-update-available', getOwnerWindow)
+    onRuntimeUpdateAvailable: Event('runtime-update-available', getOwnerWindow),
+    onOpenWindow: ChromeEvent('mozbrowseropenwindow')
   });
 
   exports.Main = Main;

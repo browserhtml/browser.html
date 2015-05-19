@@ -114,6 +114,10 @@ define((require, exports, module) => {
       .setIn(['rfa', 'id'], -1)
       // Reset state of each web viewer that can't be carried across the sessions.
       .updateIn(['webViews'], viewers => viewers.map(WebView.persistent))
+      .updateIn(['updates'], updates => updates.merge({
+        appUpdateAvailable: false,
+        runtimeUpdateAvailable: false
+      }))
       .toJSON();
     localStorage[`session@${version}`] = JSON.stringify(data);
     return session;
