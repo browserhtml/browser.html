@@ -7,6 +7,7 @@ git config --global user.email "travis@browser.html"
 git config --global user.name "travis"
 git rev-parse HEAD > HEAD
 git checkout --orphan gh-pages
+echo "" > .nojekyll
 rm .gitignore
 git add .
 git commit -m "Deployed to Github Pages"
