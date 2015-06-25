@@ -46,13 +46,6 @@
 
   window.addEventListener('mozChromeEvent', handleEvent, false);
 
-  // Refresh on devtools just load a page but we need to clear the cache in order
-  // to pick up file changes. There for we dispatch special gecko event to clear
-  // the cache.
-  window.addEventListener('unload', event => {
-    dispatchEventToGecko('clear-cache-and-reload');
-  });
-
   // Trigger a forced update check after 5s to not slow down startup.
   // TODO: delay until we're online if needed.
   window.setTimeout(checkUpdate, 5000);

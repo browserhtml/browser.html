@@ -28,7 +28,7 @@ define((require, exports, module) => {
           key: 'value.' + name,
           className: 'value',
           title: value
-        }, value)
+        }, "" + value)
       ]));
     }
 

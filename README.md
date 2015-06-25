@@ -23,3 +23,11 @@ In the future, we want `browser.html` to be able to run on top of Servo.
 
 The easiest way to use developer tools with Browser.html is to select the "Remote Runtime" option in WebIDE.
 By default you should be able to connect to the running browser at: localhost:6000.
+
+
+### Integration Tests
+Run integration tests with `./test/runall.sh`. You need to have a graphene gecko binary symlinked in the root of the repository.
+
+```
+ln -s ../gecko/obj-graphene/dist/Graphene.app graphene
+```
