@@ -40,6 +40,11 @@ define((require, exports, module) => {
     pointerEvents: 'all'
   }, 'LocationBarStyle');
 
+  const inactiveLocationBar = LocationBarStyle();
+  const activeLocationBar = LocationBarStyle({
+    width: 400
+  });
+
 
   const ButtonStyle = Record({
     color: 'inherit',
@@ -63,12 +68,10 @@ define((require, exports, module) => {
   const URLInputStyle = Record({
     padding: Maybe(Number),
     maxWidth: Maybe(Number),
-    color: 'inherit',
-    backgroundColor: Maybe(Color),
-
+    color: '#333',
+    width: '100%',
     lineHeight: '22px',
     overflow: 'hidden',
-    width: '100%',
     borderRadius: 0
   }, 'URLInputStyle');
 
@@ -107,10 +110,20 @@ define((require, exports, module) => {
 
   // Events
 
-  const {Focus, Blur} = Input.Action;
+  const {Focus, Blur, Submit} = Input.Action;
   const {Load} = WebView.Action;
   const {Enter} = Input.Action;
   const {GoBack, GoForward, Stop, Reload} = Navigation.Action;
+
+  // Action
+
+  const Edit = Record({
+    id: '@selected'
+  }, 'LocationBar.Action.Edit');
+
+  const Action = Union({Edit});
+
+  exports.Action = Action;
 
 
   // view
@@ -122,12 +135,12 @@ define((require, exports, module) => {
   const {SelectNext, SelectPrevious} = Suggestions.Action;
 
   const Binding = KeyBindings({
-    'up': id => SelectPrevious({id}),
-    'control p': id => SelectPrevious({id}),
-    'down': id => SelectNext({id}),
-    'control n': id => SelectNext({id}),
-    'enter': (id, event) => Load({id, uri: URI.read(event.target.value)}),
-    'escape': id => Shell.Action.Focus({id}),
+    'up': ({id}) => SelectPrevious({id}),
+    'control p': ({id}) => SelectPrevious({id}),
+    'down': ({id}) => SelectNext({id}),
+    'control n': ({id}) => SelectNext({id}),
+    'enter': ({id}) => Submit({id}),
+    'escape': ({id}) => Shell.Action.Focus({id}),
   }, 'LocationBar.Keyboard.Action');
 
 
@@ -154,9 +167,10 @@ define((require, exports, module) => {
   const Change = ({id}, {target: {value}}) =>
     Input.Action.Change({id, value});
 
-  const view = (webView, theme, address) => {
-    const {id, uri, input, page, security, progress,
-           navigation, suggestions} = webView;
+  const view = (webView, input, suggestions, theme, address) => {
+    const context = webView || {id: '@selected'};
+    const value = (webView && input.value === null) ? (webView.uri || '') :
+                  (input.value || '');
 
     return html.div({
       style: {
@@ -175,27 +189,28 @@ define((require, exports, module) => {
           'location-bar': true,
           active: input.isFocused
         }),
-        style: LocationBarStyle(),
-        onClick: address.pass(Input.Action.Enter, webView)
+        style: input.isFocused ? activeLocationBar :
+               inactiveLocationBar,
+        onClick: address.pass(Input.Action.Enter, context)
       }, [
         Editable.view({
           key: 'input',
           className: 'location-bar-input',
           placeholder: 'Search or enter address',
           type: 'text',
-          value: suggestions.selected < 0 ? input.value :
+          value: suggestions.selected < 0 ? value :
                  suggestions.entries.get(suggestions.selected).uri,
-          style: input.isFocused ? URLInputStyle({color: 'inherit'}) :
-                 URLInputStyle({color: 'inherit'}).merge(collapse),
-          isFocused: input.isFocused,
+          style: input.isFocused ? URLInputStyle() :
+                 URLInputStyle().merge(collapse),
+          isFocused: input.isFocused || !webView,
           selection: input.selection,
 
-          onSelect: address.pass(Select, webView),
-          onChange: address.pass(Change, webView),
+          onSelect: address.pass(Select, context),
+          onChange: address.pass(Change, context),
 
-          onFocus: address.pass(Input.Action.Focus, webView),
-          onBlur: address.pass(Input.Action.Blur, webView),
-          onKeyDown: address.pass(Binding, id)
+          onFocus: address.pass(Input.Action.Focus, context),
+          onBlur: address.pass(Input.Action.Blur, context),
+          onKeyDown: address.pass(Binding, context)
         }),
         html.p({
           key: 'page-info',
@@ -210,16 +225,18 @@ define((require, exports, module) => {
               marginRight: 6,
               verticalAlign: 'middle'
             }
-          }, id === 'about:dashboard' ? '' :
-             URI.isPrivileged(uri) ? GearIcon :
-             security.secure ? LockIcon :
+          },
+             !webView ? '' :
+             URI.isPrivileged(webView.uri) ? GearIcon :
+             webView.security.secure ? LockIcon :
              ''),
           html.span({
             key: 'title',
             style: TitleTextStyle({color: theme.titleText}),
-          }, page.title ? page.title :
-             uri ? URI.getDomainName(uri) :
-             isLoading(progress) ? 'Loading...' :
+          }, !webView ? '' :
+             webView.page.title ? webView.page.title :
+             webView.uri ? URI.getDomainName(webView.uri) :
+             webView.progress && isLoading(webView.progress) ? 'Loading...' :
              'New Tab'),
         ])
       ])

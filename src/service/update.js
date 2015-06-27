@@ -19,7 +19,7 @@ define((require, exports, module) => {
 
 
   const UpdateHead = value =>
-    Settigs.Action.Update({name: 'browserhtml.HEAD_HASH', value});
+    Settings.Action.Update({name: 'browserhtml.HEAD_HASH', value});
   const UnknownHead = e =>
     Settings.Action.Update({name: 'browserhtml.HEAD_HASH',
                             value: `Unknown (${e})`});

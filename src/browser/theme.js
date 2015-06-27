@@ -36,7 +36,7 @@ define((require, exports, module) => {
   exports.Model = Model;
 
 
-  exports.read = pallet => {
+  exports.read = (pallet={}) => {
     const foreground = pallet.foreground || void(0);
     const background = pallet.background || void(0);
     return Model({

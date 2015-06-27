@@ -44,16 +44,6 @@ define((require, exports, module) => {
     if (action instanceof ResetSession) {
       return state.clear().merge({
         shell: {isFocused: document.hasFocus()},
-        webViews: {
-          entries: [
-            {
-              view: {
-                id: 'about:dashboard',
-                uri: 'data:text/html,'
-              }
-            }
-          ]
-        }
       });
     }
 

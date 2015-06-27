@@ -11,10 +11,10 @@ define((require, exports, module) => {
   const {html, render} = require('reflex');
   const WebView = require('./web-view');
   const Shell = require('./web-shell');
-  const Input = require('./web-input');
   const Thumbnail = require('service/thumbnail');
   const Pallet = require('service/pallet');
   const URI = require('common/url-helper');
+  const Input = require('./web-input');
 
   // Model
   const EntryModel = Record({
@@ -23,8 +23,7 @@ define((require, exports, module) => {
   }, 'WebView.Entry');
 
   const Model = Record({
-    selected: 0,
-    previewed: 0,
+    selected: Maybe(Number),
     nextID: 0,
     entries: List(EntryModel)
   }, 'WebViews');
@@ -35,6 +34,7 @@ define((require, exports, module) => {
 
   const {Open, OpenInBackground, Close} = WebView;
   const {Load} = WebView.Action;
+  const {Enter} = Input.Action;
 
 
   const SelectByOffset = Record({
@@ -49,36 +49,13 @@ define((require, exports, module) => {
     index: Number
   }, 'WebViews.SelectByIndex');
 
-  const PreviewByOffset = Record({
-    offset: Number
-  }, 'WebViews.PreviewRelative');
 
-  const PreviewByID = Record({
-    id: String
-  }, 'WebViews.PreviewByID');
-
-  const PreviewByIndex = Record({
-    index: Number
-  }, 'WebViews.PreviewByIndex');
-
-
-  const Action = Union({PreviewByIndex, PreviewByID, PreviewByOffset,
-                        SelectByIndex, SelectByID, SelectByOffset,
-                        Open, OpenInBackground, Close,
+  const Action = Union({SelectByIndex, SelectByID, SelectByOffset,
+                        Open, OpenInBackground, Close, Enter,
                         WebView: WebView.Action});
   exports.Action = Action;
 
 
-  const byRecency = (a, b) =>
-    a.view.id === 'about:dashboard' ? -1 :
-    a.selected > b.selected ? -1 :
-    a.selected < b.selected ? 1 :
-    0;
-
-  const order = entries =>
-    entries.filter(entry => entry.view.id !== 'about:dashboard');
-    // entries.sort(byRecency);
-  exports.order = order;
 
   // Takes `entires` and a `from` entry (from with in it) and returns
   // an `entry` that is `n` positions away in an ordered `entries`. In other
@@ -86,80 +63,78 @@ define((require, exports, module) => {
   // (if n > 0) of the given entry.
   const relativeOf = (entries, from, n) => {
     const loopLength = entries.size;
-    const ordered = order(entries);
-    const position = ordered.indexOf(from) + n + 1;
+    const position = entries.indexOf(from) + n;
     const loops = Math.trunc(position / loopLength);
-    return ordered.get(position - loops * loopLength);
+    return position - loops * loopLength;
   }
 
   const indexByID = (state, id) =>
     id === '@selected' ? state.selected :
-    id === '@previewed' ? state.previewed :
     state.entries.findIndex(({view}) => view.id === id);
 
-  const indexByOffset = ({entries}, index, offset) => {
-    const target = relativeOf(entries, entries.get(index), offset);
-    return entries.indexOf(target);
+  const indexByOffset = ({entries}, index, offset) =>
+    relativeOf(entries, entries.get(index), offset);
+
+  const viewByID = (state, id) => {
+    const index = indexByID(state, id);
+    const entry = state.entries.get(index);
+    return entry && entry.view;
   }
+  exports.viewByID = viewByID;
+
 
   const select = (state, index) => {
     const from = state.getIn(['entries', state.selected, 'view']);
-    return state.merge({
+    const to = state.getIn(['entries', index, 'view']);
+    return !to ? state : state.merge({
       selected: index,
-      previewed: index,
       entries: state
                 .entries
                 .setIn([index, 'selected'], Date.now())
                 .setIn([index, 'view', 'shell', 'isFocused'],
                        from.shell.isFocused)
-                .setIn([index, 'view', 'input', 'isFocused'],
-                       from.input.isFocused)
     });
   };
+  exports.select = select;
+
+  const selectByID = (state, id) =>
+    select(state, indexByID(state, id));
+  exports.selectByID = selectByID;
+
+  const unselect = state =>
+    state.remove('selected');
+  exports.unselect = unselect;
 
 
   const close = (state, id) => {
     const index = indexByID(state, id);
-    let target = null
-    if (index === state.selected) {
-      const selected = state.entries.get(index);
-      const ordered = order(state.entries);
-
-      target = selected === ordered.last() ?
-               relativeOf(state.entries, selected, -1) :
-               relativeOf(state.entries, selected, 1);
+    if (index === null) {
+      return state
     } else {
-      target = state.entries.get(state.selected);
+      return state.merge({
+        entries: state.entries.remove(index),
+        selected: null
+      })
     }
-
-    const entries = state.entries.remove(index);
-    const selected = entries.indexOf(target);
-    return state.merge({entries, selected, previewed: selected});
   }
 
   const load = (state, action) => {
     const index = indexByID(state, action.id);
-    const selected = state.entries.get(index).view;
-    return selected.id === 'about:dashboard' ?
+    const path = ['entries', index, 'view'];
+    const selected = state.getIn(path);
+    return !selected ?
             open(state, action.uri) :
            URI.getOrigin(selected.uri) !== URI.getOrigin(action.uri) ?
             open(state, action.uri) :
-           state.setIn(['entries', index, 'view'],
-                       WebView.update(selected, action));
+           state.setIn(path, WebView.update(selected, action));
   };
 
-  const open = (state, uri) => {
-    const {selected} = state;
-    const selectedView = state.entries.get(selected).view;
-    return state.merge({
+  const open = (state, uri) =>
+    state.merge({
       nextID: state.nextID + 1,
       selected: state.entries.size,
-      previewed: state.selected === state.previewed ? state.entries.size :
-                 state.previewed,
       entries: state
                 .entries
-                .setIn([selected, 'view', 'input', 'isFocused'], false)
-                .setIn([selected, 'view', 'shell', 'isFocused'], false)
                 .push(EntryModel({
                   selected: Date.now(),
                   view: WebView.Model({
@@ -168,7 +143,6 @@ define((require, exports, module) => {
                   })
                 }))
     });
-  };
 
   const openInBackground = (state, uri) => state.merge({
     nextID: state.nextID + 1,
@@ -179,26 +153,25 @@ define((require, exports, module) => {
 
   const updateWebView = (state, action) => {
     const index = indexByID(state, action.id);
-    const entry = state.entries.get(index);
+    const isFocusChange = action instanceof Shell.Action.Focus;
+    // If entry does not exist.
+    if (index === null) {
+      return state
+    }
 
-
-    const isFocusChange = action instanceof Shell.Action.Focus ||
-                          action instanceof Input.Action.Focus ||
-                          action instanceof Input.Action.Enter;
+    const path = ['entries', index, 'view'];
 
     // If focus is moved to a non selected web-view we do select it.
     if (isFocusChange && state.selected !== index) {
       return state.merge({
         selected: index,
-        previewed: index,
-        entries: state.entries.set(index, entry.merge({
+        entries: state.entries.mergeIn([index], {
           selected: Date.now(),
-          view: WebView.update(entry.view, action)
-        }))
+          view: WebView.update(state.getIn(path), action)
+        })
       })
     } else {
-      return state.setIn(['entries', index, 'view'],
-                         WebView.update(entry.view, action))
+      return state.setIn(path, WebView.update(state.getIn(path), action))
     }
   }
 
@@ -211,16 +184,12 @@ define((require, exports, module) => {
       openInBackground(state, action.uri) :
     action instanceof Close ?
       close(state, action.id) :
-    action instanceof PreviewByOffset ?
-      state.set('previewed', indexByOffset(state, state.previewed, action.offset)) :
-    action instanceof PreviewByID ?
-      state.set('previewed', indexByID(state, action.id)) :
-    action instanceof PreviewByIndex ?
-      state.set('previewed', action.index) :
     action instanceof SelectByOffset ?
       select(state, indexByOffset(state, state.selected, action.offset)) :
     action instanceof SelectByID ?
-      select(state, indexByID(state, action.id)) :
+      selectByID(state, action.id) :
+    action instanceof Enter ?
+      selectByID(state, action.id) :
     action instanceof SelectByIndex ?
       select(state, action.index) :
     WebView.Action.isTypeOf(action) ?
@@ -230,13 +199,13 @@ define((require, exports, module) => {
 
   // View
 
-  const view = (state, address) => {
+  const view = (isActive, state, address) => {
     const selected = state.entries.get(state.selected);
 
     return html.div({
       key: 'web-views',
       style: {
-        transform: `scale(${selected.view.input.isFocused ? 0 : 1})`
+        transform: `scale(${isActive ? 1 : 0})`
       },
     }, state.entries.map(({view}) =>
       render(view.id,

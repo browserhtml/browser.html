@@ -94,7 +94,7 @@ define((require, exports, module) => {
 
     return state.merge({
       selected: -1,
-      entries: entries.take(MAX_RESULTS - count)
+      entries: entries.take(count)
                       .concat(matches.slice(0, count))
     });
   };
@@ -103,7 +103,7 @@ define((require, exports, module) => {
     const entries = state.entries.filter(isntPage);
     const count = Math.min(matches.count(),
                            MAX_RESULTS - Math.min(MAX_RESULTS / 2, entries.count()));
-    const pages = matches.take(MAX_RESULTS - count);
+    const pages = matches.take(count);
 
     return state.merge({
       selected: -1,
@@ -131,10 +131,10 @@ define((require, exports, module) => {
     textAlign: 'center',
     width: '100vw',
     position: 'absolute',
-    top: 50,
+    top: 44,
     zIndex: 43,
     height: 260,
-    transition: 'background-color 200ms ease, opacity 200ms ease'
+    pointerEvents: 'none'
   };
 
   const hidden = {
@@ -145,7 +145,11 @@ define((require, exports, module) => {
   const styleSuggestions = {
     display: 'inline-block',
     textAlign: 'left',
-    width: 460
+    width: 400,
+    pointerEvents: 'all',
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    paddingTop: 20
   };
 
   const styleSuggestionFirstOfType = {
@@ -195,8 +199,6 @@ define((require, exports, module) => {
 
   const viewSuggestion = (state, selected, index, theme, address) => {
     let style = styleSuggestion;
-    if (index == 0)
-      style = mix(style, styleSuggestionFirstOfType);
     if (index == selected)
       style = mix(style, styleSuggestionSelected);
     if (theme.isDark)
@@ -231,7 +233,6 @@ define((require, exports, module) => {
 
   const view = (state, isActive, theme, address) => {
     const style = mix(styleSuggestionsContainer, {
-      backgroundColor: theme.shell,
       color: theme.foreground
     });
 

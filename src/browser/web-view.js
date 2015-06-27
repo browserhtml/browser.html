@@ -17,22 +17,18 @@ define((require, exports, module) => {
   const Shell = require('./web-shell');
   const Navigation = require('./web-navigation');
   const Security = require('./web-security');
-  const Input = require('./web-input');
   const Page = require('./web-page');
-  const Suggestions = require('./suggestion-box');
   const Loader = require('./web-loader');
 
   // Model
   const Model = Record({
     id: String,
     uri: Maybe(String),
-    input: Input.Model,
     security: Security.Model,
     navigation: Navigation.Model,
     progress: Progress.Model,
     page: Page.Model,
     shell: Shell.Model,
-    suggestions: Suggestions.Model
   });
   exports.Model = Model;
 
@@ -65,9 +61,7 @@ define((require, exports, module) => {
     Security: Security.Action,
     Progress: Progress.Action,
     Page: Page.Action,
-    Shell: Shell.Action,
-    Input: Input.Action,
-    Suggestions: Suggestions.Action
+    Shell: Shell.Action
   });
   exports.Action = Action;
 
@@ -76,7 +70,6 @@ define((require, exports, module) => {
 
   const load = (state, uri=state.input.value) => Model({
     uri,
-    input: uri !== state.uri ? state.input.clear('value') : state.input,
     id: state.id,
     shell: state.shell.set('isFocused', true)
   });
@@ -85,16 +78,9 @@ define((require, exports, module) => {
   const update = (state, action) =>
     action instanceof Load ? load(state, action.uri) :
     action instanceof LocationChange ?
-      state.merge({uri: action.uri,
-                   input: state.id === 'about:dashboard' ? state.input :
-                          state.input.set('value', action.uri)
-                  }) :
+      state.merge({uri: action.uri}) :
     action instanceof Shell.Action.Focus ?
-      state.merge({shell: Shell.update(state.shell, action),
-                   input: state.id === 'about:dashboard' ? state.input :
-                          state.input.set('value', state.uri)}) :
-    Input.Action.isTypeOf(action) ?
-      state.set('input', Input.update(state.input, action)) :
+      state.merge({shell: Shell.update(state.shell, action)}) :
     Navigation.Action.isTypeOf(action) ?
       state.set('navigation', Navigation.update(state.navigation, action)) :
     Progress.Action.isTypeOf(action) ?
@@ -109,8 +95,6 @@ define((require, exports, module) => {
       state.set('security', Security.update(state.security, action)) :
     Page.Action.isTypeOf(action) ?
       state.set('page', Page.update(state.page, action)) :
-    Suggestions.Action.isTypeOf(action) ?
-      state.set('suggestions', Suggestions.update(state.suggestions, action)) :
     state;
 
   exports.update = update;
@@ -119,6 +103,7 @@ define((require, exports, module) => {
   // View
 
   const base = {
+    position: 'absoulte',
     display: 'block',
     height: 'calc(100vh - 28px)',
     MozUserSelect: 'none',

@@ -406,7 +406,7 @@ define((require, exports, module) => {
   const service = address => action => {
     if (action instanceof LoadEnd && action.id !== 'about:dashboard') {
       const iframe = document.getElementById(`web-view-${action.id}`);
-      if (iframe) {
+      if (iframe && iframe.executeScript) {
         iframe.executeScript(script)
               .then(address.pass(readCard, action));
       }

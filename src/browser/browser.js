@@ -26,6 +26,7 @@ define((require, exports, module) => {
   const OS = require('common/os');
   const Pallet = require('service/pallet');
   const Suggestions = require('./suggestion-box');
+  const URI = require('common/url-helper');
 
   // Model
   const Model = Record({
@@ -33,6 +34,8 @@ define((require, exports, module) => {
     shell: Focusable.Model({isFocused: true}),
     updates: Updates.Model,
     webViews: WebViews.Model,
+    input: Input.Model,
+    suggestions: Suggestions.Model
   });
   exports.Model = Model;
 
@@ -41,28 +44,26 @@ define((require, exports, module) => {
   const {SaveSession, ResetSession, RestoreSession} = Session.Action;
   const {Focus, Blur} = Focusable.Action;
   const {ApplicationUpdate, RuntimeUpdate} = Updates.Action;
-  const {EnterInput} = WebView.Action;
 
   const modifier = OS.platform() == 'linux' ? 'alt' : 'accel';
   const Binding = KeyBindings({
-    'accel l': Input.Action.Enter,
-    'accel t': _ => Input.Action.Enter({id: 'about:dashboard'}),
-    'accel 0': WebView.Action.Shell.ResetZoom,
-    'accel -': WebView.Action.Shell.ZoomOut,
-    'accel =': WebView.Action.Shell.ZoomIn,
-    'accel shift =': WebView.Action.Shell.ZoomIn,
-    'accel w': WebViews.Action.Close,
+    'accel l': _ => Input.Action.Enter(),
+    'accel t': _ => Input.Action.Enter({value: ''}),
+    'accel 0': _ => WebView.Action.Shell.ResetZoom(),
+    'accel -': _ => WebView.Action.Shell.ZoomOut(),
+    'accel =': _ => WebView.Action.Shell.ZoomIn(),
+    'accel shift =': _ => WebView.Action.Shell.ZoomIn(),
+    'accel w': _ => WebViews.Action.Close(),
     'accel shift ]': _ => WebViews.Action.SelectByOffset({offset: 1}),
     'accel shift [': _ => WebViews.Action.SelectByOffset({offset: -1}),
 
-    'accel shift backspace': ResetSession,
-    'accel shift s': SaveSession,
+    'accel shift backspace': _ => ResetSession(),
+    'accel shift s': _ => SaveSession(),
 
-    'F5': WebView.Action.Navigation.Reload,
-    'accel r': WebView.Action.Navigation.Reload,
-    'escape': WebView.Action.Navigation.Stop,
-    [`${modifier} left`]: WebView.Action.Navigation.GoBack,
-    [`${modifier} right`]: WebView.Action.Navigation.GoForward
+    'accel r': _ => WebView.Action.Navigation.Reload(),
+    'escape': _ => WebView.Action.Navigation.Stop(),
+    [`${modifier} left`]: _ => WebView.Action.Navigation.GoBack(),
+    [`${modifier} right`]: _ => WebView.Action.Navigation.GoForward()
   }, 'Browser.Keyboard.Action');
 
   const Action = Union({
@@ -80,14 +81,29 @@ define((require, exports, module) => {
   // Update
 
   const update = (state, action) => {
-    if (action instanceof WebViews.Action.SelectByID) {
+    if (action instanceof Input.Action.Submit) {
       return state.merge({
+        input: Input.update(state.input, action),
+        webViews: WebViews.update(state.webViews, WebView.Action.Load({
+          id: action.id,
+          uri: URI.read(state.input.value)
+        }))
+      });
+    }
+
+    if (action instanceof Input.Action.Enter) {
+      return state.merge({
+        input: Input.update(state.input, action),
         webViews: WebViews.update(state.webViews, action)
       });
     }
 
     if (Focusable.Action.isTypeOf(action)) {
       return state.set('shell', Focusable.update(state.shell, action));
+    }
+
+    if (Input.Action.isTypeOf(action)) {
+      return state.set('input', Input.update(state.input, action));
     }
 
     if (WebViews.Action.isTypeOf(action)) {
@@ -100,6 +116,11 @@ define((require, exports, module) => {
 
     if (Session.Action.isTypeOf(action)) {
       return Session.update(state, action);
+    }
+
+    if (Suggestions.Action.isTypeOf(action)) {
+      return state.set('suggestions',
+                       Suggestions.update(state.suggestions, action));
     }
 
     return state
@@ -123,15 +144,16 @@ define((require, exports, module) => {
   const OpenWindow = event => WebView.Open({uri: event.detail.url});
 
   const view = (state, address) => {
-    const {shell, webViews} = state;
-    const selected = webViews.entries.get(webViews.selected);
-    const theme = Theme.read(selected.view.page.pallet);
+    const {shell, webViews, input, suggestions} = state;
+    const selected = webViews.selected === null ? null :
+                     webViews.entries.getIn([webViews.selected, 'view']);
+    const theme = Theme.read(selected ? selected.page.pallet : {});
 
     return Main({
       key: 'root',
-      windowTitle: selected.view.page.title ||
-                   selected.view.uri,
-      onKeyDown: address.pass(Binding),
+      windowTitle: !selected ? '' :
+                   (selected.page.title || selected.uri),
+      onKeyDown: address.pass(Binding, state),
       onWindowBlur: address.pass(Blur),
       onWindowFocus: address.pass(Focus),
       onUnload: address.pass(SaveSession),
@@ -148,16 +170,15 @@ define((require, exports, module) => {
         color: theme.shellText,
         backgroundColor: theme.shell,
         position: 'relative',
-        overflowY: 'hidden'
+        overflowY: 'hidden',
       }
     }, [
       render('WindowControls', WindowControls.view, shell, theme, address),
-      render('WindowBar', WindowBar.view, shell, selected.view, theme, address),
-      render('LocationBar', LocationBar.view, selected.view, theme, address),
-      render('Preview', Preview.view, selected, webViews, theme, address),
-      render('Suggestions', Suggestions.view, selected.view.suggestions,
-             selected.view.input.isFocused, theme, address),
-      render('WebViews', WebViews.view, webViews, address),
+      render('WindowBar', WindowBar.view, !input.isFocused, shell, selected, theme, address),
+      render('LocationBar', LocationBar.view, selected, input, suggestions, theme, address),
+      render('Preview', Preview.view, webViews, input, selected, theme, address),
+      render('Suggestions', Suggestions.view, suggestions, input.isFocused, theme, address),
+      render('WebViews', WebViews.view, !input.isFocused, webViews, address),
       render('Updater', Updates.view, state.updates, address)
     ])
   };

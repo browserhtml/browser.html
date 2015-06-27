@@ -28,27 +28,22 @@ define((require, exports, module) => {
     transition: 'background-color 300ms ease, color 300ms ease',
     textAlign: 'center',
     position: 'relative',
-    zIndex: '100',
+    zIndex: 2,
     visibility: Maybe(String)
   });
 
 
   // view
 
-  const view = (shell, webView, theme, address) => html.div({
+  const view = (isActive, shell, webView, theme, address) => html.div({
     key: 'WindowBar',
     style: NavigationPanelStyle({
       backgroundColor: theme.shell,
       color: theme.shellText,
-      visibility: webView.input.isFocused ? 'hidden' : 'visible'
+      visibility: (webView && isActive) ? 'visible' : 'hidden'
     }),
     className: ClassSet({
       navbar: true,
-      cangoback: webView.navigation.canGoBack,
-      canreload: webView.page.uri,
-      loading: Progress.isLoading(webView.progress),
-      ssl: webView.security.secure,
-      sslv: webView.security.extendedValidation,
     })
   }, [
     html.div({
@@ -63,8 +58,8 @@ define((require, exports, module) => {
     }, [
       render('PreviewControls', Preview.viewControls, theme, address),
     ]),
-    render('ProgressBar', Progress.view,
-           webView.progress, webView.id, theme, address)
+    webView && render('ProgressBar', Progress.view,
+                      webView.progress, webView.id, theme, address)
   ]);
   exports.view = view;
 });

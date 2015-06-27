@@ -6,7 +6,7 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const {Record, Union} = require('common/typed');
+  const {Record, Union, Maybe} = require('common/typed');
   const {Element, VirtualAttribute} = require('./element');
   const Focusable = require('./focusable');
 
@@ -20,7 +20,7 @@ define((require, exports, module) => {
 
   const Model = Record({
     isFocused: false,
-    value: '',
+    value: Maybe(String),
     selection: Selection
   }, 'Editable.Model');
   exports.Model = Model;
