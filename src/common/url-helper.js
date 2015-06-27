@@ -54,6 +54,23 @@ define((require, exports, module) => {
     }
   }
 
+  const readSearchURL = input =>
+    `https://duckduckgo.com/?q=${encodeURIComponent(input)}`;
+
+  const readAboutURL = input =>
+    `${getBaseURI()}src/about/${input.replace('about:', '')}/index.html`;
+
+  const read = input =>
+    isNotURL(input) ? readSearchURL(input) :
+    !hasScheme(input) ? `http://${input}` :
+    input;
+
+  const resolve = uri =>
+    isAboutURL(uri) ? readAboutURL(uri) :
+    uri;
+
+  exports.resolve = resolve;
+  exports.read = read;
   exports.hasScheme = hasScheme;
   exports.getOrigin = getOrigin;
   exports.getBaseURI = getBaseURI;

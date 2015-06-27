@@ -6,75 +6,81 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const {isFocused, focus, blur} = require('./focusable');
-  const {Element, BeforeAppendAttribute, VirtualAttribute, Event} = require('./element');
-  const {Component, createFactory} = require('react');
-  const {Record} = require('typed-immutable/index');
+  const {Record, Union} = require('common/typed');
+  const {Element, VirtualAttribute} = require('./element');
+  const Focusable = require('./focusable');
 
   // Model
 
-  const Editable = Record({
-    isFocused: Boolean(false),
-    selectionStart: Number(0),
-    selectionEnd: Number(0),
-    selectionDirection: String('forward'),
-    value: String('')
-  });
+  const Selection = Record({
+    start: 0,
+    end: 0,
+    direction: 'forward'
+  }, 'Editable.Selection');
+
+  const Model = Record({
+    isFocused: false,
+    value: '',
+    selection: Selection
+  }, 'Editable.Model');
+  exports.Model = Model;
 
   // Actions
 
-  Editable.select = (range={}) => editable => editable.merge({
-    selectionStart: range.selectionStart,
-    selectionEnd: range.selectionEnd,
-    selectionDirection: range.selectionDirection
-  });
+  const Select = Record({
+    range: Selection
+  }, 'Editable.Select');
+  Select.All = () => Select({end: Infinity});
 
-  Editable.selectAll = Editable.select({selectionStart:0,
-                                        selectionEnd: Infinity});
 
-  Editable.focus = focus;
-  Editable.blur = blur;
+  const Change = Record({
+    value: String
+  }, 'Editable.Change');
+
+  const Action = Union({Change, Select});
+  exports.Action = Action;
+
+  // Update
+
+  const select = (state, range) =>
+    state.set('selection', Selection(range));
+  exports.select = select;
+
+  const selectAll = state =>
+    state.set('selection', Selection({end: Infinity}));
+  exports.selectAll = selectAll;
+
+  const change = (state, action) =>
+    state.set('value', action.value);
+  exports.change = change;
+
+  const update = (state, action) =>
+    action instanceof Change ? change(state, action) :
+    action instanceof Select ? select(state, action.range) :
+    Focusable.Action.isTypeOf(action) ? Focusable.update(state, action) :
+    action;
+
+  exports.update = update;
+
+  // Field
+
+  const Field = {
+    selection: VirtualAttribute((node, current, past) => {
+      if (current !== past) {
+        const {start, end, direction} = current;
+        node.setSelectionRange(start === Infinity ? node.value.length : start,
+                               end === Infinity ? node.value.length : end,
+                               direction);
+      }
+    })
+  };
+  exports.Field = Field;
 
   // View
 
-  const updateSelection = field => (node, current, past) => {
-    if (current != past) {
-      node[field] = current === Infinity ? node.value.length : current
-    }
-  };
-
-  const InputElement = Element('input', {
-    isFocused,
-    selectionStart: VirtualAttribute(updateSelection('selectionStart')),
-    selectionEnd: VirtualAttribute(updateSelection('selectionEnd')),
-    selectionDirection: VirtualAttribute((node, current, past) => {
-      if (current !== past) {
-        node.selectionDirection = current
-      }
-    }),
+  const view = Element('input', {
+    isFocused: Focusable.Field.isFocused,
+    selection: Field.selection
   });
-
-  class InputField extends Component {
-    constructor() {
-      this.onKeyDown = this.onKeyDown.bind(this);
-    }
-    onKeyDown(event) {
-      if (this.props.onKeyDown) {
-        this.props.onKeyDown(event);
-      }
-      if (event.key == this.props.submitKey) {
-        this.props.onSubmit(event);
-      }
-    }
-    render() {
-      return InputElement(Object.assign({}, this.props, {onKeyDown: this.onKeyDown}));
-    }
-  };
-
-  Editable.renderInput = InputElement
-  Editable.renderField = createFactory(InputField)
-
-  // Exports:
-
-  exports.Editable = Editable;
+  exports.view = view;
 });

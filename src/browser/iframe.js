@@ -6,11 +6,11 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const {isFocused} = require('common/focusable');
+  const Focusable = require('common/focusable');
   const {Element, BeforeAppendAttribute, VirtualAttribute, Event, VirtualEvent} = require('common/element');
 
-  const IFrame = Element('iframe', {
-    isFocused: isFocused,
+  const view = Element('iframe', {
+    isFocused: Focusable.Field.isFocused,
     isRemote: new BeforeAppendAttribute('remote'),
     isBrowser: new BeforeAppendAttribute('mozbrowser'),
     mozApp: new BeforeAppendAttribute('mozapp'),
@@ -18,8 +18,8 @@ define((require, exports, module) => {
     uri: VirtualAttribute((node, current, past) => {
       if (current != past) {
         const uri = node.setVisible ? current : `data:text/html,${current}`
-        if (node.getAttribute('uri') !== uri) {
-          node.setAttribute('uri', uri);
+        if (node.location !== uri) {
+          node.location = uri;
           node.src = uri;
         }
       }
@@ -75,9 +75,15 @@ define((require, exports, module) => {
     onUserActivityDone: Event('mozbrowseractivitydone'),
     onVisibilityChange: Event('mozbrowservisibilitychange'),
     onMetaChange: Event('mozbrowsermetachange'),
+    // Use `VirtualEvent` to proxy events in order to mutate `target.location`
+    // so that user can check `target.location` before deciding if change to
+    // `target.src` is required.
     onLocationChange: VirtualEvent((target, dispatch) => {
       target.addEventListener('mozbrowserlocationchange', event => {
-        target.setAttribute('uri', event.detail);
+        target.location = event.detail;
+        // Set an attribute as well so that in the inspector we can tell what
+        // is the location of a page even if user navigated away.
+        target.setAttribute('location', event.detail);
         dispatch(event);
       });
     }),
@@ -87,9 +93,15 @@ define((require, exports, module) => {
     onAuthentificate: Event('mozbrowserusernameandpasswordrequired'),
     onScrollAreaChange: Event('mozbrowserscrollareachanged'),
     onLoadProgressChange: Event('mozbrowserloadprogresschanged'),
+
+    // It is unfortunate that state of `canGoBack` and `canGoForward` is
+    // not observadle, with virtual events we polifill more desired API
+    // and pretend there are events dispatched when state changes.
     onCanGoBackChange: VirtualEvent((target, dispatch) => {
       const onsuccess = request =>
-        dispatch({target, detail: request.target.result});
+        dispatch({target,
+                  type: 'mozbrowsergobackchanged',
+                  detail: request.target.result});
 
       target.addEventListener('mozbrowserlocationchange', event => {
         target.getCanGoBack().onsuccess = onsuccess;
@@ -97,7 +109,9 @@ define((require, exports, module) => {
     }),
     onCanGoForwardChange: VirtualEvent((target, dispatch) => {
       const onsuccess = request =>
-        dispatch({target, detail: request.target.result});
+        dispatch({target,
+                  type: 'mozbrowsergoforwardchanged',
+                  detail: request.target.result});
 
       target.addEventListener('mozbrowserlocationchange', event => {
         target.getCanGoForward().onsuccess = onsuccess;
@@ -107,6 +121,5 @@ define((require, exports, module) => {
 
   // Exports:
 
-  exports.IFrame = IFrame;
-
+  exports.view = view;
 });

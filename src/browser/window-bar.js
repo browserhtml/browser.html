@@ -6,56 +6,65 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const {DOM} = require('react')
-  const Component = require('omniscient');
+  const {Record, Union, Maybe} = require('common/typed');
+  const {html, render} = require('reflex')
   const ClassSet = require('common/class-set');
   const {mix} = require('common/style');
-  const {ProgressBar} = require('./progress-bar');
-  const {WindowControls} = require('./window-controls');
-  const {LocationBar} = require('./location-bar');
 
-  const navbarStyle = {
+  const Progress = require('./progress-bar');
+  const WindowControls = require('./window-controls');
+  const LocationBar = require('./location-bar');
+  const Preview = require('./web-preview');
+
+  const Theme = require('./theme');
+  const WebView = require('./web-view');
+
+  // Model
+
+  const NavigationPanelStyle = Record({
     backgroundColor: 'inherit',
+    color: 'inherit',
     MozWindowDragging: 'drag',
-    padding: 10,
+    transition: 'background-color 300ms ease, color 300ms ease',
+    textAlign: 'center',
     position: 'relative',
-    scrollSnapCoordinate: '0 0',
-    transition: 'background-color 200ms ease',
-    textAlign: 'center'
-  };
-
-  const WindowBar = Component(function WindowBar(state, handlers) {
-    const {key, input, tabStrip, webView, suggestions,
-           title, rfa, theme, isDocumentFocused} = state;
-    return DOM.div({
-      key,
-      style: mix(navbarStyle, theme.navigationPanel),
-      className: ClassSet({
-        navbar: true,
-        cangoback: webView.canGoBack,
-        canreload: webView.uri,
-        loading: webView.isLoading,
-        ssl: webView.securityState == 'secure',
-        sslv: webView.securityExtendedValidation,
-      })
-    }, [
-      WindowControls({
-        key: 'WindowControls',
-        isDocumentFocused,
-        theme
-      }),
-      LocationBar.render(LocationBar({
-        key: 'navigation',
-        input, tabStrip, webView,
-        suggestions, title, theme
-      }), handlers),
-      ProgressBar({key: 'progressbar', rfa, webView, theme},
-                  {editRfa: handlers.editRfa})
-    ])
+    zIndex: '100',
+    visibility: Maybe(String)
   });
 
-  // Exports:
 
-  exports.WindowBar = WindowBar;
+  // view
 
+  const view = (shell, webView, theme, address) => html.div({
+    key: 'WindowBar',
+    style: NavigationPanelStyle({
+      backgroundColor: theme.shell,
+      color: theme.shellText,
+      visibility: webView.input.isFocused ? 'hidden' : 'visible'
+    }),
+    className: ClassSet({
+      navbar: true,
+      cangoback: webView.navigation.canGoBack,
+      canreload: webView.page.uri,
+      loading: Progress.isLoading(webView.progress),
+      ssl: webView.security.secure,
+      sslv: webView.security.extendedValidation,
+    })
+  }, [
+    html.div({
+      key: 'header',
+      style: {
+        boxShadow: shell.isFocused && '0 1px 0 rgba(0, 0, 0, 0.08)',
+        padding: '3px 0',
+        height: '28px',
+        zIndex: 100,
+        position: 'relative'
+      }
+    }, [
+      render('PreviewControls', Preview.viewControls, theme, address),
+    ]),
+    render('ProgressBar', Progress.view,
+           webView.progress, webView.id, theme, address)
+  ]);
+  exports.view = view;
 });

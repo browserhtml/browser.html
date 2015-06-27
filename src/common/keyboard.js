@@ -7,6 +7,7 @@ define((require, exports, module) => {
   'use strict';
 
   const platform = require('common/os').platform();
+  const {Record, Any} = require('common/typed');
 
   const readModifiers = ({type, metaKey, shiftKey, altKey, ctrlKey}) => {
     const modifiers = [];
@@ -57,28 +58,100 @@ define((require, exports, module) => {
       .sort()
       .join(' ');
 
-
-  const KeyBindings = (handlers) => {
-    const bindings = Object.create(null);
-    Object.keys(handlers).forEach(key => {
-      bindings[readChord(key)] = handlers[key];
-    });
-
-    return (...args) => event => {
-      if (event) {
-        const chord = writeChord(event);
-        const binding = bindings[chord];
-
-        if (binding) {
-          binding(...args);
-          event.preventDefault();
-          event.stopPropagation();
-        }
-      }
-      return event;
+  class KeyBinding {
+    constructor({chord, metaKey, shiftKey, altKey, ctrlKey, key, action}) {
+      this.chord = chord
+      this.key = key
+      this.metaKey = metaKey
+      this.shiftKey = shiftKey
+      this.altKey = altKey
+      this.ctrlKey = ctrlKey
+      this.action = action
+    }
+    toJSON() {
+      const {chord, key, metaKey, shiftKey, altKey, ctrlKey} = this;
+      return {chord, key, metaKey, shiftKey, altKey, ctrlKey};
+    }
+    toString() {
+      return `KeyBinding(${JSON.stringify(this)})`
     }
   }
 
+  class KeyboardAction {
+    constructor(options) {
+      this.label = options.label || 'Keyboard.Action'
+
+      this.chord = options.chord
+      this.key = options.key
+
+      this.metaKey = options.metaKey
+      this.shiftKey = options.shiftKey
+      this.altKey = options.altKey
+      this.ctrlKey = options.ctrlKey
+      this.action = options.action || null
+    }
+    toJSON() {
+      const {action, chord, key, metaKey, shiftKey, altKey, ctrlKey} = this;
+      return {action, chord, key, metaKey, shiftKey, altKey, ctrlKey};
+    }
+    toString() {
+      return `${this.label}(${JSON.stringify(this)})`
+    }
+  };
+
+  const KeyBindings = (bindingTable, label) => {
+    const bindings = Object.create(null);
+    Object.keys(bindingTable).forEach(key => {
+      bindings[readChord(key)] = bindingTable[key];
+    });
+
+    const Binding = (...args) => {
+      const event = args[args.length - 1];
+      const chord = writeChord(event);
+      const read = bindings[chord] ||
+                   bindings[`${event.type}: ${chord}`];
+
+      if (read) {
+        event.preventDefault();
+        event.stopPropagation();
+        return new KeyboardAction({
+          action: read(...args),
+          chord, label,
+
+          metaKey: event.metaKey,
+          shiftKey: event.shiftKey,
+          altKey: event.altKey,
+          ctrlKey: event.ctrlKey,
+          key: event.key
+        });
+      }
+
+      return null;
+    };
+    Binding.Action = KeyboardAction;
+
+    return Binding;
+  }
+  KeyBindings.Stop = read => {
+    event.stopPropagation();
+    return read(event);
+  }
+  KeyBindings.Cancel = read => {
+    event.preventDefault();
+    return read(event);
+  }
+  KeyBindings.Abort = read => {
+    event.preventDefault();
+    event.stopPropagation();
+    return read(event);
+  }
+
+  const service = address => action => {
+    if (action instanceof KeyboardAction) {
+      address.receive(action.action);
+    }
+  }
+  exports.service = service;
 
   // Exports:
 

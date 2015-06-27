@@ -6,376 +6,332 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const {DOM} = require('react');
-  const Component = require('omniscient');
-  const ClassSet = require('common/class-set');
+  const {Record, Union, List, Maybe, Any} = require('common/typed');
+  const {html} = require('reflex');
   const {mix} = require('common/style');
-  const {focus, blur} = require('common/focusable');
-  const {isPrivileged, getDomainName, getManifestURL} = require('common/url-helper');
-  const {fromDOMRequest, fromEvent} = require('lang/promise');
-  const {compose, curry} = require('lang/functional');
-  const {isActive, isSelected} = require('./deck/actions');
-  const {getHardcodedColors} = require('./theme');
-  const {IFrame} = require('./iframe');
-  const {Record, List, Maybe, Any} = require('typed-immutable/index');
-  const {Map} = require('immutable');
-  const uuid = require('uuid');
+  const URI = require('common/url-helper');
+  const Editable = require('common/editable');
+  const Focusable = require('common/focusable');
+  const IFrame = require('./iframe');
+  const Progress = require('./progress-bar');
+  const Shell = require('./web-shell');
+  const Navigation = require('./web-navigation');
+  const Security = require('./web-security');
+  const Input = require('./web-input');
+  const Page = require('./web-page');
+  const Suggestions = require('./suggestion-box');
+  const Loader = require('./web-loader');
 
-  const makeTileURI = input => `tiles/${getDomainName(input)}.png`;
-
-  const WebView = Record({
+  // Model
+  const Model = Record({
     id: String,
-    // What the user wrote in the locationbar for this specific view
-    userInput: String(''),
-    // Zoom level of the web content.
-    zoom: Number(1),
-    // State of the web content:
-    // 'loading'|'loaded'|'stop'|'reload'|'goBack'|'goForward'
-    readyState: Maybe(String),
-    // `true` if web content is currently loading.
-    isLoading: Boolean(false),
-    // Has the server replied yet
-    isConnecting: Boolean(false),
-
-    startLoadingTime: Number(-1),
-    // When the server replied first (while loading)
-    connectedTime: Number(-1),
-    endLoadingTime: Number(-1),
-
-    // `true` if web content has a focus.
-    isFocused: Boolean(false),
-    // `true` if this is currently active web viewer, in other words
-    // if this is a web viewer currently displayed.
-    isActive: Boolean(false),
-    // `true` if this is currently selected web viewer. In most times
-    // is in sync with `isActive` although it does gets out of sync
-    // during tab switching when user is seleceting tab to switch to.
-    isSelected: Boolean(false),
-    isPinned: Boolean(false),
-    // URI that is loaded / loading.
     uri: Maybe(String),
-    // Currently loaded content's title.
-    title: Maybe(String),
-    // Icons from the loaded web content.
-    icons: Any,
-    // Metadata of the loaded web content.
-    meta: Any,
-    // Web content color info, should probably be moved elsewhere.
-    backgroundColor: Maybe(String),
-    foregroundColor: Maybe(String),
-    isDark: Boolean(false),
-    // Web content network security info.
-    securityState: String('insecure'),
-    securityExtendedValidation: Boolean(false),
-    // Flags indicating if web viewer can navigate back / forward.
-    canGoBack: Boolean(false),
-    canGoForward: Boolean(false),
-
-    contentOverflows: Boolean(false),
-    thumbnail: Maybe(String)
+    input: Input.Model,
+    security: Security.Model,
+    navigation: Navigation.Model,
+    progress: Progress.Model,
+    page: Page.Model,
+    shell: Shell.Model,
+    suggestions: Suggestions.Model
   });
+  exports.Model = Model;
+
+  // Returns subset of the model which can be restored acrosse sessions.
+  const persistent = state =>
+    state.remove('progress')
+         .removeIn(['page', 'thumbnail'])
+         .remove('navigation')
+         .remove('security');
+  exports.persistent = persistent;
 
 
-  const set = field => value => target => target.set(field, value)
-  const patch = delta => state => state.merge(delta)
-  const In = (...path) => edit => state =>
-    state.updateIn(path, edit);
+  // Actions
 
-  // Returns state with fields that represent state that can not be restored
-  // cleared.
-  WebView.persistent = patch({
-    thumbnail: void(0),
-    readyState: void(0),
-    isLoading: void(0),
-    isConnecting: void(0),
+  // All actions that `WebView.update` handles have a an `id` field that refers
+  // to the `id` of the `WebView`. As a matter of fact those actions are routed
+  // by `WebViews` which is what `id` field needed for. Default `id` is set to
+  // `@selected` that and `@previewed` which refer to currently selected /
+  // previewed WebView. These actions in fact would have being defined on the
+  // `WebViews` instead but that would coused cyrcular dependncy there for we
+  // define them here and use them from `WebViews` instead.
 
-    startLoadingTime: void(0),
-    connectedTime: void(0),
-    endLoadingTime: void(0),
 
-    backgroundColor: void(0),
-    foregroundColor: void(0),
-    isDark: void(0),
 
-    title: void(0),
-    securityState: void(0),
-    securityExtendedValidation: void(0),
-    canGoBack: void(0),
-    canGoForward: void(0),
+  const {Load, LocationChange} = Loader.Action;
 
-    contentOverflows: void(0)
+  const Action = Union({
+    Load, LocationChange,
+    Navigation: Navigation.Action,
+    Security: Security.Action,
+    Progress: Progress.Action,
+    Page: Page.Action,
+    Shell: Shell.Action,
+    Input: Input.Action,
+    Suggestions: Suggestions.Action
   });
-
-  WebView.blur = blur;
-  WebView.focus = focus;
-
-  WebView.open = (state={}) =>
-    WebView(Object.assign({id: uuid()}, state))
-
-  // Creates a state that when rendered triggers a content reload.
-  WebView.reload = patch({readyState: 'reload'});
-
-  // Creates a state that when rendered aborts a content load.
-  WebView.stop = patch({readyState: 'stop'});
-
-  // Creates a state that when rendered triggers a navigation back.
-  WebView.goBack = patch({readyState: 'goBack'});
-
-  // Creates a state that when rendered triggers a navigation forward.
-  WebView.goForward = patch({readyState: 'goForward'});
-
-  const ZOOM_MIN = 0.5;
-  const ZOOM_MAX = 2;
-  const ZOOM_STEP = 0.1;
-
-  const zoomIn = value => Math.min(ZOOM_MAX, value + ZOOM_STEP);
-  const zoomOut = value => Math.max(ZOOM_MIN, value - ZOOM_STEP);
-
-  // Creates a state with zoom increased step further.
-  WebView.zoomIn = state => state.update('zoom', zoomIn);
-  WebView.zoomOut = state => state.update('zoom', zoomOut);
-  WebView.zoomReset = state => state.remove('zoom');
+  exports.Action = Action;
 
 
-  WebView.setMetaData = set('meta');
-  WebView.setTitle = set('title');
-  WebView.setCanGoBack = set('canGoBack');
-  WebView.setCanGoForward = set('canGoForward');
-  WebView.startLoad = state => state.merge({
-    readyState: 'loading',
-    isLoading: true,
-    isConnecting: true,
-    startLoadingTime: performance.now(),
-    icons: void(0),
-    thumbnail: void(0),
-    contentOverflows: false,
-    title: void(0),
-    securityState: void(0),
-    securityExtendedValidation: void(0),
-    canGoBack: void(0),
-    canGoForward: void(0)
+  // Update
+
+  const load = (state, uri=state.input.value) => Model({
+    uri,
+    input: uri !== state.uri ? state.input.clear('value') : state.input,
+    id: state.id,
+    shell: state.shell.set('isFocused', true)
   });
+  exports.load = load;
 
-  WebView.endLoad = state => state.merge({
-    isConnecting: false,
-    endLoadingTime: performance.now(),
-    readyState: 'loaded',
-    isLoading: false
-  });
+  const update = (state, action) =>
+    action instanceof Load ? load(state, action.uri) :
+    action instanceof LocationChange ?
+      state.merge({uri: action.uri,
+                   input: state.id === 'about:dashboard' ? state.input :
+                          state.input.set('value', action.uri)
+                  }) :
+    action instanceof Shell.Action.Focus ?
+      state.merge({shell: Shell.update(state.shell, action),
+                   input: state.id === 'about:dashboard' ? state.input :
+                          state.input.set('value', state.uri)}) :
+    Input.Action.isTypeOf(action) ?
+      state.set('input', Input.update(state.input, action)) :
+    Navigation.Action.isTypeOf(action) ?
+      state.set('navigation', Navigation.update(state.navigation, action)) :
+    Progress.Action.isTypeOf(action) ?
+      state.merge({
+        progress: Progress.update(state.progress, action),
+        navigation: action instanceof LoadStart ? state.navigation.clear() :
+                    state.navigation
+      }) :
+    Shell.Action.isTypeOf(action) ?
+      state.set('shell', Shell.update(state.shell, action)) :
+    Security.Action.isTypeOf(action) ?
+      state.set('security', Security.update(state.security, action)) :
+    Page.Action.isTypeOf(action) ?
+      state.set('page', Page.update(state.page, action)) :
+    Suggestions.Action.isTypeOf(action) ?
+      state.set('suggestions', Suggestions.update(state.suggestions, action)) :
+    state;
 
-  WebView.changeProgress = connectedTime => state =>
-    !state.isConnecting ? state :
-    state.merge({isConnecting: false,
-                 connectedTime: performance.now()});
+  exports.update = update;
 
-  WebView.changeLocation = value => state => state.merge({
-    uri: value,
-    readyState: state.isLoading ? 'loading' : 'loaded',
-    userInput: value
-  }).merge(getHardcodedColors(value));
 
-  WebView.changeIcon = icon => state =>
-    state.get('icons') ? state.setIn(['icons', icon.href], icon) :
-    state.set('icons', Map([[icon.href, icon]]));
+  // View
 
-  WebView.changeSecurity = security => state => state.merge({
-    securityState: security.state,
-    securityExtendedValidation: security.extendedValidation
-  });
-
-  WebView.setContentOverflows = set('contentOverflows')
-
-  WebView.onThumbnailChanged = edit => blob =>
-    edit(state => state.set('thumbnail', URL.createObjectURL(blob)));
-
-  const styleIframe = {
+  const base = {
     display: 'block',
-    height: 'calc(100vh - 50px)',
+    height: 'calc(100vh - 28px)',
     MozUserSelect: 'none',
-    width: '100vw'
+    width: '100vw',
+    backgroundColor: '#fff'
   };
 
-  WebView.render = Component('WebView', (state, handlers) => {
-    const {onOpen, onOpenBg, onClose, edit} = handlers;
+  const offScreen = {
+    zIndex: -1,
+    display: 'block !important',
+    position: 'absolute',
+    left: 0
+  };
 
+  const hidden = {
+    display: 'none'
+  };
+
+  const view = (id, uri, shell, page, navigation, isSelected, address) => {
     // Do not render anything unless viewer has an `uri`
-    if (!state.uri) return null;
+    if (!uri) return null;
 
-    let style = mix(styleIframe);
+    console.log('render web-view')
 
-    if (state.contentOverflows && state.isActive)
-      style.minHeight = '100vh';
+    const style = base;
 
-    if (!state.isActive)
-      style.display = 'none';
+    const action = address.pass(Event, {id, uri});
+    const location = URI.resolve(uri);
 
-    /*
-    This is a workaround for Bug #266 that prevents capturing
-    screenshots if iframe or it's ancesstors have `display: none`.
-    Until that's fixed on platform we just hide such elements with
-    negative index and absolute position.
-    */
-    if (!state.isActive && !state.thumbnail) {
-      style = mix(style, {
-        zIndex: -1,
-        display: 'block !important',
-        position: 'absolute',
-        width: '100vw',
-        height: '100vh'
-      });
-    }
-
-    return IFrame({
-      style: style,
+    return IFrame.view({
+      id: `web-view-${id}`,
+      // This is a workaround for Bug #266 that prevents capturing
+      // screenshots if iframe or it's ancesstors have `display: none`.
+      // Until that's fixed on platform we just hide such elements with
+      // negative index and absolute position.
+      style: isSelected ? style :
+             !page.thumbnail ? mix(style, offScreen) :
+             mix(style, hidden),
       isBrowser: true,
       isRemote: true,
-      mozApp: isPrivileged(state.uri) ? getManifestURL().href : null,
+      mozApp: URI.isPrivileged(location) ? URI.getManifestURL().href : null,
       allowFullScreen: true,
-      isVisible: state.isActive || state.isSelected,
-      zoom: state.zoom,
-      isFocused: state.isFocused,
-      uri: state.uri,
-      readyState: state.readyState,
+      isVisible: isSelected,
+      zoom: shell.zoom,
+      isFocused: shell.isFocused,
+      uri: location,
+      readyState: navigation.state,
 
-
-      onCanGoBackChange: event => edit(WebView.setCanGoBack(event.detail)),
-      onCanGoForwardChange: event => edit(WebView.setCanGoForward(event.detail)),
-
-      onBlur: event => edit(WebView.blur),
-      onFocus: event => edit(WebView.focus),
-      // onAsyncScroll: WebView.onUnhandled,
-      onClose: event => {
-        handlers.endVisit({webView: state,
-                           time: event.timeStamp});
-        onClose(state.id);
-      },
-      onOpenWindow: event => onOpen(event.detail.url),
-      onOpenTab: event => onOpenBg(event.detail.url),
-      onContextMenu: event => console.log(event),
-      onError: event => console.error(event),
-      onLoadStart: event => {
-        edit(WebView.startLoad)
-      },
-      onLoadEnd: event => {
-        edit(WebView.endLoad);
-        handlers.beginVisit({webView: state,
-                             time: event.timeStamp});
-      },
-      onMetaChange: event => edit(WebView.setMetaData(event.detail)),
-      onIconChange: event => {
-        edit(WebView.changeIcon(event.detail));
-        handlers.changeIcon({webView: state,
-                             icon: event.detail.href});
-      },
-      onLocationChange: event => {
-        // Whe iframe src is set during page load location change event will
-        // be triggered but we do not interpret that as end of visit.
-        if (state.uri !== event.detail) {
-          handlers.endVisit({webView: state,
-                             time: event.timeStamp});
-        }
-
-        edit(WebView.changeLocation(event.detail));
-        requestThumbnail(event.target)
-          .then(WebView.onThumbnailChanged(edit));
-      },
-      onSecurityChange: event => edit(WebView.changeSecurity(event.detail)),
-      onTitleChange: event => {
-        edit(WebView.setTitle(event.detail))
-        handlers.changeTitle({webView: state, title: event.detail});
-      },
-      onPrompt: event => console.log(event),
-      onAuthentificate: event => console.log(event),
-      // This will trigger a resize. If the content react to the resize by changing its
-      // layout, this might change the scrollarea again, triggering a resize… infinite
-      // loop.
-      // So we only allow contentOverflows to transition from false (default value) to true.
-      onScrollAreaChange: !state.contentOverflows && (event =>
-        edit(WebView.setContentOverflows(event.detail.height >
-                                         event.target.parentNode.clientHeight))),
-      onLoadProgressChange: event => edit(WebView.changeProgress(event))
+      onCanGoBackChange: action,
+      onCanGoForwardChange: action,
+      onBlur: action,
+      onFocus: action,
+      // onAsyncScroll: action
+      onClose: action,
+      onOpenWindow: action,
+      onOpenTab: action,
+      onContextMenu: action,
+      onError: action,
+      onLoadStart: action,
+      onLoadEnd: action,
+      onLoadProgressChange: action,
+      onLocationChange: action,
+      onMetaChange: action,
+      onIconChange: action,
+      onLocationChange: action,
+      onSecurityChange: action,
+      onTitleChange: action,
+      onPrompt: action,
+      onAuthentificate: action,
+      onScrollAreaChange: action,
+      onLoadProgressChange: action
     });
-  });
+  };
+  exports.view = view;
 
 
-  const fetchScreenshot = iframe =>
-    fromDOMRequest(iframe.getScreenshot(100 * devicePixelRatio,
-                                        62.5 * devicePixelRatio,
-                                        'image/png'));
-
-  // This is temporary workraound once we've get a history database
-  // we will be queyring it instead (see #153)
-  const fetchThumbnail = uri => new Promise((resolve, reject) => {
-    const request = new XMLHttpRequest();
-    request.open('GET', `tiles/${getDomainName(uri)}.png`);
-    request.responseType = 'blob';
-    request.send();
-    request.onload = event => {
-      if (request.status === 200) {
-        resolve(request.response);
-      } else {
-        reject(request.statusText);
-      }
-    }
-    request.onerror = event => reject();
-  });
-
-  const requestThumbnail = iframe => {
-    // Create a promise that is rejected when iframe location is changes,
-    // in order to abort task if this happens before we have a response.
-    const abort = fromEvent(iframe, 'mozbrowserlocationchange')
-      .then(event => Promise.reject(event));
-
-    // Create a promise that is resolved once iframe ends loading, it will
-    // be used to defer a screenshot request.
-    const loaded = fromEvent(iframe, 'mozbrowserloadend');
-
-    // Request a thumbnail from DB.
-    const thumbnail = fetchThumbnail(iframe.getAttribute('uri'))
-    // If thumbnail isn't in database then we race `loaded` against `abort`
-    // and if `loaded` wins we fetch a screenshot that will be our thumbnail.
-    .catch(_ => Promise
-          .race([abort, loaded])
-          .then(_ => fetchScreenshot(iframe)));
-
-    // Finally we return promise that rejects if `abort` wins and resolves to a
-    // `thumbnail` if we get it before `abort`.
-    return Promise.race([abort, thumbnail]);
-  }
-
-  const id = x => x.id
-
-  const WebViews = List(WebView)
-
-  const WebViewBox = Record({
-    isActive: Boolean(true),
-    items: WebViews
-  });
-
-  // WebView deck will always inject frames by order of their id. That way
-  // no iframes will need to be removed / injected when order of tabs change.
-  WebViewBox.render = Component(function WebViewsBox(state, handlers) {
-    const {onOpen, onOpenBg, onClose, edit,
-           beginVisit, endVisit, changeIcon, changeTitle, changeImage} = handlers;
-    const {items, isActive} = state;
-
-    return DOM.div({
-      style: {
-        scrollSnapCoordinate: '0 0',
-        display: isActive ? 'block' : 'none'
-      },
-    }, items.sortBy(id).map(webView => WebView.render(webView.id, webView, {
-      onOpen, onOpenBg, onClose,
-      beginVisit, endVisit, changeIcon, changeTitle, changeImage,
-      edit: compose(edit, In(items.indexOf(webView)))
-    })))
-  });
+  // Actions that web-view produces but `update` does not handles.
 
 
-  // Exports:
+  const Open = Record({
+    uri: String,
+    name: '_blank',
+    features: ''
+  }, 'WebViews.Open');
+  exports.Open = Open;
 
-  exports.WebViews = WebViews;
-  exports.WebView = WebView;
-  exports.WebViewBox = WebViewBox;
+  const OpenInBackground = Record({
+    uri: String
+  }, 'WebView.OpenInBackground');
+  exports.OpenInBackground = OpenInBackground;
 
+  const Close = Record({
+    id: '@selected'
+  }, 'WebView.Close');
+  exports.Close = Close;
+
+  const Failure = Record({
+    id: String,
+    detail: Any
+  }, 'WebView.Failure');
+  exports.Failure = Failure;
+
+  const ContextMenu = Record({
+    id: String,
+  }, 'WebView.ContextMenu');
+  exports.ContextMenu = ContextMenu;
+
+  const ModalPrompt = Record({
+    id: String
+  }, 'WebView.ModalPrompt');
+  exports.ModalPrompt = ModalPrompt;
+
+  const Authentificate = Record({
+    id: String,
+  }, 'WebView.Authentificate');
+  exports.Authentificate = Authentificate;
+
+
+  const Event = (...args) => {
+    const event = args[args.length -1];
+    return Event[event.type](...args);
+  };
+
+  Event.mozbrowserlocationchange = ({id}, {detail: uri}) =>
+    LocationChange({id, uri});
+
+  // TODO: Figure out what's in detail
+  Event.mozbrowserclose = ({id}, {detail}) =>
+    Close({id});
+
+  Event.mozbrowseropenwindow = ({id}, {detail}) =>
+    Open({id,
+          uri: detail.url,
+          name: detail.name,
+          features: detail.features});
+
+  Event.mozbrowseropentab = ({id}, {detail}) =>
+    OpenInBackground({id, uri: detail.uri});
+
+  // TODO: Figure out what's in detail
+  Event.mozbrowsercontextmenu = ({id}, {detail}) =>
+    ContextMenu({id});
+
+  // TODO: Figure out what's in detail
+  Event.mozbrowsershowmodalprompt = ({id}, {detail}) =>
+    ModalPrompt({id});
+
+  // TODO: Figure out what's in detail
+  Event.mozbrowserusernameandpasswordrequired = ({id}, {detail}) =>
+    Athentificate({id});
+
+  // TODO: Figure out what's in detail
+  Event.mozbrowsererror = ({id}, {detail}) =>
+    Failure({id, detail});
+
+
+  const {Focus, Blur} = Shell.Action;
+
+  Event.focus = ({id}) =>
+    Focus({id});
+
+  Event.blur = ({id}) =>
+    Blur({id});
+
+
+  const {CanGoBackChange, CanGoForwardChange} = Navigation.Action;
+
+  Event.mozbrowsergobackchanged = ({id}, {detail: value}) =>
+    CanGoBackChange({id, value});
+
+  Event.mozbrowsergoforwardchanged = ({id}, {detail: value}) =>
+    CanGoForwardChange({id, value});
+
+
+  const {LoadStart, LoadEnd, LoadProgress} = Progress.Action;
+
+  Event.mozbrowserloadstart = ({id, uri}, {timeStamp}) =>
+    LoadStart({id, uri, timeStamp: performance.now()});
+
+  Event.mozbrowserloadend = ({id, uri}, {timeStamp}) =>
+    LoadEnd({id, uri, timeStamp: performance.now()});
+
+  Event.mozbrowserloadprogresschanged = ({id}, {timeStamp}) =>
+    LoadProgress({id, timeStamp: performance.now()});
+
+  const {TitleChange, IconChange, MetaChange, OverflowChange, Scroll} = Page.Action;
+
+  Event.mozbrowsertitlechange = ({id, uri}, {detail: title}) =>
+    TitleChange({id, uri, title});
+
+  Event.mozbrowsericonchange = ({id, uri}, {detail: {href: icon}}) =>
+    IconChange({id, uri, icon});
+
+  Event.mozbrowsermetachange = ({id}, {detail: {content, name}}) =>
+    MetaChange({id, content, name});
+
+  // TODO: Figure out what's in detail
+  Event.mozbrowserasyncscroll = ({id}, {detail}) =>
+    Scroll({id});
+
+  Event.mozbrowserscrollareachanged = ({id}, {target, detail}) =>
+    OverflowChange({
+      id,
+      overflow: detail.height > target.parentNode.clientHeight
+    });
+
+
+  const {SecurityChange} = Security.Action;
+
+  Event.mozbrowsersecuritychange = ({id}, {detail}) =>
+    SecurityChange({
+      id,
+      state: detail.state,
+      extendedValidation: detail.extendedValidation
+    });
 });

@@ -6,26 +6,41 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const Component = require('omniscient');
-  const {DOM} = require('react');
-  const {sendEventToChrome} = require('./actions');
+  const {html} = require('reflex');
   const {mix} = require('common/style');
-  const {Record} = require('typed-immutable/index');
+  const {Record, Union} = require('common/typed');
+  const Runtime = require('common/runtime');
+  const Update = require('service/update');
 
   // Model
 
-  const Updates = Record({
-    appUpdateAvailable: Boolean(false),
-    runtimeUpdateAvailable: Boolean(false)
+  const Model = Record({
+    appUpdateAvailable: false,
+    runtimeUpdateAvailable: false
   });
+  exports.Model = Model;
 
-  Updates.setAppUpdateAvailable = updates => updates.set('appUpdateAvailable', true);
-  Updates.setRuntimeUpdateAvailable = updates => updates.set('runtimeUpdateAvailable', true);
+  // Actions
+
+
+  const {ApplicationUpdate} = Update.Action;
+  const {UpdateDownloaded: RuntimeUpdate} = Runtime.Event;
+
+  const Action = Union({ApplicationUpdate, RuntimeUpdate});
+  exports.Action = Action;
+
+  // Update
+
+  const update = (state, action) =>
+    action instanceof ApplicationUpdate ? state.set('appUpdateAvailable', true) :
+    action instanceof RuntimeUpdate ? state.set('runtimeUpdateAvailable', true) :
+    state;
+  exports.update = update;
 
   // Style
 
   const styleContainer = {
-    position: 'absolute',
+    position: 'fixed',
     bottom: 10,
     width: 400,
     left: 'calc(50vw - 200px)',
@@ -38,14 +53,15 @@ define((require, exports, module) => {
     cursor: 'default'
   };
 
-  const styleHiddenContainer = {
+  const styleHiddenContainer = mix(styleContainer, {
     opacity: 0,
     pointerEvents: 'none',
-  };
+  });
 
   const styleButton = {
     padding: '8px 20px',
     backgroundColor: 'rgb(115,206,113)',
+    color: 'inherit',
     borderRadius: 4,
     float: 'right',
     cursor: 'pointer'
@@ -58,44 +74,29 @@ define((require, exports, module) => {
 
   // View
 
-  Updates.render = Component(({updates}) => {
+  const {Restart, CleanRestart, CleanReload} = Runtime.Action;
 
-    let style = styleContainer;
-    if (!updates.appUpdateAvailable &&
-        !updates.runtimeUpdateAvailable) {
-      style = mix(style, styleHiddenContainer);
-    }
+  const view = ({runtimeUpdateAvailable, appUpdateAvailable}, address) => {
+    const message = runtimeUpdateAvailable ? ' (restart required)' : '';
+    const action = runtimeUpdateAvailable && appUpdateAvailable ? CleanRestart() :
+                   runtimeUpdateAvailable ? Restart() :
+                   appUpdateAvailable ? CleanReload() :
+                   null;
 
-    const buttonMessage = 'Apply' + (updates.runtimeUpdateAvailable ? ' (restart required)' : '');
-
-    return DOM.div({
-      style
+    return html.div({
+      style: action ? styleContainer : styleHiddenContainer
     }, [
-      DOM.div({
+      html.div({
         key: 'bannerMessage',
         style: styleMessage
       }, 'Hey! An update just for you!'),
-      DOM.div({
+      html.button({
         key:  'bannerButton',
         style: styleButton,
-        onClick: event => {
-          // FIXME: Work around issue #339
-          const sendEventToChrome = require('./actions').sendEventToChrome;
-          if (updates.runtimeUpdateAvailable && updates.appUpdateAvailable) {
-            console.error('Not supported yet: clear-cache-and-restart');
-            sendEventToChrome('clear-cache-and-restart')
-          }
-          if (updates.runtimeUpdateAvailable && !updates.appUpdateAvailable) {
-            console.error('Not supported yet: restart');
-            sendEventToChrome('restart')
-          }
-          if (!updates.runtimeUpdateAvailable && updates.appUpdateAvailable) {
-            sendEventToChrome('clear-cache-and-reload');
-          }
-        }
-      }, buttonMessage)
+        onClick: action && address.send(action)
+      }, `Apply ${message}`)
     ]);
-  });
+  };
 
-  exports.Updates = Updates;
+  exports.view = view;
 });

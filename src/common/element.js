@@ -7,6 +7,7 @@ define((require, exports, module) => {
   'use strict';
 
   const React = require('react');
+  const {node} = require('reflex');
 
   const isPreMountHook = field => field && field.mount;
 
@@ -16,74 +17,87 @@ define((require, exports, module) => {
 
   const isConstractorHook = field => field && field.construct;
 
-  const Element = (name, fields={}) => {
+  class ElementView extends React.Component {
+    constructor() {
+      React.Component.apply(this, arguments);
+
+      const {type, fields, mount, mounted, write} = this.props;
+      const hooks = Object.create(null);
+
+      for (let key in fields) {
+        if (fields.hasOwnProperty(key)) {
+          const field = fields[key];
+          const hook = field.construct ? field.construct() : field;
+          hooks[key] = hook;
+        }
+      }
+
+      this.displayName = `html:${type}`
+      this.state = hooks;
+    }
+    // Reflect attributes not recognized by react.
+    componentDidMount() {
+      const node = React.findDOMNode(this);
+      const {model, mount, mounted} = this.props;
+      const hooks = this.state;
+
+      if (mount.length > 0) {
+        for (let key of mount) {
+          const hook = hooks[key];
+          const value = model[key];
+          hook.mount(node, value);
+        }
+
+        // Pre mount fields need to be set before node
+        // is in the document. Since react does not has
+        // an appropriate hook we replace node with itself
+        // to trigger desired behavior.
+        node.parentNode.replaceChild(node, node);
+      }
+
+      for (let key of mounted) {
+        const hook = hooks[key];
+        hook.mounted(node, model[key]);
+      }
+    }
+    // Reflect attribute changes not recognized by react.
+    componentDidUpdate({model: past}) {
+      const node = React.findDOMNode(this);
+      const {model, write} = this.props;
+      const hooks = this.state;
+
+      for (let key of write) {
+        const hook = hooks[key];
+        hook.write(node, model[key], past[key]);
+      }
+    }
+    // Render renders wrapped HTML node.
+    render() {
+      const {type, model, children, parent} = this.props;
+      return node(type, model, children);
+    }
+  }
+
+  const Element = (type, fields={}) => {
     // In react you can actually define custom HTML element it's
     // just set of attributes you'll be able to set will be limited
     // to React's white list. To workaround that we define React
     // custom HTML element factory & custom react component that
     // will render that HTML element via custom factory.
-    const Node = React.createFactory(name);
+
     const keys = Object.keys(fields);
-    const mountHooks = keys.filter(key => isPreMountHook(fields[key]));
-    const mountedHooks = keys.filter(key => isPostMountHook(fields[key]));
-    const updateHooks = keys.filter(key => isUpdateHook(fields[key]));
-    const constractorHooks = keys.filter(key => isConstractorHook(fields[key]));
+    const mount = keys.filter(key => isPreMountHook(fields[key]));
+    const mounted = keys.filter(key => isPostMountHook(fields[key]));
+    const write = keys.filter(key => isUpdateHook(fields[key]));
+    const construct = keys.filter(key => isConstractorHook(fields[key]));
 
-
-    // React component is a wrapper around the our custom HTML Node
-    // who's whole purpose is to update attributes of the node that
-    // are not recognized by react.
-    const Type = React.createClass({
-      displayName: `html:${name}`,
-      getInitialState() {
-        const state = Object.assign({}, fields)
-        constractorHooks.forEach(key => {
-          state[key] = fields[key].construct();
-        });
-        return state;
-      },
-      // Reflect attributes not recognized by react.
-      componentDidMount() {
-        const node = this.getDOMNode();
-        const present = this.props;
-        const hooks = this.state;
-
-        if (mountHooks.length > 0) {
-          mountHooks.forEach(name => {
-            const hook = hooks[name];
-            const value = present[name];
-            hook.mount(node, value);
-          });
-
-          // Pre mount fields need to be set before node
-          // is in the document. Since react does not has
-          // an appropriate hook we replace node with itself
-          // to trigger desired behavior.
-          node.parentNode.replaceChild(node, node);
-        }
-
-        mountedHooks.forEach(name => {
-          const hook = hooks[name];
-          hook.mounted(node, present[name]);
-        });
-      },
-      // Reflect attribute changes not recognized by react.
-      componentDidUpdate(past) {
-        const node = this.getDOMNode();
-        const present = this.props;
-        const hooks = this.state;
-
-        updateHooks.forEach(name => {
-          const hook = hooks[name];
-          hook.write(node, present[name], past[name]);
-        });
-      },
-      // Render renders wrapped HTML node.
-      render() {
-        return Node(this.props, this.props.children);
-      }
-    })
-    return React.createFactory(Type);
+    return (model, children) =>
+      React.createElement(ElementView, {
+        model, type,
+        key: model.key || model.id,
+        fields,
+        mount, mounted, write
+      }, children);
   };
 
   // BeforeAppendAttribute can be used to define attribute on the
@@ -184,7 +198,7 @@ define((require, exports, module) => {
   // Element('iframe', {onTitleChange: Event('mozbrowsertitlechange')})
   const Event = function(type, read, capture=false) {
     if (!(this instanceof Event)) {
-      return new Event(type, read);
+      return new Event(type, read, capture);
     }
     this.type = type;
     this.read = read;
@@ -193,7 +207,9 @@ define((require, exports, module) => {
   Event.prototype = {
     constructor: Event,
     construct() {
-      return new this.constructor(this.type, this.read, this.capture);
+      return new this.constructor(this.type,
+                                  this.read,
+                                  this.capture);
     },
     capture: false,
     mounted(node, handler) {
@@ -242,7 +258,7 @@ define((require, exports, module) => {
   // that events listeners will be added with a capture `true`.
   const CapturedEvent = function(type, read) {
     if (!(this instanceof CapturedEvent)) {
-      return new Event(type, read);
+      return new CapturedEvent(type, read);
     }
 
     this.type = type;

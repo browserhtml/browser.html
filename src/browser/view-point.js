@@ -6,7 +6,11 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const open = () => {
-  };
+  const Model = Record({
+    id: String,
+    navigation: Navigaton.Model,
+    shell: Shell.Model,
+    input: Editable.Model,
+  });
 
 });

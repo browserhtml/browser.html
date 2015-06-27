@@ -11,18 +11,18 @@ define((require, exports, module) => {
 
   // Define custom `main` element with a custom `scrollGrab` attribute
   // that maps to same named proprety.
-  const Main = Element('main', {
+  const Main = Element('div', {
     windowTitle: VirtualAttribute((node, current, past) => {
       node.ownerDocument.title = current;
     }),
     scrollGrab: VirtualAttribute((node, current, past) => {
       node.scrollgrab = current;
     }),
-    onDocumentFocus: Event('focus', getOwnerWindow),
-    onDocumentBlur: Event('blur', getOwnerWindow),
-    onDocumentKeyDown: Event('keydown', getOwnerWindow),
-    onDocumentKeyUp: Event('keyup', getOwnerWindow),
-    onDocumentUnload: Event('unload', getOwnerWindow),
+    onWindowFocus: Event('focus', getOwnerWindow),
+    onWindowBlur: Event('blur', getOwnerWindow),
+    onKeyDown: Event('keydown', getOwnerWindow),
+    onKeyUp: Event('keyup', getOwnerWindow),
+    onUnload: Event('unload', getOwnerWindow),
     onAppUpdateAvailable: Event('app-update-available', getOwnerWindow),
     onRuntimeUpdateAvailable: Event('runtime-update-available', getOwnerWindow),
     onOpenWindow: ChromeEvent('mozbrowseropenwindow')

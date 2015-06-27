@@ -6,48 +6,69 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const {render} = require('common/render');
-  const Component = require('omniscient');
-  const {DOM} = require('react');
+  const {render, html, Address, Application} = require('reflex');
+  const {Record, Any} = require('common/typed');
   const {Map} = require('immutable');
+  const Settings = require('service/settings');
 
-  const Table = Component('Table', state => {
+  // Model
 
-    let rows = [];
-    for (let [name, value] of state) {
-      rows.push(DOM.div({
-        key: name,
-        className: 'row'
-      }, [
-        DOM.span({
-          key: 'name.' + name,
-          className: 'name',
-          title: name
-        }, name),
-        DOM.span({
-          key: 'value.' + name,
-          className: 'value',
-          title: value
-        }, "" + value)
-      ]));
+  const Model = Record({
+    settings: Any
+  }, 'Settings');
+  exports.Model = Model;
+
+  // Update
+
+  const {Fetched, Changed} = Settings.Event;
+  const update = (state, action) =>
+    action instanceof Changed ?
+      state.setIn(['settings', action.name], action.value) :
+    action instanceof Fetched ?
+      state.mergeIn(['settings'], action.settings) :
+    state;
+  exports.update = update;
+
+  // View
+
+  const viewSetting = (name, value) => html.div({
+    className: 'row'
+  }, [
+    html.span({
+      key: 'name',
+      className: 'name',
+      title: name
+    }, name),
+    html.span({
+      key: 'value',
+      className: 'value',
+      title: value,
+    }, JSON.stringify(value))
+  ]);
+
+  const view = state => html.div({
+    key: 'table',
+    className: 'table'
+  }, state.settings.map((value, key) => {
+    return render(key, viewSetting, key, value);
+  }).values());
+  exports.view = view;
+
+  const address = new Address({
+    receive(action) {
+      application.receive(action);
+      settings(action);
     }
-
-    return DOM.div({
-      key: 'table',
-      className: 'table'
-    }, rows);
-
   });
 
-  const table = render(Table, new Map(), document.body);
+  const application = new Application({
+    address, view, update,
 
-  navigator.mozSettings
-           .createLock()
-           .get('*')
-           .then(r => table.step(state => state.merge(r)));
+    target: document.body,
+    state: Model({settings: Map()})
+  });
 
-  navigator.mozSettings.onsettingchange = e => {
-    table.step(state => state.set(e.settingName, e.settingValue));
-  }
+  const settings = Settings.service(address);
 
+  address.receive(Settings.Action.Fetch({id: 'about:settings', query: '*'}));
 });

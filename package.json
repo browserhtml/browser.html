@@ -33,10 +33,11 @@
     "graphene-marionette-runner": "^0.0.5",
     "mocha": "2.2.4",
     "node-uuid": "1.4.3",
-    "omniscient": "3.1.0",
     "pouchdb": "3.5.0",
-    "react": "0.13.0",
+    "react": "0.13.3",
+    "reflex": "0.0.22",
     "requirejs": "2.1.16",
-    "typed-immutable": "0.0.3"
+    "tinycolor2": "1.1.2",
+    "typed-immutable": "0.0.4"
   }
 }

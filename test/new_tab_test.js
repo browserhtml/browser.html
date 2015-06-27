@@ -6,14 +6,14 @@ marionette('new tab test', function() {
   });
 
   test('opens a new tab', function() {
-    var tiles = client.findElements('.tile-thumbnail');
-    assert.ok(tiles.length, 12);
+    var locationBar = client.findElement('.location-bar');
+    locationBar.tap();
 
-    var src = tiles[0].getAttribute('href');
-    tiles[0].tap();
-
+    var input = client.findElement('.location-bar .location-bar-input');
+    input.sendKeys('facebook.com');
+    input.sendKeys('\ue006');
     client.waitFor(function() {
-      return client.findElement('iframe[src="https://facebook.com"]').displayed();
+      return client.findElement('iframe[src*="facebook."]').displayed();
     });
   });
 });

@@ -6,60 +6,71 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const Component = require('omniscient');
-  const {DOM} = require('react');
-  const {sendEventToChrome} = require('./actions');
-  const {mix} = require('common/style');
+  const {Record, Maybe, Union} = require('common/typed');
+  const {html} = require('reflex');
+  const Runtime = require('common/runtime');
 
-  const styleContainer = {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    lineHeight: '30px',
-    verticalAlign: 'center',
-    marginLeft: 7,
-  };
+  // View
 
-  const styleButton = {
+  const ButtonStyle = Record({
+    backgroundColor: '',
+    color: '',
     display: 'inline-block',
     width: 12,
     height: 12,
     marginRight: 8,
-    borderRadius: '50%'
-  };
-
-  const styleGreyButton = mix({
+    borderRadius: '50%',
+  }, 'ControlButtonStyle');
+  ButtonStyle.min = ButtonStyle({
+    backgroundColor: '#FDBC40'
+  });
+  ButtonStyle.max = ButtonStyle({
+    backgroundColor: '#33C748'
+  });
+  ButtonStyle.close = ButtonStyle({
+    backgroundColor: '#FC5753'
+  });
+  ButtonStyle.unfocused = ButtonStyle({
     backgroundColor: 'hsl(0, 0%, 86%)'
-  }, styleButton);
-
-  const WindowControls = Component(({isDocumentFocused, windowControls, theme}) => {
-
-    const styleMinButton = mix(theme.windowMinButton, styleButton);
-    const styleMaxButton = mix(theme.windowMaxButton, styleButton);
-    const styleCloseButton = mix(theme.windowCloseButton, styleButton);
-
-    return DOM.div({
-      key: 'WindowControlsContainer',
-      style: styleContainer,
-    }, [
-      DOM.div({
-        key: 'WindowCloseButton',
-        style: isDocumentFocused ? styleCloseButton : styleGreyButton,
-        onClick: e => sendEventToChrome('shutdown-application')
-      }),
-      DOM.div({
-        key: 'WindowMinButton',
-        style: isDocumentFocused ? styleMinButton : styleGreyButton,
-        onClick: e => sendEventToChrome('minimize-native-window')
-      }),
-      DOM.div({
-        key: 'WindowMaxButton',
-        style: isDocumentFocused ? styleMaxButton : styleGreyButton,
-        onClick: e => sendEventToChrome('toggle-fullscreen-native-window')
-      })
-    ])
   });
 
-  exports.WindowControls = WindowControls;
+  const containerStyle = {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    verticalAlign: 'center',
+    zIndex: 200
+  };
 
+
+  // Actions that will are send by window controls.
+  const {Shutdown, Minimize, Maximize} = Runtime.Action;
+
+  const view = ({isFocused}, theme, address) => html.div({
+    key: 'WindowControls',
+    style: containerStyle
+  }, [
+    html.button({
+      key: 'WindowCloseButton',
+      style: isFocused ? ButtonStyle.close.merge({
+        backgroundColor: theme.closeButton
+      }) : ButtonStyle.unfocused,
+      onClick: address.pass(Shutdown, void(0))
+    }),
+    html.button({
+      key: 'WindowMinButton',
+      style: isFocused ? ButtonStyle.min.merge({
+        backgroundColor: theme.minButton
+      }) : ButtonStyle.unfocused,
+      onClick: address.pass(Minimize, void(0))
+    }),
+    html.button({
+      key: 'WindowMaxButton',
+      style: isFocused ? ButtonStyle.max.merge({
+        backgroundColor: theme.maxButton
+      }) : ButtonStyle.unfocused,
+      onClick: address.pass(Maximize, void(0))
+    })
+  ]);
+  exports.view = view;
 });

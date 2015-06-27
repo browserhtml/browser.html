@@ -28,14 +28,18 @@
 
 .tabstripkillzone {
   display: block;
-  position: absolute;
-  top: 50px;
-  left: 0;
-  height: calc(100vh - 50px);
+  height: calc(100vh - 50px - 90px);
   width: 100vw;
   background-color: rgba(0,0,0,0.05);
   transition: background-color 200ms linear;
   z-index: 42;
+  position: absolute;
+  top: 90px;
+  left: 0;
+}
+
+.withoutkillzone .tabstripkillzone {
+  display: none;
 }
 
 .tabstripkillzone-hidden {
@@ -57,7 +61,6 @@
 
 .tab-thumbnail {
   display: inline-block;
-  background-color: #fff;
   background-size: cover;
   background-clip: content-box;
   border: 1px solid rgba(0,0,0,0.07);

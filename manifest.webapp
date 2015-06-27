@@ -11,6 +11,7 @@
   },
   "permissions": {
     "browser":{},
+    "browser:universalxss": {},
     "embed-apps":{},
     "systemXHR":{},
     "settings":{ "access": "readwrite" },

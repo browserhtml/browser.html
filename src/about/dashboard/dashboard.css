@@ -1,4 +1,15 @@
+@font-face {
+  font-family: 'FontAwesome';
+  src: url('../../../css/fontawesome-webfont.woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
 .dashboard {
+  font-family: "Helvetica", sans-serif;
+  position: absolute;
+  top: 0;
+  left: 0;
   display: flex;
   background-position: center center;
   background-size: cover;
@@ -6,11 +17,12 @@
   flex: 1 0 auto;
   flex-flow: column nowrap;
   color: #555;
-  /* The top padding places the dashboard below the tabstrip */
-  margin-top: 90px;
+  padding-top: 90px;
   transition: background-color 200ms ease;
   /* tabstrip + navbar */
-  height: calc(100vh - 90px - 50px);
+  height: calc(100vh - 90px);
+  width: 100vw;
+  overflow: hidden;
 }
 
 .dashboard[hidden] {
@@ -26,6 +38,11 @@
   picker. */
   padding-top: 10px;
   width: 800px;
+}
+
+.tile {
+  text-decoration: none;
+  color: inherit;
 }
 
 .tile-large {

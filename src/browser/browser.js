@@ -6,341 +6,160 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const Component = require('omniscient');
-  const {DOM} = require('react');
-  const {compose} = require('lang/functional');
-  const {Editable} = require('common/editable');
+  const {html, node, render, reframe} = require('reflex');
+  const {Record, Any, Union} = require('common/typed');
+  const {inspect} = require('common/debug');
+  const WindowBar = require('./window-bar');
+  const WindowControls = require('./window-controls');
+  const LocationBar = require('./location-bar');
+  const WebViews = require('./web-view-deck');
+  const Theme = require('./theme');
   const {KeyBindings} = require('common/keyboard');
-  const ClassSet = require('common/class-set');
-  const {mix} = require('common/style');
-  const os = require('common/os');
-  const {WindowBar} = require('./window-bar');
-  const {LocationBar} = require('./location-bar');
-  const {Suggestions} = require('./suggestion-box');
-  const {Previews} = require('./preview-box');
-  const {WebViewBox, WebView} = require('./web-view');
-  const {Dashboard} = require('./dashboard');
-  const {readDashboardNavigationTheme} = require('./dashboard/actions');
-  const {activate: activateStrip, readInputURL,
-         deactivate, writeSession, resetSession, resetSelected} = require('./actions');
-  const {indexOfSelected, indexOfActive, isActive, active, selected,
-         selectNext, selectPrevious, select, activate,
-         reorder, reset, remove, insertBefore,
-         isntPinned, isPinned} = require('./deck/actions');
-  const {readTheme} = require('./theme');
+  const Focusable = require('common/focusable');
   const {Main} = require('./main');
-  const {Updates} = require('./update-banner');
-  const {History, Page} = require('common/history');
+  const Updates = require('./update-banner');
+  const WebView = require('./web-view');
+  const Session = require('./session');
+  const Input = require('./web-input');
+  const Preview = require('./web-preview');
+  const ClassSet = require('common/class-set');
+  const OS = require('common/os');
+  const Pallet = require('service/pallet');
+  const Suggestions = require('./suggestion-box');
 
-  const editWith = edit => {
-    if (typeof (edit) !== 'function') {
-      throw TypeError('Must be a function')
+  // Model
+  const Model = Record({
+    version: '0.0.7',
+    shell: Focusable.Model({isFocused: true}),
+    updates: Updates.Model,
+    webViews: WebViews.Model,
+  });
+  exports.Model = Model;
+
+  // Actions
+
+  const {SaveSession, ResetSession, RestoreSession} = Session.Action;
+  const {Focus, Blur} = Focusable.Action;
+  const {ApplicationUpdate, RuntimeUpdate} = Updates.Action;
+  const {EnterInput} = WebView.Action;
+
+  const modifier = OS.platform() == 'linux' ? 'alt' : 'accel';
+  const Binding = KeyBindings({
+    'accel l': Input.Action.Enter,
+    'accel t': _ => Input.Action.Enter({id: 'about:dashboard'}),
+    'accel 0': WebView.Action.Shell.ResetZoom,
+    'accel -': WebView.Action.Shell.ZoomOut,
+    'accel =': WebView.Action.Shell.ZoomIn,
+    'accel shift =': WebView.Action.Shell.ZoomIn,
+    'accel w': WebViews.Action.Close,
+    'accel shift ]': _ => WebViews.Action.SelectByOffset({offset: 1}),
+    'accel shift [': _ => WebViews.Action.SelectByOffset({offset: -1}),
+
+    'accel shift backspace': ResetSession,
+    'accel shift s': SaveSession,
+
+    'F5': WebView.Action.Navigation.Reload,
+    'accel r': WebView.Action.Navigation.Reload,
+    'escape': WebView.Action.Navigation.Stop,
+    [`${modifier} left`]: WebView.Action.Navigation.GoBack,
+    [`${modifier} right`]: WebView.Action.Navigation.GoForward
+  }, 'Browser.Keyboard.Action');
+
+  const Action = Union({
+    Binding: Binding.Action,
+    Updates: Updates.Action,
+    WebViews: WebViews.Action,
+    Focusable: Focusable.Action,
+    Session: Session.Action,
+    Suggestions: Suggestions.Action
+  });
+  exports.Action = Action;
+
+
+
+  // Update
+
+  const update = (state, action) => {
+    if (action instanceof WebViews.Action.SelectByID) {
+      return state.merge({
+        webViews: WebViews.update(state.webViews, action)
+      });
     }
-    return submit => submit(edit);
+
+    if (Focusable.Action.isTypeOf(action)) {
+      return state.set('shell', Focusable.update(state.shell, action));
+    }
+
+    if (WebViews.Action.isTypeOf(action)) {
+      return state.set('webViews', WebViews.update(state.webViews, action));
+    }
+
+    if (Updates.Action.isTypeOf(action)) {
+      return state.set('updates', Updates.update(state.updates, action));
+    }
+
+    if (Session.Action.isTypeOf(action)) {
+      return Session.update(state, action);
+    }
+
+    return state
   }
+  exports.update = update;
 
-  const onNavigation = KeyBindings({
-    'accel l': editWith(LocationBar.enter),
-    'accel t': editWith(Editable.focus)
+
+  exports.update = inspect(update, ([state, action], output) => {
+    if (action instanceof WebView.Action.Progress.LoadProgress) {
+      return null;
+    }
+
+    console.log(action.toString(),
+                state.toJSON(),
+                output && output.toJSON());
   });
 
-  const onTabStripKeyDown = KeyBindings({
-    'control tab': editWith(activateStrip),
-    'control shift tab': editWith(activateStrip),
-    'meta shift ]': editWith(activateStrip),
-    'meta shift [': editWith(activateStrip),
-    'meta t': editWith(activateStrip),
-  });
-  const onTabStripKeyUp = KeyBindings({
-    'control': editWith(deactivate),
-    'meta': editWith(deactivate)
-  });
 
-  const onViewerBinding = (() => {
-    const modifier = os.platform() == 'linux' ? 'alt' : 'accel';
-    return KeyBindings({
-      'accel =': editWith(WebView.zoomIn),
-      'accel -': editWith(WebView.zoomOut),
-      'accel 0': editWith(WebView.zoomReset),
-      [`${modifier} left`]: editWith(WebView.goBack),
-      [`${modifier} right`]: editWith(WebView.goForward),
-      'escape': editWith(WebView.stop),
-      'accel r': editWith(WebView.reload),
-      'F5': editWith(WebView.reload),
-    });
-  })();
+  // View
 
-  const loadURI = (uri, viewer) => viewers => {
-    const target = viewer || active(viewers);
-    return viewers.mergeIn([viewers.indexOf(target)],
-                           {uri, isFocused: true});
-  }
+  const OpenWindow = event => WebView.Open({uri: event.detail.url});
 
-  const openTab = uri => items =>
-    insertBefore(items,
-                 WebView.open({uri,
-                               isSelected: true,
-                               isFocused: true,
-                               isActive: true}),
-                 isntPinned);
+  const view = (state, address) => {
+    const {shell, webViews} = state;
+    const selected = webViews.entries.get(webViews.selected);
+    const theme = Theme.read(selected.view.page.pallet);
 
-  const openTabBg = uri => items =>
-    insertBefore(items, WebView.open({uri}), isntPinned);
-
-  const clearActiveInput = viewers =>
-    viewers.setIn([indexOfActive(viewers), 'userInput'], '');
-
-  const navigateTo = location => viewers => {
-    const uri = readInputURL(location);
-    const navigate = !isPinned(active(viewers)) ? loadURI(uri) :
-                     compose(openTab(uri), clearActiveInput);
-
-    return navigate(viewers);
-  };
-
-  // If closing viewer, replace it with a fresh one & select it.
-  // This avoids code branching down the pipe that otherwise will
-  // need to deal with 0 viewer & no active viewer case.
-  const close = p => items =>
-    !isPinned(items.find(p)) ? remove(items, p) : items;
-
-  const closeTab = id =>
-    close(x => x.get('id') == id);
-
-
-  const switchTab = (items, to) =>
-    to ? activate(select(items, tab => tab === to)) : items;
-
-  switchTab.toIndex = index => items => switchTab(items, items.get(index));
-  switchTab.toLast = items => switchTab(items, items.last());
-  switchTab.toDashboard = switchTab.toIndex(0);
-
-
-  const onTabSwitch = (() => {
-    const modifier = os.platform() == 'darwin' ? 'meta' : 'alt';
-    return KeyBindings({
-      [`${modifier} 1`]: editWith(switchTab.toIndex(1)),
-      [`${modifier} 2`]: editWith(switchTab.toIndex(2)),
-      [`${modifier} 3`]: editWith(switchTab.toIndex(3)),
-      [`${modifier} 4`]: editWith(switchTab.toIndex(4)),
-      [`${modifier} 5`]: editWith(switchTab.toIndex(5)),
-      [`${modifier} 6`]: editWith(switchTab.toIndex(6)),
-      [`${modifier} 7`]: editWith(switchTab.toIndex(7)),
-      [`${modifier} 8`]: editWith(switchTab.toIndex(8)),
-      [`${modifier} 9`]: editWith(switchTab.toLast),
-    });
-  })();
-
-  const onDeckBinding = KeyBindings({
-    'accel t': editWith(switchTab.toDashboard),
-    'accel w': editWith(close(isActive)),
-    'control tab': editWith(selectNext),
-    'control shift tab': editWith(selectPrevious),
-    'meta shift ]': editWith(selectNext),
-    'meta shift [': editWith(selectPrevious),
-    'ctrl pagedown': editWith(selectNext),
-    'ctrl pageup': editWith(selectPrevious),
-  });
-
-  const onDeckBindingRelease = KeyBindings({
-    'control': editWith(compose(reorder, activate)),
-    'meta': editWith(compose(reorder, activate))
-  });
-
-  const onBrowserBinding = KeyBindings({
-    'accel shift backspace': editWith(resetSession),
-    'accel shift s': editWith(writeSession),
-    'accel u': edit => edit(state =>
-      state.updateIn('webViews', openTab(`data:application/json,${JSON.stringify(root, null, 2)}`)))
-  });
-
-  const In = (...path) => edit => state =>
-    state.updateIn(path, edit);
-
-  // CSS
-
-  const styleMain = {
-    height: '100vh',
-    width: '100vw',
-    color: 'black',
-    overflowY: 'scroll',
-    scrollSnapType: 'mandatory',
-    scrollSnapDestination: '0 0',
-    position: 'relative'
-  };
-
-
-  // History API hooks
-  const history = new History({trackTopPages: true});
-
-  const beginVisit = ({webView, time}) => {
-    history.edit(Page.from(webView), Page.beginVisit({id: webView.id, time}));
-  };
-
-  const endVisit = ({webView, time}) => {
-    history.edit(Page.from(webView), Page.endVisit({id: webView.id, time}));
-  };
-
-  const changeTitle = ({webView, title}) => {
-    history.edit(Page.from(webView), page => page.set('title', title));
-  };
-
-  const changeImage = ({webView, image}) => {
-    history.edit(Page.from(webView), page => page.set('image', image));
-  };
-
-  const changeIcon = ({webView, icon}) => {
-    history.edit(Page.from(webView), page => page.set('icon', icon))
-  };
-
-
-
-  // Browser is a root component for our application that just delegates
-  // to a core sub-components here.
-  const Browser = Component('Browser', (state, {step: edit}) => {
-    const webViews = state.get('webViews');
-
-    const editWebViews = compose(edit, In('webViews'));
-    const editSelectedWebView = compose(edit, In('webViews',
-                                                indexOfSelected(webViews)));
-    const editTabStrip = compose(edit, In('tabStrip'));
-    const editInput = compose(edit, In('input'));
-    const editRfa = compose(edit, In('rfa'));
-    const editDashboard = compose(edit, In('dashboard'));
-    const editSuggestions = compose(edit, In('suggestions'));
-    const editUpdates = compose(edit, In('updates'));
-
-    const selectedWebView = selected(webViews);
-    const activeWebView = active(webViews);
-    const tabStrip = state.get('tabStrip');
-    const input = state.get('input');
-    const rfa = state.get('rfa');
-    const dashboard = state.get('dashboard');
-    const suggestions = state.get('suggestions');
-    const isDocumentFocused = state.get('isDocumentFocused');
-    const updates = state.get('updates');
-
-    const isDashboardActive = activeWebView.get('uri') === null;
-    const isLocationBarActive = input.get('isFocused');
-    const isTabStripActive = tabStrip.get('isActive');
-
-    const isTabStripVisible = isDashboardActive ||
-                              (isTabStripActive && !isLocationBarActive);
-
-    const isTabstripkillzoneVisible = (
-      // Show when tabstrip is visible, except on dashboard
-      (isTabStripActive && !isDashboardActive) ||
-      // Also show when Awesomebar is active
-      isLocationBarActive
-    );
-
-    const theme = isDashboardActive ?
-      readDashboardNavigationTheme(dashboard) :
-      Browser.readTheme(activeWebView);
-
-    return DOM.div({
+    return Main({
       key: 'root',
-    }, [Main({
-      key: 'main',
-      windowTitle: selectedWebView.title || selectedWebView.uri,
-      scrollGrab: true,
-      style: mix(styleMain,
-                 (input.get('isFocused') || isTabStripVisible) ?
-                   {overflowY: 'hidden'} : {}),
+      windowTitle: selected.view.page.title ||
+                   selected.view.uri,
+      onKeyDown: address.pass(Binding),
+      onWindowBlur: address.pass(Blur),
+      onWindowFocus: address.pass(Focus),
+      onUnload: address.pass(SaveSession),
+      onAppUpdateAvailable: address.pass(ApplicationUpdate),
+      onRuntimeUpdateAvailable: address.pass(RuntimeUpdate),
+      onOpenWindow: address.pass(OpenWindow),
+      tabIndex: 1,
       className: ClassSet({
-        'moz-noscrollbars': true,
-        showtabstrip: isTabStripVisible,
+        'moz-noscrollbars': true
       }),
-      onDocumentUnload: event => writeSession(state),
-      onDocumentFocus: event => edit(state => state.set('isDocumentFocused', true)),
-      onDocumentBlur: event => edit(state => state.set('isDocumentFocused', false)),
-      onDocumentKeyDown: compose(onNavigation(editInput),
-                                 onTabStripKeyDown(editTabStrip),
-                                 onViewerBinding(editSelectedWebView),
-                                 onDeckBinding(editWebViews),
-                                 onTabSwitch(editWebViews),
-                                 onBrowserBinding(edit)),
-      onDocumentKeyUp: compose(onTabStripKeyUp(editTabStrip),
-                               onDeckBindingRelease(editWebViews)),
-      onAppUpdateAvailable: event => editUpdates(Updates.setAppUpdateAvailable),
-      onRuntimeUpdateAvailable: event => editUpdates(Updates.setRuntimeUpdateAvailable),
-      onOpenWindow: event => editWebViews(openTab(event.detail.url))
+      style: {
+        height: '100vh',
+        width: '100vw',
+        color: theme.shellText,
+        backgroundColor: theme.shell,
+        position: 'relative',
+        overflowY: 'hidden'
+      }
     }, [
-      WindowBar({
-        key: 'navigation',
-        input,
-        tabStrip,
-        theme,
-        rfa,
-        suggestions,
-        isDocumentFocused,
-        webView: selectedWebView,
-      }, {
-        onNavigate: location => editWebViews(navigateTo(location)),
-        editTabStrip,
-        editSelectedWebView,
-        editRfa,
-        editInput,
-        editSuggestions
-      }),
-      Previews.render(Previews({
-        items: webViews,
-        theme
-      }), {
-        onMouseLeave: event => editWebViews(compose(reorder, reset)),
-        onSelect: id => editWebViews(items => select(items, item => item.get('id') == id)),
-        onActivate: id => editWebViews(items => activate(items, item => item.get('id') == id)),
-        onClose: id => editWebViews(closeTab(id)),
-        edit: editWebViews,
-        theme
-      }),
-      Suggestions.render({
-        key: 'awesomebar',
-        isLocationBarActive,
-        suggestions,
-        theme
-      }, {
-        onOpen: uri => editWebViews(navigateTo(uri))
-      }),
-      DOM.div({
-        key: 'tabstripkillzone',
-        className: ClassSet({
-          tabstripkillzone: true,
-          'tabstripkillzone-hidden': !isTabstripkillzoneVisible
-        }),
-        onMouseEnter: event => {
-          editWebViews(reset);
-          editTabStrip(deactivate);
-        }
-      }),
-      Dashboard({
-        key: 'dashboard',
-        dashboard,
-        hidden: !isDashboardActive
-      }, {
-        onOpen: uri => editWebViews(openTab(uri)),
-        edit: editDashboard
-      }),
-      WebViewBox.render('web-view-box', WebViewBox({
-        isActive: !isDashboardActive,
-        items: webViews,
-      }), {
-        beginVisit, endVisit, changeIcon, changeTitle, changeImage,
-        onClose: id => editWebViews(closeTab(id)),
-        onOpen: uri => editWebViews(openTab(uri)),
-        onOpenBg: uri => editWebViews(openTabBg(uri)),
-        edit: editWebViews
-      })
-    ]),
-    Updates.render({key: 'updates-banner', updates})
-    ]);
-  })
-  // Create a version of readTheme that will return from cache
-  // on repeating calls with an equal cursor.
-  Browser.readTheme = Component.cached(readTheme);
-
-  // Exports:
-
-  exports.Browser = Browser;
-
+      render('WindowControls', WindowControls.view, shell, theme, address),
+      render('WindowBar', WindowBar.view, shell, selected.view, theme, address),
+      render('LocationBar', LocationBar.view, selected.view, theme, address),
+      render('Preview', Preview.view, selected, webViews, theme, address),
+      render('Suggestions', Suggestions.view, selected.view.suggestions,
+             selected.view.input.isFocused, theme, address),
+      render('WebViews', WebViews.view, webViews, address),
+      render('Updater', Updates.view, state.updates, address)
+    ])
+  };
+  exports.view = view;
 });

@@ -1,8 +1,9 @@
 require.config({
   scriptType: 'text/javascript;version=1.8',
-  baseUrl: 'node_modules/',
+  baseUrl: '../../../node_modules/',
   nodeIdCompat: true,
   paths: {
+    about: '../src/about',
     browser: '../src/browser',
     common: '../src/common',
     lang: '../src/lang',
@@ -31,4 +32,4 @@ require.config({
 });
 
 
-require(['browser/index']);
+require(['about/dashboard/index']);
