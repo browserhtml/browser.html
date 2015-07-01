@@ -59,6 +59,7 @@ define((require, exports, module) => {
   const settings = Settings.service(address);
   const scraper = Scraper.service(address);
   // const session = Session.service(address);
+  require('service/gesture').service(address);
 
   // Restore application state.
   address.receive(Session.Action.RestoreSession());

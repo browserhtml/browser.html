@@ -202,10 +202,29 @@ define((require, exports, module) => {
   const view = (isActive, state, address) => {
     const selected = state.entries.get(state.selected);
 
+    let scaleX = 1;
+    let scaleY = 1;
+    let opacity = 1;
+    let pointerEvents = 'auto';
+
+    let display = selected && !selected.getIn('shell', 'isFocused');
+
+    if (!isActive) {
+      opacity = 0;
+      scaleX = 240 / innerWidth;
+      scaleY = 300 / (innerHeight - 56); // 56: size of the window bar
+      pointerEvents = 'none';
+    }
+
     return html.div({
       key: 'web-views',
       style: {
-        transform: `scale(${isActive ? 1 : 0})`
+        opacity,
+        pointerEvents,
+        transition: 'transform 200ms linear, opacity 100ms linear',
+        transitionDelay: '0ms, 100ms',
+        transform: `scale(${scaleX}, ${scaleY})`,
+        willChange: 'transform, opacity',
       },
     }, state.entries.map(({view}) =>
       render(view.id,

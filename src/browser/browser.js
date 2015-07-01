@@ -168,7 +168,7 @@ define((require, exports, module) => {
         height: '100vh',
         width: '100vw',
         color: theme.shellText,
-        backgroundColor: theme.shell,
+        backgroundColor: '#273340',
         position: 'relative',
         overflowY: 'hidden',
       }

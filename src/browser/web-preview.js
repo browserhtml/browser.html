@@ -70,7 +70,6 @@ define((require, exports, module) => {
         backgroundColor: '#fff',
         color: '#555',
         display: 'inline-block',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.4)',
         overflow: 'hidden'
       },
       onClick: address.pass(Shell.Action.Focus, context),
@@ -148,23 +147,40 @@ define((require, exports, module) => {
   };
   exports.viewPreview = viewPreview;
 
-  const view = (webViews, input, webView, theme, address) => html.div({
-    style: {
-      width: '100vw',
-      height: '100vh',
-      textAlign: 'center',
-      paddingTop: 'calc(100vh / 2 - 150px)',
-      backgroundColor: '#273340',
-      overflowX: 'auto',
-      position: 'absolute',
-      top: 0,
-      zIndex: 0,
-      MozWindowDragging: "drag"
+  const view = (webViews, input, webView, theme, address) => {
+
+    let scaleX = 1;
+    let scaleY = 1;
+    let opacity = 1;
+
+    if (!input.isFocused && false) {
+      opacity = 0;
+      scaleX = innerWidth / 240;
+      scaleY = innerHeight / 300;
     }
-  }, webViews
-      .entries
-      .map(({view}, index) =>
-        render(view.id, viewPreview, view.id, view.uri, view.page, address)));
+
+    return html.div({
+      style: {
+        opacity,
+        transform: `scale(${scaleX}, ${scaleY})`,
+        transition: 'transform 200ms linear, opacity 100ms linear',
+        transitionDelay: '0ms, 100ms',
+        willChange: 'transform, opacity',
+        width: '100vw',
+        height: '100vh',
+        textAlign: 'center',
+        paddingTop: 'calc(100vh / 2 - 150px)',
+        overflowX: 'auto',
+        position: 'absolute',
+        top: 0,
+        zIndex: 0,
+        MozWindowDragging: "drag"
+      }
+    }, webViews
+        .entries
+        .map(({view}, index) =>
+          render(view.id, viewPreview, view.id, view.uri, view.page, address)))
+  };
   exports.view = view;
 
 });

@@ -25,11 +25,11 @@ define((require, exports, module) => {
     backgroundColor: 'inherit',
     color: 'inherit',
     MozWindowDragging: 'drag',
-    transition: 'background-color 300ms ease, color 300ms ease',
+    transition: 'background-color 200ms ease, color 200ms ease, transform 200ms ease',
     textAlign: 'center',
     position: 'relative',
     zIndex: 2,
-    visibility: Maybe(String)
+    transform: 'none',
   });
 
 
@@ -40,7 +40,7 @@ define((require, exports, module) => {
     style: NavigationPanelStyle({
       backgroundColor: theme.shell,
       color: theme.shellText,
-      visibility: (webView && isActive) ? 'visible' : 'hidden'
+      transform: (webView && isActive) ? 'none' : 'translateY(-56px)',
     }),
     className: ClassSet({
       navbar: true,
