@@ -49,7 +49,8 @@ define((require, exports, module) => {
     html.div({
       key: 'header',
       style: {
-        boxShadow: shell.isFocused && '0 1px 0 rgba(0, 0, 0, 0.08)',
+        boxShadow:theme.isDark ?
+          '0 1px 0 rgba(255, 255, 255, 0.15)' : '0 1px 0 rgba(0, 0, 0, 0.08)',
         padding: '3px 0',
         height: '28px',
         zIndex: 100,

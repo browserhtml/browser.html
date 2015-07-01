@@ -13,34 +13,46 @@ define((require, exports, module) => {
   // View
 
   const ButtonStyle = Record({
-    backgroundColor: '',
-    color: '',
-    display: 'inline-block',
+    backgroundImage: 'url(css/window-controls-light.sprite.png)',
+    backgroundPosition: '0 0',
+    backgroundRepeat: 'no-repeat',
+    // Scale sprite by 1/2 for retina.
+    backgroundSize: '12px auto',
     width: 12,
     height: 12,
-    marginRight: 8,
-    borderRadius: '50%',
-  }, 'ControlButtonStyle');
-  ButtonStyle.min = ButtonStyle({
-    backgroundColor: '#FDBC40'
-  });
-  ButtonStyle.max = ButtonStyle({
-    backgroundColor: '#33C748'
+    left: 0,
+    position: 'absolute',
+    top: 0,
   });
   ButtonStyle.close = ButtonStyle({
-    backgroundColor: '#FC5753'
+    left: 0,
   });
-  ButtonStyle.unfocused = ButtonStyle({
-    backgroundColor: 'hsl(0, 0%, 86%)'
+  ButtonStyle.min = ButtonStyle({
+    backgroundPosition: '0 -50px',
+    left: 20,
+  });
+  ButtonStyle.max = ButtonStyle({
+    backgroundPosition: '0 -100px',
+    left: 40,
   });
 
-  const containerStyle = {
+  const buttonThemeDark = {
+    backgroundImage: 'url(css/window-controls-dark.sprite.png)'
+  };
+
+  const ContainerStyle = Record({
+    height: 12,
     position: 'absolute',
+    width: 50,
     top: 8,
     left: 8,
     verticalAlign: 'center',
     zIndex: 200
-  };
+  });
+  ContainerStyle.light = ContainerStyle();
+  ContainerStyle.dark = ContainerStyle({
+    backgroundImage: 'url(css/stoplights-dark-theme.png)',
+  });
 
 
   // Actions that will are send by window controls.
@@ -48,27 +60,24 @@ define((require, exports, module) => {
 
   const view = ({isFocused}, theme, address) => html.div({
     key: 'WindowControls',
-    style: containerStyle
+    style: theme.isDark ? ContainerStyle.dark : ContainerStyle.light,
   }, [
     html.button({
       key: 'WindowCloseButton',
-      style: isFocused ? ButtonStyle.close.merge({
-        backgroundColor: theme.closeButton
-      }) : ButtonStyle.unfocused,
+      style: theme.isDark ?
+        ButtonStyle.close.merge(buttonThemeDark) : ButtonStyle.close,
       onClick: address.pass(Shutdown, void(0))
     }),
     html.button({
       key: 'WindowMinButton',
-      style: isFocused ? ButtonStyle.min.merge({
-        backgroundColor: theme.minButton
-      }) : ButtonStyle.unfocused,
+      style: theme.isDark ?
+        ButtonStyle.min.merge(buttonThemeDark) : ButtonStyle.min,
       onClick: address.pass(Minimize, void(0))
     }),
     html.button({
       key: 'WindowMaxButton',
-      style: isFocused ? ButtonStyle.max.merge({
-        backgroundColor: theme.maxButton
-      }) : ButtonStyle.unfocused,
+      style: theme.isDark ?
+        ButtonStyle.max.merge(buttonThemeDark) : ButtonStyle.max,
       onClick: address.pass(Maximize, void(0))
     })
   ]);
