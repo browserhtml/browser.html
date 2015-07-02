@@ -245,7 +245,7 @@ define((require, exports, module) => {
         key: 'suggestions',
         style: styleSuggestions
       }, state.entries.map((entry, index) => {
-        return render(`suggestion-${index}`, viewSuggestion,
+        return render(`suggestion@${index}`, viewSuggestion,
                       entry, state.selected, index, theme,
                       address);
       }))

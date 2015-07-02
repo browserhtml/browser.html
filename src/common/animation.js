@@ -8,33 +8,48 @@ define((require, exports, module) => {
   const React = require('react');
 
   class Animation extends React.Component {
-    static Frame() {
+    static run() {
       Animation.id = null;
       Animation.frame = null;
       const event = Animation.Event || (Animation.Event = {
         type: 'animation-frame'
       });
       event.timeStamp = performance.now();
-      return event;
+
+      const handlers = Animation.handlers.splice(0);
+      const count = handlers.length;
+      let index = 0;
+
+      while (index < count) {
+        const handler = handlers[index];
+        handler.onAnimationFrame(event);
+        index  = index + 1;
+      }
+    }
+    static schedule(element) {
+      const handlers = Animation.handlers ||
+                       (Animation.handlers = []);
+
+      if (handlers.indexOf(element) < 0) {
+        handlers.push(element);
+      }
+
+      if (!Animation.frame) {
+        const node = React.findDOMNode(element);
+        const window = node.ownerDocument.defaultView;
+        Animation.id = window.requestAnimationFrame(Animation.run);
+      }
     }
     constructor() {
       React.Component.apply(this, arguments);
       this.onAnimationFrame = this.onAnimationFrame.bind(this);
+      this.state = {isPending: false}
     }
     componentDidMount() {
       this.componentDidUpdate();
     }
     componentDidUpdate() {
-      if (!Animation.frame) {
-        const node = React.findDOMNode(this);
-        const window = node.ownerDocument.defaultView;
-        const request = respond =>
-          Animation.id = window.requestAnimationFrame(respond);
-
-        Animation.frame = new Promise(request).then(Animation.Frame);
-      }
-
-      Animation.frame.then(this.onAnimationFrame);
+      Animation.schedule(this);
     }
     onAnimationFrame(event) {
       if (this.props.onAnimationFrame) {

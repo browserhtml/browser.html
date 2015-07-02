@@ -79,8 +79,6 @@ define((require, exports, module) => {
     action instanceof Load ? load(state, action.uri) :
     action instanceof LocationChange ?
       state.merge({uri: action.uri}) :
-    action instanceof Shell.Action.Focus ?
-      state.merge({shell: Shell.update(state.shell, action)}) :
     Navigation.Action.isTypeOf(action) ?
       state.set('navigation', Navigation.update(state.navigation, action)) :
     Progress.Action.isTypeOf(action) ?
@@ -125,8 +123,6 @@ define((require, exports, module) => {
   const view = (id, uri, shell, page, navigation, isSelected, address) => {
     // Do not render anything unless viewer has an `uri`
     if (!uri) return null;
-
-    console.log('render web-view')
 
     const style = base;
 
@@ -260,13 +256,13 @@ define((require, exports, module) => {
     Failure({id, detail});
 
 
-  const {Focus, Blur} = Shell.Action;
+  const {Focused, Blured} = Shell.Action;
 
   Event.focus = ({id}) =>
-    Focus({id});
+    Focused({id});
 
   Event.blur = ({id}) =>
-    Blur({id});
+    Blured({id});
 
 
   const {CanGoBackChange, CanGoForwardChange} = Navigation.Action;

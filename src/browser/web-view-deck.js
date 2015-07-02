@@ -208,7 +208,7 @@ define((require, exports, module) => {
         transform: `scale(${isActive ? 1 : 0})`
       },
     }, state.entries.map(({view}) =>
-      render(view.id,
+      render(`web-view@${view.id}`,
              WebView.view,
              view.id,
              view.uri,

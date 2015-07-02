@@ -25,6 +25,8 @@ define((require, exports, module) => {
   const ResetZoom = Record({id: '@selected'}, 'WebView.Shell.ResetZoom');
   const Focus = Record({id: '@selected'}, 'WebView.Shell.Focus');
   const Blur = Record({id: '@selected'}, 'WebView.Shell.Blur');
+  const Focused = Record({id: '@selected'}, 'WebView.Shell.Focused');
+  const Blured = Record({id: '@selected'}, 'WebView.Shell.Blured');
 
 
   const VisibilityChange = Record({
@@ -35,7 +37,7 @@ define((require, exports, module) => {
 
   const Action = Union({
     ZoomIn, ZoomOut, ResetZoom,
-    Focus, Blur
+    Focus, Blur, Focused, Blured
   });
 
   exports.Action = Action;
@@ -59,6 +61,8 @@ define((require, exports, module) => {
     action instanceof ResetZoom ? state.remove('zoom') :
     action instanceof Focus ? Focusable.focus(state) :
     action instanceof Blur ? Focusable.blur(state) :
+    action instanceof Focused ? Focusable.focus(state) :
+    action instanceof Blured ? Focusable.blur(state) :
     state;
 
   exports.update = update;

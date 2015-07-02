@@ -149,6 +149,7 @@ define((require, exports, module) => {
   const LockIcon = '\uf023';
   const ReloadIcon = '\uf01e';
   const StopIcon = '\uf00d';
+  const SEARCH_ICON = '\uf002';
 
   const isLoading = Progress.isLoading;
 
@@ -193,6 +194,13 @@ define((require, exports, module) => {
                inactiveLocationBar,
         onClick: address.pass(Input.Action.Enter, context)
       }, [
+        html.span({
+          style: {
+            visibility: input.isFocused ? 'visible' : 'hidden',
+            fontSize: '16px',
+            fontFamily: 'FontAwesome'
+          }
+        }, SEARCH_ICON),
         Editable.view({
           key: 'input',
           className: 'location-bar-input',
@@ -208,8 +216,8 @@ define((require, exports, module) => {
           onSelect: address.pass(Select, context),
           onChange: address.pass(Change, context),
 
-          onFocus: address.pass(Input.Action.Focus, context),
-          onBlur: address.pass(Input.Action.Blur, context),
+          onFocus: address.pass(Input.Action.Focused, context),
+          onBlur: address.pass(Input.Action.Blured, context),
           onKeyDown: address.pass(Binding, context)
         }),
         html.p({

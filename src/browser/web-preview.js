@@ -164,7 +164,8 @@ define((require, exports, module) => {
   }, webViews
       .entries
       .map(({view}, index) =>
-        render(view.id, viewPreview, view.id, view.uri, view.page, address)));
+        render(`Card@${view.id}`, viewPreview,
+               view.id, view.uri, view.page, address)));
   exports.view = view;
 
 });

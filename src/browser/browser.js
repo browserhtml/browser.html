@@ -6,7 +6,7 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const {html, node, render, reframe} = require('reflex');
+  const {html, node, render, cache} = require('reflex');
   const {Record, Any, Union} = require('common/typed');
   const {inspect} = require('common/debug');
   const WindowBar = require('./window-bar');
@@ -42,7 +42,7 @@ define((require, exports, module) => {
   // Actions
 
   const {SaveSession, ResetSession, RestoreSession} = Session.Action;
-  const {Focus, Blur} = Focusable.Action;
+  const {Focused, Blured} = Focusable.Action;
   const {ApplicationUpdate, RuntimeUpdate} = Updates.Action;
 
   const modifier = OS.platform() == 'linux' ? 'alt' : 'accel';
@@ -128,6 +128,7 @@ define((require, exports, module) => {
   exports.update = update;
 
 
+  /*
   exports.update = inspect(update, ([state, action], output) => {
     if (action instanceof WebView.Action.Progress.LoadProgress) {
       return null;
@@ -137,25 +138,28 @@ define((require, exports, module) => {
                 state.toJSON(),
                 output && output.toJSON());
   });
+  */
 
 
   // View
 
   const OpenWindow = event => WebView.Open({uri: event.detail.url});
 
+  const defaultTheme = Theme.read({});
   const view = (state, address) => {
     const {shell, webViews, input, suggestions} = state;
     const selected = webViews.selected === null ? null :
                      webViews.entries.getIn([webViews.selected, 'view']);
-    const theme = Theme.read(selected ? selected.page.pallet : {});
+    const theme = selected ? cache(Theme.read, selected.page.pallet) :
+                  defaultTheme;
 
     return Main({
       key: 'root',
       windowTitle: !selected ? '' :
                    (selected.page.title || selected.uri),
       onKeyDown: address.pass(Binding, state),
-      onWindowBlur: address.pass(Blur),
-      onWindowFocus: address.pass(Focus),
+      onWindowBlur: address.pass(Blured),
+      onWindowFocus: address.pass(Focused),
       onUnload: address.pass(SaveSession),
       onAppUpdateAvailable: address.pass(ApplicationUpdate),
       onRuntimeUpdateAvailable: address.pass(RuntimeUpdate),

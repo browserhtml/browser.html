@@ -43,7 +43,8 @@ define((require, exports, module) => {
 
     if (action instanceof ResetSession) {
       return state.clear().merge({
-        shell: {isFocused: document.hasFocus()},
+        shell: {isFocused: true},
+        input: {isFocused: true}
       });
     }
 

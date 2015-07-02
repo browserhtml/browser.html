@@ -22,28 +22,33 @@ define((require, exports, module) => {
 
   const MAX_RESULTS = 6;
 
-  const requestSuggestions = throttle((address, action) => {
-    address.receive(PageQuery({id: action.id,
-                               input: action.value,
-                               limit: MAX_RESULTS}));
+  const service = address => {
+    const search = Search.service(address)
+    const history = History.service(address)
 
-    address.receive(SearchQuery({id: action.id,
-                                 input: action.value,
-                                 limit: MAX_RESULTS}));
-  }, 400);
+    const requestSuggestions = throttle(action => {
+      history(PageQuery({id: action.id,
+                        input: action.value,
+                        limit: MAX_RESULTS}));
 
-  const service = address => action => {
-    if (action instanceof Change) {
-      requestSuggestions(address, action);
-    }
+      search(SearchQuery({id: action.id,
+                          input: action.value,
+                          limit: MAX_RESULTS}));
+    }, 4000);
 
-    if (action instanceof Blur) {
-      address.receive(Unselect({id: action.id}));
-    }
+    return action => {
+      if (action instanceof Change) {
+        requestSuggestions(action);
+      }
 
-    if (action instanceof Load) {
-      address.receive(Clear({id: action.id}));
-    }
+      if (action instanceof Blur) {
+        address.receive(Unselect({id: action.id}));
+      }
+
+      if (action instanceof Load) {
+        address.receive(Clear({id: action.id}));
+      }
+    };
   };
   exports.service = service;
 });

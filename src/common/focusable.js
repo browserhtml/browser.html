@@ -20,7 +20,9 @@ define((require, exports, module) => {
 
   const Focus = Record({isFocused: true}, 'Focusable.Focus');
   const Blur = Record({isFocused: false}, 'Focusable.Blur');
-  const Action = Union({Focus, Blur});
+  const Focused = Record({isFocused: true}, 'Focusable.Focused');
+  const Blured = Record({isFocused: false}, 'Focusable.Blured');
+  const Action = Union({Focus, Blur, Focused, Blured});
 
   exports.Action = Action;
 
@@ -34,7 +36,9 @@ define((require, exports, module) => {
 
   const update = (state, action) =>
     action instanceof Focus ? focus(state) :
+    action instanceof Focused ? focus(state) :
     action instanceof Blur ? blur(state) :
+    action instanceof Blured ? blur(state) :
     state;
   exports.update = update;
 

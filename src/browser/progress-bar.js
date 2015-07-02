@@ -41,6 +41,11 @@ define((require, exports, module) => {
     timeStamp: Number
   }, 'WebView.Progress.LoadProgress');
 
+  const ProgressChange = Record({
+    id: String,
+    value: Number
+  }, 'WebView.Progress.Change');
+
   const LoadStart = Record({
     id: String,
     uri: String,
@@ -57,7 +62,7 @@ define((require, exports, module) => {
   exports.LoadProgress = LoadProgress;
   exports.LoadStart = LoadStart;
   exports.LoadEnd = LoadEnd;
-  exports.Action = Union({LoadProgress, LoadStart, LoadEnd});
+  exports.Action = Union({LoadProgress, ProgressChange, LoadStart, LoadEnd});
 
 
   // Update
@@ -66,6 +71,7 @@ define((require, exports, module) => {
     !action ? state :
     action instanceof LoadStart ? state.clear().set('loadStarted', action.timeStamp) :
     action instanceof LoadEnd ? state.set('loadEnded', action.timeStamp) :
+    action instanceof ProgressChange ? state.clear().set('value', action.value) :
     // Only update `connected` if web-view is connecting.
     action instanceof LoadProgress ?
       (isConnecting(state) ? state.set('connected', action.timeStamp) :
@@ -85,6 +91,7 @@ define((require, exports, module) => {
   const APivot = 200;         // When to reach ~80% of zone A
   const BPivot = 500;         // When to reach ~80% of zone B
   const CDuration = 200;     // Time it takes to fill zone C
+  const Precision = 10000;
 
   const approach = (tMs, pivoMs) => 2 * Math.atan(tMs / pivoMs) / Math.PI;
 
@@ -108,7 +115,10 @@ define((require, exports, module) => {
     const c = loadEnded <= 0 ? 0 :
               (1 - a - b) * (now - loadEnded) / CDuration;
 
-    return Math.min(1, a + b + c);
+    const value = Math.min(1, a + b + c);
+
+    // Adjust a percision to avoid redundunt render cycles.
+    return Math.floor(Math.round(value * Precision)) / Precision;
   };
 
   // View
