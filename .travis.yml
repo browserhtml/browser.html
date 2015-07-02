@@ -1,11 +1,13 @@
 language: node_js
 node_js:
-- '0.10'
-script: npm run-script deploy
+- 'stable'
+after_success: npm run-script deploy
 branches:
   only:
   - master
+  # Version tags
+  - /^\d+\.\d+(\.\d+)?$/
 env:
   global:
-  - GH_REF: github.com/mozilla/browser.html.git
-  - secure: Wt/AeUYqxsZi1Dbfw1TI+krwiezDR4CcfpiSblHNz3ai+PP9tDGwnx7GI2GqCbf4XQ8wlUggi+B8UGxD0/NTKmr0jVQZqeH/RTQ4Z6vIGWxjxqCfcFhM5FmO5xvkb7Zsl0gHky7fJdXMC3J+XFp5ysN+n8SowLKa5+KkWU3ilYo=
+    - GH_REF: github.com/mozilla/browser.html.git
+    - secure: Wt/AeUYqxsZi1Dbfw1TI+krwiezDR4CcfpiSblHNz3ai+PP9tDGwnx7GI2GqCbf4XQ8wlUggi+B8UGxD0/NTKmr0jVQZqeH/RTQ4Z6vIGWxjxqCfcFhM5FmO5xvkb7Zsl0gHky7fJdXMC3J+XFp5ysN+n8SowLKa5+KkWU3ilYo=
