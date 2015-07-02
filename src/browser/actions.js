@@ -123,6 +123,26 @@ define((require, exports, module) => {
     return session;
   };
 
+  const showNavbar = () => {
+    // smoothScrollBy requires a platform patch to work.
+    // We don't want to scroll the navbar if we can't
+    // scroll the iframe later.
+    if (HTMLIFrameElement.prototype.smoothScrollBy) {
+      const main = document.querySelector('main');
+      const scrollTop = main.scrollTop;
+      if (scrollTop != 0) {
+        const iframe = document.querySelector('iframe:not([hidden=true])')
+        if (iframe) {
+          iframe.addEventListener('mozbrowseron-scroll-in-rfa', function scroll() {
+            iframe.removeEventListener('mozbrowseron-scroll-in-rfa', scroll);
+            main.scrollBy({top: -scrollTop, behavior: 'smooth'});
+          });
+          iframe.smoothScrollBy(0, scrollTop); // smooth scroll over IPC
+        }
+      }
+    }
+  }
+
   // Exports:
 
   exports.makeSearchURL = makeSearchURL;
@@ -133,5 +153,6 @@ define((require, exports, module) => {
   exports.readSession = readSession;
   exports.writeSession = writeSession;
   exports.sendEventToChrome = sendEventToChrome;
+  exports.showNavbar = showNavbar;
 
 });
