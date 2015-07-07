@@ -117,7 +117,6 @@ define((require, exports, module) => {
       } else if (action instanceof Unknown) {
         console.warn(`Unknown runtime event ${action}`)
       } else if (Action.isTypeOf(action)) {
-        alert(action.toString());
         window.dispatchEvent(new CustomEvent('mozContentEvent', {
           bubles: true,
           cancelable: false,

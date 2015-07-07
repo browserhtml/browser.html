@@ -8,7 +8,10 @@ var path = require('path');
 
 process.title = 'browser.html';
 
-var server = http.createServer(ecstatic({root: path.join(module.filename, '../..')}));
+var server = http.createServer(ecstatic({
+  root: path.join(module.filename, '../..'),
+  cache: 0
+}));
 server.listen(6060);
 
 var app = child.spawn('/Applications/B2G.app/Contents/MacOS/graphene', [

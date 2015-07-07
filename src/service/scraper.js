@@ -390,12 +390,25 @@ define((require, exports, module) => {
 
     // @TODO need some methods for scaling and cropping images.
 
-    return {
+    const ready = new Promise((resolve) => {
+      if (document.readyState === "complete") {
+        resolve();
+      } else {
+        const listener = _ => {
+          window.removeEventListener("load", listener);
+          resolve();
+        };
+
+        window.addEventListener("load", listener);
+      }
+    });
+
+    return ready.then(_ => ({
       hero: scrapeHeroImgUrls(document.documentElement),
       title: scrapeTitle(document.documentElement, ''),
       description: scrapeDescription(document.documentElement, ''),
       name: scrapeSiteName(document.documentElement, '')
-    }
+    }));
   };
 
   const script = `(${scrape})()`;

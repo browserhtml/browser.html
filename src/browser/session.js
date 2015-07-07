@@ -30,9 +30,7 @@ define((require, exports, module) => {
   exports.update = (state, action) => {
     if (action instanceof SaveSession) {
       const session = state
-        .updateIn(['webViews', 'entries'],
-                   entries => entries.map(entry =>
-                      entry.update('view', WebView.persistent)))
+        //.update('webViews', WebView.write)
         .remove('updates')
         .toJSON();
 

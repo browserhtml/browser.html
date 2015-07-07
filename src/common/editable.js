@@ -17,6 +17,7 @@ define((require, exports, module) => {
     end: 0,
     direction: 'forward'
   }, 'Editable.Selection');
+  exports.Selection = Selection;
 
   const Model = Record({
     isFocused: false,
@@ -34,7 +35,8 @@ define((require, exports, module) => {
 
 
   const Change = Record({
-    value: String
+    value: String,
+    selection: Selection
   }, 'Editable.Change');
 
   const Action = Union({Change, Select});
@@ -51,7 +53,8 @@ define((require, exports, module) => {
   exports.selectAll = selectAll;
 
   const change = (state, action) =>
-    state.set('value', action.value);
+    state.merge({value: action.value,
+                 selection: action.selection});
   exports.change = change;
 
   const update = (state, action) =>

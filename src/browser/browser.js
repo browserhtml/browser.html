@@ -9,10 +9,11 @@ define((require, exports, module) => {
   const {html, node, render, cache} = require('reflex');
   const {Record, Any, Union} = require('common/typed');
   const {inspect} = require('common/debug');
+  const {StyleSheet, Style} = require('common/style');
   const WindowBar = require('./window-bar');
   const WindowControls = require('./window-controls');
   const LocationBar = require('./location-bar');
-  const WebViews = require('./web-view-deck');
+  const Progress = require('./progress-bar');
   const Theme = require('./theme');
   const {KeyBindings} = require('common/keyboard');
   const Focusable = require('common/focusable');
@@ -21,19 +22,22 @@ define((require, exports, module) => {
   const WebView = require('./web-view');
   const Session = require('./session');
   const Input = require('./web-input');
+  const Loader = require('./web-loader');
   const Preview = require('./web-preview');
   const ClassSet = require('common/class-set');
   const OS = require('common/os');
   const Pallet = require('service/pallet');
   const Suggestions = require('./suggestion-box');
   const URI = require('common/url-helper');
+  const Navigation = require('service/navigation');
 
   // Model
   const Model = Record({
     version: '0.0.7',
+    mode: 'page',
     shell: Focusable.Model({isFocused: true}),
     updates: Updates.Model,
-    webViews: WebViews.Model,
+    webViews: WebView.Model,
     input: Input.Model,
     suggestions: Suggestions.Model
   });
@@ -53,23 +57,24 @@ define((require, exports, module) => {
     'accel -': _ => WebView.Action.Shell.ZoomOut(),
     'accel =': _ => WebView.Action.Shell.ZoomIn(),
     'accel shift =': _ => WebView.Action.Shell.ZoomIn(),
-    'accel w': _ => WebViews.Action.Close(),
-    'accel shift ]': _ => WebViews.Action.SelectByOffset({offset: 1}),
-    'accel shift [': _ => WebViews.Action.SelectByOffset({offset: -1}),
-
+    'accel w': _ => WebView.Action.Close(),
+    'accel shift ]': _ => WebView.Action.SelectByOffset({offset: 1}),
+    'accel shift [': _ => WebView.Action.SelectByOffset({offset: -1}),
+    'control tab': _ => WebView.Action.SelectByOffset({offset: 1}),
+    'control shift tab': _ => WebView.Action.SelectByOffset({offset: -1}),
     'accel shift backspace': _ => ResetSession(),
     'accel shift s': _ => SaveSession(),
 
-    'accel r': _ => WebView.Action.Navigation.Reload(),
-    'escape': _ => WebView.Action.Navigation.Stop(),
-    [`${modifier} left`]: _ => WebView.Action.Navigation.GoBack(),
-    [`${modifier} right`]: _ => WebView.Action.Navigation.GoForward()
+    'accel r': _ => Navigation.Action.Reload(),
+    'escape': _ => Navigation.Action.Stop(),
+    [`${modifier} left`]: _ => Navigation.Action.GoBack(),
+    [`${modifier} right`]: _ => Navigation.Action.GoForward()
   }, 'Browser.Keyboard.Action');
 
   const Action = Union({
     Binding: Binding.Action,
     Updates: Updates.Action,
-    WebViews: WebViews.Action,
+    WebView: WebView.Action,
     Focusable: Focusable.Action,
     Session: Session.Action,
     Suggestions: Suggestions.Action
@@ -84,7 +89,7 @@ define((require, exports, module) => {
     if (action instanceof Input.Action.Submit) {
       return state.merge({
         input: Input.update(state.input, action),
-        webViews: WebViews.update(state.webViews, WebView.Action.Load({
+        webViews: WebView.update(state.webViews, Loader.Action.Load({
           id: action.id,
           uri: URI.read(state.input.value)
         }))
@@ -94,7 +99,7 @@ define((require, exports, module) => {
     if (action instanceof Input.Action.Enter) {
       return state.merge({
         input: Input.update(state.input, action),
-        webViews: WebViews.update(state.webViews, action)
+        webViews: WebView.update(state.webViews, action)
       });
     }
 
@@ -106,8 +111,8 @@ define((require, exports, module) => {
       return state.set('input', Input.update(state.input, action));
     }
 
-    if (WebViews.Action.isTypeOf(action)) {
-      return state.set('webViews', WebViews.update(state.webViews, action));
+    if (WebView.Action.isTypeOf(action)) {
+      return state.set('webViews', WebView.update(state.webViews, action));
     }
 
     if (Updates.Action.isTypeOf(action)) {
@@ -141,48 +146,79 @@ define((require, exports, module) => {
   */
 
 
+  // Style
+
+  const style = StyleSheet.create({
+    shell: {
+      color: null,
+      backgroundColor: null,
+
+      height: '100vh',
+      width: '100vw',
+      position: 'relative',
+      overflowY: 'hidden',
+    }
+  });
+
   // View
 
   const OpenWindow = event => WebView.Open({uri: event.detail.url});
-
   const defaultTheme = Theme.read({});
+
   const view = (state, address) => {
     const {shell, webViews, input, suggestions} = state;
-    const selected = webViews.selected === null ? null :
-                     webViews.entries.getIn([webViews.selected, 'view']);
-    const theme = selected ? cache(Theme.read, selected.page.pallet) :
+    const {loader, page, progress, security} = WebView.get(webViews,
+                                                           webViews.selected);
+
+    const theme = input.isFocused ? defaultTheme :
+                  page ? cache(Theme.read, page.pallet) :
                   defaultTheme;
 
     return Main({
       key: 'root',
-      windowTitle: !selected ? '' :
-                   (selected.page.title || selected.uri),
-      onKeyDown: address.pass(Binding, state),
+      windowTitle: !loader ? '' :
+                   !page ? loader.uri :
+                   page.title || loader.uri,
+      onKeyDown: address.pass(Binding),
       onWindowBlur: address.pass(Blured),
       onWindowFocus: address.pass(Focused),
       onUnload: address.pass(SaveSession),
-      onAppUpdateAvailable: address.pass(ApplicationUpdate),
-      onRuntimeUpdateAvailable: address.pass(RuntimeUpdate),
       onOpenWindow: address.pass(OpenWindow),
       tabIndex: 1,
-      className: ClassSet({
-        'moz-noscrollbars': true
-      }),
-      style: {
-        height: '100vh',
-        width: '100vw',
+      style: Style(style.shell, {
         color: theme.shellText,
         backgroundColor: theme.shell,
-        position: 'relative',
-        overflowY: 'hidden',
-      }
+      })
     }, [
       render('WindowControls', WindowControls.view, shell, theme, address),
-      render('WindowBar', WindowBar.view, !input.isFocused, shell, selected, theme, address),
-      render('LocationBar', LocationBar.view, selected, input, suggestions, theme, address),
-      render('Preview', Preview.view, webViews, input, selected, theme, address),
+      render('WindowBar', WindowBar.view,
+        !input.isFocused,
+        loader && loader.id,
+        shell,
+        theme,
+        address),
+      !input.isFocused && render('ProgressBar', Progress.view,
+        loader && loader.id,
+        progress,
+        theme, address),
+      render('LocationBar', LocationBar.view,
+        loader, security, page,
+        input, suggestions, theme, address),
+      render('Preview', Preview.view,
+        webViews.loader,
+        webViews.page,
+        input,
+        webViews.selected,
+        theme,
+        address),
       render('Suggestions', Suggestions.view, suggestions, input.isFocused, theme, address),
-      render('WebViews', WebViews.view, !input.isFocused, webViews, address),
+      render('WebViews', WebView.view,
+        webViews.loader,
+        webViews.shell,
+        webViews.page,
+        address,
+        webViews.selected,
+        !input.isFocused),
       render('Updater', Updates.view, state.updates, address)
     ])
   };

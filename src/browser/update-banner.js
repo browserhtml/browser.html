@@ -7,7 +7,7 @@ define((require, exports, module) => {
   'use strict';
 
   const {html} = require('reflex');
-  const {mix} = require('common/style');
+  const {StyleSheet, Style} = require('common/style');
   const {Record, Union} = require('common/typed');
   const Runtime = require('common/runtime');
   const Update = require('service/update');
@@ -39,38 +39,37 @@ define((require, exports, module) => {
 
   // Style
 
-  const styleContainer = {
-    position: 'fixed',
-    bottom: 10,
-    width: 400,
-    left: 'calc(50vw - 200px)',
-    backgroundColor: 'rgba(36,60,83,0.95)',
-    borderRadius: 4,
-    padding: 8,
-    color: 'white',
-    transition: 'opacity 500ms ease-in',
-    fontWeight: '100',
-    cursor: 'default'
-  };
-
-  const styleHiddenContainer = mix(styleContainer, {
-    opacity: 0,
-    pointerEvents: 'none',
+  const style = StyleSheet.create({
+    container: {
+      position: 'fixed',
+      bottom: 10,
+      width: 400,
+      left: 'calc(50vw - 200px)',
+      backgroundColor: 'rgba(36,60,83,0.95)',
+      borderRadius: 4,
+      padding: 8,
+      color: 'white',
+      transition: 'opacity 500ms ease-in',
+      fontWeight: '100',
+      cursor: 'default'
+    },
+    hidden: {
+      opacity: 0,
+      pointerEvents: 'none',
+    },
+    button: {
+      padding: '8px 20px',
+      backgroundColor: 'rgb(115,206,113)',
+      color: 'inherit',
+      borderRadius: 4,
+      float: 'right',
+      cursor: 'pointer'
+    },
+    message: {
+      float: 'left',
+      padding: 8
+    }
   });
-
-  const styleButton = {
-    padding: '8px 20px',
-    backgroundColor: 'rgb(115,206,113)',
-    color: 'inherit',
-    borderRadius: 4,
-    float: 'right',
-    cursor: 'pointer'
-  };
-
-  const styleMessage = {
-    float: 'left',
-    padding: 8
-  };
 
   // View
 
@@ -84,15 +83,16 @@ define((require, exports, module) => {
                    null;
 
     return html.div({
-      style: action ? styleContainer : styleHiddenContainer
+      style: Style(style.container,
+                   action ? style.visible : style.hidden)
     }, [
       html.div({
         key: 'bannerMessage',
-        style: styleMessage
+        style: style.message
       }, 'Hey! An update just for you!'),
       html.button({
         key:  'bannerButton',
-        style: styleButton,
+        style: style.button,
         onClick: action && address.send(action)
       }, `Apply ${message}`)
     ]);

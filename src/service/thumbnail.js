@@ -6,14 +6,14 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const WebView = require('browser/web-view');
-  const WebPage = require('browser/web-page');
+  const Loader = require('browser/web-loader');
+  const Page = require('browser/web-page');
   const {Record, Union} = require('common/typed');
   const {fromDOMRequest, fromEvent} = require('lang/promise');
   const URI = require('common/url-helper');
 
-  const {LocationChange} = WebView.Action;
-  const {ThumbnailChange} = WebPage.Action;
+  const {LocationChange} = Loader.Action;
+  const {ThumbnailChange} = Page.Action;
 
   const fetchScreenshot = iframe =>
     fromDOMRequest(iframe.getScreenshot(100 * devicePixelRatio,

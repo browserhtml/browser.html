@@ -6,61 +6,56 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const {Record, Union, Maybe} = require('common/typed');
   const {html, render} = require('reflex')
-  const ClassSet = require('common/class-set');
-  const {mix} = require('common/style');
-
-  const Progress = require('./progress-bar');
-  const WindowControls = require('./window-controls');
-  const LocationBar = require('./location-bar');
+  const {StyleSheet, Style} = require('common/style');
   const Preview = require('./web-preview');
 
-  const Theme = require('./theme');
-  const WebView = require('./web-view');
+  // Style
 
-  // Model
-
-  const NavigationPanelStyle = Record({
-    backgroundColor: 'inherit',
-    color: 'inherit',
-    MozWindowDragging: 'drag',
-    transition: 'background-color 300ms ease, color 300ms ease',
-    textAlign: 'center',
-    position: 'relative',
-    zIndex: 2,
-    visibility: Maybe(String)
+  const style = StyleSheet.create({
+    panel: {
+      backgroundColor: 'inherit',
+      color: 'inherit',
+      MozWindowDragging: 'drag',
+      transition: 'background-color 300ms ease, color 300ms ease',
+      textAlign: 'center',
+      position: 'relative',
+      zIndex: 2,
+      visibility: null
+    },
+    visible: {visibility: 'visible'},
+    invisible: {visibility: 'hidden'},
+    header: {
+      boxShadow: null,
+      padding: '3px 0',
+      height: '28px',
+      zIndex: 100,
+      position: 'relative'
+    },
+    dark: {
+      boxShadow: '0 1px 0 rgba(255, 255, 255, 0.15)'
+    },
+    light: {
+      boxShadow: '0 1px 0 rgba(0, 0, 0, 0.08)'
+    }
   });
 
 
   // view
 
-  const view = (isActive, shell, webView, theme, address) => html.div({
+  const view = (isActive, id, shell, theme, address) => html.div({
     key: 'WindowBar',
-    style: NavigationPanelStyle({
-      backgroundColor: theme.shell,
-      color: theme.shellText,
-      visibility: (webView && isActive) ? 'visible' : 'hidden'
-    }),
-    className: ClassSet({
-      navbar: true,
-    })
+    style: Style(style.panel,
+                 (id && isActive) ? style.visible : style.invisible,
+                 {backgroundColor: theme.shell, color: theme.shellText}),
   }, [
     html.div({
       key: 'header',
-      style: {
-        boxShadow:theme.isDark ?
-          '0 1px 0 rgba(255, 255, 255, 0.15)' : '0 1px 0 rgba(0, 0, 0, 0.08)',
-        padding: '3px 0',
-        height: '28px',
-        zIndex: 100,
-        position: 'relative'
-      }
+      style: Style(style.header,
+                   theme.isDark ? style.dark : style.light)
     }, [
       render('PreviewControls', Preview.viewControls, theme, address),
-    ]),
-    webView && render('ProgressBar', Progress.view,
-                      webView.progress, webView.id, theme, address)
+    ])
   ]);
   exports.view = view;
 });

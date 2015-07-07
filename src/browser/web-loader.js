@@ -8,10 +8,15 @@ define((require, exports, module) => {
 
   const {Record, Union, List, Maybe, Any} = require('common/typed');
 
-  // The reason this code is a separate module from web-view is to avoid
-  // circular dependencies between components.
+  // Model
+  const Model = Record({
+    id: String,
+    uri: String
+  }, 'WebLoader');
+  exports.Model = Model;
 
-  // TODO: Consider merging `Load` & `LocationChange` into one.
+  // Actions
+
   const Load = Record({
     id: '@selected',
     uri: String
@@ -25,4 +30,12 @@ define((require, exports, module) => {
 
   const Action = Union({Load, LocationChange});
   exports.Action = Action;
+
+  // Update
+
+  const update = (state, action) =>
+    action instanceof Load ? state.set('uri', action.uri) :
+    action instanceof LocationChange ? state.set('uri', action.uri) :
+    state;
+  exports.update = update;
 });

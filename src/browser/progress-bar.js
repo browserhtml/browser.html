@@ -10,7 +10,7 @@ define((require, exports, module) => {
   const {animate} = require('common/animation');
   const {Record, Union} = require('common/typed');
   const Theme = require('./theme');
-
+  const {StyleSheet, Style} = require('common/style');
 
   // Model
 
@@ -121,6 +121,24 @@ define((require, exports, module) => {
     return Math.floor(Math.round(value * Precision)) / Precision;
   };
 
+  // Style
+
+  const style = StyleSheet.create({
+    base: {
+      zIndex: 1,
+      display: 'block',
+      width: '100%',
+      height: 4,
+      marginLeft: '-100%',
+      position: 'absolute',
+      top: 28,
+      left: 0,
+      backgroundColor: null,
+      opacity: null,
+      transform: null
+    }
+  });
+
   // View
 
   const startFading = 0.8;    // When does opacity starts decreasing to 0
@@ -131,27 +149,20 @@ define((require, exports, module) => {
   const ProgressUpdate = (id, {timeStamp}) =>
     LoadProgress({id, timeStamp});
 
-  const view = (progress, id, theme, address) => {
-    const node = html.div({
+  const view = (id, progress, theme, address) => {
+    const node = progress && html.div({
       key: 'ProgressBar',
-      style: {
-        zIndex: 99,
-        display: 'block',
-        width: '100%',
-        height: 4,
-        marginLeft: '-100%',
-        position: 'absolute',
-        top: 28,
-        left: 0,
+      style: Style(style.base, {
         backgroundColor: theme.progressBar,
         opacity: computeOpacity(progress.value),
         transform: `translateX(${100 * progress.value}%)`
-      }
+      })
     });
 
     // If `webView` is loading then animate node with `ProgressChange` actions
     // on every animatation frame.
-    return !isLoading(progress) ? node :
+    return !progress ? null :
+           !isLoading(progress) ? node :
            animate(node, address.pass(ProgressUpdate, id));
   };
   exports.view = view;

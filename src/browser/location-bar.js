@@ -9,7 +9,7 @@ define((require, exports, module) => {
   const {Record, Union, Maybe} = require('common/typed');
   const {html, render} = require('reflex');
   const URI = require('common/url-helper');
-  const {mix} = require('common/style');
+  const {StyleSheet, Style} = require('common/style');
 
   const {KeyBindings} = require('common/keyboard');
   const Editable = require('common/editable');
@@ -18,7 +18,6 @@ define((require, exports, module) => {
   const Shell = require('./web-shell');
   const Input = require('./web-input');
   const Progress = require('./progress-bar');
-  const Preview = require('./preview-box');
   const Suggestions = require('./suggestion-box');
   const ClassSet = require('common/class-set');
 
@@ -26,86 +25,119 @@ define((require, exports, module) => {
 
   // Model
 
-  const Color = String;
-  const LocationBarStyle = Record({
-    display: 'inline-block',
-    MozWindowDragging: 'no-drag',
-    borderRadius: 5,
-    lineHeight: '22px',
-    width: 250, // FIXME :Doesn't shrink when window is narrow
-    height: 22,
-    padding: '0 3px',
-    margin: '0',
-    overflow: 'hidden',
-    pointerEvents: 'all'
-  }, 'LocationBarStyle');
+  // Style
 
-  const inactiveLocationBar = LocationBarStyle();
-  const activeLocationBar = LocationBarStyle({
-    width: 400
+  const style = StyleSheet.create({
+    container: {
+      position: 'absolute',
+      zIndex: 101,
+      top: 0,
+      padding: '3px',
+      width: '100vw',
+      textAlign: 'center',
+      pointerEvents: 'none'
+    },
+    bar: {
+      display: 'inline-block',
+      MozWindowDragging: 'no-drag',
+      borderRadius: 5,
+      lineHeight: '22px',
+      height: 22,
+      padding: '0 3px',
+      margin: '0',
+      overflow: 'hidden',
+      pointerEvents: 'all',
+      width: null
+    },
+    inactive: {
+      width: 250, // FIXME :Doesn't shrink when window is narrow
+    },
+    active: {
+      width: 400
+    },
+    button: {
+      opacity: null,
+      pointerEvents: null,
+      display: null,
+      left: null,
+      right: null,
+
+      color: 'inherit',
+      position: 'absolute',
+      top: 0,
+      width: 30,
+      height: 30,
+      fontFamily: 'FontAwesome',
+      textAlign: 'center',
+      fontSize: '17px',
+      verticalAlign: 'middle',
+      cursor: 'default'
+    },
+
+    back: {left: 0},
+    reload: {right: 0},
+    stop: {right: 0},
+    dashboard: {right: 0},
+
+    input: {
+      padding: null,
+      maxWidth: null,
+
+      color: '#333',
+      width: '100%',
+      lineHeight: '22px',
+      overflow: 'hidden',
+      borderRadius: 0
+    },
+
+    summary: {
+      maxWidth: null,
+      padding: null,
+      color: null,
+      backgroundColor: null,
+
+      lineHeight: '22px',
+      overflow: 'hidden',
+      width: '100%',
+      display: 'inline-block',
+      textOverflow: 'ellipsis',
+      textAlign: 'center'
+    },
+
+    locationText: {
+      backgroundColor: null,
+      color: 'inherit',
+      fontWeight: 'bold'
+    },
+
+    titleText: {
+      color: 'interit',
+      backgroundColor: null,
+      padding: 5
+    },
+
+    visible: {
+      visibility: 'visible'
+    },
+    invisible: {
+      visibility: 'hidden'
+    },
+    icon: {
+      fontSize: '16px',
+      fontFamily: 'FontAwesome'
+    },
+
+    collapsed: {maxWidth: 0, padding: 0},
+    disabled: {opacity: 0.2, pointerEvents: 'none'},
+    hidden: {display: 'none'},
+
+    security: {
+      fontFamily: 'FontAwesome',
+      fontWeight: 'normal',
+      marginRight: 6,
+      verticalAlign: 'middle'
+    }
   });
-
-
-  const ButtonStyle = Record({
-    color: 'inherit',
-    opacity: Maybe(Number),
-    pointerEvents: Maybe(String),
-    display: Maybe(String),
-    left: Maybe(Number),
-    right: Maybe(Number),
-
-    position: 'absolute',
-    top: 0,
-    width: 30,
-    height: 30,
-    fontFamily: 'FontAwesome',
-    textAlign: 'center',
-    fontSize: '17px',
-    verticalAlign: 'middle',
-    cursor: 'default'
-  }, 'NavigationButtonStyle');
-
-  const URLInputStyle = Record({
-    padding: Maybe(Number),
-    maxWidth: Maybe(Number),
-    color: '#333',
-    width: '100%',
-    lineHeight: '22px',
-    overflow: 'hidden',
-    borderRadius: 0
-  }, 'URLInputStyle');
-
-  const PageSummaryStyle = Record({
-    maxWidth: Maybe(Number),
-    padding: Maybe(Number),
-    color: Maybe(Color),
-    backgroundColor: Maybe(Color),
-
-    lineHeight: '22px',
-    overflow: 'hidden',
-    width: '100%',
-    display: 'inline-block',
-    textOverflow: 'ellipsis',
-    textAlign: 'center'
-  }, 'PageSummaryStyle');
-
-  const LocationTextStyle = Record({
-    color: 'inherit',
-    backgroundColor: Maybe(Color),
-    fontWeight: 'bold'
-  }, 'LocationTextStyle');
-
-  const TitleTextStyle = Record({
-    color: 'interit',
-    backgroundColor: Maybe(Color),
-    padding: 5
-  }, 'TitleTextStyle');
-
-
-  const backButton = ButtonStyle({left: 0});
-  const reloadButton = ButtonStyle({right: 0});
-  const stopButton = ButtonStyle({right: 0});
-  const dashboardButton = ButtonStyle({right: 0});
 
 
   // Events
@@ -128,9 +160,6 @@ define((require, exports, module) => {
 
   // view
 
-  const collapse = {maxWidth: 0, padding: 0};
-  const disable = {opacity: 0.2, pointerEvents: 'none'};
-  const hide = {display: 'none'};
 
   const {SelectNext, SelectPrevious} = Suggestions.Action;
 
@@ -153,36 +182,25 @@ define((require, exports, module) => {
 
   const isLoading = Progress.isLoading;
 
-  const Select = ({id}, {target}) =>
-    Input.Action.Edit({
+  const Change = ({id}, {target}) =>
+    Input.Action.Change({
       id,
-      action: Editable.Action.Select({
-        range: {
-          start: target.selectionStart,
-          end: target.selectionEnd,
-          direction: target.selectionDirection
-        }
+      value: target.value,
+      selection: Editable.Selection({
+        start: target.selectionStart,
+        end: target.selectionEnd,
+        direction: target.selectionDirection
       })
     });
 
-  const Change = ({id}, {target: {value}}) =>
-    Input.Action.Change({id, value});
+  const view = (loader, security, page, input, suggestions, theme, address) => {
 
-  const view = (webView, input, suggestions, theme, address) => {
-    const context = webView || {id: '@selected'};
-    const value = (webView && input.value === null) ? (webView.uri || '') :
+    const context = loader ? loader : {id: '@selected'};
+    const value = (loader && input.value === null) ? (loader.uri || '') :
                   (input.value || '');
 
     return html.div({
-      style: {
-        position: 'absolute',
-        zIndex: 101,
-        top: 0,
-        padding: '3px',
-        width: '100vw',
-        textAlign: 'center',
-        pointerEvents: 'none'
-      }
+      style: style.container,
     }, [
       html.div({
         key: 'LocationBar',
@@ -190,16 +208,14 @@ define((require, exports, module) => {
           'location-bar': true,
           active: input.isFocused
         }),
-        style: input.isFocused ? activeLocationBar :
-               inactiveLocationBar,
+        style: Style(style.bar,
+                     input.isFocused ? style.active : style.inactive),
         onClick: address.pass(Input.Action.Enter, context)
       }, [
         html.span({
-          style: {
-            visibility: input.isFocused ? 'visible' : 'hidden',
-            fontSize: '16px',
-            fontFamily: 'FontAwesome'
-          }
+          key: 'icon',
+          style: Style(style.icon,
+                       input.isFocused ? style.visible : style.invisible)
         }, SEARCH_ICON),
         Editable.view({
           key: 'input',
@@ -208,12 +224,10 @@ define((require, exports, module) => {
           type: 'text',
           value: suggestions.selected < 0 ? value :
                  suggestions.entries.get(suggestions.selected).uri,
-          style: input.isFocused ? URLInputStyle() :
-                 URLInputStyle().merge(collapse),
-          isFocused: input.isFocused || !webView,
+          style: Style(style.input,
+                       !input.isFocused && style.collapsed),
+          isFocused: input.isFocused || !loader,
           selection: input.selection,
-
-          onSelect: address.pass(Select, context),
           onChange: address.pass(Change, context),
 
           onFocus: address.pass(Input.Action.Focused, context),
@@ -222,29 +236,26 @@ define((require, exports, module) => {
         }),
         html.p({
           key: 'page-info',
-          style: !input.isFocused ? PageSummaryStyle({color: theme.locationText}) :
-                 PageSummaryStyle({color: theme.locationText}).merge(collapse),
+          style: Style(style.summary,
+                       input.isFocused ? style.collapsed :
+                       {color: theme.locationText})
         }, [
           html.span({
             key: 'securityicon',
-            style: {
-              fontFamily: 'FontAwesome',
-              fontWeight: 'normal',
-              marginRight: 6,
-              verticalAlign: 'middle'
-            }
+            style: style.security
           },
-             !webView ? '' :
-             URI.isPrivileged(webView.uri) ? GearIcon :
-             webView.security.secure ? LockIcon :
+             !loader ? '' :
+             URI.isPrivileged(loader.uri) ? GearIcon :
+             security.secure ? LockIcon :
              ''),
           html.span({
             key: 'title',
-            style: TitleTextStyle({color: theme.titleText}),
-          }, !webView ? '' :
-             webView.page.title ? webView.page.title :
-             webView.uri ? URI.getDomainName(webView.uri) :
-             webView.progress && isLoading(webView.progress) ? 'Loading...' :
+            style: Style(style.titleText, {
+              color: theme.titleText
+            })
+          }, !loader ? '' :
+             page.title ? page.title :
+             loader.uri ? URI.getDomainName(loader.uri) :
              'New Tab'),
         ])
       ])

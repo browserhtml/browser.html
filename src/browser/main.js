@@ -23,8 +23,6 @@ define((require, exports, module) => {
     onKeyDown: Event('keydown', getOwnerWindow),
     onKeyUp: Event('keyup', getOwnerWindow),
     onUnload: Event('unload', getOwnerWindow),
-    onAppUpdateAvailable: Event('app-update-available', getOwnerWindow),
-    onRuntimeUpdateAvailable: Event('runtime-update-available', getOwnerWindow),
     onOpenWindow: ChromeEvent('mozbrowseropenwindow')
   });
 

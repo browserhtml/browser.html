@@ -8,6 +8,7 @@ define((require, exports, module) => {
 
   const {Record, Union, List, Maybe, Any} = require('common/typed');
   const Focusable = require('common/focusable');
+  const Loader = require('./web-loader');
 
   // Model
 
@@ -55,6 +56,8 @@ define((require, exports, module) => {
 
   // Update
 
+  const {Load} = Loader.Action;
+
   const update = (state, action) =>
     action instanceof ZoomIn ? state.update('zoom', zoomIn) :
     action instanceof ZoomOut ? state.update('zoom', zoomOut) :
@@ -63,6 +66,7 @@ define((require, exports, module) => {
     action instanceof Blur ? Focusable.blur(state) :
     action instanceof Focused ? Focusable.focus(state) :
     action instanceof Blured ? Focusable.blur(state) :
+    action instanceof Load ? state.set('isFocused', true) :
     state;
 
   exports.update = update;

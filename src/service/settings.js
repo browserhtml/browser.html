@@ -44,20 +44,25 @@ define((require, exports, module) => {
   exports.Event = Event;
 
   const service = address => {
-    navigator.mozSettings.onsettingchange = address.pass(Changed.read);
-    return action => {
-      if (action instanceof Update) {
-        navigator.mozSettings
-                 .createLock()
-                 .set({[action.name]: action.value});
-      }
+    if (navigator.mozSettings) {
+      navigator.mozSettings.onsettingchange = address.pass(Changed.read);
 
-      if (action instanceof Fetch) {
-        navigator.mozSettings
-                 .createLock()
-                 .get(action.query)
-                 .then(address.pass(Fetched.read, action));
+      return action => {
+        if (action instanceof Update) {
+          navigator.mozSettings
+                   .createLock()
+                   .set({[action.name]: action.value});
+        }
+
+        if (action instanceof Fetch) {
+          navigator.mozSettings
+                   .createLock()
+                   .get(action.query)
+                   .then(address.pass(Fetched.read, action));
+        }
       }
+    } else {
+      return action => action
     }
   };
   exports.service = service;

@@ -8,15 +8,14 @@ define((require, exports, module) => {
 
   const {Record, Union, List, Maybe, Any} = require('common/typed');
   const {html, render} = require('reflex');
-  const ClassSet = require('common/class-set');
-  const Preview = require('./preview-box');
-  const WebViews = require('./web-view-deck');
+  const WebView = require('./web-view');
   const Shell = require('./web-shell');
   const Input = require('./web-input');
+  const {Style, StyleSheet} = require('common/style');
 
   // Model
 
-  const {PreviewByID, SelectByID} = WebViews.Action;
+  const {PreviewByID, SelectByID} = WebView.Action;
   const Close = (context, event) => {
     if (event.button === 1) {
       event.stopPropagation();
@@ -26,110 +25,136 @@ define((require, exports, module) => {
     return {}
   }
 
+
   // View
+
+
+  const styleControls = StyleSheet.create({
+    panel: {
+      position: 'absolute',
+      right: '6px',
+      top: '6px'
+    },
+    button: {
+      color: 'inherit',
+      lineHeight: '16px',
+      fontFamily: 'FontAwesome',
+      textAlign: 'center',
+      fontSize: 16,
+      verticalAlign: 'middle',
+      cursor: 'default'
+    }
+  });
 
   const DashboardIcon = '\uf067';
 
   const viewControls = (theme, address) => html.div({
-    style: {
-      position: 'absolute',
-      right: '6px',
-      top: '6px'
-    }
+    style: styleControls.panel
   }, [
     html.button({
       key: 'dashboard-button',
-      style: {
-        color: 'inherit',
-        lineHeight: '16px',
-        fontFamily: 'FontAwesome',
-        textAlign: 'center',
-        fontSize: 16,
-        verticalAlign: 'middle',
-        cursor: 'default'
-      },
+      style: styleControls.button,
       onClick: address.send(Input.Action.Focus({id: 'about:dashboard'}))
     }, DashboardIcon)
   ]);
   exports.viewControls = viewControls;
 
-  const viewPreview = (id, uri, page, address) => {
-    const context = {id};
+  const stylePreview = StyleSheet.create({
+    card: {
+      margin: '6px',
+      borderRadius: '4px',
+      height: '300px',
+      width: '240px',
+      backgroundColor: '#fff',
+      color: '#555',
+      display: 'inline-block',
+      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.4)',
+      overflow: 'hidden'
+    },
+    selected: {
+      boxShadow: '0 0 0 6px rgb(73, 135, 205)'
+    },
+    header: {
+      textAlign: 'left',
+      height: '24px',
+      padding: '0 10px',
+      position: 'relative'
+    },
+    title: {
+      display: 'block',
+      fontSize: '12px',
+      lineHeight: '24px',
+      width: '200px',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis'
+    },
+    icon: {
+      position: 'absolute',
+      right: '5px',
+      top: '5px',
+      width: '16px',
+      height: '16px',
+      MozForceBrokenImageIcon: 0
+    },
+    image: {
+      position: 'relative',
+      backgroundImage: null,
+      backgroundSize: 'cover',
+      width: '240px',
+      height: '150px',
+    },
+    imageLoader: {
+      position: 'absolute',
+      left: 0,
+      zIndex: -1,
+      width: 'inherit',
+      height: 'inherit'
+    },
+    description: {
+      padding: '8px',
+      textAlign: 'left',
+      whiteSpace: 'normal'
+    }
+  });
+
+  const viewPreview = (loader, page, isSelected, address) => {
     const image = page.hero.get(0) || page.thumbnail;
     const title = page.label || page.title;
-    const name = page.name || uri;
+    const name = page.name || loader.uri;
 
     return html.div({
-      key: id,
       className: 'card',
-      style: {
-        margin: '6px',
-        borderRadius: '4px',
-        height: '300px',
-        width: '240px',
-        backgroundColor: '#fff',
-        color: '#555',
-        display: 'inline-block',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.4)',
-        overflow: 'hidden'
-      },
-      onClick: address.pass(Shell.Action.Focus, context),
-      onMouseUp: address.pass(Close, context)
+      style: Style(stylePreview.card,
+                   isSelected && stylePreview.selected),
+      onClick: address.pass(Shell.Action.Focus, loader),
+      onMouseUp: address.pass(Close, loader)
     }, [
       html.header({
         key: 'header',
-        style: {
-          textAlign: 'left',
-          height: '24px',
-          padding: '0 10px',
-          position: 'relative'
-        }
+        style: stylePreview.header,
       }, [
         html.span({
           key: 'name',
-          style: {
-            display: 'block',
-            fontSize: '12px',
-            lineHeight: '24px',
-            width: '200px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }
+          style: stylePreview.title,
         }, name),
         html.span({
           key: 'icon',
           alt: '',
-          style: {
-            position: 'absolute',
-            right: '5px',
-            top: '5px',
-            width: '16px',
-            height: '16px',
-            MozForceBrokenImageIcon: 0,
+          style: Style(stylePreview.icon, {
             backgroundImage: `url(${page.icon})`
-          }
+          })
         })
       ]),
       html.div({
-        style: {
-          position: 'relative',
-          backgroundImage: `url(${image})`,
-          backgroundSize: 'cover',
-          width: '240px',
-          height: '150px',
-        }
+        style: Style(stylePreview.image, {
+          backgroundImage: `url(${image})`
+        })
       }, [
         html.img({
           key: 'image',
           src: image,
           alt: '',
-          style: {
-            position: 'absolute',
-            left: 0,
-            zIndex: -1,
-            width: 'inherit',
-            height: 'inherit'
-          },
+          style: stylePreview.imageLoader,
           onLoad: event => URL.revokeObjectURL(event.target.src)
         })
       ]),
@@ -138,18 +163,14 @@ define((require, exports, module) => {
       }, title),
       html.p({
         key: 'description',
-        style: {
-          padding: '8px',
-          textAlign: 'left',
-          whiteSpace: 'normal'
-        }
+        style: stylePreview.description
       }, page.description)
     ]);
   };
   exports.viewPreview = viewPreview;
 
-  const view = (webViews, input, webView, theme, address) => html.div({
-    style: {
+  const style = StyleSheet.create({
+    preview: {
       width: '100vw',
       height: '100vh',
       textAlign: 'center',
@@ -161,11 +182,15 @@ define((require, exports, module) => {
       zIndex: 0,
       MozWindowDragging: "drag"
     }
-  }, webViews
-      .entries
-      .map(({view}, index) =>
-        render(`Card@${view.id}`, viewPreview,
-               view.id, view.uri, view.page, address)));
+  });
+
+  const view = (loaders, pages, input, selected, theme, address) =>
+    html.div({style: style.preview},
+      loaders
+        .map((loader, index) =>
+          render(`Preview@${loader.id}`, viewPreview,
+                 loader, pages.get(index),
+                 index === selected, address)));
   exports.view = view;
 
 });

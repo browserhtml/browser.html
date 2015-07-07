@@ -10,7 +10,7 @@ define((require, exports, module) => {
 
   const {html, render} = require('reflex');
   const {Record, List, Union} = require('common/typed');
-  const {mix} = require('common/style');
+  const {StyleSheet, Style} = require('common/style');
   const ClassSet = require('common/class-set');
   const Loader = require('./web-loader');
   const History = require('service/history');
@@ -127,62 +127,55 @@ define((require, exports, module) => {
 
   // Style
 
-  const styleSuggestionsContainer = {
-    textAlign: 'center',
-    width: '100vw',
-    position: 'absolute',
-    top: 44,
-    zIndex: 43,
-    height: 260,
-    pointerEvents: 'none'
-  };
-
-  const hidden = {
-    pointerEvents: 'none',
-    opacity: 0
-  };
-
-  const styleSuggestions = {
-    display: 'inline-block',
-    textAlign: 'left',
-    width: 400,
-    pointerEvents: 'all',
-    backgroundColor: '#fff',
-    borderRadius: 5,
-    paddingTop: 20
-  };
-
-  const styleSuggestionFirstOfType = {
-    borderTop: 0
-  };
-
-  const styleSuggestion = {
-    lineHeight: '40px',
-    verticalAlign: 'middle',
-    borderTop: '1px solid rgba(0,0,0,0.05)',
-    cursor: 'pointer'
-  };
-
-  const styleSuggestionSelected = {
-    backgroundClip: 'content-box',
-    backgroundColor: 'rgba(0,0,0,0.05)'
-  };
-
-  const styleDarkSuggestion = {
-    borderTopColor: 'rgba(255,255,255,0.15)'
-  };
-
-  const styleDarkSuggestionSelected = {
-    backgroundColor: 'rgba(255,255,255,0.15)'
-  };
-
-  const styleSuggestionPrefix = {
-    display: 'inline-block',
-    fontSize: '16px',
-    fontFamily: 'FontAwesome',
-    width: 30,
-    textAlign: 'center'
-  };
+  const style = StyleSheet.create({
+    container: {
+      textAlign: 'center',
+      width: '100vw',
+      position: 'absolute',
+      top: 44,
+      zIndex: 43,
+      height: 260,
+      pointerEvents: 'none'
+    },
+    collapse: {
+      visibility: 'collapse'
+    },
+    suggestions: {
+      display: 'inline-block',
+      textAlign: 'left',
+      width: 400,
+      pointerEvents: 'all',
+      backgroundColor: '#fff',
+      borderRadius: 5,
+      paddingTop: 20
+    },
+    first: {
+      borderTop: 0
+    },
+    suggestion: {
+      lineHeight: '40px',
+      verticalAlign: 'middle',
+      borderTop: '1px solid rgba(0,0,0,0.05)',
+      cursor: 'pointer'
+    },
+    selected: {
+      backgroundClip: 'content-box',
+      backgroundColor: 'rgba(0,0,0,0.05)'
+    },
+    dark: {
+      borderTopColor: 'rgba(255,255,255,0.15)'
+    },
+    selectedDark: {
+      backgroundColor: 'rgba(255,255,255,0.15)'
+    },
+    prefix: {
+      display: 'inline-block',
+      fontSize: '16px',
+      fontFamily: 'FontAwesome',
+      width: 30,
+      textAlign: 'center'
+    }
+  });
 
 
   // View
@@ -198,31 +191,22 @@ define((require, exports, module) => {
   const {Load} = Loader.Action;
 
   const viewSuggestion = (state, selected, index, theme, address) => {
-    let style = styleSuggestion;
-    if (index == selected)
-      style = mix(style, styleSuggestionSelected);
-    if (theme.isDark)
-      style = mix(style, styleDarkSuggestion);
-    if (theme.isDark && index == selected)
-      style = mix(style, styleDarkSuggestionSelected);
-
     const type = state instanceof PageMatch ? 'history' :
                  state instanceof SearchMatch ? 'search' :
                  null;
 
     return html.p({
-      style,
-      className: ClassSet({
-        suggestion: true,
-        history: state instanceof PageMatch,
-        search: state instanceof SearchMatch,
-        selected: index === selected
-      }),
+      style: Style(
+        style.suggestion,
+        index == selected && style.selected,
+        theme.isDark ? style.dark : style.light,
+        theme.isDark && index === selected && style.selectedDark
+      ),
       onMouseDown: address.pass(Load, state)
     }, [
       html.span({
         key: 'suggestionprefix',
-        style: styleSuggestionPrefix,
+        style: style.prefix,
       }, Icon[type] || ''),
       html.span({
         key: 'suggestion'
@@ -232,18 +216,16 @@ define((require, exports, module) => {
   exports.viewSuggestion = viewSuggestion;
 
   const view = (state, isActive, theme, address) => {
-    const style = mix(styleSuggestionsContainer, {
-      color: theme.foreground
-    });
-
     return html.div({
-      style: (isActive && state.entries.size > 0) ? style :
-             mix(style, hidden),
       key: 'suggestionscontainer',
+      style: Style(style.container,
+                   {color: theme.foreground},
+                   !isActive && style.collapsed,
+                   state.entries.size <= 0 && style.collapsed)
     }, [
       html.div({
         key: 'suggestions',
-        style: styleSuggestions
+        style: style.suggestions
       }, state.entries.map((entry, index) => {
         return render(`suggestion@${index}`, viewSuggestion,
                       entry, state.selected, index, theme,

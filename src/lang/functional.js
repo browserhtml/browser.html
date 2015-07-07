@@ -24,8 +24,8 @@ define((require, exports, module) => {
     **/
 
     return (...args) => {
-      let index = lambdas.length;
-      let result = lambdas[--index](...args);
+      var index = lambdas.length;
+      var result = lambdas[--index](...args);
       while (--index >= 0) {
         result = lambdas[index](result);
       }
@@ -83,7 +83,7 @@ define((require, exports, module) => {
 
 
   const scheduler = task => {
-    let isScheduled = false;
+    var isScheduled = false;
     const end = () => isScheduled = false;
     const schedule = () => {
       if (!isScheduled) {
@@ -94,11 +94,11 @@ define((require, exports, module) => {
 
 
   const throttle = (f, wait, options={}) => {
-    let args = null;
-    let result = null;
-    let timeout = null;
-    let previous = 0;
-    let {leading, trailing} = options;
+    var args = null;
+    var result = null;
+    var timeout = null;
+    var previous = 0;
+    var {leading, trailing} = options;
 
 
     const later = () => {
@@ -109,9 +109,9 @@ define((require, exports, module) => {
     };
 
     return (...params) => {
-      let now = Date.now();
+      var now = Date.now();
       if (!previous && leading === false) previous = now;
-      let remaining = wait - (now - previous);
+      var remaining = wait - (now - previous);
       args = params;
       if (remaining <= 0) {
         clearTimeout(timeout);
@@ -127,13 +127,13 @@ define((require, exports, module) => {
   };
 
   const debounce = (f, wait, immediate) => {
-    let timeout = null;
-    let args = null;
-    let timestamp = null;
-    let result = null;
+    var timeout = null;
+    var args = null;
+    var timestamp = null;
+    var result = null;
 
     const later = (...args) => {
-      let last = Date.now() - timestamp;
+      var last = Date.now() - timestamp;
 
       if (last < wait && last >= 0) {
         timeout = setTimeout(later, wait - last);
@@ -149,7 +149,7 @@ define((require, exports, module) => {
     return (...params) => {
       args = params;
       timestamp = Date.now();
-      let callNow = immediate && !timeout;
+      var callNow = immediate && !timeout;
       if (!timeout) timeout = setTimeout(later, wait);
       if (callNow) {
         result = f(...args);

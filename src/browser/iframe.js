@@ -11,10 +11,10 @@ define((require, exports, module) => {
 
   const view = Element('iframe', {
     isFocused: Focusable.Field.isFocused,
-    isRemote: new BeforeAppendAttribute('remote'),
-    isBrowser: new BeforeAppendAttribute('mozbrowser'),
-    mozApp: new BeforeAppendAttribute('mozapp'),
-    allowFullScreen: new BeforeAppendAttribute('mozallowfullscreen'),
+    remote: new BeforeAppendAttribute('remote'),
+    mozbrowser: new BeforeAppendAttribute('mozbrowser'),
+    mozapp: new BeforeAppendAttribute('mozapp'),
+    mozallowfullscreen: new BeforeAppendAttribute('mozallowfullscreen'),
     uri: VirtualAttribute((node, current, past) => {
       if (current != past) {
         const uri = node.setVisible ? current : `data:text/html,${current}`
@@ -38,36 +38,11 @@ define((require, exports, module) => {
         }
       }
     }),
-    readyState: VirtualAttribute((node, current, past) => {
-      if (current == 'reload') {
-        if (node.reload) {
-          node.reload();
-        }
-      }
-
-      if (current == 'stop') {
-        if (node.stop) {
-          node.stop();
-        }
-      }
-
-      if (current == 'goBack') {
-        if (node.goBack) {
-          node.goBack();
-        }
-      }
-
-      if (current == 'goForward') {
-        if (node.goForward) {
-          node.goForward();
-        }
-      }
-    }),
     onAsyncScroll: Event('mozbrowserasyncscroll'),
     onClose: Event('mozbrowserclose'),
     onOpenWindow: Event('mozbrowseropenwindow'),
     onOpenTab: Event('mozbrowseropentab'),
-    onContextMenu: Event('mozbrowsercontextmenu'),
+    onMenu: Event('mozbrowsercontextmenu'),
     onError: Event('mozbrowsererror'),
     onLoadStart: Event('mozbrowserloadstart'),
     onLoadEnd: Event('mozbrowserloadend'),

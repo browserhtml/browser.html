@@ -12,7 +12,9 @@
     "url": "http://github.com/mozilla/browser.html/issues/"
   },
   "scripts": {
-    "start-server": "ecstatic . --port 6060",
+    "start-server": "npm run server",
+    "server": "ecstatic . --port 6060",
+    "client": "/Applications/B2G.app/Contents/MacOS/graphene --profile ./.profile --start-manifest=http://localhost:6060/manifest.webapp",
     "start": "./.bin/start.js",
     "deploy": "./.bin/deploy.sh"
   },
@@ -35,9 +37,9 @@
     "node-uuid": "1.4.3",
     "pouchdb": "3.5.0",
     "react": "0.13.3",
-    "reflex": "0.0.24",
+    "reflex": "0.0.26",
     "requirejs": "2.1.16",
     "tinycolor2": "1.1.2",
-    "typed-immutable": "0.0.5"
+    "typed-immutable": "0.0.6"
   }
 }

@@ -37,6 +37,8 @@ define((require, exports, module) => {
     }, 4000);
 
     return action => {
+      history(action);
+
       if (action instanceof Change) {
         requestSuggestions(action);
       }

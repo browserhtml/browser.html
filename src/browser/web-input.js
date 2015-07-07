@@ -43,7 +43,8 @@ define((require, exports, module) => {
 
   const Change = Record({
     id: '@selected',
-    value: String
+    value: String,
+    selection: Editable.Selection
   }, 'WebView.Input.Change');
 
   const Edit = Record({
