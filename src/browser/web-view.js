@@ -206,9 +206,9 @@ define((require, exports, module) => {
 
   // View
 
-  const style = StyleSheet.create({
+  const webviewStyle = StyleSheet.create({
     base: {
-      position: 'absoulte',
+      position: 'absolute',
       display: 'block',
       height: 'calc(100vh - 28px)',
       MozUserSelect: 'none',
@@ -242,10 +242,10 @@ define((require, exports, module) => {
       // screenshots if iframe or it's ancesstors have `display: none`.
       // Until that's fixed on platform we just hide such elements with
       // negative index and absolute position.
-      style: Style(style.base,
-                   isSelected ? style.active :
-                   !thumbnail ? style.passive :
-                   style.inactive),
+      style: Style(webviewStyle.base,
+                   isSelected ? webviewStyle.active :
+                   !thumbnail ? webviewStyle.passive :
+                   webviewStyle.inactive),
       mozbrowser: true,
       remote: true,
       mozapp: URI.isPrivileged(location) ? URI.getManifestURL().href : null,
@@ -282,12 +282,29 @@ define((require, exports, module) => {
   };
   exports.viewWebView = viewWebView;
 
+  const webviewsStyle = StyleSheet.create({
+    base: {
+      width: '100vw',
+      height: '100vh',
+    },
+    active: {
+      transition: 'transform 90ms linear, opacity 150ms linear',
+    },
+    inactive: {
+      transition: 'transform 300ms linear, opacity 150ms linear',
+      transform: 'scale(0)',
+      opacity: 0,
+      pointerEvents: 'none',
+    }
+  });
+
   const view = (loader, shell, page, address, selected, isActive) => {
     return html.div({
       key: 'web-views',
-      style: {
-        transform: `scale(${isActive ? 1 : 0})`
-      },
+      style: Style(webviewsStyle.base,
+                   isActive ? webviewsStyle.active : webviewsStyle.inactive, {
+                     transformOrigin: `${selected * 260 + 130}px 50%` // Center of the selected card
+                   }),
     }, loader.map((loader, index) =>
       render(`web-view@${loader.id}`, viewWebView,
              loader,

@@ -94,7 +94,7 @@ define((require, exports, module) => {
   exports.Action = Action;
 
   const Unsupported = Union({
-    Restart, CleanRestart
+    Restart
   }, 'Runtime.UnsupportedAction');
 
 

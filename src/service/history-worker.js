@@ -1,7 +1,6 @@
 importScripts("../../node_modules/requirejs/require.js");
 
 require.config({
-  scriptType: 'text/javascript;version=1.8',
   nodeIdCompat: true,
   baseUrl: "../../node_modules/",
   paths: {

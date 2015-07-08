@@ -19,6 +19,7 @@ define((require, exports, module) => {
   const Settings = require('service/settings');
   const Scraper = require('service/scraper');
   const Navigation = require('service/navigation');
+  const Gesture = require('service/gesture');
 
   // Set up a address (message bus if you like) that will be used
   // as an address for all application components / services. This
@@ -57,6 +58,7 @@ define((require, exports, module) => {
   const settings = Settings.service(address);
   const scraper = Scraper.service(address);
   const navigation = Navigation.service(address);
+  const gesture = Gesture.service(address);
 
   // Restore application state.
   address.receive(Session.Action.RestoreSession());
