@@ -7,11 +7,11 @@ define((require, exports, module) => {
   const composedStyles = Object.create(null);
 
   const ID = Symbol('style-sheet/id');
-  let id = 0;
+  var id = 0;
 
   class StyleSheet {
     constructor(sheet) {
-      for (let name in sheet) {
+      for (var name in sheet) {
         const style = sheet[name]
         if (style && typeof(style) === 'object' && sheet.hasOwnProperty(name)) {
           style[ID] = ++id;
@@ -26,10 +26,10 @@ define((require, exports, module) => {
   exports.StyleSheet = StyleSheet;
 
   const Style = (...styles) => {
-    let id = '0';
+    var id = '0';
 
-    let length = styles.length;
-    let index = 0;
+    var length = styles.length;
+    var index = 0;
     while (index < length) {
       const style = styles[index];
       if (style) {

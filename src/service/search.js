@@ -39,7 +39,7 @@ define((require, exports, module) => {
 
 
   const service = address => {
-    let request = null;
+    var request = null;
 
     const respond = ({id}, {response}) => {
       request = null;

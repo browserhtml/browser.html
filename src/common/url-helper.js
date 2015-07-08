@@ -29,7 +29,7 @@ define((require, exports, module) => {
 
   const rscheme = /^(?:[a-z\u00a1-\uffff0-9-+]+)(?::|:\/\/)/i;
   const isNotURL = input => {
-    let str = input.trim();
+    var str = input.trim();
 
     // for cases, ?abc and 'a? b' which should searching query
     const case1Reg = /^(\?)|(\?.+\s)/;

@@ -4,7 +4,7 @@
 
 define((require, exports, module) => {
   const inspect = (f, inspector) => (...input) => {
-    let output, error;
+    var output, error;
     try {
       output = f(...input);
       return output;

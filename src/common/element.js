@@ -24,7 +24,7 @@ define((require, exports, module) => {
       const {type, fields, mount, mounted, write} = this.props;
       const hooks = Object.create(null);
 
-      for (let key in fields) {
+      for (var key in fields) {
         if (fields.hasOwnProperty(key)) {
           const field = fields[key];
           const hook = field.construct ? field.construct() : field;
@@ -42,7 +42,7 @@ define((require, exports, module) => {
       const hooks = this.state;
 
       if (mount.length > 0) {
-        for (let key of mount) {
+        for (var key of mount) {
           const hook = hooks[key];
           const value = model[key];
           hook.mount(node, value);
@@ -55,7 +55,7 @@ define((require, exports, module) => {
         node.parentNode.replaceChild(node, node);
       }
 
-      for (let key of mounted) {
+      for (var key of mounted) {
         const hook = hooks[key];
         hook.mounted(node, model[key]);
       }
@@ -66,7 +66,7 @@ define((require, exports, module) => {
       const {model, write} = this.props;
       const hooks = this.state;
 
-      for (let key of write) {
+      for (var key of write) {
         const hook = hooks[key];
         hook.write(node, model[key], past[key]);
       }

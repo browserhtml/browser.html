@@ -65,7 +65,6 @@ require(['common/history', 'lang/task'], ({Page, History}, {async}) => {
     // Build a query patter from all words and individual words, note that
     // scoring will take into consideration the length of the match so if we match
     // multiple words that gets larger score then if we matched just one.
-    console.log(input);
 
     const query = Pattern(input.split(/\s+/g).join('[\\s\\S]+') +
                           '|' + input.split(/\s+/g).join('|'));

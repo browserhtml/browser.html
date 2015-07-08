@@ -29,16 +29,16 @@ define((require, exports, module) => {
     const API_URL = `https://api.github.com/repos/${user}/${project}/contents/HEAD?ref=refs/heads/gh-pages`;
     const MIN_INTERVAL = 60000 * 10; // 10 mins
 
-    let etag;
-    let interval = MIN_INTERVAL;
+    var etag;
+    var interval = MIN_INTERVAL;
 
-    let timeout;
+    var timeout;
 
     const pull = (resolve, reject) => {
       if (!PROD) {
         return reject('Not checking for updates');
       }
-      let headers = {};
+      var headers = {};
       if (etag) {
         headers = {'If-None-Match': etag} // will tell github to return 304 (Not Modified) if nothing changed
       }
@@ -46,13 +46,13 @@ define((require, exports, module) => {
       fetch(API_URL, {headers}).then(response => {
         if (response.status == 200) {
           // Make sure we don't pull too often
-          let xPoll = response.headers.get('X-Poll-Interval');
+          var xPoll = response.headers.get('X-Poll-Interval');
           if (xPoll) {
             interval = Math.max(xPoll * 1000, MIN_INTERVAL);
           }
           etag = response.headers.get('ETag');
           response.json().then((data) => {
-            let remoteHEAD = atob(data.content);
+            var remoteHEAD = atob(data.content);
             console.log(`Github: remote: ${remoteHEAD}`);
             localHEAD.then(localHEAD => {
               console.log(`Github: local: ${localHEAD}`);

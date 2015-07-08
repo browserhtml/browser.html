@@ -12,15 +12,6 @@ define((require, exports, module) => {
   const {LoadEnd} = Progress.Action;
   const {PageCardChange} = Page.Action;
 
-  /*
-   * This is a JavaScript Scratchpad.
-   *
-   * Enter some JavaScript, then Right Click or choose from the Execute Menu:
-   * 1. Run to evaluate the selected text (Cmd-R),
-   * 2. Inspect to bring up an Object Inspector on the result (Cmd-I), or,
-   * 3. Display to insert the result in a comment after the selection. (Cmd-L)
-   */
-
   const scrape = () => {
     /* This Source Code Form is subject to the terms of the Mozilla Public
      * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -252,37 +243,19 @@ define((require, exports, module) => {
     // Content scrapers
     // -----------------------------------------------------------------------------
 
-    // Scrape microformats `.entry-title`.
-    const scrapeMicroformatsTitle = (pageEl) => {
-      const titles = pageEl.querySelectorAll('.entry-title, .p-name');
-      // If we found more than one .entry-title, return null. We'll assume that this
-      // is a blog listing page.
-      return (titles.length === 1) ? getText(titles.length[0]) : null;
-    }
-
     // Find a good title within page.
     // Usage: `scrapeTitle(htmlEl, 'Untitled')`.
     const scrapeTitle = any(
-      queries(
-        'meta[property="og:title"], meta[name="twitter:title"]',
-        getContent
-      ),
-      scrapeMicroformatsTitle,
+      queries('meta[property="og:title"], meta[name="twitter:title"]', getContent),
+      // Query hentry Microformats. Note that we just grab the blog title,
+      // even on a blog listing page. You're going to associate the first title
+      // with the identity of the page because it's the first thing you see on
+      // the page when it loads.
+      queries('.entry-title, .h-entry .p-name', getText),
       // @TODO look at http://schema.org/Article `[itemprop=headline]`
       queries('h1, h2, h3', getText),
       queries('title', comp(cleanTitle, getText))
     );
-
-    // @TODO look at http://microformats.org/wiki/hatom .entry-summary
-    const scrapeMicroformatsDescription = (pageEl) => {
-      const summaries = pageEl.querySelectorAll('.entry-summary, .p-summary');
-      // If we found more than one .entry-summary, return null. We'll assume that
-      // this is a blog listing page.
-      return (summaries.length === 1) ? getText(summaries.length[0]) : null;
-    }
-
-    const _concatToDescription =  (summary, s) =>
-      summary.length > 250 ? reduced(summary) : summary + ' ' + s;
 
     const scrapeDescriptionFromContent = (pageEl) => {
       // Query for all paragraphs on the page.
@@ -298,13 +271,8 @@ define((require, exports, module) => {
         map(getText)
       ), pageEl.querySelectorAll('p'));
 
-      // Return early if we haven't found anything good.
-      if (texts.length === 0) return null;
-
-      // Concat paragraph text together until we get more than 250 letters.
-      const summary = reduce(texts, _concatToDescription, '');
-
-      return summary;
+      // Return first match, which may be undefined.
+      return texts[0];
     }
 
     // Find a good description for the page.
@@ -316,9 +284,10 @@ define((require, exports, module) => {
         'meta[property="og:description"], meta[name="twitter:description"]',
         getContent
       ),
+      // Scrape hentry Microformat description.
+      queries('.entry-summary, .h-entry .p-summary', getText),
       // @TODO process description to remove garbage from descriptions.
       queries('meta[name=description]', getContent),
-      scrapeMicroformatsDescription,
       // @TODO look at http://schema.org/Article `[itemprop=description]`
       scrapeDescriptionFromContent
     );
@@ -335,7 +304,7 @@ define((require, exports, module) => {
     const isImgSizeAtLeast = (imgEl, w, h) =>
       imgEl.naturalWidth > w && imgEl.naturalHeight > h;
 
-    const isImgHeroSize = (imgEl) => isImgSizeAtLeast(imgEl, 600, 300);
+    const isImgHeroSize = (imgEl) => isImgSizeAtLeast(imgEl, 480, 300);
 
     // Collect Twitter image urls from meta tags.
     // Returns an array of 1 or more Twitter img urls, or null.

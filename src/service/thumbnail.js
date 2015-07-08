@@ -16,8 +16,8 @@ define((require, exports, module) => {
   const {ThumbnailChange} = Page.Action;
 
   const fetchScreenshot = iframe =>
-    fromDOMRequest(iframe.getScreenshot(100 * devicePixelRatio,
-                                        62.5 * devicePixelRatio,
+    fromDOMRequest(iframe.getScreenshot(240 * devicePixelRatio,
+                                        276 * devicePixelRatio,
                                         'image/png'));
 
   // This is temporary workraound once we've get a history database

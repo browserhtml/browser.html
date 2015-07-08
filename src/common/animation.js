@@ -18,7 +18,7 @@ define((require, exports, module) => {
 
       const handlers = Animation.handlers.splice(0);
       const count = handlers.length;
-      let index = 0;
+      var index = 0;
 
       while (index < count) {
         const handler = handlers[index];

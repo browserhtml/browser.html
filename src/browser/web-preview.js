@@ -12,6 +12,7 @@ define((require, exports, module) => {
   const Shell = require('./web-shell');
   const Input = require('./web-input');
   const {Style, StyleSheet} = require('common/style');
+  const {getDomainName} = require('common/url-helper');
 
   // Model
 
@@ -61,47 +62,66 @@ define((require, exports, module) => {
 
   const stylePreview = StyleSheet.create({
     card: {
-      margin: '6px',
-      borderRadius: '4px',
-      height: '300px',
-      width: '240px',
       backgroundColor: '#fff',
-      color: '#555',
-      display: 'inline-block',
+      borderRadius: '4px',
       boxShadow: '0 1px 3px rgba(0, 0, 0, 0.4)',
-      overflow: 'hidden'
+      color: '#444',
+      display: 'inline-block',
+      height: '300px',
+      margin: '0 10px',
+      overflow: 'hidden',
+      position: 'relative',
+      width: '240px'
     },
     selected: {
       boxShadow: '0 0 0 6px rgb(73, 135, 205)'
     },
     header: {
-      textAlign: 'left',
       height: '24px',
-      padding: '0 10px',
-      position: 'relative'
+      lineHeight: '24px',
+      margin: '0px 24px 0px 10px',
+      overflow: 'hidden',
+      position: 'relative',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap'
     },
     title: {
       display: 'block',
-      fontSize: '12px',
-      lineHeight: '24px',
+      fontSize: '14px',
+      fontWeight: 'bold',
+      lineHeight: '18px',
+      margin: '0 10px 8px 10px',
       width: '200px',
       overflow: 'hidden',
-      textOverflow: 'ellipsis'
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap'
     },
     icon: {
+      borderRadius: '3px',
       position: 'absolute',
-      right: '5px',
-      top: '5px',
+      right: '4px',
+      top: '4px',
       width: '16px',
       height: '16px',
       MozForceBrokenImageIcon: 0
     },
     image: {
-      position: 'relative',
+      backgroundColor: '#DDD',
       backgroundImage: null,
+      backgroundPosition: 'center center',
       backgroundSize: 'cover',
-      width: '240px',
       height: '150px',
+      marginBottom: '14px',
+      position: 'relative',
+      width: '240px',
+    },
+    screenshot: {
+      backgroundColor: '#DDD',
+      backgroundImage: null,
+      backgroundPosition: 'left top',
+      backgroundSize: 'cover',
+      height: '276px',
+      width: '240px'
     },
     imageLoader: {
       position: 'absolute',
@@ -111,16 +131,86 @@ define((require, exports, module) => {
       height: 'inherit'
     },
     description: {
-      padding: '8px',
-      textAlign: 'left',
+      fontSize: '12px',
+      lineHeight: '18px',
+      height: '72px',
+      margin: '0px 10px',
+      overflow: 'hidden',
       whiteSpace: 'normal'
     }
   });
 
+  const viewContentsHeroTitleDescription = (name, icon, hero, title, description) => [
+    html.header({
+        key: 'header',
+        style: stylePreview.header,
+      }, name),
+    html.span({
+      key: 'icon',
+      alt: '',
+      style: Style(stylePreview.icon, {
+        backgroundImage: `url(${icon})`
+      })
+    }),
+    html.div({
+      style: Style(stylePreview.image, {
+        backgroundImage: `url(${hero})`
+      })
+    }, [
+      html.img({
+        key: 'image',
+        src: hero,
+        alt: '',
+        style: stylePreview.imageLoader,
+        onLoad: event => URL.revokeObjectURL(event.target.src)
+      })
+    ]),
+    html.div({
+      key: 'title',
+      style: stylePreview.title
+    }, title),
+    html.p({
+      key: 'description',
+      style: stylePreview.description
+    }, description)
+  ];
+
+  const viewContentsScreenshot = (name, icon, screenshot) => [
+    html.header({
+        key: 'header',
+        style: stylePreview.header,
+      }, name),
+    html.span({
+      key: 'icon',
+      alt: '',
+      style: Style(stylePreview.icon, {
+        backgroundImage: `url(${icon})`
+      })
+    }),
+    html.div({
+      style: Style(stylePreview.screenshot, {
+        backgroundImage: `url(${screenshot})`
+      })
+    }, [
+      html.img({
+        key: 'image',
+        src: screenshot,
+        alt: '',
+        style: stylePreview.imageLoader,
+        onLoad: event => URL.revokeObjectURL(event.target.src)
+      })
+    ])
+  ];
+
   const viewPreview = (loader, page, isSelected, address) => {
-    const image = page.hero.get(0) || page.thumbnail;
+    const hero = page.hero.get(0);
     const title = page.label || page.title;
-    const name = page.name || loader.uri;
+    const name = page.name || getDomainName(loader.uri);
+
+    const previewContents =
+      hero && title && page.description ?
+        viewContentsHeroTitleDescription(name, page.icon, hero, title, page.description) :
+        viewContentsScreenshot(name, page.icon, page.thumbnail);
 
     return html.div({
       className: 'card',
@@ -128,44 +218,7 @@ define((require, exports, module) => {
                    isSelected && stylePreview.selected),
       onClick: address.pass(Shell.Action.Focus, loader),
       onMouseUp: address.pass(Close, loader)
-    }, [
-      html.header({
-        key: 'header',
-        style: stylePreview.header,
-      }, [
-        html.span({
-          key: 'name',
-          style: stylePreview.title,
-        }, name),
-        html.span({
-          key: 'icon',
-          alt: '',
-          style: Style(stylePreview.icon, {
-            backgroundImage: `url(${page.icon})`
-          })
-        })
-      ]),
-      html.div({
-        style: Style(stylePreview.image, {
-          backgroundImage: `url(${image})`
-        })
-      }, [
-        html.img({
-          key: 'image',
-          src: image,
-          alt: '',
-          style: stylePreview.imageLoader,
-          onLoad: event => URL.revokeObjectURL(event.target.src)
-        })
-      ]),
-      html.div({
-        key: 'title'
-      }, title),
-      html.p({
-        key: 'description',
-        style: stylePreview.description
-      }, page.description)
-    ]);
+    }, previewContents);
   };
   exports.viewPreview = viewPreview;
 
@@ -173,7 +226,6 @@ define((require, exports, module) => {
     preview: {
       width: '100vw',
       height: '100vh',
-      textAlign: 'center',
       paddingTop: 'calc(100vh / 2 - 150px)',
       backgroundColor: '#273340',
       overflowX: 'auto',

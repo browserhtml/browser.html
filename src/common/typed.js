@@ -9,7 +9,7 @@ define((require, exports, module) => {
   const {Record, List, Typed, Type, Any, Union, Maybe} = require('typed-immutable/index');
 
   const isTypeOf = function(value) {
-    for (let Type of this.variants) {
+    for (var Type of this.variants) {
       if (value instanceof Type) {
         return true
       }
@@ -28,7 +28,7 @@ define((require, exports, module) => {
     Type.variants = variants;
     Type.isTypeOf = isTypeOf;
 
-    for (let name in types) {
+    for (var name in types) {
       if (types.hasOwnProperty(name) &&
           name[0].toUpperCase() === name[0])
       {
