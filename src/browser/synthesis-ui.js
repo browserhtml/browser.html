@@ -9,7 +9,6 @@ define((require, exports, module) => {
   const {Record, Any, Union} = require('common/typed');
   const {compose} = require('lang/functional');
   const WebView = require('./web-view');
-  const Preview = require('./web-preview');
   const Input = require('./web-input');
   const Suggestions = require('./suggestion-box');
   const Gesture = require('service/gesture');

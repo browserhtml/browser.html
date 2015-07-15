@@ -263,7 +263,10 @@ define((require, exports, module) => {
                loader, pages.get(index),
                index === selected,
                address.forward(action =>
-                                WebView.Action({id: loader.id, action}))));
+                                WebView.Action({id: loader.id, action}))))
+      // Cards are rendered LTR, so we render the source order LTR new to old.
+      // In future, we could accomplish this with flexbox ordering instead.
+      .reverse();
 
   const viewContainer = (theme, ...children) =>
     // Set the width of the previews element to match the width of each card
