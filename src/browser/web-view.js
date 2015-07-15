@@ -280,13 +280,9 @@ define((require, exports, module) => {
    });
  };
 
-  const update = (state, action) =>
-    action instanceof Load ?
+  const update = (state, action) => {
+    return action instanceof Load ?
       load(state, action) :
-    action instanceof Open ?
-      open(state, action) :
-    action instanceof OpenInBackground ?
-      open(state, action) :
     action instanceof Close ?
       close(state) :
     action instanceof SelectByIndex ?
@@ -310,6 +306,7 @@ define((require, exports, module) => {
     action instanceof Action ?
       updateByID(state, action.id, action.action) :
     state;
+  }
   exports.update = update;
 
 
