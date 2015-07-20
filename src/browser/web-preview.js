@@ -275,14 +275,17 @@ define((require, exports, module) => {
     ]);
 
   const viewInEditMode = (loaders, pages, selected, theme, address) =>
-    viewContainer(theme, ...viewPreviews(loaders, pages, selected, address));
+    viewContainer(theme, ghostPreview, ...viewPreviews(loaders, pages, selected, address));
 
   const viewInCreateMode = (loaders, pages, selected, theme, address) =>
     // Pass selected as `-1` so none is highlighted.
     viewContainer(theme, ghostPreview, ...viewPreviews(loaders, pages, -1, address));
 
   const view = (mode, ...etc) =>
-    mode === 'create-web-view' ? viewInCreateMode(...etc) :
+    mode === 'create-web-view' ?
+      viewInCreateMode(...etc) :
+    mode === 'create-web-view-quick' ?
+      viewInCreateMode(...etc) :
     viewInEditMode(...etc);
   exports.view = view;
 

@@ -50,13 +50,23 @@ define((require, exports, module) => {
     state.set('webViews', WebView.selectByID(state.webViews, id));
 
   const showWebView = switchMode('show-web-view');
+  const showWebViewQuick = switchMode('show-web-view-quick');
   const showWebViewByID = compose(showWebView, selectViewByID);
+
+  const setupCreateWebView = compose(
+    focusInput,
+    state => state.setIn(['input', 'value'], null)
+  );
 
   const createWebView = compose(
     switchMode('create-web-view'),
-    focusInput,
-    state => state.mode === 'create-web-view' ? state :
-             state.setIn(['input', 'value'], null));
+    setupCreateWebView
+  );
+
+  const createWebViewQuick = compose(
+    switchMode('create-web-view-quick'),
+    setupCreateWebView
+  );
 
   const setInputToURIByID = (state, id) => {
     const index = WebView.indexByID(state.webViews, id);
@@ -64,16 +74,33 @@ define((require, exports, module) => {
                        state.getIn(['webViews', 'loader', index, 'uri']));
   };
 
-  const editWebViewByID = compose(
-    state => state.mode === 'edit-web-view' ? state :
-             state.mode === 'create-web-view' ? state :
-             state.set('mode', 'edit-web-view'),
+  // If the UI is in any of these modes, the card dashboard is being displayed.
+  const isDashboardMode = (mode) =>
+    mode === 'edit-web-view' ||
+    mode === 'edit-web-view-quick' ||
+    mode === 'create-web-view' ||
+    mode === 'create-web-view-quick';
+
+  // Given state and webview ID, set input value to URL of webview and focus
+  // the input. Returns state.
+  const editInputByID = compose(
     selectInput,
     focusInput,
     (state, id) =>
-      state.mode === 'edit-web-view' ? state :
-      state.mode === 'create-web-view' ? state :
+      isDashboardMode(state.mode) ? state :
       setInputToURIByID(state, id));
+
+  const editWebViewByID = compose(
+    state => !isDashboardMode(state.mode) ?
+      state.set('mode', 'edit-web-view') :
+      state,
+    editInputByID);
+
+  const editWebViewByIDQuick = compose(
+    state => !isDashboardMode(state.mode) ?
+      state.set('mode', 'edit-web-view-quick') :
+      state,
+    editInputByID);
 
   const selectByOffset = offset => state =>
     state.set('webViews', WebView.selectByOffset(state.webViews, offset));
@@ -89,7 +116,7 @@ define((require, exports, module) => {
     selectByOffset(-1));
 
   const closeWebViewByID = compose(
-    switchMode('edit-web-view'),
+    switchMode('edit-web-view-quick'),
     selectInput,
     focusInput,
     (state, id) =>
@@ -107,10 +134,11 @@ define((require, exports, module) => {
   };
 
   const submit = compose(
-    switchMode('show-web-view'),
+    showWebViewQuick,
     clearSuggestions,
     clearInput,
-    navigate);
+    navigate
+  );
 
   const showPreview = compose(
     state =>
@@ -120,51 +148,64 @@ define((require, exports, module) => {
       setInputToURIByID(state, '@selected'));
 
 
-  const updateByWebViewAction = (state, id, action) =>
-    action instanceof Focusable.Focus ? showWebViewByID(state, id) :
-    action instanceof Focusable.Focused ? showWebViewByID(state, id) :
-    action instanceof WebView.Close ? closeWebViewByID(state, id) :
-    (action instanceof WebView.Open && !action.uri) ? createWebView(state) :
-    action instanceof WebView.SelectNext ? selectNext(state) :
-    action instanceof WebView.SelectPrevious ? selectPrevious(state) :
+  const updateByWebViewAction = (state, id, source, action) =>
+    action instanceof Focusable.Focus ?
+      showWebViewByID(state, id) :
+    action instanceof Focusable.Focused ?
+      showWebViewByID(state, id) :
+    action instanceof WebView.Close ?
+      closeWebViewByID(state, id) :
+    (action instanceof WebView.Open && source === 'keyboard') ?
+      createWebViewQuick(state) :
+    (action instanceof WebView.Open && !action.uri) ?
+      createWebView(state) :
+    action instanceof WebView.SelectNext ?
+      selectNext(state) :
+    action instanceof WebView.SelectPrevious ?
+      selectPrevious(state) :
     state;
 
-  const updateByInputAction = (state, action) =>
-    action instanceof Input.Submit ? submit(state, action.value) :
-    action instanceof Focusable.Focus ? editWebViewByID(state, null) :
-    action instanceof Focusable.Focused ? editWebViewByID(state, null) :
+  const updateByInputAction = (state, source, action) =>
+    action instanceof Input.Submit ?
+      submit(state, action.value) :
+    action instanceof Focusable.Focus && source === 'keyboard' ?
+      editWebViewByIDQuick(state, null) :
+    action instanceof Focusable.Focus ?
+      editWebViewByID(state, null) :
+    action instanceof Focusable.Focused ?
+      editWebViewByID(state, null) :
     state;
 
   const completeSelection = state =>
-    state.mode === 'select-web-view' ? state.set('mode', 'show-web-view') :
-    state;
+    state.mode === 'select-web-view' ? showWebViewQuick(state) : state;
 
   const escape = state =>
     state.mode === 'show-web-view' ? state :
     showWebViewByID(state);
 
-  const update = (state, action) =>
-    action instanceof Navigation.Stop ?
+  const update = (state, action) => {
+    return action instanceof Navigation.Stop ?
       escape(state) :
     action instanceof WebView.Action ?
-      updateByWebViewAction(state, action.id, action.action) :
+      updateByWebViewAction(state, action.id, action.source, action.action) :
     action instanceof WebView.Open ?
-      updateByWebViewAction(state, null, action) :
+      updateByWebViewAction(state, null, null, action) :
     action instanceof WebView.Close ?
-      updateByWebViewAction(state, null, action) :
+      updateByWebViewAction(state, null, null, action) :
     action instanceof WebView.SelectNext ?
-      updateByWebViewAction(state, null, action) :
+      updateByWebViewAction(state, null, null, action) :
     action instanceof WebView.SelectPrevious ?
-      updateByWebViewAction(state, null, action) :
+      updateByWebViewAction(state, null, null, action) :
     action instanceof Input.Action ?
-      updateByInputAction(state, action.action) :
+      updateByInputAction(state, action.source, action.action) :
     action instanceof Input.Submit ?
-      updateByInputAction(state, action) :
+      updateByInputAction(state, null, action) :
     action instanceof Gesture.Pinch ?
       showPreview(state) :
     action instanceof Select ?
       completeSelection(state) :
     state;
+  }
 
   exports.update = update;
 });

@@ -31,6 +31,7 @@ define((require, exports, module) => {
 
   const Action = Record({
     description: 'Action targeted web-input',
+    source: Maybe(String),
     action: InputAction
   }, 'WebInput.Action');
   exports.Action = Action;
