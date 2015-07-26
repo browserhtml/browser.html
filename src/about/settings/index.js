@@ -20,11 +20,10 @@ define((require, exports, module) => {
 
   // Update
 
-  const {Fetched, Changed} = Settings.Event;
   const update = (state, action) =>
-    action instanceof Changed ?
+    action instanceof Settings.Changed ?
       state.setIn(['settings', action.name], action.value) :
-    action instanceof Fetched ?
+    action instanceof Settings.Fetched ?
       state.mergeIn(['settings'], action.settings) :
     state;
   exports.update = update;
@@ -70,5 +69,5 @@ define((require, exports, module) => {
 
   const settings = Settings.service(address);
 
-  address.receive(Settings.Action.Fetch({id: 'about:settings', query: '*'}));
+  address.receive(Settings.Fetch({id: 'about:settings', query: '*'}));
 });

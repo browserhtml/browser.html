@@ -7,7 +7,7 @@ require.config({
     lang: '../src/lang',
     service: '../src/service',
     // http://facebook.github.io/react/
-    react: 'react/dist/react.min',
+    react: 'react/dist/react',
     // http://facebook.github.io/immutable-js/
     // Because of the bug https://github.com/facebook/immutable-js/pull/297
     // we use forked version until it's uplifted.

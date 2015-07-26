@@ -18,13 +18,25 @@ define((require, exports, module) => {
 
   // Action
 
-  const Focus = Record({isFocused: true}, 'Focusable.Focus');
-  const Blur = Record({isFocused: false}, 'Focusable.Blur');
-  const Focused = Record({isFocused: true}, 'Focusable.Focused');
-  const Blured = Record({isFocused: false}, 'Focusable.Blured');
-  const Action = Union({Focus, Blur, Focused, Blured});
+  const Focus = Record({
+    description: 'Request a focus'
+  }, 'Focusable.Focus');
+  exports.Focus = Focus;
 
-  exports.Action = Action;
+  const Blur = Record({
+    description: 'Request a blur'
+  }, 'Focusable.Blur');
+  exports.Blur = Blur;
+
+  const Focused = Record({
+    description: 'Element gained focus'
+  }, 'Focusable.Focused');
+  exports.Focused = Focused;
+
+  const Blured = Record({
+    description: 'Element lost focus'
+  }, 'Focusable.Blured');
+  exports.Blured = Blured;
 
   // Update
 

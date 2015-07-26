@@ -14,19 +14,19 @@ define((require, exports, module) => {
   const SaveSession = Record({
     name: '@save-session'
   }, 'Session.SaveSession');
+  exports.SaveSession = SaveSession;
 
   const RestoreSession = Record({
     name: '@restore-session'
   }, 'Session.RestoreSession');
+  exports.RestoreSession = RestoreSession;
 
   const ResetSession = Record({
     name: '@reset-session'
   }, 'Session.ResetSession');
+  exports.ResetSession = ResetSession;
 
-  const Action = Union({SaveSession, RestoreSession, ResetSession});
-  exports.Action = Action;
-
-
+  // Todo: Refactor this module into a service and store session into pouch instead of localStorage.
   exports.update = (state, action) => {
     if (action instanceof SaveSession) {
       const session = state

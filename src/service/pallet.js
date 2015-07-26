@@ -7,8 +7,9 @@ define((require, exports, module) => {
   'use strict';
 
   const {Record, Maybe, Union} = require('common/typed');
-  const {getDomainName} = require('common/url-helper');
-  const WebLoader = require('browser/web-loader');
+  const URI = require('common/url-helper');
+  const WebView = require('browser/web-view');
+  const Loader = require('browser/web-loader');
   const tinycolor = require('tinycolor');
 
   const DARK = true;
@@ -23,12 +24,13 @@ define((require, exports, module) => {
     'taobao.com': ['#ff4400', '#fff'],
     'qq.com': ['#5da4e6', '#fff'],
     'sina.com.cn': ['#fff', '#ff8500', DARK],
-    'instagram.com': ['#fff', '#5380a5', DARK],
+    'reddit.com': ['#336699', '#F0F0F0'],
+    'instagram.com': ['#fff', '#125688', DARK],
     'imgur.com': ['#fff', '#2b2b2b', DARK],
     'cnn.com': ['#fff', '#0c0c0c', DARK],
     'slideshare.net': ['#fff', '#313131', DARK],
     'deviantart.com': ['#fff', '#475c4d', DARK],
-    'soundcloud.com': ['#fff', '#383838', DARK],
+    'soundcloud.com': ['#FF5500', '#333333', DARK],
     'mashable.com': ['#fff', '#00aeef', DARK],
     'daringfireball.net': ['#fff', '#4a525a', DARK],
     'firewatchgame.com': ['#EF4338', '#2D102B', DARK],
@@ -66,19 +68,16 @@ define((require, exports, module) => {
 
   // Action
 
-  const PalletChange = Record({
-    id: String,
-    pallet: Model
+  const PalletChanged = Record({
+    pallet: Model,
+    description: 'Color pallet of page changed'
   }, 'Pallet.Action.Change');
-
-  const Action = Union({PalletChange});
-  exports.Action = Action;
-
-  const none = Object.freeze([]);
+  exports.PalletChanged = PalletChanged;
 
   const service = address => action => {
-    if (action instanceof WebLoader.Action.LocationChange) {
-      const hostname = getDomainName(action.uri);
+    if (action instanceof WebView.Action &&
+        action.action instanceof Loader.LocationChanged) {
+      const hostname = URI.getDomainName(action.action.uri);
       const theme = curated[hostname];
       if (theme) {
         const [foreground, background, isDark] = theme;
@@ -86,7 +85,10 @@ define((require, exports, module) => {
         // Use promise so behavior is going to be closer to what it will be
         // when we stop faking.
         Promise.resolve()
-               .then(address.send(PalletChange({id: action.id, pallet})));
+          .then(address.send(WebView.Action({
+            id: action.id,
+            action: PalletChanged({pallet})
+          })));
       }
     }
     return action

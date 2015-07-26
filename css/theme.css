@@ -13,10 +13,12 @@
   background-color: rgba(0,0,0, 0.07)
 }
 
-.location-bar.active {
-  top: 40px;
-  background-color: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 1);
+.location-search-icon {
+  visibility: hidden;
+}
+
+.location-bar:hover > .location-search-icon {
+  visibility: visible;
 }
 
 .dashboard-active .navbar {
@@ -46,4 +48,15 @@
 body {
   height: 100vh;
   overflow: hidden;
+}
+
+@keyframes progressBarLoading {
+  from {
+    transform: translateX(-100vw);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-40vw);
+    opacity: 1;
+  }
 }

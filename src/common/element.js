@@ -195,7 +195,7 @@ define((require, exports, module) => {
   // second argument, in which case event handler will be
   // invoked with `read(event)` instead of `event`.
   // Example:
-  // Element('iframe', {onTitleChange: Event('mozbrowsertitlechange')})
+  // Element('iframe', {onTitleChanged: Event('mozbrowsertitlechange')})
   const Event = function(type, read, capture=false) {
     if (!(this instanceof Event)) {
       return new Event(type, read, capture);

@@ -7,143 +7,113 @@ define((require, exports, module) => {
   'use strict';
 
   const {html, node, render, cache} = require('reflex');
-  const {Record, Any, Union} = require('common/typed');
+  const {Record, Any, Union, Maybe} = require('common/typed');
   const {inspect} = require('common/debug');
   const {StyleSheet, Style} = require('common/style');
   const WindowBar = require('./window-bar');
   const WindowControls = require('./window-controls');
   const LocationBar = require('./location-bar');
-  const Progress = require('./progress-bar');
+  const Progress = require('./web-progress');
   const Theme = require('./theme');
   const {KeyBindings} = require('common/keyboard');
   const Focusable = require('common/focusable');
   const {Main} = require('./main');
   const Updates = require('./update-banner');
   const WebView = require('./web-view');
-  const Session = require('./session');
+  const Shell = require('./web-shell');
   const Input = require('./web-input');
   const Loader = require('./web-loader');
   const Preview = require('./web-preview');
+  const Session = require('./session');
   const ClassSet = require('common/class-set');
   const OS = require('common/os');
-  const Pallet = require('service/pallet');
   const Suggestions = require('./suggestion-box');
   const URI = require('common/url-helper');
   const Navigation = require('service/navigation');
+  const SynthesisUI = require('./synthesis-ui');
+  const DevtoolsHUD = require('./devtools-hud');
 
   // Model
   const Model = Record({
     version: '0.0.7',
-    mode: 'page',
+    mode: 'create-web-view', // or show-web-view, edit-web-view, choose-web-view
+    transition: Maybe(String), // zoom, fade, or null (no transition)
     shell: Focusable.Model({isFocused: true}),
     updates: Updates.Model,
     webViews: WebView.Model,
     input: Input.Model,
-    suggestions: Suggestions.Model
+    suggestions: Suggestions.Model,
+    devtoolsHUD: DevtoolsHUD.Model,
   });
   exports.Model = Model;
 
   // Actions
 
-  const {SaveSession, ResetSession, RestoreSession} = Session.Action;
-  const {Focused, Blured} = Focusable.Action;
-  const {ApplicationUpdate, RuntimeUpdate} = Updates.Action;
-
   const modifier = OS.platform() == 'linux' ? 'alt' : 'accel';
-  const Binding = KeyBindings({
-    'accel l': _ => Input.Action.Enter(),
-    'accel t': _ => Input.Action.Enter({value: ''}),
-    'accel 0': _ => WebView.Action.Shell.ResetZoom(),
-    'accel -': _ => WebView.Action.Shell.ZoomOut(),
-    'accel =': _ => WebView.Action.Shell.ZoomIn(),
-    'accel shift =': _ => WebView.Action.Shell.ZoomIn(),
-    'accel w': _ => WebView.Action.Close(),
-    'accel shift ]': _ => WebView.Action.SelectByOffset({offset: 1}),
-    'accel shift [': _ => WebView.Action.SelectByOffset({offset: -1}),
-    'control tab': _ => WebView.Action.SelectByOffset({offset: 1}),
-    'control shift tab': _ => WebView.Action.SelectByOffset({offset: -1}),
-    'accel shift backspace': _ => ResetSession(),
-    'accel shift s': _ => SaveSession(),
+  const KeyDown = KeyBindings({
+    'accel l': _ => Input.Action({action: Focusable.Focus()}),
+    'accel t': _ => WebView.FadeToOpen(),
+    'accel 0': _ => Shell.ResetZoom(),
+    'accel -': _ => Shell.ZoomOut(),
+    'accel =': _ => Shell.ZoomIn(),
+    'accel shift =': _ => Shell.ZoomIn(),
+    'accel w': _ => WebView.Action({action: WebView.Close()}),
+    'accel shift ]': _ => WebView.SelectNext(),
+    'accel shift [': _ => WebView.SelectPrevious(),
+    'control tab': _ => WebView.SelectNext(),
+    'control shift tab': _ => WebView.SelectPrevious(),
+    'accel shift backspace': _ => Session.ResetSession(),
+    'accel shift s': _ => Session.SaveSession(),
+    'accel r': _ => Navigation.Reload(),
+    'escape': _ => Navigation.Stop(),
+    'F12': _ => DevtoolsHUD.ToggleDevtoolsHUD(),
+    [`${modifier} left`]: _ => Navigation.GoBack(),
+    [`${modifier} right`]: _ => Navigation.GoForward()
+  }, 'Browser.KeyDown.Action');
 
-    'accel r': _ => Navigation.Action.Reload(),
-    'escape': _ => Navigation.Action.Stop(),
-    [`${modifier} left`]: _ => Navigation.Action.GoBack(),
-    [`${modifier} right`]: _ => Navigation.Action.GoForward()
-  }, 'Browser.Keyboard.Action');
-
-  const Action = Union({
-    Binding: Binding.Action,
-    Updates: Updates.Action,
-    WebView: WebView.Action,
-    Focusable: Focusable.Action,
-    Session: Session.Action,
-    Suggestions: Suggestions.Action
-  });
-  exports.Action = Action;
-
+  const KeyUp = KeyBindings({
+    'control': _ => SynthesisUI.Select(),
+    'accel': _ => SynthesisUI.Select(),
+  }, 'Browser.KeyUp.Action');
 
 
   // Update
 
-  const update = (state, action) => {
-    if (action instanceof Input.Action.Submit) {
-      return state.merge({
-        input: Input.update(state.input, action),
-        webViews: WebView.update(state.webViews, Loader.Action.Load({
-          id: action.id,
-          uri: URI.read(state.input.value)
-        }))
-      });
-    }
 
-    if (action instanceof Input.Action.Enter) {
-      return state.merge({
-        input: Input.update(state.input, action),
-        webViews: WebView.update(state.webViews, action)
-      });
-    }
+  // Utility function takes `update` functions and attepts to handle action
+  // with each one in the order they were passed until one of them returns
+  // updated state in which case it returns that state and no longer calls
+  // any further update functions.
+  const pipeline = updaters => {
+    const count = updaters.length
+    return (state, action) => {
+      var index = 0
+      var before = state
+      while (index < count) {
+        const after = updaters[index](before, action)
+        index = index + 1
 
-    if (Focusable.Action.isTypeOf(action)) {
-      return state.set('shell', Focusable.update(state.shell, action));
+        if (before !== after) {
+          return after
+        }
+      }
+      return state
     }
+  };
 
-    if (Input.Action.isTypeOf(action)) {
-      return state.set('input', Input.update(state.input, action));
-    }
-
-    if (WebView.Action.isTypeOf(action)) {
-      return state.set('webViews', WebView.update(state.webViews, action));
-    }
-
-    if (Updates.Action.isTypeOf(action)) {
-      return state.set('updates', Updates.update(state.updates, action));
-    }
-
-    if (Session.Action.isTypeOf(action)) {
-      return Session.update(state, action);
-    }
-
-    if (Suggestions.Action.isTypeOf(action)) {
-      return state.set('suggestions',
-                       Suggestions.update(state.suggestions, action));
-    }
-
-    return state
-  }
+  const update = pipeline([
+    SynthesisUI.update,
+    (state, action) =>
+      state.set('webViews', WebView.update(state.webViews, action)),
+    (state, action) =>
+      state.set('input', Input.update(state.input, action)),
+    Session.update,
+    (state, action) =>
+      state.set('devtoolsHUD', DevtoolsHUD.update(state.devtoolsHUD, action)),
+    (state, action) =>
+      state.set('suggestions', Suggestions.update(state.suggestions, action))
+  ]);
   exports.update = update;
-
-
-  /*
-  exports.update = inspect(update, ([state, action], output) => {
-    if (action instanceof WebView.Action.Progress.LoadProgress) {
-      return null;
-    }
-
-    console.log(action.toString(),
-                state.toJSON(),
-                output && output.toJSON());
-  });
-  */
 
 
   // Style
@@ -152,37 +122,41 @@ define((require, exports, module) => {
     shell: {
       color: null,
       backgroundColor: null,
-
       height: '100vh',
       width: '100vw',
       position: 'relative',
-      overflowY: 'hidden',
-    }
+    },
+    webviewsContainer: {
+      height: 'calc(100vh - 28px)',
+    },
   });
 
   // View
 
-  const OpenWindow = event => WebView.Open({uri: event.detail.url});
-  const defaultTheme = Theme.read({});
+  const OpenWindow = event =>
+    WebView.Action({action: WebView.Open({uri: event.detail.url}) });
 
   const view = (state, address) => {
-    const {shell, webViews, input, suggestions} = state;
-    const {loader, page, progress, security} = WebView.get(webViews,
-                                                           webViews.selected);
-
-    const theme = input.isFocused ? defaultTheme :
-                  page ? cache(Theme.read, page.pallet) :
-                  defaultTheme;
+    const {shell, webViews, input, suggestions, mode} = state;
+    const {loader, page, security} = WebView.get(webViews, webViews.selected);
+    const id = loader && loader.id;
+    const theme =
+      (mode === 'show-web-view' && page) ?
+        cache(Theme.read, page.pallet) :
+      mode === 'show-web-view' ?
+        Theme.default :
+      Theme.dashboard;
 
     return Main({
       key: 'root',
       windowTitle: !loader ? '' :
                    !page ? loader.uri :
                    page.title || loader.uri,
-      onKeyDown: address.pass(Binding),
-      onWindowBlur: address.pass(Blured),
-      onWindowFocus: address.pass(Focused),
-      onUnload: address.pass(SaveSession),
+      onKeyDown: address.pass(KeyDown),
+      onKeyUp: address.pass(KeyUp),
+      onWindowBlur: address.pass(Focusable.Blured),
+      onWindowFocus: address.pass(Focusable.Focused),
+      onUnload: address.pass(Session.SaveSession),
       onOpenWindow: address.pass(OpenWindow),
       tabIndex: 1,
       style: Style(style.shell, {
@@ -192,33 +166,35 @@ define((require, exports, module) => {
     }, [
       render('WindowControls', WindowControls.view, shell, theme, address),
       render('WindowBar', WindowBar.view,
-        !input.isFocused,
-        loader && loader.id,
-        shell,
-        theme,
-        address),
-      !input.isFocused && render('ProgressBar', Progress.view,
-        loader && loader.id,
-        progress,
-        theme, address),
+        state.mode, id, shell, theme, address),
+      render('ProgressBars', Progress.view,
+        state.mode,
+        webViews.loader,
+        webViews.progress,
+        webViews.selected,
+        theme),
       render('LocationBar', LocationBar.view,
-        loader, security, page,
-        input, suggestions, theme, address),
+        state.mode, loader, security, page, input, suggestions, theme, address),
       render('Preview', Preview.view,
-        webViews.loader,
-        webViews.page,
-        input,
-        webViews.selected,
-        theme,
-        address),
-      render('Suggestions', Suggestions.view, suggestions, input.isFocused, theme, address),
-      render('WebViews', WebView.view,
-        webViews.loader,
-        webViews.shell,
-        webViews.page,
-        address,
-        webViews.selected,
-        !input.isFocused),
+        state.mode, webViews.loader, webViews.page, webViews.selected, theme, address),
+      render('Suggestions', Suggestions.view,
+        state.mode, suggestions, input, theme, address),
+      html.div({
+        // The webviews should not require knowing the layout of external components.
+        // Its size is always height:100%,width:100%.
+        // We use this container to position it properly.
+        style: style.webviewsContainer,
+        key: 'web-views-container',
+      },
+        render('WebViews', WebView.view,
+          state.mode,
+          state.transition,
+          webViews.loader,
+          webViews.shell,
+          webViews.page,
+          address,
+          webViews.selected)),
+      render('DevtoolsHUD', DevtoolsHUD.view, state.devtoolsHUD, address),
       render('Updater', Updates.view, state.updates, address)
     ])
   };

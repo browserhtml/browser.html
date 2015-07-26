@@ -13,16 +13,14 @@ define((require, exports, module) => {
   const ApplicationUpdate = Record({
     commit: String
   }, 'ApplicationUpdate');
+  exports.ApplicationUpdate = ApplicationUpdate;
 
-  const Action = Union({ApplicationUpdate});
-  exports.Action = Action;
-
-
+  
   const UpdateHead = value =>
-    Settings.Action.Update({name: 'browserhtml.HEAD_HASH', value});
+    Settings.Update({name: 'browserhtml.HEAD_HASH', value});
   const UnknownHead = e =>
-    Settings.Action.Update({name: 'browserhtml.HEAD_HASH',
-                            value: `Unknown (${e})`});
+    Settings.Update({name: 'browserhtml.HEAD_HASH',
+                     value: `Unknown (${e})`});
 
   const service = (address, user='mozilla', project='browser.html') => {
     const PROD = location.hostname == `${user}.github.io`;

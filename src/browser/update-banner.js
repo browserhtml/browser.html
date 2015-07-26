@@ -20,20 +20,14 @@ define((require, exports, module) => {
   });
   exports.Model = Model;
 
-  // Actions
-
-
-  const {ApplicationUpdate} = Update.Action;
-  const {UpdateDownloaded: RuntimeUpdate} = Runtime.Event;
-
-  const Action = Union({ApplicationUpdate, RuntimeUpdate});
-  exports.Action = Action;
 
   // Update
 
   const update = (state, action) =>
-    action instanceof ApplicationUpdate ? state.set('appUpdateAvailable', true) :
-    action instanceof RuntimeUpdate ? state.set('runtimeUpdateAvailable', true) :
+    action instanceof Runtime.ApplicationUpdate ?
+      state.set('appUpdateAvailable', true) :
+    action instanceof Runtime.RuntimeUpdate ?
+      state.set('runtimeUpdateAvailable', true) :
     state;
   exports.update = update;
 
@@ -73,18 +67,16 @@ define((require, exports, module) => {
 
   // View
 
-  const {Restart, CleanRestart, CleanReload} = Runtime.Action;
-
   const view = ({runtimeUpdateAvailable, appUpdateAvailable}, address) => {
     const message = runtimeUpdateAvailable ? ' (restart required)' : '';
-    const action = runtimeUpdateAvailable && appUpdateAvailable ? CleanRestart() :
-                   runtimeUpdateAvailable ? Restart() :
-                   appUpdateAvailable ? CleanReload() :
+    const Action = runtimeUpdateAvailable && appUpdateAvailable ? Runtime.CleanRestart :
+                   runtimeUpdateAvailable ? Runtime.Restart :
+                   appUpdateAvailable ? Runtime.CleanReload :
                    null;
 
     return html.div({
       style: Style(style.container,
-                   action ? style.visible : style.hidden)
+                   Action ? style.visible : style.hidden)
     }, [
       html.div({
         key: 'bannerMessage',
@@ -93,7 +85,7 @@ define((require, exports, module) => {
       html.button({
         key:  'bannerButton',
         style: style.button,
-        onClick: action && address.send(action)
+        onClick: Action && address.pass(Action)
       }, `Apply ${message}`)
     ]);
   };

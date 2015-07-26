@@ -8,7 +8,7 @@ define((require, exports, module) => {
 
   const {Record, Union, List, Maybe, Any} = require('common/typed');
   const Loader = require('./web-loader');
-  const Progress = require('./progress-bar');
+  const Progress = require('./web-progress');
 
   // Model
 
@@ -20,30 +20,29 @@ define((require, exports, module) => {
 
   // Actions
 
-  const CanGoBackChange = Record({
-    id: String,
+  const CanGoBackChanged = Record({
+    description: 'Navigator state for going forward changed',
     value: Boolean
-  }, 'WebView.Navigation.CanGoBackChange');
+  }, 'WebView.Navigation.CanGoBackChanged');
+  exports.CanGoBackChanged = CanGoBackChanged;
 
-  const CanGoForwardChange = Record({
-    id: String,
+  const CanGoForwardChanged = Record({
+    description: 'Navigator state for going back changed',
     value: Boolean
-  }, 'WebView.Navigation.CanGoForwardChange');
+  }, 'WebView.Navigation.CanGoForwardChanged');
+  exports.CanGoForwardChanged = CanGoForwardChanged;
 
-
-  const {Load} = Loader.Action;
-  const {LoadStart} = Progress.Action;
-
-  const Action = Union({CanGoBackChange, CanGoForwardChange, Load, LoadStart});
-  exports.Action = Action;
 
   // Update
 
   const update = (state, action) =>
-    action instanceof CanGoBackChange ? state.set('canGoBack', action.value) :
-    action instanceof CanGoForwardChange ? state.set('canGoForward', action.value) :
-    action instanceof LoadStart ? state.clear() :
-    action instanceof Load ? state.clear() :
+    action instanceof CanGoBackChanged ?
+      state.set('canGoBack', action.value) :
+    action instanceof CanGoForwardChanged ?
+      state.set('canGoForward', action.value) :
+    // Clear state when load is initiated or load is started.
+    action instanceof Progress.LoadStarted ? state.clear() :
+    action instanceof Loader.Load ? state.clear() :
     state;
 
   exports.update = update;

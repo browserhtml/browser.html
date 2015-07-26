@@ -6,17 +6,11 @@ define((require, exports, module) => {
   'use strict';
 
   const {Record, Union, List} = require('common/typed');
-  const Progress = require('browser/progress-bar');
+  const Loader = require('browser/web-loader');
   const Page = require('browser/web-page');
-
-  const {LoadEnd} = Progress.Action;
-  const {PageCardChange} = Page.Action;
+  const WebView = require('browser/web-view');
 
   const scrape = () => {
-    /* This Source Code Form is subject to the terms of the Mozilla Public
-     * License, v. 2.0. If a copy of the MPL was not distributed with this
-     * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
     /*
     Pull structured content out of the DOM.
 
@@ -253,8 +247,9 @@ define((require, exports, module) => {
       // the page when it loads.
       queries('.entry-title, .h-entry .p-name', getText),
       // @TODO look at http://schema.org/Article `[itemprop=headline]`
-      queries('h1, h2, h3', getText),
-      queries('title', comp(cleanTitle, getText))
+      queries('title', comp(cleanTitle, getText)),
+      // If worst comes to worst, fall back on headings.
+      queries('h1, h2, h3', getText)
     );
 
     const scrapeDescriptionFromContent = (pageEl) => {
@@ -382,15 +377,20 @@ define((require, exports, module) => {
 
   const script = `(${scrape})()`;
 
-  const readCard = ({id, uri}, {hero, title, description, name}) =>
-    PageCardChange({id, uri, hero, title, description, name});
+  const readCard = (id, uri, {hero, title, description, name}) =>
+    WebView.Action({
+      id,
+      action: Page.PageCardChanged({uri, hero, title, description, name})
+    });
 
   const service = address => action => {
-    if (action instanceof LoadEnd && action.id !== 'about:dashboard') {
+    if (action instanceof WebView.Action &&
+        action.action instanceof Loader.LocationChanged)
+    {
       const iframe = document.getElementById(`web-view-${action.id}`);
       if (iframe && iframe.executeScript) {
-        iframe.executeScript(script)
-              .then(address.pass(readCard, action));
+        iframe.executeScript(script, {url: iframe.location})
+              .then(address.pass(readCard, action.id, action.action.uri));
       }
     }
 

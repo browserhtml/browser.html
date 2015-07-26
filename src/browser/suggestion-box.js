@@ -18,12 +18,9 @@ define((require, exports, module) => {
 
   // Model
 
-  const {Result: SearchResult, Match: SearchMatch} = Search.Event;
-  const {PageResult, PageMatch} = History.Event;
-
   const Suggestion = Union({
-    Search: SearchMatch,
-    Page: PageMatch
+    Search: Search.Match,
+    Page: History.PageMatch
   }, 'Suggestion');
   exports.Suggestion = Suggestion;
 
@@ -36,34 +33,29 @@ define((require, exports, module) => {
   // Action
 
   const SelectRelative = Record({
-    id: '@selected',
     offset: 0
   }, 'Suggestions.SelectRelative');
+  exports.SelectRelative = SelectRelative;
 
   const SelectNext = Record({
-    id: '@selected',
     offset: 1
-  }, 'Suggestions.SelectNext')
+  }, 'Suggestions.SelectNext');
+  exports.SelectNext = SelectNext;
 
   const SelectPrevious = Record({
-    id: '@selected',
     offset: -1
-  }, 'Suggestions.SelectPrevious')
+  }, 'Suggestions.SelectPrevious');
+  exports.SelectPrevious = SelectPrevious;
 
   const Unselect = Record({
-    id: '@selected',
     index: -1
   }, 'Suggestions.Unselect');
+  exports.Unselect = Unselect;
 
   const Clear = Record({
-    id: '@seleceted'
-  }, "suggestions.Clear");
-
-  const Action = Union({
-    SelectRelative, SelectPrevious, SelectNext, Unselect, Clear,
-    SearchResult, PageResult
-  });
-  exports.Action = Action;
+    description: 'reset suggestions'
+  }, 'suggestions.Clear');
+  exports.Clear = Clear;
 
 
   // Update
@@ -84,8 +76,8 @@ define((require, exports, module) => {
     });
 
 
-  const isntSearch = entry => !(entry instanceof SearchMatch);
-  const isntPage = entry => !(entry instanceof PageMatch);
+  const isntSearch = entry => !(entry instanceof Search.Match);
+  const isntPage = entry => !(entry instanceof History.PageMatch);
 
   const updateSearch = (state, {results: matches}) => {
     const entries = state.entries.filter(isntSearch);
@@ -112,6 +104,8 @@ define((require, exports, module) => {
     });
   };
 
+  const clear = state => state.clear();
+  exports.clear = clear;
 
   const update = (state, action) =>
     action instanceof SelectRelative ? selectRelative(state, action.offset) :
@@ -119,8 +113,8 @@ define((require, exports, module) => {
     action instanceof SelectPrevious ? selectRelative(state, -1) :
     action instanceof Unselect ? state.remove('selected') :
     action instanceof Clear ? state.clear() :
-    action instanceof SearchResult ? updateSearch(state, action) :
-    action instanceof PageResult ? updatePage(state, action) :
+    action instanceof Search.Result ? updateSearch(state, action) :
+    action instanceof History.PageResult ? updatePage(state, action) :
     state;
   exports.update = update;
 
@@ -137,7 +131,7 @@ define((require, exports, module) => {
       height: 260,
       pointerEvents: 'none'
     },
-    collapse: {
+    collapsed: {
       visibility: 'collapse'
     },
     suggestions: {
@@ -188,11 +182,9 @@ define((require, exports, module) => {
     'history': HISTORY_ICON
   };
 
-  const {Load} = Loader.Action;
-
   const viewSuggestion = (state, selected, index, theme, address) => {
-    const type = state instanceof PageMatch ? 'history' :
-                 state instanceof SearchMatch ? 'search' :
+    const type = state instanceof History.PageMatch ? 'history' :
+                 state instanceof Search.Match ? 'search' :
                  null;
 
     return html.p({
@@ -202,7 +194,7 @@ define((require, exports, module) => {
         theme.isDark ? style.dark : style.light,
         theme.isDark && index === selected && style.selectedDark
       ),
-      onMouseDown: address.pass(Load, state)
+      onMouseDown: address.pass(Loader.Load, state)
     }, [
       html.span({
         key: 'suggestionprefix',
@@ -215,7 +207,12 @@ define((require, exports, module) => {
   };
   exports.viewSuggestion = viewSuggestion;
 
-  const view = (state, isActive, theme, address) => {
+  const view = (mode, state, input, theme, address) => {
+    const isActive = mode != 'show-web-view' &&
+                     input.isFocused &&
+                     input.value !== '' &&
+                     input.value;
+
     return html.div({
       key: 'suggestionscontainer',
       style: Style(style.container,

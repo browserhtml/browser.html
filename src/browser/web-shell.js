@@ -21,54 +21,60 @@ define((require, exports, module) => {
 
   // Actions
 
-  const ZoomIn = Record({id: '@selected'}, 'WebView.Shell.ZoomIn');
-  const ZoomOut = Record({id: '@selected'}, 'WebView.Shell.ZoomOut');
-  const ResetZoom = Record({id: '@selected'}, 'WebView.Shell.ResetZoom');
-  const Focus = Record({id: '@selected'}, 'WebView.Shell.Focus');
-  const Blur = Record({id: '@selected'}, 'WebView.Shell.Blur');
-  const Focused = Record({id: '@selected'}, 'WebView.Shell.Focused');
-  const Blured = Record({id: '@selected'}, 'WebView.Shell.Blured');
+  const ZoomIn = Record({
+    description: 'Request ZoomIn for web-view content'
+  }, 'WebView.Shell.ZoomIn');
+  exports.ZoomIn = ZoomIn;
+
+  const ZoomOut = Record({
+    description: 'Request ZoomOut for web-view content'
+  }, 'WebView.Shell.ZoomOut');
+  exports.ZoomOut = ZoomOut;
+
+  const ResetZoom = Record({
+    description: 'Request zoom of web-view content to be reset'
+  }, 'WebView.Shell.ResetZoom');
+  exports.ResetZoom = ResetZoom;
 
 
-  const VisibilityChange = Record({
-    id: String,
+  const VisibilityChanged = Record({
+    description: 'Visibility of the web-view content has changed',
     value: Boolean
-  }, 'WebView.Shell.VisibilityChange');
+  }, 'WebView.Shell.VisibilityChanged');
+  exports.VisibilityChanged = VisibilityChanged;
 
 
-  const Action = Union({
-    ZoomIn, ZoomOut, ResetZoom,
-    Focus, Blur, Focused, Blured
-  });
-
-  exports.Action = Action;
+  // Update
 
   const ZOOM_MIN = 0.5;
   const ZOOM_MAX = 2;
   const ZOOM_STEP = 0.1;
 
-  const zoomIn = value => Math.min(ZOOM_MAX, value + ZOOM_STEP);
+  const resetZoom = state =>
+    state.remove('zoom');
+  exports.resetZoom = resetZoom;
+
+  const zoomIn = state =>
+    state.set('zoom', Math.min(ZOOM_MAX, state.zoom + ZOOM_STEP));
   exports.zoomIn = zoomIn;
 
-  const zoomOut = value => Math.max(ZOOM_MIN, value - ZOOM_STEP);
+  const zoomOut = state =>
+    state.set('zoom', Math.max(ZOOM_MIN, state.zoom - ZOOM_STEP));
   exports.zoomOut = zoomOut;
-
 
   // Update
 
-  const {Load} = Loader.Action;
-
   const update = (state, action) =>
-    action instanceof ZoomIn ? state.update('zoom', zoomIn) :
-    action instanceof ZoomOut ? state.update('zoom', zoomOut) :
-    action instanceof ResetZoom ? state.remove('zoom') :
-    action instanceof Focus ? Focusable.focus(state) :
-    action instanceof Blur ? Focusable.blur(state) :
-    action instanceof Focused ? Focusable.focus(state) :
-    action instanceof Blured ? Focusable.blur(state) :
-    action instanceof Load ? state.set('isFocused', true) :
+    action instanceof VisibilityChanged ? state.set('isVisible', state.value) :
+    action instanceof ZoomIn ? zoomIn(state) :
+    action instanceof ZoomOut ? zoomOut(state) :
+    action instanceof ResetZoom ? resetZoom(state) :
+    action instanceof Focusable.Focus ? Focusable.focus(state) :
+    action instanceof Focusable.Blur ? Focusable.blur(state) :
+    action instanceof Focusable.Focused ? Focusable.focus(state) :
+    action instanceof Focusable.Blured ? Focusable.blur(state) :
+    action instanceof Loader.Load ? Focusable.focus(state) :
     state;
-
   exports.update = update;
 
 });

@@ -115,30 +115,28 @@ require(['common/history', 'lang/task'], ({Page, History}, {async}) => {
 
   const history = new History({trackTopPages: true});
 
-  onmessage = ({data: {type, action}}) => {
-    if (type === 'LoadEnd') {
+  onmessage = ({data: {type, id, action}}) => {
+    if (type === 'LoadEnded') {
       history.edit(Page.from({uri: action.uri}),
-                   Page.beginVisit({id: action.id,
-                                    time: action.timeStamp}));
+                   Page.beginVisit({id, time: action.timeStamp}));
     }
 
-    if (type === 'LocationChange') {
+    if (type === 'LocationChanged') {
       history.edit(Page.from({uri: action.uri}),
-                   Page.endVisit({id: action.id,
-                                  time: action.timeStamp}));
+                   Page.endVisit({id, time: action.timeStamp}));
     }
 
-    if (type === 'TitleChange') {
+    if (type === 'TitleChanged') {
       history.edit(Page.from({uri: action.uri}),
                    page => page.set('title', action.title));
     }
 
-    if (type === 'ThumbnailChange') {
+    if (type === 'ThumbnailChanged') {
       history.edit(Page.from({uri: action.uri}),
                    page => page.set('image', action.image));
     }
 
-    if (type === 'IconChange') {
+    if (type === 'IconChanged') {
       history.edit(Page.from({uri: action.uri}),
                    page => page.set('icon', action.icon));
     }

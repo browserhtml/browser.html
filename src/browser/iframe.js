@@ -44,16 +44,16 @@ define((require, exports, module) => {
     onOpenTab: Event('mozbrowseropentab'),
     onMenu: Event('mozbrowsercontextmenu'),
     onError: Event('mozbrowsererror'),
-    onLoadStart: Event('mozbrowserloadstart'),
-    onLoadEnd: Event('mozbrowserloadend'),
-    onIconChange: Event('mozbrowsericonchange'),
+    onLoadStarted: Event('mozbrowserloadstart'),
+    onLoadEnded: Event('mozbrowserloadend'),
+    onIconChanged: Event('mozbrowsericonchange'),
     onUserActivityDone: Event('mozbrowseractivitydone'),
-    onVisibilityChange: Event('mozbrowservisibilitychange'),
-    onMetaChange: Event('mozbrowsermetachange'),
+    onVisibilityChanged: Event('mozbrowservisibilitychange'),
+    onMetaChanged: Event('mozbrowsermetachange'),
     // Use `VirtualEvent` to proxy events in order to mutate `target.location`
     // so that user can check `target.location` before deciding if change to
     // `target.src` is required.
-    onLocationChange: VirtualEvent((target, dispatch) => {
+    onLocationChanged: VirtualEvent((target, dispatch) => {
       target.addEventListener('mozbrowserlocationchange', event => {
         target.location = event.detail;
         // Set an attribute as well so that in the inspector we can tell what
@@ -62,8 +62,8 @@ define((require, exports, module) => {
         dispatch(event);
       });
     }),
-    onSecurityChange: Event('mozbrowsersecuritychange'),
-    onTitleChange: Event('mozbrowsertitlechange'),
+    onSecurityChanged: Event('mozbrowsersecuritychange'),
+    onTitleChanged: Event('mozbrowsertitlechange'),
     onPrompt: Event('mozbrowsershowmodalprompt'),
     onAuthentificate: Event('mozbrowserusernameandpasswordrequired'),
     onScrollAreaChange: Event('mozbrowserscrollareachanged'),
@@ -72,7 +72,7 @@ define((require, exports, module) => {
     // It is unfortunate that state of `canGoBack` and `canGoForward` is
     // not observadle, with virtual events we polifill more desired API
     // and pretend there are events dispatched when state changes.
-    onCanGoBackChange: VirtualEvent((target, dispatch) => {
+    onCanGoBackChanged: VirtualEvent((target, dispatch) => {
       const onsuccess = request =>
         dispatch({target,
                   type: 'mozbrowsergobackchanged',
@@ -82,7 +82,7 @@ define((require, exports, module) => {
         target.getCanGoBack().onsuccess = onsuccess;
       });
     }),
-    onCanGoForwardChange: VirtualEvent((target, dispatch) => {
+    onCanGoForwardChanged: VirtualEvent((target, dispatch) => {
       const onsuccess = request =>
         dispatch({target,
                   type: 'mozbrowsergoforwardchanged',

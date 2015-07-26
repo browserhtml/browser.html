@@ -61,9 +61,9 @@ define((require, exports, module) => {
   const gesture = Gesture.service(address);
 
   // Restore application state.
-  address.receive(Session.Action.RestoreSession());
+  address.receive(Session.RestoreSession());
 
   // Trigger a forced update check after 5s to not slow down startup.
   // TODO: delay until we're online if needed.
-  window.setTimeout(address.pass(Runtime.Action.CheckUpdate), 500);
+  window.setTimeout(address.pass(Runtime.CheckUpdate), 500);
 });

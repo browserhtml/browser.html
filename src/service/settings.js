@@ -15,16 +15,13 @@ define((require, exports, module) => {
     name: String,
     value: Any
   }, 'Settings.Update');
+  exports.Update = Update;
 
   const Fetch = Record({
     id: String,
     query: String,
   }, 'Settings.Fetch');
-
-  const Action = Union({Update, Fetch});
-  exports.Action = Action;
-
-  // Events
+  exports.Fetch = Fetch;
 
   const Changed = Record({
     name: String,
@@ -32,6 +29,7 @@ define((require, exports, module) => {
   }, 'Settings.Changed');
   Changed.read = ({settingName, settingValue}) =>
     Changed({name: settingName, value: settingValue});
+  exports.Changed = Changed;
 
   const Fetched = Record({
     id: String,
@@ -39,9 +37,7 @@ define((require, exports, module) => {
   }, 'Settings.Response');
   Fetched.read = ({id}, settings) =>
     Fetched({id, settings: Map(settings)});
-
-  const Event = Union({Changed, Fetched});
-  exports.Event = Event;
+  exports.Fetched = Fetched;
 
   const service = address => {
     if (navigator.mozSettings) {

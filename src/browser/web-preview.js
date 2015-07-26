@@ -9,23 +9,18 @@ define((require, exports, module) => {
   const {Record, Union, List, Maybe, Any} = require('common/typed');
   const {html, render} = require('reflex');
   const WebView = require('./web-view');
-  const Shell = require('./web-shell');
-  const Input = require('./web-input');
+  const Focusable = require('common/focusable');
   const {Style, StyleSheet} = require('common/style');
   const {getDomainName} = require('common/url-helper');
 
-  // Model
 
-  const {PreviewByID, SelectByID} = WebView.Action;
-  const Close = (context, event) => {
+  const Close = event => {
     if (event.button === 1) {
       event.stopPropagation();
-      return WebView.Close(context);
+      return WebView.Close();
     }
-    // We should probably just allow retuning null
-    return {}
+    return null;
   }
-
 
   // View
 
@@ -49,13 +44,16 @@ define((require, exports, module) => {
 
   const DashboardIcon = '\uf067';
 
+  const OpenWebView = () =>
+    WebView.Action({action: WebView.Open()});
+
   const viewControls = (theme, address) => html.div({
     style: styleControls.panel
   }, [
     html.button({
       key: 'dashboard-button',
       style: styleControls.button,
-      onClick: address.send(Input.Action.Focus({id: 'about:dashboard'}))
+      onClick: address.pass(OpenWebView)
     }, DashboardIcon)
   ]);
   exports.viewControls = viewControls;
@@ -66,15 +64,20 @@ define((require, exports, module) => {
       borderRadius: '4px',
       boxShadow: '0 1px 3px rgba(0, 0, 0, 0.4)',
       color: '#444',
-      display: 'inline-block',
+      float: 'left',
       height: '300px',
       margin: '0 10px',
       overflow: 'hidden',
       position: 'relative',
       width: '240px'
     },
+    ghost: {
+      backgroundColor: 'transparent',
+      border: '3px dashed rgba(255, 255, 255, 0.2)',
+      boxShadow: 'none'
+    },
     selected: {
-      boxShadow: '0 0 0 6px rgb(73, 135, 205)'
+      boxShadow: '0 0 0 6px #4A90E2'
     },
     header: {
       height: '24px',
@@ -97,13 +100,15 @@ define((require, exports, module) => {
       whiteSpace: 'nowrap'
     },
     icon: {
+      backgroundSize: 'cover',
+      backgroundPosition: 'center center',
+      backgroundRepeat: 'no-repeat',
       borderRadius: '3px',
       position: 'absolute',
       right: '4px',
       top: '4px',
       width: '16px',
       height: '16px',
-      MozForceBrokenImageIcon: 0
     },
     image: {
       backgroundColor: '#DDD',
@@ -118,7 +123,7 @@ define((require, exports, module) => {
     screenshot: {
       backgroundColor: '#DDD',
       backgroundImage: null,
-      backgroundPosition: 'left top',
+      backgroundPosition: 'center top',
       backgroundSize: 'cover',
       height: '276px',
       width: '240px'
@@ -216,33 +221,70 @@ define((require, exports, module) => {
       className: 'card',
       style: Style(stylePreview.card,
                    isSelected && stylePreview.selected),
-      onClick: address.pass(Shell.Action.Focus, loader),
-      onMouseUp: address.pass(Close, loader)
+      onClick: address.pass(Focusable.Focus),
+      onMouseUp: address.pass(Close)
     }, previewContents);
   };
   exports.viewPreview = viewPreview;
 
+  const ghostPreview = html.div({
+    className: 'card',
+    style: Style(stylePreview.card, stylePreview.ghost)
+  });
+
   const style = StyleSheet.create({
-    preview: {
-      width: '100vw',
-      height: '100vh',
-      paddingTop: 'calc(100vh / 2 - 150px)',
+    scroller: {
       backgroundColor: '#273340',
+      height: '100vh',
+      width: '100vw',
       overflowX: 'auto',
       position: 'absolute',
       top: 0,
       zIndex: 0,
-      MozWindowDragging: "drag"
+      MozWindowDragging: 'drag',
+    },
+    previews: {
+      // This is important. We need previews to make space around itself.
+      // Margin doesn't play well with scroll -- the right-hand edge will get
+      // cut off, so we turn on the traditional CSS box model and use padding.
+      boxSizing: 'content-box',
+      width: '100vw',
+      // Fixed height to contain floats.
+      height: '300px',
+      padding: 'calc(50vh - 150px) 100px 0 100px',
+      margin: '0 auto',
     }
   });
 
-  const view = (loaders, pages, input, selected, theme, address) =>
-    html.div({style: style.preview},
-      loaders
-        .map((loader, index) =>
-          render(`Preview@${loader.id}`, viewPreview,
-                 loader, pages.get(index),
-                 index === selected, address)));
+
+  const viewPreviews = (loaders, pages, selected, address) =>
+    loaders
+      .map((loader, index) =>
+        render(`Preview@${loader.id}`, viewPreview,
+               loader, pages.get(index),
+               index === selected,
+               address.forward(action =>
+                                WebView.Action({id: loader.id, action}))));
+
+  const viewContainer = (theme, ...children) =>
+    // Set the width of the previews element to match the width of each card
+    // plus padding.
+    html.div({key: 'preview-container', style: style.scroller}, [
+      html.div({style: Style(style.previews, {
+        width: children.length * 260
+      })}, children)
+    ]);
+
+  const viewInEditMode = (loaders, pages, selected, theme, address) =>
+    viewContainer(theme, ghostPreview, ...viewPreviews(loaders, pages, selected, address));
+
+  const viewInCreateMode = (loaders, pages, selected, theme, address) =>
+    // Pass selected as `-1` so none is highlighted.
+    viewContainer(theme, ghostPreview, ...viewPreviews(loaders, pages, -1, address));
+
+  const view = (mode, ...etc) =>
+    mode === 'create-web-view' ? viewInCreateMode(...etc) :
+    viewInEditMode(...etc);
   exports.view = view;
 
 });

@@ -6,7 +6,12 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const Input = require('browser/web-input');
+  const {Record, Union} = require('common/typed');
+
+  const Pinch = Record({
+    description: 'Pinch gesture'
+  });
+  exports.Pinch = Pinch;
 
   const service = address => {
 
@@ -16,10 +21,7 @@ define((require, exports, module) => {
     const checkScale = () => {
       const scale = (refSize + delta) / refSize;
       if (delta < 0 && scale < 0.5) {
-        address.receive(Input.Action.Enter({id:"@selected"}));
-      }
-      if (delta > 0) {
-        address.receive(Input.Action.Blur({id:"@selected"}));
+        address.receive(Pinch());
       }
     }
 

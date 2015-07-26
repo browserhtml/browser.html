@@ -13,40 +13,40 @@ define((require, exports, module) => {
 
   const Model = Record({
     isDark: false,
-    glyphsShowing: false,
-
-    // reload, stop, back button color.
-    controlButton: Color('rgba(0,0,0,0.5)'),
-
-    closeButton: Color('#FC5753'),
-    minButton: Color('#FDBC40'),
-    maxButton: Color('#33C748'),
 
     inputText: Color('rgba(0,0,0,0.65)'),
-    locationText: Color('rgba(0,0,0, 0.65)'),
+    locationText: Color('rgba(0,0,0,0.65)'),
     titleText: Color('rgba(0,0,0,0.5)'),
-    locationBar: Color('#E1E9F0'),
+    locationBar: Color('rgba(0,0,0,0.07)'),
 
     shell: Color('#fff'),
-    shellText: Color('rgba(0,0,0, 0.65)'),
+    shellText: Color('rgba(0,0,0,0.65)'),
 
-    progressBar: Color('#82D3FD')
+    progressBar: Color('#4A90E2')
   }, 'Theme');
-
   exports.Model = Model;
 
+  exports.dashboard = Model({
+    isDark: true,
 
-  exports.read = (pallet={}) => {
-    const foreground = pallet.foreground || void(0);
-    const background = pallet.background || void(0);
-    return Model({
+    inputText: Color('rgba(255,255,255,0.65)'),
+    locationText: Color('rgba(255,255,255,0.65)'),
+    titleText: Color('rgba(255,255,255,0.5)'),
+    locationBar: 'rgba(255,255,255,0.15)',
+
+    shell: Color('#273340'),
+    shellText: Color('rgba(255,255,255,0.65)'),
+
+    progressBar: Color('#4A90E2')
+  });
+
+  exports.default = Model();
+
+  exports.read = (pallet) => {
+    const foreground = pallet && pallet.foreground || void(0);
+    const background = pallet && pallet.background || void(0);
+    return !pallet ? Model() : Model({
       isDark: pallet.isDark,
-
-      closeButton: foreground,
-      minButton: foreground,
-      maxButton: foreground,
-
-      controlButton: foreground,
 
       inputText: foreground,
       locationText: foreground,
@@ -59,5 +59,5 @@ define((require, exports, module) => {
 
       progressBar: foreground
     });
-  };
+  }
 });

@@ -50,7 +50,6 @@ define((require, exports, module) => {
       width: 50,
       top: 8,
       left: 8,
-      verticalAlign: 'center',
       zIndex: 200
     },
     light: {
@@ -64,9 +63,6 @@ define((require, exports, module) => {
   // Style
 
 
-  // Actions that will are send by window controls.
-  const {Shutdown, Minimize, Maximize} = Runtime.Action;
-
   const view = ({isFocused}, theme, address) => html.div({
     key: 'WindowControls',
     style: Style(styleContainer.container,
@@ -77,21 +73,21 @@ define((require, exports, module) => {
       style: Style(styleButton.button,
                    styleButton.close,
                    theme.isDark ? styleButton.dark : styleButton.light),
-      onClick: address.pass(Shutdown, void(0))
+      onClick: address.send(Runtime.Shutdown())
     }),
     html.button({
       key: 'WindowMinButton',
       style: Style(styleButton.button,
                    styleButton.min,
                    theme.isDark ? styleButton.dark : styleButton.light),
-      onClick: address.pass(Minimize, void(0))
+      onClick: address.send(Runtime.Minimize())
     }),
     html.button({
       key: 'WindowMaxButton',
       style: Style(styleButton.button,
                    styleButton.max,
                    theme.isDark ? styleButton.dark : styleButton.light),
-      onClick: address.pass(Maximize, void(0))
+      onClick: address.send(Runtime.Maximize())
     })
   ]);
   exports.view = view;

@@ -17,25 +17,20 @@ define((require, exports, module) => {
     title: result,
     uri: `https://duckduckgo.com/?q=${encodeURIComponent(result)}`
   });
-
+  exports.Match = Match;
 
   const Result = Record({
     id: String,
     results: List(Match)
   }, 'Search.Result');
-
-  const Event = Union({Result, Match});
-  exports.Event = Event;
+  exports.Result = Result;
 
   const Query = Record({
     id: String,
     input: String,
     limit: Number
   }, 'Search.Query');
-
-
-  const Action = Union({Query});
-  exports.Action = Action;
+  exports.Query = Query;
 
 
   const service = address => {

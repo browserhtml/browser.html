@@ -18,24 +18,22 @@ define((require, exports, module) => {
   // Actions
 
   const Load = Record({
-    id: '@selected',
+    description: 'Request loading of the passed `uri`',
     uri: String
   }, 'WebView.Load');
+  exports.Load = Load;
 
-  const LocationChange = Record({
-    id: String,
+  const LocationChanged = Record({
+    description: 'Location of the web view changed to enclosed uri',
     uri: String
-  }, 'WebView.LocationChange');
-
-
-  const Action = Union({Load, LocationChange});
-  exports.Action = Action;
+  }, 'WebView.LocationChanged');
+  exports.LocationChanged = LocationChanged;
 
   // Update
 
   const update = (state, action) =>
     action instanceof Load ? state.set('uri', action.uri) :
-    action instanceof LocationChange ? state.set('uri', action.uri) :
+    action instanceof LocationChanged ? state.set('uri', action.uri) :
     state;
   exports.update = update;
 });

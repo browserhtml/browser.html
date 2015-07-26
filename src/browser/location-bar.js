@@ -13,11 +13,12 @@ define((require, exports, module) => {
 
   const {KeyBindings} = require('common/keyboard');
   const Editable = require('common/editable');
+  const Focusable = require('common/focusable');
   const WebView = require('./web-view');
   const Navigation = require('./web-navigation');
+
   const Shell = require('./web-shell');
   const Input = require('./web-input');
-  const Progress = require('./progress-bar');
   const Suggestions = require('./suggestion-box');
   const ClassSet = require('common/class-set');
 
@@ -32,7 +33,6 @@ define((require, exports, module) => {
       position: 'absolute',
       zIndex: 101,
       top: 0,
-      padding: '3px',
       width: '100vw',
       textAlign: 'center',
       pointerEvents: 'none'
@@ -41,19 +41,27 @@ define((require, exports, module) => {
       display: 'inline-block',
       MozWindowDragging: 'no-drag',
       borderRadius: 5,
-      lineHeight: '22px',
-      height: 22,
-      padding: '0 3px',
-      margin: '0',
       overflow: 'hidden',
+      // Contains absolute elements
+      position: 'relative',
       pointerEvents: 'all',
       width: null
     },
     inactive: {
-      width: 250, // FIXME :Doesn't shrink when window is narrow
+      height: 22,
+      lineHeight: '22px',
+      padding: '0 22px',
+      top: 3,
+      width: 250,
     },
     active: {
-      width: 400
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      color: 'rgba(255, 255, 255, 1)',
+      height: 30,
+      lineHeight: '30px',
+      padding: '0 30px',
+      width: 400,
+      top: 40,
     },
     button: {
       opacity: null,
@@ -80,9 +88,6 @@ define((require, exports, module) => {
     dashboard: {right: 0},
 
     input: {
-      padding: null,
-      maxWidth: null,
-
       color: '#333',
       width: '100%',
       lineHeight: '22px',
@@ -91,29 +96,17 @@ define((require, exports, module) => {
     },
 
     summary: {
-      maxWidth: null,
-      padding: null,
       color: null,
       backgroundColor: null,
 
-      lineHeight: '22px',
       overflow: 'hidden',
-      width: '100%',
+      // This allows us to stay centered when text is short, but expand into the
+      // empty space to the right when text overflows, but not so far that we
+      // cut off the elipsis.
+      maxWidth: 'calc(100% + 20px)',
       display: 'inline-block',
       textOverflow: 'ellipsis',
       textAlign: 'center'
-    },
-
-    locationText: {
-      backgroundColor: null,
-      color: 'inherit',
-      fontWeight: 'bold'
-    },
-
-    titleText: {
-      color: 'interit',
-      backgroundColor: null,
-      padding: 5
     },
 
     visible: {
@@ -122,54 +115,46 @@ define((require, exports, module) => {
     invisible: {
       visibility: 'hidden'
     },
-    icon: {
-      fontSize: '16px',
-      fontFamily: 'FontAwesome'
+
+    // The icon we show in the collapsed location box
+    searchIconSmall: {
+      fontSize: '13px',
+      fontFamily: 'FontAwesome',
+      left: '5px',
+      position: 'absolute'
     },
 
-    collapsed: {maxWidth: 0, padding: 0},
+    // The icon we show in the collapsed location box
+    searchIconLarge: {
+      fontSize: '16px',
+      fontFamily: 'FontAwesome',
+      left: '9px',
+      position: 'absolute'
+    },
+
     disabled: {opacity: 0.2, pointerEvents: 'none'},
     hidden: {display: 'none'},
 
     security: {
       fontFamily: 'FontAwesome',
-      fontWeight: 'normal',
       marginRight: 6,
       verticalAlign: 'middle'
     }
   });
 
 
-  // Events
-
-  const {Focus, Blur, Submit} = Input.Action;
-  const {Load} = WebView.Action;
-  const {Enter} = Input.Action;
-  const {GoBack, GoForward, Stop, Reload} = Navigation.Action;
-
-  // Action
-
-  const Edit = Record({
-    id: '@selected'
-  }, 'LocationBar.Action.Edit');
-
-  const Action = Union({Edit});
-
-  exports.Action = Action;
-
 
   // view
 
-
-  const {SelectNext, SelectPrevious} = Suggestions.Action;
-
   const Binding = KeyBindings({
-    'up': ({id}) => SelectPrevious({id}),
-    'control p': ({id}) => SelectPrevious({id}),
-    'down': ({id}) => SelectNext({id}),
-    'control n': ({id}) => SelectNext({id}),
-    'enter': ({id}) => Submit({id}),
-    'escape': ({id}) => Shell.Action.Focus({id}),
+    'up': _ => Suggestions.SelectPrevious(),
+    'control p': _ => Suggestions.SelectPrevious(),
+    'down': _ => Suggestions.SelectNext(),
+    'control n': _ => Suggestions.SelectNext(),
+    'enter': event => Input.Action({
+      action: Input.Submit({value: event.target.value})
+    }),
+    'escape': _ => Input.Action({action: Focusable.Blur()}),
   }, 'LocationBar.Keyboard.Action');
 
 
@@ -180,11 +165,9 @@ define((require, exports, module) => {
   const StopIcon = '\uf00d';
   const SEARCH_ICON = '\uf002';
 
-  const isLoading = Progress.isLoading;
-
-  const Change = ({id}, {target}) =>
-    Input.Action.Change({
-      id,
+  const Change = ({target}) =>
+    Editable.Change({
+      id: '@selected',
       value: target.value,
       selection: Editable.Selection({
         start: target.selectionStart,
@@ -193,74 +176,97 @@ define((require, exports, module) => {
       })
     });
 
-  const view = (loader, security, page, input, suggestions, theme, address) => {
+  const viewBar = isActive => (address, children) => html.div({
+    style: style.container,
+  }, [
+    html.div({
+      key: 'LocationBar',
+      className: ClassSet({
+        'location-bar': true
+      }),
+      style: Style(style.bar,
+                   isActive ? style.active : style.inactive),
+      onClick: address.pass(Focusable.Focus)
+    }, children)
+  ]);
 
-    const context = loader ? loader : {id: '@selected'};
-    const value = (loader && input.value === null) ? (loader.uri || '') :
-                  (input.value || '');
+  const viewActiveBar = viewBar(true);
+  const viewInactiveBar = viewBar(false);
 
-    return html.div({
-      style: style.container,
-    }, [
+  const InputAction = action => Input.Action({action});
+
+  const viewInDashboard = (loader, security, page, input, suggestions, theme, address) => {
+    // Make forwarding addres that wraps actions into `Input.Action`.
+    const inputAddress = address.forward(InputAction);
+    return viewActiveBar(inputAddress, [
+      html.span({
+        key: 'icon',
+        style: Style(style.searchIconLarge, style.visible)
+      }, SEARCH_ICON),
+      Editable.view({
+        key: 'input',
+        className: 'location-bar-input',
+        placeholder: 'Search or enter address',
+        type: 'text',
+        value:
+          suggestions.selected >= 0 ?
+            suggestions.entries.get(suggestions.selected).uri :
+            (input.value || ''),
+        style: style.input,
+        isFocused: input.isFocused,
+        selection: input.selection,
+        onChange: inputAddress.pass(Change),
+        onFocus: inputAddress.pass(Focusable.Focused),
+        onBlur: inputAddress.pass(Focusable.Blured),
+        onKeyDown: address.pass(Binding)
+      })
+    ]);
+  }
+
+  const viewInWebView = (loader, security, page, input, suggestions, theme, address) => {
+    const isSecure = security && security.secure;
+    const isPrivileged = loader && URI.isPrivileged(loader.uri);
+    const title =
+      !loader ? '' :
+      page.title ? page.title :
+      loader.uri ? URI.getDomainName(loader.uri) :
+      'New Tab';
+
+    const children = [];
+
+    // Append security icon if needed
+    if (isPrivileged) {
+      children.push(html.span({
+        key: 'securityicon',
+        style: style.security
+      }, GearIcon));
+    } else if (isSecure) {
+      children.push(html.span({
+        key: 'securityicon',
+        style: style.security
+      }, LockIcon));
+    }
+
+    children.push(title);
+
+    return viewInactiveBar(address.forward(InputAction), [
+      html.span({
+        key: 'icon',
+        className: 'location-search-icon',
+        style: style.searchIconSmall
+      }, SEARCH_ICON),
       html.div({
-        key: 'LocationBar',
-        className: ClassSet({
-          'location-bar': true,
-          active: input.isFocused
-        }),
-        style: Style(style.bar,
-                     input.isFocused ? style.active : style.inactive),
-        onClick: address.pass(Input.Action.Enter, context)
-      }, [
-        html.span({
-          key: 'icon',
-          style: Style(style.icon,
-                       input.isFocused ? style.visible : style.invisible)
-        }, SEARCH_ICON),
-        Editable.view({
-          key: 'input',
-          className: 'location-bar-input',
-          placeholder: 'Search or enter address',
-          type: 'text',
-          value: suggestions.selected < 0 ? value :
-                 suggestions.entries.get(suggestions.selected).uri,
-          style: Style(style.input,
-                       !input.isFocused && style.collapsed),
-          isFocused: input.isFocused || !loader,
-          selection: input.selection,
-          onChange: address.pass(Change, context),
-
-          onFocus: address.pass(Input.Action.Focused, context),
-          onBlur: address.pass(Input.Action.Blured, context),
-          onKeyDown: address.pass(Binding, context)
-        }),
-        html.p({
-          key: 'page-info',
-          style: Style(style.summary,
-                       input.isFocused ? style.collapsed :
-                       {color: theme.locationText})
-        }, [
-          html.span({
-            key: 'securityicon',
-            style: style.security
-          },
-             !loader ? '' :
-             URI.isPrivileged(loader.uri) ? GearIcon :
-             security.secure ? LockIcon :
-             ''),
-          html.span({
-            key: 'title',
-            style: Style(style.titleText, {
-              color: theme.titleText
-            })
-          }, !loader ? '' :
-             page.title ? page.title :
-             loader.uri ? URI.getDomainName(loader.uri) :
-             'New Tab'),
-        ])
-      ])
+        key: 'page-summary',
+        style: style.summary
+      }, children)
     ]);
   };
+
+  const view = (mode, ...rest) =>
+    mode === 'show-web-view' ? viewInWebView(...rest) :
+    viewInDashboard(...rest);
+
+  // TODO: Consider seperating location input field from the location bar.
 
   exports.view = view;
 });

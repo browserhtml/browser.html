@@ -7,6 +7,7 @@ define((require, exports, module) => {
   'use strict';
 
   const {Record, Union, List, Maybe, Any} = require('common/typed');
+  const Loader = require('./web-loader');
 
   // Model
   const Model = Record({
@@ -18,22 +19,23 @@ define((require, exports, module) => {
 
   // Action
 
-  const SecurityChange = Record({
-    id: String,
+  const SecurityChanged = Record({
+    description: 'Security state of the page changed',
     state: String,
     extendedValidation: Boolean
   }, 'WebView.Security.Change');
+  exports.SecurityChanged = SecurityChanged;
 
-  const Action = Union({SecurityChange});
-  exports.Action = Action;
-
+  // Update
 
   const update = (state, action) =>
-    action instanceof SecurityChange ? state.merge({
+    action instanceof SecurityChanged ? state.merge({
         state: action.state,
         secure: action.state === 'secure',
         extendedValidation: action.extendedValidation
       }) :
+    action instanceof Loader.Load ? state.clear() :
+    action instanceof Loader.LocationChanged ? state.clear() :
     state;
   exports.update = update;
 

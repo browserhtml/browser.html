@@ -109,7 +109,7 @@ define((require, exports, module) => {
       const event = args[args.length - 1];
       const chord = writeChord(event);
       const read = bindings[chord] ||
-                   bindings[`${event.type}: ${chord}`];
+                   bindings[`@${event.type} ${chord}`];
 
       if (read) {
         event.preventDefault();

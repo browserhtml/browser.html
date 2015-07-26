@@ -8,39 +8,30 @@ define((require, exports, module) => {
 
   const {Record, Maybe, Union, List} = require('common/typed');
   const Loader = require('browser/web-loader');
-  const Progress = require('browser/progress-bar');
+  const Progress = require('browser/web-progress');
   const Page = require('browser/web-page');
+  const WebView = require('browser/web-view');
 
   const PageMatch = Record({
     title: Maybe(String),
     uri: String,
     score: Number
   }, 'History.PageMatch');
+  exports.PageMatch = PageMatch;
 
 
   const PageResult = Record({
     id: String,
     results: List(PageMatch, 'History.PageResult')
   });
-
-  const Event = Union({PageResult, PageMatch});
-  exports.Event = Event;
-
-  const {LoadEnd, LoadStart} = Progress.Action;
-  const {LocationChange} = Loader.Action;
-  const {ThumbnailChange, TitleChange, IconChange} = Page.Action;
+  exports.PageResult = PageResult;
 
   const PageQuery = Record({
     id: String,
     input: String,
     limit: Number
   }, 'History.PageQuery');
-
-
-  const Action = Union({LoadEnd, LocationChange,
-                        ThumbnailChange, TitleChange, IconChange,
-                        PageQuery});
-  exports.Action = Action;
+  exports.PageQuery = PageQuery;
 
   const service = address => {
     const worker = require('common/worker!service/history-worker');
@@ -51,6 +42,38 @@ define((require, exports, module) => {
       }
     }
 
+    const handleAction = ({id, action}) => {
+      if (action instanceof Progress.LoadEnded) {
+        worker.postMessage({type: 'LoadEnded',
+                            id,
+                            action: action.toJSON()});
+      }
+
+      if (action instanceof Loader.LocationChanged) {
+        worker.postMessage({type: 'LocationChanged',
+                            id,
+                            action: action.toJSON()});
+      }
+
+      if (action instanceof Page.TitleChanged) {
+        worker.postMessage({type: 'TitleChanged',
+                            id,
+                            action: action.toJSON()});
+      }
+
+      if (action instanceof Page.ThumbnailChanged) {
+        worker.postMessage({type: 'ThumbnailChanged',
+                            id,
+                            action: action.toJSON()});
+      }
+
+      if (action instanceof Page.IconChanged) {
+        worker.postMessage({type: 'IconChanged',
+                            id,
+                            action: action.toJSON()});
+      }
+    }
+
 
     return action => {
       if (action instanceof PageQuery) {
@@ -58,29 +81,8 @@ define((require, exports, module) => {
                             action: action.toJSON()});
       }
 
-      if (action instanceof LoadEnd) {
-        worker.postMessage({type: 'LoadEnd',
-                            action: action.toJSON()});
-      }
-
-      if (action instanceof LocationChange) {
-        worker.postMessage({type: 'LocationChange',
-                            action: action.toJSON()});
-      }
-
-      if (action instanceof TitleChange) {
-        worker.postMessage({type: 'TitleChange',
-                            action: action.toJSON()});
-      }
-
-      if (action instanceof ThumbnailChange) {
-        worker.postMessage({type: 'ThumbnailChange',
-                            action: action.toJSON()});
-      }
-
-      if (action instanceof IconChange) {
-        worker.postMessage({type: 'IconChange',
-                            action: action.toJSON()});
+      if (action instanceof WebView.Action) {
+        handleAction(action)
       }
     }
   };

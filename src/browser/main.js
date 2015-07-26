@@ -9,6 +9,9 @@ define((require, exports, module) => {
 
   const getOwnerWindow = node => node.ownerDocument.defaultView;
 
+  // TODO: All of these events can be expressed using external services which is
+  // probably what we should do.
+
   // Define custom `main` element with a custom `scrollGrab` attribute
   // that maps to same named proprety.
   const Main = Element('div', {

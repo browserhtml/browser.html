@@ -8,6 +8,9 @@ define((require, exports, module) => {
 
   const {Record, Union, List, Maybe, Any} = require('common/typed');
   const Pallet = require('service/pallet');
+  const Loader = require('./web-loader');
+  const Progress = require('./web-progress');
+  const WebView = require('./web-view');
 
   // Model
 
@@ -32,59 +35,57 @@ define((require, exports, module) => {
 
   // Action
 
-  const MetaChange = Record({
-    id: String,
+  const MetaChanged = Record({
+    description: 'Metadata of the page changed',
     content: String,
     name: String
-  }, 'WebView.MetaChange');
+  }, 'WebView.MetaChanged');
+  exports.MetaChanged = MetaChanged;
 
-  const ThumbnailChange = Record({
-    id: String,
+  const ThumbnailChanged = Record({
+    description: 'Thumbnail of the page changed',
     uri: String,
     image: String
-  }, 'WebView.ThumbnailChange');
+  }, 'WebView.ThumbnailChanged');
+  exports.ThumbnailChanged = ThumbnailChanged;
 
-  const TitleChange = Record({
-    id: String,
+  const TitleChanged = Record({
+    description: 'Title of the page changed',
     uri: String,
     title: String
-  }, 'WebView.Page.TitleChange');
+  }, 'WebView.Page.TitleChanged');
+  exports.TitleChanged = TitleChanged;
 
-  const IconChange = Record({
-    id: String,
+  const IconChanged = Record({
+    description: 'Faveicon of the page changed',
     uri: String,
     icon: String
-  }, 'WebView.Page.IconChange');
+  }, 'WebView.Page.IconChanged');
+  exports.IconChanged = IconChanged;
 
-  const Scroll = Record({
-    id: String
-  }, 'WebView.Page.Scroll');
+  const Scrolled = Record({
+    description: 'Page was scrolled'
+  }, 'WebView.Page.Scrolled');
+  exports.Scrolled = Scrolled;
 
-  const OverflowChange = Record({
-    id: String,
+  const OverflowChanged = Record({
+    description: 'Page overflow has changed',
     overflow: Boolean
-  }, 'WebView.Page.OverflowChange');
+  }, 'WebView.Page.OverflowChanged');
+  exports.OverflowChanged = OverflowChanged;
 
-  const PageCardChange = Record({
-    id: String,
+  const PageCardChanged = Record({
     uri: String,
     hero: Heros,
     title: String,
     description: String,
     name: String
   }, 'WebView.Page.CardChange');
-
-  exports.PageCardChange = PageCardChange;
-
-
-  const {PalletChange} = Pallet.Action;
+  exports.PageCardChanged = PageCardChanged;
 
 
-  const Action = Union({TitleChange, IconChange, MetaChange,
-                        PalletChange, PageCardChange,
-                        Scroll, OverflowChange, ThumbnailChange});
-  exports.Action = Action;
-
+  const {PalletChanged} = Pallet;
+  exports.PalletChanged = PalletChanged;
 
   // Update
 
@@ -110,16 +111,17 @@ define((require, exports, module) => {
     });
 
   const update = (state, action) =>
-    action instanceof TitleChange ? state.set('title', action.title) :
-    action instanceof IconChange ? state.set('icon', action.icon) :
-    action instanceof OverflowChange ? state.set('overflow', action.overflow) :
-    action instanceof ThumbnailChange ? state.set('thumbnail', action.image) :
-    action instanceof MetaChange ? updateMeta(state, action) :
-    action instanceof PalletChange ? state.merge({
+    action instanceof TitleChanged ? state.set('title', action.title) :
+    action instanceof IconChanged ? state.set('icon', action.icon) :
+    action instanceof OverflowChanged ? state.set('overflow', action.overflow) :
+    action instanceof ThumbnailChanged ? state.set('thumbnail', action.image) :
+    action instanceof MetaChanged ? updateMeta(state, action) :
+    action instanceof PalletChanged ? state.merge({
       pallet: action.pallet,
       palletSource: 'curated-theme-colors'
     }) :
-    action instanceof PageCardChange ? updateCard(state, action) :
+    action instanceof PageCardChanged ? updateCard(state, action) :
+    action instanceof Progress.LoadStarted ? state.clear() :
     state;
 
   exports.update = update;

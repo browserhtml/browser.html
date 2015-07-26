@@ -6,26 +6,28 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const {Record, Union} = require('common/typed');
+  const {Record} = require('common/typed');
 
   const GoBack = Record({
     id: '@selected'
   },'WebView.Navigation.GoBack');
+  exports.GoBack = GoBack;
 
   const GoForward = Record({
     id: '@selected'
   }, 'WebView.Navigation.GoForward');
+  exports.GoForward = GoForward;
 
   const Stop = Record({
     id: '@selected'
   }, 'WebView.Navigation.Stop');
+  exports.Stop = Stop;
 
   const Reload = Record({
     id: '@selected'
   }, 'WebView.Navigation.Reload');
+  exports.Reload = Reload;
 
-  const Action = Union({GoBack, GoForward, Stop, Reload});
-  exports.Action = Action;
 
   const webViewByID = id =>
     id === '@selected' ? document.querySelector('.web-view.selected') :

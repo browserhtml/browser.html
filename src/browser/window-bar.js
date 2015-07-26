@@ -43,10 +43,11 @@ define((require, exports, module) => {
 
   // view
 
-  const view = (isActive, id, shell, theme, address) => html.div({
+  const view = (mode, id, shell, theme, address) => html.div({
     key: 'WindowBar',
     style: Style(style.panel,
-                 (id && isActive) ? style.visible : style.invisible,
+                 (id && mode === 'show-web-view') ? style.visible :
+                 style.invisible,
                  {backgroundColor: theme.shell, color: theme.shellText}),
   }, [
     html.div({

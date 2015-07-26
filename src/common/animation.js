@@ -61,8 +61,8 @@ define((require, exports, module) => {
     }
   }
 
-  // Utitily for re-rendering `target` on eveny animation frame. This is useful
-  // when component need to react to passed time and not some user event.
+  // Utility for re-rendering `target` on every animation frame. This is useful
+  // when components need to react to passed time and not some user event.
   const animate = (target, onAnimationFrame) =>
     React.createElement(Animation, {
       key: target.key, target,

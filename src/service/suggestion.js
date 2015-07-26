@@ -8,17 +8,12 @@ define((require, exports, module) => {
   'use strict';
 
   const Input = require('browser/web-input');
+  const Editable = require('common/editable');
+  const Focusable = require('common/focusable');
   const History = require('service/history');
   const Search = require('service/search');
   const {throttle} = require('lang/functional');
   const Suggestions = require('browser/suggestion-box');
-  const Loader = require('browser/web-loader');
-
-  const {Change, Enter, Blur} = Input.Action;
-  const {Query: SearchQuery} = Search.Action;
-  const {PageQuery} = History.Action;
-  const {Unselect, Clear} = Suggestions.Action;
-  const {Load} = Loader.Action;
 
   const MAX_RESULTS = 6;
 
@@ -27,28 +22,30 @@ define((require, exports, module) => {
     const history = History.service(address)
 
     const requestSuggestions = throttle(action => {
-      history(PageQuery({id: action.id,
-                        input: action.value,
-                        limit: MAX_RESULTS}));
+      history(History.PageQuery({id: action.value,
+                                 input: action.value,
+                                 limit: MAX_RESULTS}));
 
-      search(SearchQuery({id: action.id,
-                          input: action.value,
-                          limit: MAX_RESULTS}));
+      search(Search.Query({id: action.value,
+                           input: action.value,
+                           limit: MAX_RESULTS}));
     }, 4000);
 
     return action => {
       history(action);
 
-      if (action instanceof Change) {
-        requestSuggestions(action);
-      }
+      if (action instanceof Input.Action) {
+        if (action.action instanceof Focusable.Blur) {
+          address.receive(Suggestions.Unselect());
+        }
 
-      if (action instanceof Blur) {
-        address.receive(Unselect({id: action.id}));
-      }
+        if (action.action instanceof Editable.Change) {
+          requestSuggestions(action.action);
+        }
 
-      if (action instanceof Load) {
-        address.receive(Clear({id: action.id}));
+        if (action.action instanceof Input.Submit) {
+          address.receive(Suggestions.Clear())
+        }
       }
     };
   };
