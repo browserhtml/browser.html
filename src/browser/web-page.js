@@ -11,17 +11,25 @@ define((require, exports, module) => {
   const Loader = require('./web-loader');
   const Progress = require('./web-progress');
   const WebView = require('./web-view');
+  const Favicon = require('common/favicon');
 
   // Model
 
 
   const Heros = List(String, 'Heros');
 
+  const Icon = Record({
+    href: String,
+    sizes: Maybe(String),
+    rel: Maybe(String),
+  });
+
   const Model = Record({
     title: Maybe(String),
 
     label: Maybe(String),
-    icon: Maybe(String),
+    icon: Maybe(Icon),
+    faviconURL: Maybe(String),
     description: Maybe(String),
     name: Maybe(String),
     hero: Heros,
@@ -57,9 +65,9 @@ define((require, exports, module) => {
   exports.TitleChanged = TitleChanged;
 
   const IconChanged = Record({
-    description: 'Faveicon of the page changed',
+    description: 'Favicon of the page changed',
     uri: String,
-    icon: String
+    icon: Icon,
   }, 'WebView.Page.IconChanged');
   exports.IconChanged = IconChanged;
 
@@ -110,10 +118,15 @@ define((require, exports, module) => {
       hero: action.hero
     });
 
+  const updateIcon = (state, icon) => {
+    const {bestIcon, faviconURL} = Favicon.getBestIcon([state.icon, icon]);
+    return state.set('icon', bestIcon).set('faviconURL', faviconURL);
+  }
+
   const update = (state, action) =>
     action instanceof TitleChanged ? state.set('title', action.title) :
-    action instanceof IconChanged ? state.set('icon', action.icon) :
-    action instanceof OverflowChanged ? state.set('overflow', action.overflow) :
+    action instanceof IconChanged ? updateIcon(state, action.icon) :
+    action instanceof OverflowChanged && !state.overflow ? state.set('overflow', action.overflow) : // we don't want overflow to be set back to false
     action instanceof ThumbnailChanged ? state.set('thumbnail', action.image) :
     action instanceof MetaChanged ? updateMeta(state, action) :
     action instanceof PalletChanged ? state.merge({

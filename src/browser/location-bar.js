@@ -22,8 +22,6 @@ define((require, exports, module) => {
   const Suggestions = require('./suggestion-box');
   const ClassSet = require('common/class-set');
 
-  const Theme = require('./theme');
-
   // Model
 
   // Style
@@ -55,13 +53,23 @@ define((require, exports, module) => {
       width: 250,
     },
     active: {
-      backgroundColor: 'rgba(255, 255, 255, 0.2)',
-      color: 'rgba(255, 255, 255, 1)',
+      backgroundColor: 'rgba(255,255,255,0.2)',
+      color: 'rgba(255,255,255,1)',
       height: 30,
       lineHeight: '30px',
       padding: '0 30px',
       width: 400,
       top: 40,
+    },
+    // Display styles when location bar is displaying suggested result.
+    suggesting: {
+      backgroundColor: 'white',
+      color: 'rgba(0,0,0,0.7)',
+      height: 30,
+      lineHeight: '30px',
+      padding: '0 30px',
+      width: 400,
+      top: 40
     },
     button: {
       opacity: null,
@@ -176,7 +184,7 @@ define((require, exports, module) => {
       })
     });
 
-  const viewBar = isActive => (address, children) => html.div({
+  const viewBar = mode => (address, children) => html.div({
     style: style.container,
   }, [
     html.div({
@@ -184,21 +192,26 @@ define((require, exports, module) => {
       className: ClassSet({
         'location-bar': true
       }),
-      style: Style(style.bar,
-                   isActive ? style.active : style.inactive),
+      style: Style(style.bar, style[mode]),
       onClick: address.pass(Focusable.Focus)
     }, children)
   ]);
 
-  const viewActiveBar = viewBar(true);
-  const viewInactiveBar = viewBar(false);
+  const viewActiveBar = viewBar('active');
+  const viewInactiveBar = viewBar('inactive');
+  const viewSuggestingBar = viewBar('suggesting');
 
   const InputAction = action => Input.Action({action});
 
-  const viewInDashboard = (loader, security, page, input, suggestions, theme, address) => {
+  const viewInDashboard = (loader, security, page, input, suggestions, address) => {
     // Make forwarding addres that wraps actions into `Input.Action`.
     const inputAddress = address.forward(InputAction);
-    return viewActiveBar(inputAddress, [
+
+    // If we have suggestions and the input isn't empty
+    const view = (input.value && input.isFocused) ?
+      viewSuggestingBar : viewActiveBar;
+
+    return view(inputAddress, [
       html.span({
         key: 'icon',
         style: Style(style.searchIconLarge, style.visible)
@@ -223,7 +236,7 @@ define((require, exports, module) => {
     ]);
   }
 
-  const viewInWebView = (loader, security, page, input, suggestions, theme, address) => {
+  const viewInWebView = (loader, security, page, input, suggestions, address) => {
     const isSecure = security && security.secure;
     const isPrivileged = loader && URI.isPrivileged(loader.uri);
     const title =

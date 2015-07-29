@@ -12,6 +12,7 @@ define((require, exports, module) => {
   const Focusable = require('common/focusable');
   const {Style, StyleSheet} = require('common/style');
   const {getDomainName} = require('common/url-helper');
+  const Favicon = require('common/favicon');
 
 
   const Close = event => {
@@ -212,10 +213,12 @@ define((require, exports, module) => {
     const title = page.label || page.title;
     const name = page.name || getDomainName(loader.uri);
 
+    const icon = page.faviconURL || Favicon.getFallback(loader.uri);
+
     const previewContents =
       hero && title && page.description ?
-        viewContentsHeroTitleDescription(name, page.icon, hero, title, page.description) :
-        viewContentsScreenshot(name, page.icon, page.thumbnail);
+        viewContentsHeroTitleDescription(name, icon, hero, title, page.description) :
+        viewContentsScreenshot(name, icon, page.thumbnail);
 
     return html.div({
       className: 'card',

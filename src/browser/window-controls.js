@@ -53,10 +53,8 @@ define((require, exports, module) => {
       zIndex: 200
     },
     light: {
-
     },
     dark: {
-      backgroundImage: 'url(css/stoplights-dark-theme.png)'
     }
   });
 
@@ -65,8 +63,7 @@ define((require, exports, module) => {
 
   const view = ({isFocused}, theme, address) => html.div({
     key: 'WindowControls',
-    style: Style(styleContainer.container,
-                 theme.isDark ? styleContainer.dark : styleContainer.light),
+    style: styleContainer.container,
   }, [
     html.button({
       key: 'WindowCloseButton',

@@ -6,8 +6,9 @@ define((require, exports, module) => {
 
   'use strict';
 
-  const MAX_RESULTS = 6;
+  const MAX_RESULTS = 5;
 
+  const {getDomainName} = require('common/url-helper');
   const {html, render} = require('reflex');
   const {Record, List, Union} = require('common/typed');
   const {StyleSheet, Style} = require('common/style');
@@ -126,7 +127,7 @@ define((require, exports, module) => {
       textAlign: 'center',
       width: '100vw',
       position: 'absolute',
-      top: 44,
+      top: 40,
       zIndex: 43,
       height: 260,
       pointerEvents: 'none'
@@ -135,26 +136,33 @@ define((require, exports, module) => {
       visibility: 'collapse'
     },
     suggestions: {
+      color: 'rgba(0,0,0,0.7)',
       display: 'inline-block',
       textAlign: 'left',
       width: 400,
+      overflow: 'hidden',
       pointerEvents: 'all',
       backgroundColor: '#fff',
       borderRadius: 5,
-      paddingTop: 20
+      padding: '30px 0 5px'
     },
     first: {
       borderTop: 0
     },
     suggestion: {
-      lineHeight: '40px',
+      lineHeight: '30px',
+      paddingLeft: 30,
+      paddingRight: 10,
       verticalAlign: 'middle',
-      borderTop: '1px solid rgba(0,0,0,0.05)',
-      cursor: 'pointer'
+      cursor: 'pointer',
+      overflow: 'hidden',
+      // Contains absolute elements
+      position: 'relative',
+      textOverflow: 'ellipsis',
     },
     selected: {
-      backgroundClip: 'content-box',
-      backgroundColor: 'rgba(0,0,0,0.05)'
+      backgroundColor: '#4A90E2',
+      color: '#fff'
     },
     dark: {
       borderTopColor: 'rgba(255,255,255,0.15)'
@@ -163,11 +171,10 @@ define((require, exports, module) => {
       backgroundColor: 'rgba(255,255,255,0.15)'
     },
     prefix: {
-      display: 'inline-block',
       fontSize: '16px',
       fontFamily: 'FontAwesome',
-      width: 30,
-      textAlign: 'center'
+      position: 'absolute',
+      left: 9
     }
   });
 
@@ -182,18 +189,16 @@ define((require, exports, module) => {
     'history': HISTORY_ICON
   };
 
-  const viewSuggestion = (state, selected, index, theme, address) => {
+  const viewSuggestion = (state, selected, index, address) => {
     const type = state instanceof History.PageMatch ? 'history' :
                  state instanceof Search.Match ? 'search' :
                  null;
 
+    const text = type == 'search' ?
+      state.title : `${state.title} — ${getDomainName(state.uri)}`;
+
     return html.p({
-      style: Style(
-        style.suggestion,
-        index == selected && style.selected,
-        theme.isDark ? style.dark : style.light,
-        theme.isDark && index === selected && style.selectedDark
-      ),
+      style: Style(style.suggestion, index == selected && style.selected),
       onMouseDown: address.pass(Loader.Load, state)
     }, [
       html.span({
@@ -202,12 +207,12 @@ define((require, exports, module) => {
       }, Icon[type] || ''),
       html.span({
         key: 'suggestion'
-      }, state.title)
+      }, text)
     ]);
   };
   exports.viewSuggestion = viewSuggestion;
 
-  const view = (mode, state, input, theme, address) => {
+  const view = (mode, state, input, address) => {
     const isActive = mode != 'show-web-view' &&
                      input.isFocused &&
                      input.value !== '' &&
@@ -216,7 +221,6 @@ define((require, exports, module) => {
     return html.div({
       key: 'suggestionscontainer',
       style: Style(style.container,
-                   {color: theme.foreground},
                    !isActive && style.collapsed,
                    state.entries.size <= 0 && style.collapsed)
     }, [
@@ -225,7 +229,7 @@ define((require, exports, module) => {
         style: style.suggestions
       }, state.entries.map((entry, index) => {
         return render(`suggestion@${index}`, viewSuggestion,
-                      entry, state.selected, index, theme,
+                      entry, state.selected, index,
                       address);
       }))
     ]);

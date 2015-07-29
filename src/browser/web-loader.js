@@ -11,7 +11,7 @@ define((require, exports, module) => {
   // Model
   const Model = Record({
     id: String,
-    uri: String
+    uri: Maybe(String)
   }, 'WebLoader');
   exports.Model = Model;
 

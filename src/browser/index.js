@@ -60,6 +60,11 @@ define((require, exports, module) => {
   const navigation = Navigation.service(address);
   const gesture = Gesture.service(address);
 
+  // See src/prerendering.js
+  document.body.innerHTML = '';
+  application.render();
+  window.localStorage.setItem('prerender', document.body.innerHTML);
+
   // Restore application state.
   address.receive(Session.RestoreSession());
 

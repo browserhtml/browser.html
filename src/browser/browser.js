@@ -174,11 +174,11 @@ define((require, exports, module) => {
         webViews.selected,
         theme),
       render('LocationBar', LocationBar.view,
-        state.mode, loader, security, page, input, suggestions, theme, address),
+        state.mode, loader, security, page, input, suggestions, address),
       render('Preview', Preview.view,
         state.mode, webViews.loader, webViews.page, webViews.selected, theme, address),
       render('Suggestions', Suggestions.view,
-        state.mode, suggestions, input, theme, address),
+        state.mode, suggestions, input, address),
       html.div({
         // The webviews should not require knowing the layout of external components.
         // Its size is always height:100%,width:100%.

@@ -17,10 +17,9 @@
 
     <!-- Module handling -->
     <!-- All further JS code is loaded from javascript -->
-    <script data-main='./main' src='node_modules/requirejs/require.js'></script>
+    <script data-main='./main' src='node_modules/requirejs/require.js' defer></script>
   </head>
   <body tabindex="-1">
-    <!-- We need to render something, otherwise osx freaks out -->
-    <h1 id="placeholder" style="color:rgba(0,0,0,0.01)">.</h1>
+    <script src='src/prerendering.js'></script>
   </body>
 </html>

@@ -195,7 +195,7 @@ define((require, exports, module) => {
   }
   exports.indexByOffset = indexByOffset;
 
-  const selectByOffset = (state, offset, loop=false) =>
+  const selectByOffset = (state, offset, loop=true) =>
     state.set('selected', indexByOffset(state, offset, loop));
   exports.selectByOffset = selectByOffset;
 
@@ -211,7 +211,7 @@ define((require, exports, module) => {
 
   const open = (state, {uri, inBackground}) => state.merge({
     nextID: state.nextID + 1,
-    selected: inBackground ? state.selected : 0,
+    selected: inBackground ? state.selected + 1: 0,
     loader: state.loader.unshift(Loader.Model({uri, id: String(state.nextID)})),
     shell: state.shell.unshift(Shell.Model({isFocused: !inBackground})),
     page: state.page.unshift(Page.Model()),
@@ -232,7 +232,7 @@ define((require, exports, module) => {
   const closeByIndex = (state, index) =>
     index === null ? state : state.merge({
       selected: state.loader.size === 1 ?  null :
-                state.loader.size === index + 1 ? index - 1 : index,
+                index === 0 ? 0 : index - 1,
 
       loader: state.loader.remove(index),
       shell: state.shell.remove(index),
@@ -256,7 +256,7 @@ define((require, exports, module) => {
     const loader = state.loader.get(index);
     return !loader ?
             open(state, action) :
-           URI.getOrigin(loader.uri) !== URI.getOrigin(action.uri) ?
+           loader.uri && (URI.getOrigin(loader.uri) !== URI.getOrigin(action.uri)) ?
             open(state, action) :
             updateByIndex(state, index, Loader.Load(action));
   };
@@ -521,7 +521,7 @@ define((require, exports, module) => {
   Event.mozbrowsertitlechange = ({target, detail: title}) =>
     TitleChanged({uri: target.location, title});
 
-  Event.mozbrowsericonchange = ({target, detail: {href: icon}}) =>
+  Event.mozbrowsericonchange = ({target, detail: icon}) =>
     IconChanged({uri: target.location, icon});
 
   Event.mozbrowsermetachange = ({detail: {content, name}}) =>
