@@ -16,17 +16,14 @@ define((require, exports, module) => {
   const service = address => {
 
     var delta;
-    var refSize;
 
     const checkScale = () => {
-      const scale = (refSize + delta) / refSize;
-      if (delta < 0 && scale < 0.5) {
+      if (delta < -200) {
         address.receive(Pinch());
       }
     }
 
     document.body.addEventListener('MozMagnifyGestureStart', (e) => {
-      refSize = window.innerWidth / 2;
       delta = e.delta;
       checkScale();
     }, true);

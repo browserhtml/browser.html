@@ -16,13 +16,7 @@ define((require, exports, module) => {
 
   const curated = {
     // [foreground, background]
-    'youtube.com': ['#cc181e', '#fff'],
-    'yahoo.com': ['#2d1152', '#fff'],
     'facebook.com': ['#fff', '#3A5795'],
-    'biadu.com': ['#2529d8', '#fff'],
-    'amazon.com': ['#e47911', '#fff'],
-    'taobao.com': ['#ff4400', '#fff'],
-    'qq.com': ['#5da4e6', '#fff'],
     'sina.com.cn': ['#fff', '#ff8500', DARK],
     'reddit.com': ['#336699', '#F0F0F0'],
     'instagram.com': ['#fff', '#125688', DARK],

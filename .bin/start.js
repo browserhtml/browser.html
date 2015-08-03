@@ -14,7 +14,7 @@ var server = http.createServer(ecstatic({
 }));
 server.listen(6060);
 
-var app = child.spawn('/Applications/B2G.app/Contents/MacOS/graphene', [
+var app = child.spawn('/Applications/Browser.html.app/Contents/MacOS/graphene', [
   '--profile', './.profile', '--start-manifest=http://localhost:6060/manifest.webapp'
 ], {
   stdio: 'inherit',

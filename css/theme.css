@@ -10,7 +10,11 @@
 }
 
 .location-bar:hover {
-  background-color: rgba(0,0,0, 0.07)
+  background-color: rgba(0,0,0,0.1);
+}
+
+.is-dark .location-bar:hover {
+  background-color: rgba(255,255,255,0.15);
 }
 
 .location-search-icon {
@@ -19,9 +23,6 @@
 
 .location-bar:hover > .location-search-icon {
   visibility: visible;
-}
-
-.dashboard-active .navbar {
 }
 
 * {

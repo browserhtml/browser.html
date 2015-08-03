@@ -25,7 +25,6 @@ define((require, exports, module) => {
   const Loader = require('./web-loader');
   const Preview = require('./web-preview');
   const Session = require('./session');
-  const ClassSet = require('common/class-set');
   const OS = require('common/os');
   const Suggestions = require('./suggestion-box');
   const URI = require('common/url-helper');
@@ -159,6 +158,7 @@ define((require, exports, module) => {
       onUnload: address.pass(Session.SaveSession),
       onOpenWindow: address.pass(OpenWindow),
       tabIndex: 1,
+      className: theme.isDark ? 'is-dark' : '',
       style: Style(style.shell, {
         color: theme.shellText,
         backgroundColor: theme.shell,
