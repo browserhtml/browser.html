@@ -212,17 +212,16 @@ define((require, exports, module) => {
   };
   exports.viewSuggestion = viewSuggestion;
 
-  const view = (mode, state, input, address) => {
-    const isActive = mode != 'show-web-view' &&
-                     input.isFocused &&
-                     input.value !== '' &&
-                     input.value;
+  // Check if input is in "suggestions" mode.
+  const isSuggesting = (input, suggestions) =>
+    input.isFocused && input.value && suggestions.entries.count() > 0;
+  exports.isSuggesting = isSuggesting;
 
-    return html.div({
+  const view = (mode, state, input, address) =>
+    html.div({
       key: 'suggestionscontainer',
       style: Style(style.container,
-                   !isActive && style.collapsed,
-                   state.entries.size <= 0 && style.collapsed)
+                   !isSuggesting(input, state) && style.collapsed)
     }, [
       html.div({
         key: 'suggestions',
@@ -233,6 +232,5 @@ define((require, exports, module) => {
                       address);
       }))
     ]);
-  };
   exports.view = view;
 });
