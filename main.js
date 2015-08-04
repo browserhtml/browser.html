@@ -3,6 +3,7 @@ require.config({
   nodeIdCompat: true,
   paths: {
     browser: '../src/browser',
+    browser2: '../src/browser2',
     common: '../src/common',
     lang: '../src/lang',
     service: '../src/service',
@@ -31,3 +32,4 @@ require.config({
 
 
 require(['browser/index']);
+// require(['browser2/index']);
