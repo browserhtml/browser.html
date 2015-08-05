@@ -1,15 +1,13 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-define((require, exports, module) => {
-
   'use strict';
 
   const {html} = require('reflex');
-  const {Style, StyleSheet} = require('common/style');
-  const {Record} = require('common/typed');
-  const Settings = require('service/settings');
+  const {Style, StyleSheet} = require('../common/style');
+  const {Record} = require('../common/typed');
+  const Settings = require('../service/settings');
+  const Runtime = require('../common/runtime');
 
   // Model
 
@@ -115,13 +113,20 @@ define((require, exports, module) => {
       MozUserSelect: 'none',
       display: 'block',
     },
+    button: {
+      display: 'block',
+      border: '1px solid #AAA',
+      padding: '3px 6px',
+      margin: 6,
+      borderRadius: 3,
+    },
     container: {
       padding: 10,
       position: 'absolute',
       bottom: 10,
       left: 10,
       width: '300px',
-      height: '350px',
+      height: '400px',
       color: 'black',
       backgroundColor: 'white',
       border: '2px solid #F06',
@@ -156,6 +161,21 @@ define((require, exports, module) => {
         }), SettingDescriptions[settingName]
       ]));
 
+    const runtimeButtons = [
+      html.button({
+        style: style.button,
+        onClick: address.send(Runtime.Restart())
+      }, 'Restart'),
+      html.button({
+        style: style.button,
+        onClick: address.send(Runtime.CleanRestart())
+      }, 'Clear cache and restart'),
+      html.button({
+        style: style.button,
+        onClick: address.send(Runtime.CleanReload())
+      }, 'Clear cache and reload')
+    ];
+
     return html.div({
       key: 'devtools-toolbox',
       style: Style(style.container,
@@ -175,8 +195,7 @@ define((require, exports, module) => {
             });
           }
         }), 'Enable Remote DevTools'
-      ]), settingsCheckboxes]);
+      ]), [...settingsCheckboxes, runtimeButtons]]);
   };
 
   exports.view = view;
-});

@@ -1,13 +1,10 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-define((require, exports, module) => {
-
   'use strict';
 
-  const {Record, Union, List, Maybe, Any} = require('common/typed');
-  const Focusable = require('common/focusable');
+  const {Record, Union, List, Maybe, Any} = require('../common/typed');
+  const Focusable = require('../common/focusable');
   const Loader = require('./web-loader');
 
   // Model
@@ -76,5 +73,3 @@ define((require, exports, module) => {
     action instanceof Loader.Load ? Focusable.focus(state) :
     state;
   exports.update = update;
-
-});

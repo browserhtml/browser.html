@@ -2,8 +2,6 @@
  * license, v. 2.0. if a copy of the mpl was not distributed with this
  * file, you can obtain one at http://mozilla.org/mpl/2.0/. */
 
-define((require, exports, module) => {
-
   'use strict';
 
   const hasScheme = input => !!(rscheme.exec(input) || [])[0];
@@ -81,4 +79,3 @@ define((require, exports, module) => {
   exports.isAboutURL = isAboutURL;
   exports.isPrivileged = isPrivileged;
   exports.isNotURL = isNotURL;
-});

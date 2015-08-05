@@ -1,22 +1,19 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-define((require, exports, module) => {
-
   'use strict';
 
-  const {Record, Any, Union} = require('common/typed');
-  const {compose} = require('lang/functional');
+  const {Record, Any, Union} = require('../common/typed');
+  const {compose} = require('../lang/functional');
   const WebView = require('./web-view');
   const Preview = require('./web-preview');
   const Input = require('./web-input');
   const Suggestions = require('./suggestion-box');
-  const Gesture = require('service/gesture');
-  const URI = require('common/url-helper');
-  const Focusable = require('common/focusable');
-  const Editable = require('common/editable');
-  const Navigation = require('service/navigation');
+  const Gesture = require('../service/gesture');
+  const URI = require('../common/url-helper');
+  const Focusable = require('../common/focusable');
+  const Editable = require('../common/editable');
+  const Navigation = require('../service/navigation');
 
   // Action
 
@@ -80,12 +77,15 @@ define((require, exports, module) => {
                        state.getIn(['webViews', 'loader', index, 'uri']));
   };
 
+  const clearSuggestions = edit('suggestions', Suggestions.clear);
+
   const editWebViewByID = compose(
     state => state.mode === 'edit-web-view' ? state :
              state.mode === 'create-web-view' ? state :
              fadeToEditMode(state),
     selectInput,
     focusInput,
+    clearSuggestions,
     (state, id) =>
       state.mode === 'edit-web-view' ? state :
       state.mode === 'create-web-view' ? state :
@@ -108,10 +108,9 @@ define((require, exports, module) => {
     switchMode('edit-web-view', null),
     selectInput,
     focusInput,
+    (state) => setInputToURIByID(state, '@selected'),
     (state, id) =>
       state.set('webViews', WebView.closeByID(state.webViews, id)));
-
-  const clearSuggestions = edit('suggestions', Suggestions.clear);
 
   const navigate = (state, value) => {
     const uri = URI.read(value);
@@ -132,6 +131,9 @@ define((require, exports, module) => {
     state =>
       state.mode != 'show-web-view' ? state :
       zoomToEditMode(state),
+    selectInput,
+    focusInput,
+    clearSuggestions,
     state =>
       setInputToURIByID(state, '@selected'));
 
@@ -195,4 +197,3 @@ define((require, exports, module) => {
     state;
 
   exports.update = update;
-});

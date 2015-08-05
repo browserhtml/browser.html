@@ -1,16 +1,13 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-define((require, exports, module) => {
-
   'use strict';
 
-  const {Record, Maybe, Union} = require('common/typed');
-  const URI = require('common/url-helper');
-  const WebView = require('browser/web-view');
-  const Loader = require('browser/web-loader');
-  const tinycolor = require('tinycolor');
+  const {Record, Maybe, Union} = require('../common/typed');
+  const URI = require('../common/url-helper');
+  const WebView = require('../browser/web-view');
+  const Loader = require('../browser/web-loader');
+  const tinycolor = require('tinycolor2');
 
   const DARK = true;
 
@@ -89,4 +86,3 @@ define((require, exports, module) => {
   };
 
   exports.service = service;
-});

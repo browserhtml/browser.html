@@ -1,35 +1,10 @@
-importScripts("../../node_modules/requirejs/require.js");
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+'use strict';
 
-require.config({
-  nodeIdCompat: true,
-  baseUrl: "../../node_modules/",
-  paths: {
-    browser: '../src/browser',
-    common: '../src/common',
-    lang: '../src/lang',
-    service: '../src/service',
-    // http://facebook.github.io/react/
-    react: 'react/dist/react',
-    // http://facebook.github.io/immutable-js/
-    // Because of the bug https://github.com/facebook/immutable-js/pull/297
-    // we use forked version until it's uplifted.
-    immutable: 'immutable/dist/immutable',
-    'typed-immutable': 'typed-immutable/lib/',
-    // https://github.com/broofa/node-uuid
-    uuid: 'node-uuid/uuid',
-    reflex: 'reflex/lib/index',
-    pouchdb: 'pouchdb/dist/pouchdb',
-    tinycolor: 'tinycolor2/tinycolor'
-  },
-  shim: {
-    tinycolor: {
-      exports: 'tinycolor'
-    },
-    pouchdb: {
-      exports: 'PouchDB'
-    }
-  }
-});
+const {Page, History} = require('../common/history');
+const {async} = require('../lang/task');
 
 // Calculates the score for use in suggestions from
 // a result array `match` of `RegExp#exec`.
@@ -58,7 +33,7 @@ const Pattern = (input, flags="i") => {
 Pattern.escape = input => input.replace(/[\.\?\*\+\^\$\|\(\)\{\[\]\\]/g, '\\$&')
 
 
-require(['common/history', 'lang/task'], ({Page, History}, {async}) => {
+
   const pageSearch = async(function*(db, {id, input, limit}) {
     const {rows} = yield db.query({docs: true, type: 'Page'});
     // Build a query patter from all words and individual words, note that
@@ -145,4 +120,3 @@ require(['common/history', 'lang/task'], ({Page, History}, {async}) => {
       pageSearch(history, action).then(postMessage);
     }
   }
-});

@@ -1,9 +1,6 @@
 /* this source code form is subject to the terms of the mozilla public
  * license, v. 2.0. if a copy of the mpl was not distributed with this
  * file, you can obtain one at http://mozilla.org/mpl/2.0/. */
-
-define((require, exports, module) => {
-
   'use strict';
 
   const React = require('react');
@@ -19,7 +16,7 @@ define((require, exports, module) => {
 
   class ElementView extends React.Component {
     constructor() {
-      React.Component.apply(this, arguments);
+      super(...arguments);
 
       const {type, fields, mount, mounted, write} = this.props;
       const hooks = Object.create(null);
@@ -309,4 +306,3 @@ define((require, exports, module) => {
   exports.CapturedEvent = CapturedEvent;
   exports.VirtualEvent = VirtualEvent;
   exports.ChromeEvent = ChromeEvent;
-});

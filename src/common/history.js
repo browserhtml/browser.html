@@ -1,13 +1,12 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-define((require, exports, module) => {
   'use strict';
 
   const PouchDB = require('pouchdb');
-  const {spawn, async, schedule} = require('lang/task');
-  const {identity} = require('lang/functional');
-  const {Record, List, Maybe, Any, Union} = require('typed-immutable/index');
+  const {spawn, async, schedule} = require('../lang/task');
+  const {identity} = require('../lang/functional');
+  const {Record, List, Maybe, Any, Union} = require('typed-immutable');
 
   // PouchDB has a sepcial field `_id` for identifing records
   // and `_rev` for identifiying revisitions. We will refer to
@@ -296,4 +295,3 @@ have a following structure.
   exports.Tag = Tag;
   exports.TopPages = TopPages;
   exports.Quote = Quote;
-});

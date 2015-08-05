@@ -2,18 +2,15 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-define((require, exports, module) => {
-
   'use strict';
 
-  const Input = require('browser/web-input');
-  const Editable = require('common/editable');
-  const Focusable = require('common/focusable');
-  const History = require('service/history');
-  const Search = require('service/search');
-  const {throttle} = require('lang/functional');
-  const Suggestions = require('browser/suggestion-box');
+  const Input = require('../browser/web-input');
+  const Editable = require('../common/editable');
+  const Focusable = require('../common/focusable');
+  const History = require('./history');
+  const Search = require('./search');
+  const {throttle} = require('../lang/functional');
+  const Suggestions = require('../browser/suggestion-box');
 
   const MAX_RESULTS = 5;
 
@@ -50,4 +47,3 @@ define((require, exports, module) => {
     };
   };
   exports.service = service;
-});

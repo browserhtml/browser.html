@@ -2,11 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-define((require, exports, module) => {
-
   'use strict';
 
-  const {Record, List, Typed, Type, Any, Union, Maybe} = require('typed-immutable/index');
+  const {Record, List, Typed, Type, Any, Union, Maybe} = require('typed-immutable');
 
   const isTypeOf = function(value) {
     for (var Type of this.variants) {
@@ -52,4 +50,3 @@ define((require, exports, module) => {
   exports.Any = Any;
   exports.Maybe = Maybe;
   exports.Union = TypeUnion;
-})

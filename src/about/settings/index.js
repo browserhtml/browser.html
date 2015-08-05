@@ -2,14 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-define((require, exports, module) => {
-
   'use strict';
 
   const {render, html, Address, Application} = require('reflex');
-  const {Record, Any} = require('common/typed');
+  const {Record, Any} = require('../../common/typed');
   const {Map} = require('immutable');
-  const Settings = require('service/settings');
+  const Settings = require('../../service/settings');
 
   // Model
 
@@ -70,4 +68,3 @@ define((require, exports, module) => {
   const settings = Settings.service(address);
 
   address.receive(Settings.Fetch({id: 'about:settings', query: '*'}));
-});

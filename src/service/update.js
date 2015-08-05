@@ -3,11 +3,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-define((require, exports, module) => {
-
   'use strict';
 
-  const {Record, Union} = require('common/typed');
+  const {Record, Union} = require('../common/typed');
   const Settings = require('./settings');
 
   const ApplicationUpdate = Record({
@@ -15,7 +13,7 @@ define((require, exports, module) => {
   }, 'ApplicationUpdate');
   exports.ApplicationUpdate = ApplicationUpdate;
 
-  
+
   const UpdateHead = value =>
     Settings.Update({name: 'browserhtml.HEAD_HASH', value});
   const UnknownHead = e =>
@@ -97,5 +95,3 @@ define((require, exports, module) => {
     update.then(address.send, error => console.warn(error));
   }
   exports.service = service;
-
-});

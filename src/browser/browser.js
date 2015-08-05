@@ -1,22 +1,19 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-define((require, exports, module) => {
-
   'use strict';
 
   const {html, node, render, cache} = require('reflex');
-  const {Record, Any, Union, Maybe} = require('common/typed');
-  const {inspect} = require('common/debug');
-  const {StyleSheet, Style} = require('common/style');
+  const {Record, Any, Union, Maybe} = require('../common/typed');
+  const {inspect} = require('../common/debug');
+  const {StyleSheet, Style} = require('../common/style');
   const WindowBar = require('./window-bar');
   const WindowControls = require('./window-controls');
   const LocationBar = require('./location-bar');
   const Progress = require('./web-progress');
   const Theme = require('./theme');
-  const {KeyBindings} = require('common/keyboard');
-  const Focusable = require('common/focusable');
+  const {KeyBindings} = require('../common/keyboard');
+  const Focusable = require('../common/focusable');
   const {Main} = require('./main');
   const Updates = require('./update-banner');
   const WebView = require('./web-view');
@@ -25,10 +22,10 @@ define((require, exports, module) => {
   const Loader = require('./web-loader');
   const Preview = require('./web-preview');
   const Session = require('./session');
-  const OS = require('common/os');
+  const OS = require('../common/os');
   const Suggestions = require('./suggestion-box');
-  const URI = require('common/url-helper');
-  const Navigation = require('service/navigation');
+  const URI = require('../common/url-helper');
+  const Navigation = require('../service/navigation');
   const SynthesisUI = require('./synthesis-ui');
   const DevtoolsHUD = require('./devtools-hud');
 
@@ -199,4 +196,3 @@ define((require, exports, module) => {
     ])
   };
   exports.view = view;
-});

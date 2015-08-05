@@ -3,11 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Manages events coming from gecko.
-
-define((require, exports, module) => {
   'use strict';
 
-  const {Record, Union, Any} = require('common/typed');
+  const {Record, Union, Any} = require('../common/typed');
 
   // Actions
 
@@ -123,4 +121,3 @@ define((require, exports, module) => {
   };
 
   exports.service = service;
-});

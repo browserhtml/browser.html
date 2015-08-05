@@ -2,11 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-define((require, exports, module) => {
-
   'use strict';
 
-  const {Record, Union} = require('common/typed');
+  const {Record, Union} = require('../common/typed');
 
   const Pinch = Record({
     description: 'Pinch gesture'
@@ -23,21 +21,20 @@ define((require, exports, module) => {
       }
     }
 
-    document.body.addEventListener('MozMagnifyGestureStart', (e) => {
+    document.addEventListener('MozMagnifyGestureStart', (e) => {
       delta = e.delta;
       checkScale();
     }, true);
 
-    document.body.addEventListener('MozMagnifyGestureUpdate', (e) => {
+    document.addEventListener('MozMagnifyGestureUpdate', (e) => {
       delta += e.delta;
       checkScale();
     }, true);
 
-    document.body.addEventListener('MozMagnifyGesture', (e) => {
+    document.addEventListener('MozMagnifyGesture', (e) => {
       delta += e.delta;
       checkScale();
     }, true);
   };
 
   exports.service = service;
-});

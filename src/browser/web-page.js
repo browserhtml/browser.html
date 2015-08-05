@@ -1,17 +1,14 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-define((require, exports, module) => {
-
   'use strict';
 
-  const {Record, Union, List, Maybe, Any} = require('common/typed');
-  const Pallet = require('service/pallet');
+  const {Record, Union, List, Maybe, Any} = require('../common/typed');
+  const Pallet = require('../service/pallet');
   const Loader = require('./web-loader');
   const Progress = require('./web-progress');
   const WebView = require('./web-view');
-  const Favicon = require('common/favicon');
+  const Favicon = require('../common/favicon');
 
   // Model
 
@@ -138,5 +135,3 @@ define((require, exports, module) => {
     state;
 
   exports.update = update;
-
-});

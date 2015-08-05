@@ -1,12 +1,9 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-define((require, exports, module) => {
-
   'use strict';
 
-  const {Record, Union, Any} = require('common/typed');
+  const {Record, Union, Any} = require('../common/typed');
   const {Map} = require('immutable');
 
   // Actions
@@ -62,4 +59,3 @@ define((require, exports, module) => {
     }
   };
   exports.service = service;
-});

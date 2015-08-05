@@ -1,16 +1,13 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-define((require, exports, module) => {
-
   'use strict';
 
-  const {Record, Maybe, Union, List} = require('common/typed');
-  const Loader = require('browser/web-loader');
-  const Progress = require('browser/web-progress');
-  const Page = require('browser/web-page');
-  const WebView = require('browser/web-view');
+  const {Record, Maybe, Union, List} = require('../common/typed');
+  const Loader = require('../browser/web-loader');
+  const Progress = require('../browser/web-progress');
+  const Page = require('../browser/web-page');
+  const WebView = require('../browser/web-view');
 
   const PageMatch = Record({
     title: Maybe(String),
@@ -34,7 +31,8 @@ define((require, exports, module) => {
   exports.PageQuery = PageQuery;
 
   const service = address => {
-    const worker = require('common/worker!service/history-worker');
+
+    const worker = new Worker('service/history-worker.js');
 
     worker.onmessage = ({data: {type, action}}) => {
       if (type === 'PageResult') {
@@ -87,5 +85,3 @@ define((require, exports, module) => {
     }
   };
   exports.service = service;
-
-});

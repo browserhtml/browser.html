@@ -1,21 +1,18 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-define((require, exports, module) => {
-
   'use strict';
 
-  const MAX_RESULTS = 5;
+  const MAX_RESULTS = 6;
 
-  const {getDomainName} = require('common/url-helper');
+  const {getDomainName} = require('../common/url-helper');
   const {html, render} = require('reflex');
-  const {Record, List, Union} = require('common/typed');
-  const {StyleSheet, Style} = require('common/style');
-  const ClassSet = require('common/class-set');
+  const {Record, List, Union} = require('../common/typed');
+  const {StyleSheet, Style} = require('../common/style');
+  const ClassSet = require('../common/class-set');
   const Loader = require('./web-loader');
-  const History = require('service/history');
-  const Search = require('service/search');
+  const History = require('../service/history');
+  const Search = require('../service/search');
 
   // Model
 
@@ -82,8 +79,9 @@ define((require, exports, module) => {
 
   const updateSearch = (state, {results: matches}) => {
     const entries = state.entries.filter(isntSearch);
+    const half = Math.floor(MAX_RESULTS / 2);
     const count = Math.min(matches.count(),
-                           MAX_RESULTS - Math.min(MAX_RESULTS / 2, entries.count()));
+                           MAX_RESULTS - Math.min(half, entries.count()));
 
     return state.merge({
       selected: -1,
@@ -94,8 +92,9 @@ define((require, exports, module) => {
 
   const updatePage = (state, {results: matches}) => {
     const entries = state.entries.filter(isntPage);
+    const half = Math.floor(MAX_RESULTS / 2);
     const count = Math.min(matches.count(),
-                           MAX_RESULTS - Math.min(MAX_RESULTS / 2, entries.count()));
+                           MAX_RESULTS - Math.min(half, entries.count()));
     const pages = matches.take(count);
 
     return state.merge({
@@ -212,17 +211,16 @@ define((require, exports, module) => {
   };
   exports.viewSuggestion = viewSuggestion;
 
-  const view = (mode, state, input, address) => {
-    const isActive = mode != 'show-web-view' &&
-                     input.isFocused &&
-                     input.value !== '' &&
-                     input.value;
+  // Check if input is in "suggestions" mode.
+  const isSuggesting = (input, suggestions) =>
+    input.isFocused && input.value && suggestions.entries.count() > 0;
+  exports.isSuggesting = isSuggesting;
 
-    return html.div({
+  const view = (mode, state, input, address) =>
+    html.div({
       key: 'suggestionscontainer',
       style: Style(style.container,
-                   !isActive && style.collapsed,
-                   state.entries.size <= 0 && style.collapsed)
+                   !isSuggesting(input, state) && style.collapsed)
     }, [
       html.div({
         key: 'suggestions',
@@ -233,6 +231,4 @@ define((require, exports, module) => {
                       address);
       }))
     ]);
-  };
   exports.view = view;
-});

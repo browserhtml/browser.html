@@ -2,16 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-define((require, exports, module) => {
-
   'use strict';
 
-  const WebView = require('browser/web-view');
-  const Loader = require('browser/web-loader');
-  const Page = require('browser/web-page');
-  const {Record, Union} = require('common/typed');
-  const {fromDOMRequest, fromEvent} = require('lang/promise');
-  const URI = require('common/url-helper');
+  const WebView = require('../browser/web-view');
+  const Loader = require('../browser/web-loader');
+  const Page = require('../browser/web-page');
+  const {Record, Union} = require('../common/typed');
+  const {fromDOMRequest, fromEvent} = require('../lang/promise');
+  const URI = require('../common/url-helper');
 
   const fetchScreenshot = iframe =>
     // 960 is a guestimate... we're going to guess that within that space there
@@ -62,5 +60,3 @@ define((require, exports, module) => {
     return action;
   };
   exports.service = service;
-
-});

@@ -1,26 +1,23 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-define((require, exports, module) => {
-
   'use strict';
 
-  const {Record, Union, Maybe} = require('common/typed');
+  const {Record, Union, Maybe} = require('../common/typed');
   const {html, render} = require('reflex');
-  const URI = require('common/url-helper');
-  const {StyleSheet, Style} = require('common/style');
+  const URI = require('../common/url-helper');
+  const {StyleSheet, Style} = require('../common/style');
 
-  const {KeyBindings} = require('common/keyboard');
-  const Editable = require('common/editable');
-  const Focusable = require('common/focusable');
+  const {KeyBindings} = require('../common/keyboard');
+  const Editable = require('../common/editable');
+  const Focusable = require('../common/focusable');
   const WebView = require('./web-view');
   const Navigation = require('./web-navigation');
 
   const Shell = require('./web-shell');
   const Input = require('./web-input');
   const Suggestions = require('./suggestion-box');
-  const ClassSet = require('common/class-set');
+  const ClassSet = require('../common/class-set');
 
   // Model
 
@@ -54,7 +51,7 @@ define((require, exports, module) => {
     },
     active: {
       backgroundColor: 'rgba(255,255,255,0.2)',
-      color: 'rgba(255,255,255,1)',
+      color: 'rgba(255,255,255,0.7)',
       height: 30,
       lineHeight: '30px',
       padding: '0 30px',
@@ -96,7 +93,7 @@ define((require, exports, module) => {
     dashboard: {right: 0},
 
     input: {
-      color: '#333',
+      color: 'inherit',
       width: '100%',
       lineHeight: '22px',
       overflow: 'hidden',
@@ -207,8 +204,7 @@ define((require, exports, module) => {
     // Make forwarding addres that wraps actions into `Input.Action`.
     const inputAddress = address.forward(InputAction);
 
-    // If we have suggestions and the input isn't empty
-    const view = (input.value && input.isFocused) ?
+    const view = Suggestions.isSuggesting(input, suggestions) ?
       viewSuggestingBar : viewActiveBar;
 
     return view(inputAddress, [
@@ -229,6 +225,7 @@ define((require, exports, module) => {
         isFocused: input.isFocused,
         selection: input.selection,
         onChange: inputAddress.pass(Change),
+        onSelect: inputAddress.pass(Change),
         onFocus: inputAddress.pass(Focusable.Focused),
         onBlur: inputAddress.pass(Focusable.Blured),
         onKeyDown: address.pass(Binding)
@@ -282,4 +279,3 @@ define((require, exports, module) => {
   // TODO: Consider seperating location input field from the location bar.
 
   exports.view = view;
-});

@@ -18,6 +18,7 @@ if [ "$HEAD" = "$LATEST_REV" ]; then
     git checkout --orphan gh-pages
     echo "" > .nojekyll
     rm .gitignore
+    npm run build
     git add .
     git commit -m "Deploy version ${TAG}"
     git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" gh-pages > /dev/null 2>&1

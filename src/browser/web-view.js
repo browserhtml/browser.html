@@ -1,17 +1,14 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-define((require, exports, module) => {
-
   'use strict';
 
-  const {Record, Union, List, Maybe, Any} = require('common/typed');
+  const {Record, Union, List, Maybe, Any} = require('../common/typed');
   const {html, render} = require('reflex');
-  const {StyleSheet, Style} = require('common/style');
-  const URI = require('common/url-helper');
-  const Editable = require('common/editable');
-  const Focusable = require('common/focusable');
+  const {StyleSheet, Style} = require('../common/style');
+  const URI = require('../common/url-helper');
+  const Editable = require('../common/editable');
+  const Focusable = require('../common/focusable');
   const IFrame = require('./iframe');
   const Progress = require('./web-progress');
   const Shell = require('./web-shell');
@@ -541,4 +538,3 @@ define((require, exports, module) => {
       state: detail.state,
       extendedValidation: detail.extendedValidation
     });
-});

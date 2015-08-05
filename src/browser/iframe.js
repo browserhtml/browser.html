@@ -1,13 +1,10 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-define((require, exports, module) => {
-
   'use strict';
 
-  const Focusable = require('common/focusable');
-  const {Element, BeforeAppendAttribute, VirtualAttribute, Event, VirtualEvent} = require('common/element');
+  const Focusable = require('../common/focusable');
+  const {Element, BeforeAppendAttribute, VirtualAttribute, Event, VirtualEvent} = require('../common/element');
 
   const view = Element('iframe', {
     isFocused: Focusable.Field.isFocused,
@@ -97,4 +94,3 @@ define((require, exports, module) => {
   // Exports:
 
   exports.view = view;
-});
