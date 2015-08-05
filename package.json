@@ -16,7 +16,8 @@
     "server": "ecstatic . --port 6060",
     "client": "/Applications/Browser.html.app/Contents/MacOS/graphene --profile ./.profile --start-manifest=http://localhost:6060/manifest.webapp",
     "start": "./.bin/start.js",
-    "deploy": "./.bin/deploy.sh"
+    "deploy": "./.bin/deploy.sh",
+    "package": "./.bin/package.sh"
   },
   "devDependencies": {
     "ecstatic": "^0.7.1",
