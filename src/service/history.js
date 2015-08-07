@@ -32,7 +32,8 @@
 
   const service = address => {
 
-    const worker = new Worker('service/history-worker.js');
+    // TODO: Figure out better way to resolve path.
+    const worker = new Worker('./dist/service/history-worker.js');
 
     worker.onmessage = ({data: {type, action}}) => {
       if (type === 'PageResult') {

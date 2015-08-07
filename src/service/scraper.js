@@ -352,7 +352,7 @@
 
     // @TODO need some methods for scaling and cropping images.
 
-    const ready = new Promise((resolve) => {
+    const ready = new window.Promise((resolve) => {
       if (document.readyState === "complete") {
         resolve();
       } else {

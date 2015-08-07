@@ -130,7 +130,8 @@
   const {LoadStarted, LoadEnded} = Progress;
   const {MetaChanged, ThumbnailChanged, TitleChanged,
          IconChanged, Scrolled, OverflowChanged,
-         PageCardChanged, PalletChanged} = Page;
+         FirstPaint, DocumentFirstPaint,
+         AnnounceCuratedColor, PageCardChanged} = Page;
   const {SecurityChanged} = Security;
   const {VisibilityChanged} = Shell;
   const {Focus, Blur, Focused, Blured} = Focusable;
@@ -148,7 +149,8 @@
     CanGoBackChanged, CanGoForwardChanged,
     // Page
     MetaChanged, ThumbnailChanged, TitleChanged, IconChanged, Scrolled,
-    OverflowChanged, PageCardChanged, PalletChanged,
+    OverflowChanged, PageCardChanged, FirstPaint, DocumentFirstPaint,
+    PageCardChanged, AnnounceCuratedColor,
     // Security
     SecurityChanged,
     // Shell
@@ -378,6 +380,8 @@
       onError: action,
       onLoadStarted: action,
       onLoadEnded: action,
+      onFirstPaint: action,
+      onDocumentFirstPaint: action,
       onLoadProgressChange: action,
       onLocationChanged: action,
       onMetaChanged: action,
@@ -462,6 +466,12 @@
 
   const Event = event =>
     Event[event.type](event);
+
+  Event.mozbrowserdocumentfirstpaint = event =>
+    DocumentFirstPaint();
+
+  Event.mozbrowserfirstpaint = event =>
+    FirstPaint();
 
   Event.mozbrowserlocationchange = ({detail: uri}) =>
     LocationChanged({uri});

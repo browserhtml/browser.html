@@ -47,6 +47,8 @@
     onUserActivityDone: Event('mozbrowseractivitydone'),
     onVisibilityChanged: Event('mozbrowservisibilitychange'),
     onMetaChanged: Event('mozbrowsermetachange'),
+    onFirstPaint: Event('mozbrowserfirstpaint'),
+    onDocumentFirstPaint: Event('mozbrowserdocumentfirstpaint'),
     // Use `VirtualEvent` to proxy events in order to mutate `target.location`
     // so that user can check `target.location` before deciding if change to
     // `target.src` is required.

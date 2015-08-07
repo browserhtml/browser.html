@@ -67,6 +67,7 @@
       margin: '0 10px',
       overflow: 'hidden',
       position: 'relative',
+      'scroll-snap-coordinate': '50% 50%',
       width: '240px'
     },
     ghost: {
@@ -237,6 +238,8 @@
       backgroundColor: '#273340',
       height: '100vh',
       width: '100vw',
+      scrollSnapType: 'proximity',
+      scrollSnapDestination: '50% 50%',
       overflowX: 'auto',
       position: 'absolute',
       top: 0,
@@ -251,7 +254,7 @@
       width: '100vw',
       // Fixed height to contain floats.
       height: '300px',
-      padding: 'calc(50vh - 150px) 100px 0 100px',
+      padding: 'calc(50vh - 150px) 200px 0 200px',
       margin: '0 auto',
     }
   });

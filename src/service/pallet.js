@@ -9,24 +9,22 @@
   const Loader = require('../browser/web-loader');
   const tinycolor = require('tinycolor2');
 
-  const DARK = true;
-
   const curated = {
-    // [foreground, background]
-    'facebook.com': ['#fff', '#3A5795'],
-    'sina.com.cn': ['#fff', '#ff8500', DARK],
-    'reddit.com': ['#336699', '#F0F0F0'],
-    'instagram.com': ['#fff', '#125688', DARK],
-    'imgur.com': ['#fff', '#2b2b2b', DARK],
-    'cnn.com': ['#fff', '#0c0c0c', DARK],
-    'slideshare.net': ['#fff', '#313131', DARK],
-    'deviantart.com': ['#fff', '#475c4d', DARK],
-    'soundcloud.com': ['#FF5500', '#333333', DARK],
-    'mashable.com': ['#fff', '#00aeef', DARK],
-    'daringfireball.net': ['#fff', '#4a525a', DARK],
-    'firewatchgame.com': ['#EF4338', '#2D102B', DARK],
-    'whatliesbelow.com': ['#fff', '#74888B', DARK],
-    'supertimeforce.com': ['#2EBCEC', '#051224', DARK]
+    // [background, foreground]
+    'facebook.com': ['#3a5795', '#fff'],
+    'sina.com.cn': ['#ff8500', '#fff'],
+    'reddit.com': ['#f0f0f0', '#336699'],
+    'instagram.com': ['#125688', '#fff'],
+    'imgur.com': ['#2b2b2b', '#fff'],
+    'cnn.com': ['#0c0c0c', '#fff'],
+    'slideshare.net': ['#313131', '#fff'],
+    'deviantart.com': ['#475c4d', '#fff'],
+    'soundcloud.com': ['#333333', '#FF5500'],
+    'mashable.com': ['#00aeef', '#fff'],
+    'daringfireball.net': ['#4a525a', '#fff'],
+    'firewatchgame.com': ['#2d102b', '#ef4338'],
+    'whatliesbelow.com': ['#74888b', '#fff', ],
+    'supertimeforce.com': ['#051224', '#2ebcec']
   };
 
   const Color = String;
@@ -59,11 +57,11 @@
 
   // Action
 
-  const PalletChanged = Record({
-    pallet: Model,
-    description: 'Color pallet of page changed'
-  }, 'Pallet.Action.Change');
-  exports.PalletChanged = PalletChanged;
+  const AnnounceCuratedColor = Record({
+    description: 'Announce theme colors for curated domains',
+    color: String
+  });
+  exports.AnnounceCuratedColor = AnnounceCuratedColor;
 
   const service = address => action => {
     if (action instanceof WebView.Action &&
@@ -71,15 +69,10 @@
       const hostname = URI.getDomainName(action.action.uri);
       const theme = curated[hostname];
       if (theme) {
-        const [foreground, background, isDark] = theme;
-        const pallet = Model({foreground, background, isDark});
-        // Use promise so behavior is going to be closer to what it will be
-        // when we stop faking.
-        Promise.resolve()
-          .then(address.send(WebView.Action({
-            id: action.id,
-            action: PalletChanged({pallet})
-          })));
+        address.receive(WebView.Action({
+          id: action.id,
+          action: AnnounceCuratedColor({color: theme.join('|')})
+        }));
       }
     }
     return action

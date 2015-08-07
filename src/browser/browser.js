@@ -63,6 +63,10 @@
     'accel r': _ => Navigation.Reload(),
     'escape': _ => Navigation.Stop(),
     'F12': _ => DevtoolsHUD.ToggleDevtoolsHUD(),
+    // TODO: `meta alt i` generates `accel alt i` on OSX we need to look
+    // more closely into this but so declaring both shortcuts should do it.
+    'accel alt i': _ => DevtoolsHUD.ToggleDevtoolsHUD(),
+    'accel alt ˆ': _ => DevtoolsHUD.ToggleDevtoolsHUD(),
     [`${modifier} left`]: _ => Navigation.GoBack(),
     [`${modifier} right`]: _ => Navigation.GoForward()
   }, 'Browser.KeyDown.Action');

@@ -6,8 +6,8 @@ will be on our platform and processes to build our platform, which we want to ev
 
 #### Setup
 
-```
-npm install
+```sh
+npm install --no-optional
 npm start
 ```
 

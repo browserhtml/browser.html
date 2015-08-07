@@ -26,15 +26,15 @@
     ]
   },
   "scripts": {
+    "start": "gulp develop",
     "server": "gulp server",
     "client": "gulp client",
-    "start": "gulp develop",
     "deploy": "./.bin/deploy.sh",
     "build": "NODE_ENV=production gulp build"
   },
   "dependencies": {
     "immutable": "3.7.0",
-    "pouchdb": "3.5.0",
+    "pouchdb": "4.0.0",
     "react": "0.13.3",
     "reflex": "0.0.27",
     "tinycolor2": "1.1.2",

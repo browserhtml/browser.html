@@ -170,16 +170,19 @@
   const StopIcon = '\uf00d';
   const SEARCH_ICON = '\uf002';
 
-  const Change = ({target}) =>
-    Editable.Change({
-      id: '@selected',
-      value: target.value,
-      selection: Editable.Selection({
-        start: target.selectionStart,
-        end: target.selectionEnd,
-        direction: target.selectionDirection
-      })
-    });
+  const readSelection = target => Editable.Selection({
+    start: target.selectionStart,
+    end: target.selectionEnd,
+    direction: target.selectionDirection
+  });
+
+  const Selected = ({target}) =>
+    Editable.Select({range: readSelection(target)});
+
+  const Changed = ({target}) => Editable.Change({
+    value: target.value,
+    selection: readSelection(target)
+  });
 
   const viewBar = mode => (address, children) => html.div({
     style: style.container,
@@ -224,8 +227,8 @@
         style: style.input,
         isFocused: input.isFocused,
         selection: input.selection,
-        onChange: inputAddress.pass(Change),
-        onSelect: inputAddress.pass(Change),
+        onChange: inputAddress.pass(Changed),
+        onSelect: inputAddress.pass(Selected),
         onFocus: inputAddress.pass(Focusable.Focused),
         onBlur: inputAddress.pass(Focusable.Blured),
         onKeyDown: address.pass(Binding)

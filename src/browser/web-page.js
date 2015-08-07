@@ -9,6 +9,7 @@
   const Progress = require('./web-progress');
   const WebView = require('./web-view');
   const Favicon = require('../common/favicon');
+  const URI = require('../common/url-helper');
 
   // Model
 
@@ -33,12 +34,24 @@
 
     thumbnail: Maybe(String),
     overflow: false,
-    palletSource: Maybe(String),
+
+    themeColor: Maybe(String),
+    curatedColor: Maybe(String),
     pallet: Pallet.Model
   });
   exports.Model = Model;
 
   // Action
+
+  const DocumentFirstPaint = Record({
+    description: 'Fired on a first page document paint'
+  }, 'WebView.DocumentFirstPaint');
+  exports.DocumentFirstPaint = DocumentFirstPaint;
+
+  const FirstPaint = Record({
+    description: 'Fired on a first paint'
+  }, 'WebView.FirstPaint');
+  exports.FirstPaint = FirstPaint;
 
   const MetaChanged = Record({
     description: 'Metadata of the page changed',
@@ -88,24 +101,19 @@
   }, 'WebView.Page.CardChange');
   exports.PageCardChanged = PageCardChanged;
 
+  const AnnounceCuratedColor = Pallet.AnnounceCuratedColor;
+  exports.AnnounceCuratedColor = AnnounceCuratedColor;
 
-  const {PalletChanged} = Pallet;
-  exports.PalletChanged = PalletChanged;
 
   // Update
 
-  const updateMeta = (state, action) => {
-    if (action.name === 'theme-color') {
-      // Never override pallet if there was a currated theme.
-      if (state.palletSource !== 'curated-theme-colors') {
-        return state.merge({
-          palletSource: 'theme-color',
-          pallet: Pallet.read(action.content)
-        });
-      }
-    }
-    return state
-  };
+  const updateMeta = (state, action) =>
+    state.curatedColor ? state :
+    action.name === 'theme-color' ? state.set('themeColor', action.content) :
+    state;
+
+  const updateTheme = (state, action) =>
+    state.set('curatedColor', action.color);
 
   const updateCard = (state, action) =>
     state.merge({
@@ -118,7 +126,12 @@
   const updateIcon = (state, icon) => {
     const {bestIcon, faviconURL} = Favicon.getBestIcon([state.icon, icon]);
     return state.set('icon', bestIcon).set('faviconURL', faviconURL);
-  }
+  };
+
+  const updatePallet = state =>
+    state.curatedColor ? state.set('pallet', Pallet.read(state.curatedColor)) :
+    state.themeColor ? state.set('pallet', Pallet.read(state.themeColor)) :
+    state.remove('pallet');
 
   const update = (state, action) =>
     action instanceof TitleChanged ? state.set('title', action.title) :
@@ -126,12 +139,11 @@
     action instanceof OverflowChanged && !state.overflow ? state.set('overflow', action.overflow) : // we don't want overflow to be set back to false
     action instanceof ThumbnailChanged ? state.set('thumbnail', action.image) :
     action instanceof MetaChanged ? updateMeta(state, action) :
-    action instanceof PalletChanged ? state.merge({
-      pallet: action.pallet,
-      palletSource: 'curated-theme-colors'
-    }) :
-    action instanceof PageCardChanged ? updateCard(state, action) :
-    action instanceof Progress.LoadStarted ? state.clear() :
+    action instanceof AnnounceCuratedColor ? updateTheme(state, action) :
+    action instanceof Progress.LoadStarted ? Model({pallet: state.pallet}) :
+    action instanceof DocumentFirstPaint ? updatePallet(state) :
+    // If you goBack `DocumentFirstPaint` does not seem to fire there for
+    // we updatePallet again on LoadEnded to cover that as well.
+    action instanceof Progress.LoadEnded ? updatePallet(state) :
     state;
-
   exports.update = update;
