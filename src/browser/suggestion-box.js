@@ -132,7 +132,7 @@
       pointerEvents: 'none'
     },
     collapsed: {
-      visibility: 'collapse'
+      display: 'none'
     },
     suggestions: {
       color: 'rgba(0,0,0,0.7)',
