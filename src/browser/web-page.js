@@ -139,6 +139,7 @@
     action instanceof OverflowChanged && !state.overflow ? state.set('overflow', action.overflow) : // we don't want overflow to be set back to false
     action instanceof ThumbnailChanged ? state.set('thumbnail', action.image) :
     action instanceof MetaChanged ? updateMeta(state, action) :
+    action instanceof PageCardChanged ? updateCard(state, action) :
     action instanceof AnnounceCuratedColor ? updateTheme(state, action) :
     action instanceof Progress.LoadStarted ? Model({pallet: state.pallet}) :
     action instanceof DocumentFirstPaint ? updatePallet(state) :

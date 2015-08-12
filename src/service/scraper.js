@@ -375,20 +375,19 @@
 
   const script = `(${scrape})()`;
 
-  const readCard = (id, uri, {hero, title, description, name}) =>
-    WebView.Action({
-      id,
-      action: Page.PageCardChanged({uri, hero, title, description, name})
-    });
+  const readCard = (action, uri, {hero, title, description, name}) =>
+    action.set('action', Page.PageCardChanged({
+      uri, hero, title, description, name
+    }));
 
   const service = address => action => {
-    if (action instanceof WebView.Action &&
-        action.action instanceof Loader.LocationChanged)
-    {
+    const isWebViewAction = action instanceof WebView.ByID ||
+                            action instanceof WebView.BySelected;
+    if (isWebViewAction && action.action instanceof Loader.LocationChanged) {
       const iframe = document.getElementById(`web-view-${action.id}`);
       if (iframe && iframe.executeScript) {
         iframe.executeScript(script, {url: iframe.location})
-              .then(address.pass(readCard, action.id, action.action.uri));
+              .then(address.pass(readCard, action, action.action.uri));
       }
     }
 

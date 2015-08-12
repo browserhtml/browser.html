@@ -16,10 +16,12 @@
   const Security = require('./web-security');
   const Page = require('./web-page');
   const Loader = require('./web-loader');
+  const Selector = require('../common/selector');
 
   // Model
   const Model = Record({
     selected: Maybe(Number),
+    previewed: Maybe(Number),
     nextID: 0,
 
     loader: List(Loader.Model),
@@ -80,11 +82,6 @@
   }, 'WebViews.Open');
   exports.Open = Open;
 
-  const FadeToOpen = Record({
-    description: 'Transition to open-web-view mode with fade animation'
-  }, 'WebViews.FadeToOpen');
-  exports.FadeToOpen = FadeToOpen;
-
   const OpenInBackground = Record({
     uri: String,
     inBackground: true
@@ -96,34 +93,11 @@
   }, 'WebView.Close');
   exports.Close = Close;
 
-  const SelectByOffset = Record({
-    description: 'Select web-view by an offset',
-    offset: Number,
-    loop: true
-  }, 'WebViews.SelectByOffset');
-  exports.SelectByOffset = SelectByOffset;
-
   const SelectByID = Record({
     description: 'Select web-view by an id',
     id: String
   }, 'WebViews.SelectByID');
   exports.SelectByID = SelectByID;
-
-  const SelectByIndex = Record({
-    description: 'Select web-view by an index',
-    index: Number
-  }, 'WebViews.SelectByIndex');
-  exports.SelectByIndex = SelectByIndex;
-
-  const SelectNext = Record({
-    description: 'Select web view following selected one'
-  }, 'WebViews.SelectNext');
-  exports.SelectNext = SelectNext;
-
-  const SelectPrevious = Record({
-    description: 'Select web view preceeding selected one'
-  }, 'WebView.SelectPrevious');
-  exports.SelectPrevious = SelectPrevious;
 
   const {Load, LocationChanged} = Loader;
   const {CanGoBackChanged, CanGoForwardChanged} = Navigation;
@@ -133,13 +107,13 @@
          FirstPaint, DocumentFirstPaint,
          AnnounceCuratedColor, PageCardChanged} = Page;
   const {SecurityChanged} = Security;
-  const {VisibilityChanged} = Shell;
+  const {VisibilityChanged, ZoomIn, ZoomOut, ResetZoom} = Shell;
   const {Focus, Blur, Focused, Blured} = Focusable;
 
 
   // Just a union type for all possible actions that are targeted at specific
   // web view.
-  const WebViewAction = Union({
+  const Action = Union({
     Close, Open, OpenInBackground,
     // Loader
     Load, LocationChanged,
@@ -156,100 +130,71 @@
     // Shell
     VisibilityChanged,
     Focus, Blur, Focused, Blured,
+    ZoomIn, ZoomOut, ResetZoom,
     // Other
     Failure, ContextMenu, ModalPrompt, Authentificate
   });
-  exports.WebViewAction = WebViewAction;
+  exports.Action = Action;
 
   // Type contains `id` of the web-view and an `action` that is targeted
   // the web-view that has matching `id`. If `id` is `null` targets currently
   // selected web-view.
-  const Action = Record({
-    id: Maybe(String),
-    action: WebViewAction
-  }, 'WebView.Action');
-  exports.Action = Action;
+  const ByID = Record({
+    id: String,
+    action: Action
+  }, 'WebView.ByID');
+  exports.ByID = ByID;
 
+  const BySelected = Record({
+    action: Action
+  }, 'WebView.BySelected');
+  exports.BySelected = BySelected;
+
+  const Select = Record({
+    action: Selector.Action
+  }, 'WebView.Select');
+  exports.Select = Select;
+
+  const Preview = Record({
+    action: Selector.Action
+  }, 'WebView.Preview');
+  exports.Preview = Preview;
 
 
   // Update
 
 
   const indexByID = (state, id) =>
-    id === null ? state.selected :
-    id === void(0) ? state.selected :
-    id === '@selected' ? state.selected :
     state.loader.findIndex(loader => loader.id === id);
   exports.indexByID = indexByID;
 
-  const indexByOffset = (state, offset, loop) => {
-    const position = state.selected + offset;
-    const count = state.loader.size;
-    if (loop) {
-      const index = position - Math.trunc(position / count) * count
-      return index < 0 ? index + count :  index
-    } else {
-      return Math.min(count - 1, Math.max(0, position))
-    }
-  }
-  exports.indexByOffset = indexByOffset;
-
-  const selectByOffset = (state, offset, loop=true) =>
-    state.set('selected', indexByOffset(state, offset, loop));
-  exports.selectByOffset = selectByOffset;
-
-  const selectByID = (state, id) =>
-    state.set('selected', indexByID(state, id));
-  exports.selectByID = selectByID;
-
-  const selectByIndex = (state, index) =>
-    state.set('selected', index);
-  exports.selectByIndex = selectByIndex;
-
   // Transformers
 
-  const open = (state, {uri, inBackground}) => state.merge({
+  const open = (state, {uri, inBackground}) => activate(state.merge({
     nextID: state.nextID + 1,
-    selected: inBackground ? state.selected + 1: 0,
+    previewed: inBackground ? state.selected + 1 : 0,
     loader: state.loader.unshift(Loader.Model({uri, id: String(state.nextID)})),
     shell: state.shell.unshift(Shell.Model({isFocused: !inBackground})),
     page: state.page.unshift(Page.Model()),
     progress: state.progress.unshift(Progress.Model()),
     navigation: state.navigation.unshift(Navigation.Model()),
     security: state.security.unshift(Security.Model())
-  });
+  }));
   exports.open = open;
 
-  const close = state =>
-    closeByIndex(state, state.selected);
-  exports.close = close;
-
-  const closeByID = (state, id) =>
-    closeByIndex(state, indexByID(state, id));
-  exports.closeByID = closeByID;
-
   const closeByIndex = (state, index) =>
-    index === null ? state : state.merge({
-      selected: state.loader.size === 1 ?  null :
-                index === 0 ? 0 : index - 1,
-
+    index === null ? state : activate(state.merge({
+      previewed: state.loader.size === 1 ?  null :
+                 index === 0 ? 0 : index - 1,
       loader: state.loader.remove(index),
       shell: state.shell.remove(index),
       page: state.page.remove(index),
       progress: state.progress.remove(index),
       navigation: state.navigation.remove(index),
       security: state.security.remove(index)
-    });
+    }));
   exports.closeByIndex = closeByIndex;
 
-
-  const load = (state, action) =>
-    loadByIndex(state, state.selected, action);
-  exports.load = load;
-
-  const loadByID = (state, id, action) =>
-    loadByIndex(state, indexByID(id), action);
-  exports.loadByID = loadByID;
 
   const loadByIndex = (state, index, action) => {
     const loader = state.loader.get(index);
@@ -261,59 +206,62 @@
   };
   exports.loadByIndex = loadByIndex;
 
-
-  const updateByID = (state, id, action) =>
-    action instanceof Load ? loadByID(state, id, action) :
-    action instanceof Close ? closeByID(state, id) :
+  const updateByIndex = (state, n, action) =>
+    action instanceof Load ? loadByIndex(state, n, action) :
+    action instanceof Close ? closeByIndex(state, n, action) :
     action instanceof Open ? open(state, action) :
     action instanceof OpenInBackground ? open(state, action) :
-    updateByIndex(state, indexByID(state, id), action);
-  exports.updateByID = updateByID;
+    changeByIndex(state, n, action);
 
-  const updateByIndex = (state, n, action) => {
+
+  const changeByIndex = (state, n, action) => {
     const {loader, shell, page, progress, navigation, security} = state;
-    return n === null ? state : state.merge({
-     selected: action instanceof Focus ? n :
+    return n === null ? state : activate(state.merge({
+      selected: action instanceof Focus ? n :
                action instanceof Focused ? n :
                state.selected,
-     loader: loader.set(n, Loader.update(loader.get(n), action)),
-     shell: shell.set(n, Shell.update(shell.get(n), action)),
-     page: page.set(n, Page.update(page.get(n), action)),
-     progress: progress.set(n, Progress.update(progress.get(n), action)),
-     security: security.set(n, Security.update(security.get(n), action)),
-     navigation: navigation.set(n, Navigation.update(navigation.get(n), action))
-   });
- };
+      loader: loader.set(n, Loader.update(loader.get(n), action)),
+      shell: shell.set(n, Shell.update(shell.get(n), action)),
+      page: page.set(n, Page.update(page.get(n), action)),
+      progress: progress.set(n, Progress.update(progress.get(n), action)),
+      security: security.set(n, Security.update(security.get(n), action)),
+      navigation: navigation.set(n, Navigation.update(navigation.get(n), action))
+    }));
+  };
+
+  const updateSelected = (state, action) =>
+    updateByIndex(state, state.selected, action);
+
+  const activate = state =>
+    state.set('selected', state.previewed);
+  exports.activate = activate;
+
+  const select = (state, action) =>
+    activate(state.set('previewed',
+                       Selector.indexOf(state.selected,
+                                        state.loader.size,
+                                        action)));
+  exports.select = select;
+
+  const preview = (state, action) =>
+    state.set('previewed', Selector.indexOf(state.previewed,
+                                            state.loader.size,
+                                            action));
+  exports.preview = preview;
 
   const update = (state, action) =>
-    action instanceof Load ?
-      load(state, action) :
+    action instanceof Select ?
+      select(state, action.action) :
+    action instanceof Preview ?
+      preview(state, action.action) :
+    action instanceof ByID ?
+      updateByIndex(state, indexByID(state, action.id), action.action) :
+    action instanceof BySelected ?
+      updateByIndex(state, state.selected, action.action) :
     action instanceof Open ?
       open(state, action) :
     action instanceof OpenInBackground ?
       open(state, action) :
-    action instanceof Close ?
-      close(state) :
-    action instanceof SelectByIndex ?
-      selectByIndex(state, action.index) :
-    action instanceof SelectByID ?
-      selectByID(state, action.id) :
-    action instanceof SelectByOffset ?
-      selectByOffset(state, action.offset, action.loop) :
-    action instanceof SelectNext ?
-      selectByOffset(state, 1) :
-    action instanceof SelectPrevious ?
-      selectByOffset(state, -1) :
-    // @TODO we explicitly tie ZoomIn/ZoomOut actions to selected webview.
-    // It may make more sense in future to include an ID with the action model.
-    action instanceof Shell.ResetZoom ?
-      updateByID(state, '@selected', action) :
-    action instanceof Shell.ZoomIn ?
-      updateByID(state, '@selected', action) :
-    action instanceof Shell.ZoomOut ?
-      updateByID(state, '@selected', action) :
-    action instanceof Action ?
-      updateByID(state, action.id, action.action) :
     state;
   exports.update = update;
 
@@ -457,7 +405,7 @@
              shell.get(index),
              page.get(index).thumbnail,
              index === selected,
-             address.forward(action => Action({id: loader.id, action})))));
+             address.forward(action => ByID({id: loader.id, action})))));
   exports.view = view;
 
   // Actions that web-view produces but `update` does not handles.

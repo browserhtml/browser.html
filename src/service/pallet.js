@@ -64,15 +64,15 @@
   exports.AnnounceCuratedColor = AnnounceCuratedColor;
 
   const service = address => action => {
-    if (action instanceof WebView.Action &&
-        action.action instanceof Loader.LocationChanged) {
+    const isWebViewAction = action instanceof WebView.ByID ||
+                            action instanceof WebView.BySelected;
+    if (isWebViewAction && action.action instanceof Loader.LocationChanged) {
       const hostname = URI.getDomainName(action.action.uri);
       const theme = curated[hostname];
       if (theme) {
-        address.receive(WebView.Action({
-          id: action.id,
-          action: AnnounceCuratedColor({color: theme.join('|')})
-        }));
+        address.receive(action.set('action', AnnounceCuratedColor({
+          color: theme.join('|')
+        })));
       }
     }
     return action

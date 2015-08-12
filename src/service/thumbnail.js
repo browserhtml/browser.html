@@ -42,18 +42,17 @@
   // service
 
   const service = address => action => {
-    if (action instanceof WebView.Action &&
-        action.action instanceof Loader.LocationChanged) {
+    const isWebViewAction = action instanceof WebView.ByID ||
+                            action instanceof WebView.BySelected;
+    if (isWebViewAction && action.action instanceof Loader.LocationChanged) {
       const iframe = document.getElementById(`web-view-${action.id}`);
       const uri = iframe.location;
       const id = action.id;
       if (iframe) {
-        fetchScreenshot(iframe).then(address.pass(blob => WebView.Action({
-          id,
-          action: Page.ThumbnailChanged({
+        fetchScreenshot(iframe).then(address.pass(blob =>
+          action.set('action', Page.ThumbnailChanged({
             uri, image: URL.createObjectURL(blob)
-          })
-        })));
+          }))));
       }
     }
 

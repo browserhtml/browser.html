@@ -18,6 +18,7 @@
   const Scraper = require('../service/scraper');
   const Navigation = require('../service/navigation');
   const Gesture = require('../service/gesture');
+  const SynthesisUI = require('./synthesis-ui');
 
   // Set up a address (message bus if you like) that will be used
   // as an address for all application components / services. This
@@ -34,6 +35,7 @@
       settings(action);
       scraper(action);
       navigation(action);
+      synthesis(action);
     }
   });
   window.address = address;
@@ -57,6 +59,7 @@
   const scraper = Scraper.service(address);
   const navigation = Navigation.service(address);
   const gesture = Gesture.service(address);
+  const synthesis = SynthesisUI.service(address);
 
   // Restore application state.
   address.receive(Session.RestoreSession());

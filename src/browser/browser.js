@@ -28,6 +28,7 @@
   const Navigation = require('../service/navigation');
   const SynthesisUI = require('./synthesis-ui');
   const DevtoolsHUD = require('./devtools-hud');
+  const Selector = require('../common/selector');
 
   // Model
   const Model = Record({
@@ -48,32 +49,33 @@
   const modifier = OS.platform() == 'linux' ? 'alt' : 'accel';
   const KeyDown = KeyBindings({
     'accel l': _ => Input.Action({action: Focusable.Focus()}),
-    'accel t': _ => WebView.FadeToOpen(),
-    'accel 0': _ => Shell.ResetZoom(),
-    'accel -': _ => Shell.ZoomOut(),
-    'accel =': _ => Shell.ZoomIn(),
-    'accel shift =': _ => Shell.ZoomIn(),
-    'accel w': _ => WebView.Action({action: WebView.Close()}),
-    'accel shift ]': _ => WebView.SelectNext(),
-    'accel shift [': _ => WebView.SelectPrevious(),
-    'control tab': _ => WebView.SelectNext(),
-    'control shift tab': _ => WebView.SelectPrevious(),
+    'accel t': _ => SynthesisUI.OpenNew(),
+    'accel 0': _ => WebView.BySelected({action: Shell.ResetZoom()}),
+    'accel -': _ => WebView.BySelected({action: Shell.ZoomOut()}),
+    'accel =': _ => WebView.BySelected({action: Shell.ZoomIn()}),
+    'accel shift =': _ => WebView.BySelected({action: Shell.ZoomIn()}),
+    'accel w': _ => WebView.BySelected({action: WebView.Close()}),
+    'accel shift ]': _ => WebView.Preview({action: Selector.Next()}),
+    'accel shift [': _ => WebView.Preview({action: Selector.Previous()}),
+    'control tab': _ => WebView.Preview({action: Selector.Next()}),
+    'control shift tab': _ => WebView.Preview({action: Selector.Previous()}),
     'accel shift backspace': _ => Session.ResetSession(),
     'accel shift s': _ => Session.SaveSession(),
     'accel r': _ => Navigation.Reload(),
     'escape': _ => Navigation.Stop(),
-    'F12': _ => DevtoolsHUD.ToggleDevtoolsHUD(),
+    [`${modifier} left`]: _ => Navigation.GoBack(),
+    [`${modifier} right`]: _ => Navigation.GoForward(),
+
     // TODO: `meta alt i` generates `accel alt i` on OSX we need to look
     // more closely into this but so declaring both shortcuts should do it.
     'accel alt i': _ => DevtoolsHUD.ToggleDevtoolsHUD(),
     'accel alt ˆ': _ => DevtoolsHUD.ToggleDevtoolsHUD(),
-    [`${modifier} left`]: _ => Navigation.GoBack(),
-    [`${modifier} right`]: _ => Navigation.GoForward()
+    'F12': _ => DevtoolsHUD.ToggleDevtoolsHUD()
   }, 'Browser.KeyDown.Action');
 
   const KeyUp = KeyBindings({
-    'control': _ => SynthesisUI.Select(),
-    'accel': _ => SynthesisUI.Select(),
+    'control': _ => SynthesisUI.ShowSelected(),
+    'accel': _ => SynthesisUI.ShowSelected(),
   }, 'Browser.KeyUp.Action');
 
 
@@ -134,7 +136,7 @@
   // View
 
   const OpenWindow = event =>
-    WebView.Action({action: WebView.Open({uri: event.detail.url}) });
+    WebView.Open({uri: event.detail.url});
 
   const view = (state, address) => {
     const {shell, webViews, input, suggestions, mode} = state;
@@ -177,7 +179,7 @@
       render('LocationBar', LocationBar.view,
         state.mode, loader, security, page, input, suggestions, address),
       render('Preview', Preview.view,
-        state.mode, webViews.loader, webViews.page, webViews.selected, theme, address),
+        state.mode, webViews.loader, webViews.page, webViews.previewed, theme, address),
       render('Suggestions', Suggestions.view,
         state.mode, suggestions, input, address),
       html.div({

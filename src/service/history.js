@@ -80,7 +80,8 @@
                             action: action.toJSON()});
       }
 
-      if (action instanceof WebView.Action) {
+      if (action instanceof WebView.ByID ||
+          action instanceof WebView.BySelected) {
         handleAction(action)
       }
     }
