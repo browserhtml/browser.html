@@ -5,6 +5,7 @@
 
 const {Page, History} = require('../common/history');
 const {async} = require('../lang/task');
+const URI = require('../common/url-helper');
 
 // Calculates the score for use in suggestions from
 // a result array `match` of `RegExp#exec`.
@@ -25,14 +26,14 @@ const Pattern = (input, flags="i") => {
     return RegExp(input, flags)
   } catch (error) {
     if (error instanceof SyntaxError) {
-      return RegExp(pattern.escape(input), flags)
+      return RegExp(Pattern.escape(input), flags)
     }
     throw error
   }
 }
 Pattern.escape = input => input.replace(/[\.\?\*\+\^\$\|\(\)\{\[\]\\]/g, '\\$&')
 
-
+  const isTopHit = page => page.isTopHit;
 
   const pageSearch = async(function*(db, {id, input, limit}) {
     const {rows} = yield db.query({docs: true, type: 'Page'});
@@ -40,9 +41,12 @@ Pattern.escape = input => input.replace(/[\.\?\*\+\^\$\|\(\)\{\[\]\\]/g, '\\$&')
     // scoring will take into consideration the length of the match so if we match
     // multiple words that gets larger score then if we matched just one.
 
-    const query = Pattern(input.split(/\s+/g).join('[\\s\\S]+') +
-                          '|' + input.split(/\s+/g).join('|'));
+    const terms = input.split(/\s+/g);
+    const domainQuery = terms.length === 1 ? Pattern(terms[0]) : null;
+    const query = Pattern(terms.join('[\\s\\S]+') + '|' + terms.join('|'));
     const matches = rows.map(({doc: page}) => {
+      const domain = URI.getDomainName(page.uri);
+
       // frequency score is ranked from 0-1 not based on quality of
       // match but solely on how often this page has been visited in the
       // past.
@@ -51,11 +55,14 @@ Pattern.escape = input => input.replace(/[\.\?\*\+\^\$\|\(\)\{\[\]\\]/g, '\\$&')
       // and match index.
       const titleScore = score(query, page.title);
       const uriScore = score(query, page.uri);
+      const domainScore = domainQuery ? score(domainQuery, domain) : 0;
 
       // Store each score just for debuging purposes.
       page.frequencyScore = frequencyScore;
       page.titleScore = titleScore;
+      page.domainScore = domainScore;
       page.uriScore = uriScore;
+      page.domain = domain;
 
       // Total score is ranked form `-1` to `1`. Score is devided into
       // 15 slots and individual field get's different weight based of
@@ -68,9 +75,11 @@ Pattern.escape = input => input.replace(/[\.\?\*\+\^\$\|\(\)\{\[\]\\]/g, '\\$&')
       // query arguments (probably would make sense to score query arguments &
       // uri hash separately so they weight less, althouh since scoring is length
       // and index based match in query already get's scored less).
-      page.score = frequencyScore * 7/15 +
-                   titleScore * 5/15 +
-                   uriScore * 3/15;
+      page.score = frequencyScore * 6/15 +
+                   titleScore * 3/15 +
+                   uriScore * 2/15 +
+                   domainScore * 4/15;
+      page.isTopHit = domainQuery && domain.startsWith(domainQuery.source);
 
       return page;
     })
@@ -79,12 +88,17 @@ Pattern.escape = input => input.replace(/[\.\?\*\+\^\$\|\(\)\{\[\]\\]/g, '\\$&')
     .sort((a, b) =>
       a.score > b.score ? -1 :
       a.score < b.score ? 1 :
-      0)
-    .slice(0, limit);
+      0);
 
+    const topIndex = matches.findIndex(isTopHit);
+    const topHit = topIndex < 0 ? null :
+                   matches.splice(topIndex, 1)[0];
     return {
       type: 'PageResult',
-      action: {id, results: matches}
+      action: {
+        id, topHit,
+        matches: matches.slice(0, limit)
+      }
     };
   });
 
@@ -113,7 +127,7 @@ Pattern.escape = input => input.replace(/[\.\?\*\+\^\$\|\(\)\{\[\]\\]/g, '\\$&')
 
     if (type === 'IconChanged') {
       history.edit(Page.from({uri: action.uri}),
-                   page => page.set('icon', action.icon));
+                   page => page.set('icon', action.icon.href));
     }
 
     if (type === 'PageQuery') {

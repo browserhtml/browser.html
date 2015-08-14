@@ -17,6 +17,7 @@
   const Page = require('./web-page');
   const Loader = require('./web-loader');
   const Selector = require('../common/selector');
+  const Force = require('../service/force');
 
   // Model
   const Model = Record({
@@ -76,6 +77,7 @@
   exports.Authentificate = Authentificate;
 
   const Open = Record({
+    opener: Any,
     uri: Maybe(String),
     name: '_blank',
     features: ''
@@ -170,10 +172,13 @@
 
   // Transformers
 
-  const open = (state, {uri, inBackground}) => activate(state.merge({
+  const open = (state, {uri, inBackground, opener}) => activate(state.merge({
     nextID: state.nextID + 1,
     previewed: inBackground ? state.selected + 1 : 0,
-    loader: state.loader.unshift(Loader.Model({uri, id: String(state.nextID)})),
+    loader: state.loader.unshift(Loader.Model({
+      uri, opener,
+      id: String(state.nextID),
+    })),
     shell: state.shell.unshift(Shell.Model({isFocused: !inBackground})),
     page: state.page.unshift(Page.Model()),
     progress: state.progress.unshift(Progress.Model()),
@@ -202,7 +207,7 @@
             open(state, action) :
            loader.uri && (URI.getOrigin(loader.uri) !== URI.getOrigin(action.uri)) ?
             open(state, action) :
-            updateByIndex(state, index, Loader.Load(action));
+            changeByIndex(state, index, action);
   };
   exports.loadByIndex = loadByIndex;
 
@@ -298,6 +303,7 @@
     return IFrame.view({
       id: `web-view-${loader.id}`,
       uri: location,
+      opener: loader.opener,
       className: `web-view ${isSelected ? 'selected' : ''}`,
       // This is a workaround for Bug #266 that prevents capturing
       // screenshots if iframe or it's ancesstors have `display: none`.
@@ -405,7 +411,13 @@
              shell.get(index),
              page.get(index).thumbnail,
              index === selected,
-             address.forward(action => ByID({id: loader.id, action})))));
+             address.forward(action =>
+               // If action is boxed in Force.Action we want to keep it
+               // that way.
+               action instanceof Force.Action ?
+                action.set('action', ByID({id: loader.id,
+                                           action: action.action})) :
+                ByID({id: loader.id, action})))));
   exports.view = view;
 
   // Actions that web-view produces but `update` does not handles.
@@ -421,20 +433,30 @@
   Event.mozbrowserfirstpaint = event =>
     FirstPaint();
 
-  Event.mozbrowserlocationchange = ({detail: uri}) =>
-    LocationChanged({uri});
+  Event.mozbrowserlocationchange = ({detail: uri, timeStamp}) =>
+    LocationChanged({uri, timeStamp});
 
   // TODO: Figure out what's in detail
   Event.mozbrowserclose = ({detail}) =>
     Close();
 
   Event.mozbrowseropenwindow = ({detail}) =>
-    Open({uri: detail.url,
-          name: detail.name,
-          features: detail.features});
+    Force.Action({
+      action: Open({
+        uri: detail.url,
+        opener: IFrame.Opener(detail.frameElement),
+        name: detail.name,
+        features: detail.features
+      })
+    });
 
   Event.mozbrowseropentab = ({detail}) =>
-    OpenInBackground({uri: detail.url});
+    Force.Action({
+      action: OpenInBackground({
+        uri: detail.url,
+        opener: IFrame.Opener(detail.frameElement),
+      })
+    });
 
   // TODO: Figure out what's in detail
   Event.mozbrowsercontextmenu = ({detail}) =>
@@ -468,10 +490,10 @@
 
 
   Event.mozbrowserloadstart = ({target, timeStamp}) =>
-    LoadStarted({uri: target.location});
+    LoadStarted({uri: target.location, timeStamp});
 
   Event.mozbrowserloadend = ({target, timeStamp}) =>
-    LoadEnded({uri: target.location});
+    LoadEnded({uri: target.location, timeStamp});
 
   Event.mozbrowsertitlechange = ({target, detail: title}) =>
     TitleChanged({uri: target.location, title});

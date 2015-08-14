@@ -19,6 +19,7 @@
   const Navigation = require('../service/navigation');
   const Gesture = require('../service/gesture');
   const SynthesisUI = require('./synthesis-ui');
+  const Force = require('../service/force');
 
   // Set up a address (message bus if you like) that will be used
   // as an address for all application components / services. This
@@ -26,6 +27,16 @@
   // application component for it handle it.
   const address = new Address({
     receive(action) {
+      // This is unfortunate hack to workaround gecko issues: #566, #565, #564
+      // Basic idea is that actions that need to happen in the same tick are
+      // boxed with `Force({action})`. Such actions are unboxed and render
+      // is forced at the end of the receive. This is likey to introduce some
+      // race conditions but for now that's the best we can do.
+      const isForced = action instanceof Force.Action;
+      if (isForced) {
+        action = action.action;
+      }
+
       application.receive(action);
       thumbnail(action);
       pallet(action);
@@ -36,6 +47,13 @@
       scraper(action);
       navigation(action);
       synthesis(action);
+
+      // We cancel scheduled render on next animation frame as we are
+      // forceing render to happen right away.
+      if (isForced) {
+        cancelAnimationFrame(application.version);
+        application.render();
+      }
     }
   });
   window.address = address;

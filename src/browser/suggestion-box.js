@@ -11,6 +11,7 @@
   const {StyleSheet, Style} = require('../common/style');
   const ClassSet = require('../common/class-set');
   const Loader = require('./web-loader');
+  const WebView = require('./web-view');
   const History = require('../service/history');
   const Search = require('../service/search');
 
@@ -18,12 +19,15 @@
 
   const Suggestion = Union({
     Search: Search.Match,
-    Page: History.PageMatch
+    Page: History.PageMatch,
+    TopHit: History.TopHit
   }, 'Suggestion');
   exports.Suggestion = Suggestion;
 
+  const Suggestions = List(Suggestion, 'Suggestions');
+
   const Model = Record({
-    entries: List(Suggestion),
+    entries: Suggestions,
     selected: -1
   }, 'Suggestions');
   exports.Model = Model;
@@ -75,22 +79,29 @@
 
 
   const isntSearch = entry => !(entry instanceof Search.Match);
-  const isntPage = entry => !(entry instanceof History.PageMatch);
+  const isntPage = entry =>
+    !(entry instanceof History.PageMatch) &&
+    !(entry instanceof History.TopHit);
+
 
   const updateSearch = (state, {results: matches}) => {
     const entries = state.entries.filter(isntSearch);
     const half = Math.floor(MAX_RESULTS / 2);
     const count = Math.min(matches.count(),
                            MAX_RESULTS - Math.min(half, entries.count()));
+    const results = entries.take(count);
+    const searches = matches.slice(0, count);
 
     return state.merge({
       selected: -1,
-      entries: entries.take(count)
-                      .concat(matches.slice(0, count))
+      entries: results.first() instanceof History.TopHit ?
+        results.take(1).concat(searches).concat(results.skip(1)) :
+        results.unshift(...searches)
     });
   };
 
-  const updatePage = (state, {results: matches}) => {
+  const noTop = [];
+  const updatePage = (state, {matches, topHit}) => {
     const entries = state.entries.filter(isntPage);
     const half = Math.floor(MAX_RESULTS / 2);
     const count = Math.min(matches.count(),
@@ -99,7 +110,12 @@
 
     return state.merge({
       selected: -1,
-      entries: entries.unshift(...pages)
+      entries: topHit ? entries.take(count)
+                               .unshift(topHit)
+                               .push(...pages)
+                               .take(MAX_RESULTS + 1) :
+               entries.take(count)
+                      .push(...pages)
                       .take(MAX_RESULTS)
     });
   };
@@ -150,14 +166,7 @@
     },
     suggestion: {
       lineHeight: '30px',
-      paddingLeft: 30,
-      paddingRight: 10,
-      verticalAlign: 'middle',
-      cursor: 'pointer',
-      overflow: 'hidden',
-      // Contains absolute elements
-      position: 'relative',
-      textOverflow: 'ellipsis',
+      cursor: 'pointer'
     },
     selected: {
       backgroundColor: '#4A90E2',
@@ -169,11 +178,28 @@
     selectedDark: {
       backgroundColor: 'rgba(255,255,255,0.15)'
     },
-    prefix: {
+    topHit: {
+      lineHeight: '40px',
+      fontSize: '110%'
+    },
+    icon: {
+      float: 'left',
+      width: '32px',
+      textAlign: 'center',
+      margin: '0 5px',
+      background: 'no-repeat 50% 50% none'
+    },
+    iconSymbol: {
       fontSize: '16px',
       fontFamily: 'FontAwesome',
-      position: 'absolute',
-      left: 9
+      whiteSpace: 'pre'
+    },
+    text: {
+      fontSize: 'inherit',
+      overflow: 'hidden',
+      // Contains absolute elements
+      position: 'relative',
+      textOverflow: 'ellipsis',
     }
   });
 
@@ -185,27 +211,42 @@
 
   const Icon = {
     'search': SEARCH_ICON,
-    'history': HISTORY_ICON
+    'history': HISTORY_ICON,
+    'topHit': ' '
   };
+
+  const Load = state => WebView.BySelected({
+    action: Loader.Load(state)
+  });
 
   const viewSuggestion = (state, selected, index, address) => {
     const type = state instanceof History.PageMatch ? 'history' :
                  state instanceof Search.Match ? 'search' :
+                 state instanceof History.TopHit ? 'topHit' :
                  null;
 
     const text = type == 'search' ?
       state.title : `${state.title} — ${getDomainName(state.uri)}`;
 
-    return html.p({
-      style: Style(style.suggestion, index == selected && style.selected),
-      onMouseDown: address.pass(Loader.Load, state)
+    return html.li({
+      key: 'sugession',
+      style: Style(style.suggestion,
+                   index == selected && style.selected,
+                   style[type]),
+      onMouseDown: address.pass(Load, state)
     }, [
-      html.span({
-        key: 'suggestionprefix',
-        style: style.prefix,
-      }, Icon[type] || ''),
-      html.span({
-        key: 'suggestion'
+      html.figure({
+        key: 'icon',
+        style: Style(style.icon,
+                     state.icon && {backgroundImage: `url(${state.icon})`})
+      }, [
+        html.figcaption({
+          style: style.iconSymbol
+        }, Icon[type])
+      ]),
+      html.p({
+        key: 'text',
+        style: style.text
       }, text)
     ]);
   };
@@ -217,12 +258,12 @@
   exports.isSuggesting = isSuggesting;
 
   const view = (mode, state, input, address) =>
-    html.div({
+    html.menu({
       key: 'suggestionscontainer',
       style: Style(style.container,
                    !isSuggesting(input, state) && style.collapsed)
     }, [
-      html.div({
+      html.ul({
         key: 'suggestions',
         style: style.suggestions
       }, state.entries.map((entry, index) => {

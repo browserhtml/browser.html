@@ -237,7 +237,7 @@ have a following structure.
       spawn.call(this, function*() {
         const imported = yield read(this.db, PopularSitesImported());
         if (!imported.value) {
-          const request = yield fetch('src/alexa.json');
+          const request = yield fetch('../../src/alexa.json');
           const sites = yield request.json();
 
           const tasks = sites.map(site =>

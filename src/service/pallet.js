@@ -24,7 +24,8 @@
     'daringfireball.net': ['#4a525a', '#fff'],
     'firewatchgame.com': ['#2d102b', '#ef4338'],
     'whatliesbelow.com': ['#74888b', '#fff', ],
-    'supertimeforce.com': ['#051224', '#2ebcec']
+    'supertimeforce.com': ['#051224', '#2ebcec'],
+    'github.com': ['rgb(245, 245, 245), rgb(51, 51, 51)']
   };
 
   const Color = String;

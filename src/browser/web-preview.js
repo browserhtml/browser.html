@@ -11,6 +11,7 @@
   const {getDomainName} = require('../common/url-helper');
   const Favicon = require('../common/favicon');
   const Selector = require('../common/selector');
+  const Theme = require('./theme');
 
   const Create = Record({
     description: 'Create a new web view'
@@ -70,7 +71,7 @@
       margin: '0 10px',
       overflow: 'hidden',
       position: 'relative',
-      'scroll-snap-coordinate': '50% 50%',
+      'scrollSnapCoordinate': '50% 50%',
       width: '240px'
     },
     ghost: {
@@ -84,7 +85,7 @@
     header: {
       height: '24px',
       lineHeight: '24px',
-      margin: '0px 24px 0px 10px',
+      padding: '0px 24px 0px 10px',
       overflow: 'hidden',
       position: 'relative',
       textOverflow: 'ellipsis',
@@ -147,10 +148,13 @@
     }
   });
 
-  const viewContentsHeroTitleDescription = (name, icon, hero, title, description) => [
+  const viewContentsHeroTitleDescription = (name, icon, hero, title, description, theme) => [
     html.header({
         key: 'header',
-        style: stylePreview.header,
+        style: Style(stylePreview.header, {
+          backgroundColor: theme.shell,
+          color: theme.shellText
+        }),
       }, name),
     html.span({
       key: 'icon',
@@ -182,10 +186,13 @@
     }, description)
   ];
 
-  const viewContentsScreenshot = (name, icon, screenshot) => [
+  const viewContentsScreenshot = (name, icon, screenshot, theme) => [
     html.header({
         key: 'header',
-        style: stylePreview.header,
+        style: Style(stylePreview.header, {
+          backgroundColor: theme.shell,
+          color: theme.shellText
+        }),
       }, name),
     html.span({
       key: 'icon',
@@ -213,13 +220,13 @@
     const hero = page.hero.get(0);
     const title = page.label || page.title;
     const name = page.name || getDomainName(loader.uri);
-
+    const theme = Theme.read(page.pallet);
     const icon = page.faviconURL || Favicon.getFallback(loader.uri);
 
     const previewContents =
       hero && title && page.description ?
-        viewContentsHeroTitleDescription(name, icon, hero, title, page.description) :
-        viewContentsScreenshot(name, icon, page.thumbnail);
+        viewContentsHeroTitleDescription(name, icon, hero, title, page.description, theme) :
+        viewContentsScreenshot(name, icon, page.thumbnail, theme);
 
     return html.div({
       className: 'card',

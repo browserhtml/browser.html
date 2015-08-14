@@ -18,11 +18,13 @@
 
   const LoadStarted = Record({
     uri: String,
+    timeStamp: Number
   }, 'Progress.LoadStarted');
   exports.LoadStarted = LoadStarted;
 
   const LoadEnded = Record({
     uri: String,
+    timeStamp: Number
   }, 'Progress.LoadEnded');
   exports.LoadEnded = LoadEnded;
 

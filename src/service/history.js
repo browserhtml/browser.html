@@ -9,6 +9,13 @@
   const Page = require('../browser/web-page');
   const WebView = require('../browser/web-view');
 
+  const TopHit = Record({
+    title: Maybe(String),
+    icon: Maybe(String),
+    uri: String
+  }, 'History.TopHit');
+  exports.TopHit = TopHit;
+
   const PageMatch = Record({
     title: Maybe(String),
     uri: String,
@@ -16,10 +23,10 @@
   }, 'History.PageMatch');
   exports.PageMatch = PageMatch;
 
-
   const PageResult = Record({
     id: String,
-    results: List(PageMatch, 'History.PageResult')
+    topHit: Maybe(TopHit),
+    matches: List(PageMatch, 'History.PageResult')
   });
   exports.PageResult = PageResult;
 

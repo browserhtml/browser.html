@@ -119,3 +119,4 @@ gulp.task('watch', [
 
 gulp.task('develop', ['watch', 'server', 'application']);;
 gulp.task('default', ['develop']);
+gulp.task('build-server', ['watch', 'server'])

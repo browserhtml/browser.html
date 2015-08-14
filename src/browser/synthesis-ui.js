@@ -112,7 +112,9 @@
   const navigate = (state, value) => {
     const uri = URI.read(value);
     const webViews = state.mode === 'edit-web-view' ?
-      WebView.load(state.webViews, {uri}) :
+      WebView.loadByIndex(state.webViews,
+                          state.webViews.selected,
+                          {uri}) :
       WebView.open(state.webViews, {uri});
 
     return state.set('webViews', webViews);

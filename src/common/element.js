@@ -15,9 +15,32 @@
   const isConstractorHook = field => field && field.construct;
 
   class ElementView extends React.Component {
-    constructor() {
-      super(...arguments);
+    static create(type, fields={}) {
+      // In react you can actually define custom HTML element it's
+      // just set of attributes you'll be able to set will be limited
+      // to React's white list. To workaround that we define React
+      // custom HTML element factory & custom react component that
+      // will render that HTML element via custom factory.
 
+      const keys = Object.keys(fields);
+      const mount = keys.filter(key => isPreMountHook(fields[key]));
+      const mounted = keys.filter(key => isPostMountHook(fields[key]));
+      const write = keys.filter(key => isUpdateHook(fields[key]));
+      const construct = keys.filter(key => isConstractorHook(fields[key]));
+
+      return (model, children) =>
+        React.createElement(this, {
+          model, type,
+          key: model.key || model.id,
+          fields,
+          mount, mounted, write
+        }, children);
+    }
+    constructor(props, context) {
+      super(props, context);
+      this.setup();
+    }
+    setup() {
       const {type, fields, mount, mounted, write} = this.props;
       const hooks = Object.create(null);
 
@@ -32,40 +55,53 @@
       this.displayName = `html:${type}`
       this.state = hooks;
     }
-    // Reflect attributes not recognized by react.
+    getMountTarget() {
+      return React.findDOMNode(this);
+    }
     componentDidMount() {
-      const node = React.findDOMNode(this);
-      const {model, mount, mounted} = this.props;
-      const hooks = this.state;
+      const node = this.getMountTarget();
+      const {mount} = this.props;
+
+      this.mount();
 
       if (mount.length > 0) {
-        for (var key of mount) {
-          const hook = hooks[key];
-          const value = model[key];
-          hook.mount(node, value);
-        }
-
-        // Pre mount fields need to be set before node
+        // mount fields need to be set before node
         // is in the document. Since react does not has
         // an appropriate hook we replace node with itself
         // to trigger desired behavior.
         node.parentNode.replaceChild(node, node);
       }
 
+      this.mounted();
+    }
+    mount() {
+      const {model, mount} = this.props;
+      const hooks = this.state;
+
+      for (var key of mount) {
+        const hook = hooks[key];
+        const value = model[key];
+        hook.mount(this.getMountTarget(), value);
+      }
+    }
+    // Reflect attributes not recognized by react.
+    mounted() {
+      const {model, mounted} = this.props;
+      const hooks = this.state;
+
       for (var key of mounted) {
         const hook = hooks[key];
-        hook.mounted(node, model[key]);
+        hook.mounted(this.getMountTarget(), model[key]);
       }
     }
     // Reflect attribute changes not recognized by react.
     componentDidUpdate({model: past}) {
-      const node = React.findDOMNode(this);
       const {model, write} = this.props;
       const hooks = this.state;
 
       for (var key of write) {
         const hook = hooks[key];
-        hook.write(node, model[key], past[key]);
+        hook.write(this.getMountTarget(), model[key], past[key]);
       }
     }
     // Render renders wrapped HTML node.
@@ -75,27 +111,8 @@
     }
   }
 
-  const Element = (type, fields={}) => {
-    // In react you can actually define custom HTML element it's
-    // just set of attributes you'll be able to set will be limited
-    // to React's white list. To workaround that we define React
-    // custom HTML element factory & custom react component that
-    // will render that HTML element via custom factory.
-
-    const keys = Object.keys(fields);
-    const mount = keys.filter(key => isPreMountHook(fields[key]));
-    const mounted = keys.filter(key => isPostMountHook(fields[key]));
-    const write = keys.filter(key => isUpdateHook(fields[key]));
-    const construct = keys.filter(key => isConstractorHook(fields[key]));
-
-    return (model, children) =>
-      React.createElement(ElementView, {
-        model, type,
-        key: model.key || model.id,
-        fields,
-        mount, mounted, write
-      }, children);
-  };
+  const Element = (type, fields={}) =>
+    ElementView.create(type, fields);
 
   // BeforeAppendAttribute can be used to define attribute on the
   // element that is set once before element is inserted into a
@@ -294,6 +311,7 @@
 
   // Exports:
 
+  exports.ElementView = ElementView;
   exports.isPreMountHook = isPreMountHook;
   exports.isPostMountHook = isPostMountHook;
   exports.isUpdateHook = isUpdateHook;

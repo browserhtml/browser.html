@@ -30,7 +30,8 @@
     "server": "gulp server",
     "client": "gulp client",
     "deploy": "./.bin/deploy.sh",
-    "build": "NODE_ENV=production gulp build"
+    "build": "NODE_ENV=production gulp build",
+    "build-server": "gulp build-server"
   },
   "dependencies": {
     "immutable": "3.7.0",
