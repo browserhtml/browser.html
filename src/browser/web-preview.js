@@ -77,10 +77,17 @@
     ghost: {
       backgroundColor: 'transparent',
       border: '3px dashed rgba(255, 255, 255, 0.2)',
-      boxShadow: 'none'
+      boxShadow: 'none',
+      opacity: 1,
+      transform: 'scale(1)',
+      transition: 'opacity 100ms linear, transform 80ms linear'
+    },
+    disappear: {
+      opacity: 0,
+      transform: 'scale(0.9)',
     },
     selected: {
-      boxShadow: '0 0 0 6px #4A90E2'
+      transform: 'scale(1.05)'
     },
     header: {
       height: '24px',
@@ -223,10 +230,13 @@
   };
   exports.viewPreview = viewPreview;
 
-  const ghostPreview = html.div({
-    className: 'card',
-    style: Style(stylePreview.card, stylePreview.ghost)
-  });
+  const viewGhost = (isVisible) =>
+    html.div({
+      className: 'card',
+      style: Style(stylePreview.card,
+                   stylePreview.ghost,
+                   !isVisible && stylePreview.disappear)
+    });
 
   const style = StyleSheet.create({
     scroller: {
@@ -273,14 +283,14 @@
       })}, children)
     ]);
 
-  const viewInEditMode = (loaders, pages, selected, theme, address) =>
-    viewContainer(theme, ghostPreview, ...viewPreviews(loaders, pages, selected, address));
+  const viewInEditMode = (loaders, pages, isInputFocused, selected, theme, address) =>
+    viewContainer(theme, ...viewPreviews(loaders, pages, selected, address));
 
-  const viewInCreateMode = (loaders, pages, selected, theme, address) =>
+  const viewInCreateMode = (loaders, pages, isInputFocused, selected, theme, address) =>
     // Pass selected as `-1` so none is highlighted.
-    viewContainer(theme, ghostPreview, ...viewPreviews(loaders, pages, -1, address));
+    viewContainer(theme, viewGhost(isInputFocused), ...viewPreviews(loaders, pages, -1, address));
 
   const view = (mode, ...etc) =>
-    mode === 'create-web-view' ? viewInCreateMode(...etc) :
-    viewInEditMode(...etc);
+    mode === 'select-web-view' ? viewInEditMode(...etc) :
+    viewInCreateMode(...etc);
   exports.view = view;

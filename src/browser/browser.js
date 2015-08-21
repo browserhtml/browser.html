@@ -179,7 +179,7 @@
       render('LocationBar', LocationBar.view,
         state.mode, loader, security, page, input, suggestions, address),
       render('Preview', Preview.view,
-        state.mode, webViews.loader, webViews.page, webViews.previewed, theme, address),
+        state.mode, webViews.loader, webViews.page, input.isFocused, webViews.previewed, theme, address),
       render('Suggestions', Suggestions.view,
         state.mode, suggestions, input, address),
       html.div({

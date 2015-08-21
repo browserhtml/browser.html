@@ -55,17 +55,17 @@
       height: 30,
       lineHeight: '30px',
       padding: '0 30px',
-      width: 400,
+      width: 460,
       top: 40,
     },
     // Display styles when location bar is displaying suggested result.
     suggesting: {
-      backgroundColor: 'white',
-      color: 'rgba(0,0,0,0.7)',
+      backgroundColor: 'rgba(0,0,0,0.07)',
+      color: 'rgba(0,0,0,0.65)',
       height: 30,
       lineHeight: '30px',
       padding: '0 30px',
-      width: 400,
+      width: 460,
       top: 40
     },
     button: {
@@ -203,11 +203,11 @@
 
   const InputAction = action => Input.Action({action});
 
-  const viewInDashboard = (loader, security, page, input, suggestions, address) => {
+  const viewInDashboard = (mode, loader, security, page, input, suggestions, address) => {
     // Make forwarding addres that wraps actions into `Input.Action`.
     const inputAddress = address.forward(InputAction);
 
-    const view = Suggestions.isSuggesting(input, suggestions) ?
+    const view = Suggestions.isSuggesting(mode, input, suggestions) ?
       viewSuggestingBar : viewActiveBar;
 
     return view(inputAddress, [
@@ -277,7 +277,7 @@
 
   const view = (mode, ...rest) =>
     mode === 'show-web-view' ? viewInWebView(...rest) :
-    viewInDashboard(...rest);
+    viewInDashboard(mode, ...rest);
 
   // TODO: Consider seperating location input field from the location bar.
 

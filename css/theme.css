@@ -25,6 +25,14 @@
   visibility: visible;
 }
 
+.card {
+  transition: transform 80ms linear;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
 * {
   -moz-appearance: none;
   background-color: transparent;

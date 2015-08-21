@@ -136,34 +136,31 @@
 
   const style = StyleSheet.create({
     container: {
-      textAlign: 'center',
+      backgroundColor: '#fff',
       width: '100vw',
       position: 'absolute',
-      top: 40,
+      top: 0,
       zIndex: 43,
-      height: 260,
-      pointerEvents: 'none'
+      height: '100vh',
+      left: 0,
+      pointerEvents: 'all',
+      transition: '100ms opacity ease-out'
     },
     collapsed: {
-      display: 'none'
+      opacity: 0,
+      pointerEvents: 'none'
     },
     suggestions: {
-      boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
       color: 'rgba(0,0,0,0.7)',
-      display: 'inline-block',
-      textAlign: 'left',
-      width: 400,
-      overflow: 'hidden',
-      pointerEvents: 'all',
-      backgroundColor: '#fff',
-      borderRadius: 5,
-      padding: '30px 0 5px'
+      margin: '90px auto 0',
+      width: 460
     },
     first: {
       borderTop: 0
     },
     suggestion: {
-      lineHeight: '30px',
+      borderRadius: '4px',
+      lineHeight: '40px',
       paddingLeft: 10,
       paddingRight: 10,
       verticalAlign: 'middle',
@@ -257,15 +254,16 @@
   exports.viewSuggestion = viewSuggestion;
 
   // Check if input is in "suggestions" mode.
-  const isSuggesting = (input, suggestions) =>
-    input.isFocused && input.value && suggestions.entries.count() > 0;
+  const isSuggesting = (mode, input, suggestions) =>
+    (mode === 'edit-web-view' ||
+      (mode === 'create-web-view' && input.isFocused && input.value));
   exports.isSuggesting = isSuggesting;
 
   const view = (mode, state, input, address) =>
     html.menu({
       key: 'suggestionscontainer',
       style: Style(style.container,
-                   !isSuggesting(input, state) && style.collapsed)
+                   !isSuggesting(mode, input, state) && style.collapsed)
     }, [
       html.ul({
         key: 'suggestions',

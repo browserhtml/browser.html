@@ -44,7 +44,8 @@
     state.merge({mode, transition});
 
   const fadeToEditMode = switchMode('edit-web-view', 'fade');
-  const zoomToEditMode = switchMode('edit-web-view', 'zoom');
+  const zoomToCreateMode = switchMode('create-web-view', 'zoom');
+  const fadeToCreateMode = switchMode('create-web-view', 'fade');
   const fadeToSelectMode = switchMode('select-web-view', 'fade');
   const fadeToShowMode = switchMode('show-web-view', 'fade');
 
@@ -66,16 +67,15 @@
     selectViewByIndex
   );
 
-  const createWebView = compose(
+  const createWebViewFade = compose(
+    fadeToCreateMode,
     focusInput,
-    (state, transition) =>
-      state.mode === 'create-web-view' ?
-      state :
-      state.mergeDeep({
-        mode: 'create-web-view',
-        input: {value: null},
-        transition
-      }));
+    clearInput);
+
+  const createWebViewZoom = compose(
+    zoomToCreateMode,
+    focusInput,
+    clearInput);
 
   const setInputToURIBySelected = state =>
     state.setIn(['input', 'value'],
@@ -96,16 +96,15 @@
     fadeToEdit,
     selectInput,
     focusInput,
-    clearSuggestions,
     state =>
-      state.mode === 'edit-web-view' ? state :
       state.mode === 'create-web-view' ? state :
       setInputToURIBySelected(state));
 
   const closeWebViewByIndex = compose(
-    switchMode('edit-web-view', null),
-    selectInput,
+    fadeToCreateMode,
     focusInput,
+    clearInput,
+    clearSuggestions,
     setInputToURIBySelected,
     (state, n) =>
       state.set('webViews', WebView.closeByIndex(state.webViews, n)));
@@ -127,23 +126,17 @@
     clearInput,
     navigate);
 
-  const zoomToEditModeFromShowMode = state =>
-    state.mode !== 'show-web-view' ? state :
-    zoomToEditMode(state);
+  const zoomToSelectedPreview = compose(
+    state => state.mode !== 'show-web-view' ? state : zoomToCreateMode(state),
+    state => state.setIn(['input', 'value'], ''),
+    clearSuggestions);
 
-  const zoomEditSelectedWebView = compose(
-    zoomToEditModeFromShowMode,
-    selectInput,
-    focusInput,
+  const showPreview = compose(
+    fadeToSelectMode,
     clearSuggestions,
-    setInputToURIBySelected);
-
-
-  const fadeToSelectModefromShowMode = state =>
-    state.mode !== 'show-web-view' ? state :
-    fadeToSelectMode(state);
-
-  const showPreview = compose(fadeToSelectMode, blurInput);
+    clearInput,
+    blurInput
+  );
 
   const updateByWebViewIndex = (state, n, action) =>
     action instanceof Focusable.Focus ?
@@ -191,9 +184,9 @@
     action instanceof Input.Submit ?
       updateByInputAction(state, action) :
     action instanceof Preview.Create ?
-      createWebView(state, 'zoom') :
+      createWebViewZoom(state) :
     action instanceof OpenNew ?
-      createWebView(state, 'fade') :
+      createWebViewFade(state) :
 
     action instanceof WebView.ByID ?
       updateByWebViewID(state, action.id, action.action) :
@@ -201,7 +194,7 @@
       updateBySelectedWebView(state, action.action) :
 
     action instanceof Gesture.Pinch ?
-      zoomEditSelectedWebView(state) :
+      zoomToSelectedPreview(state) :
     action instanceof ShowSelected ?
       completeSelection(state) :
     action instanceof ShowPreview ?
