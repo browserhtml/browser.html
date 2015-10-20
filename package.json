@@ -35,8 +35,8 @@
     "babelify": "6.1.3",
     "browserify": "11.0.1",
     "ecstatic": "0.8.0",
-    "graphene-marionette-runner": "0.0.9",
     "graphene-marionette-client": "1.0.0",
+    "graphene-marionette-runner": "0.0.9",
     "gulp": "3.9.0",
     "gulp-sequence": "0.4.1",
     "gulp-sourcemaps": "1.5.2",
@@ -44,7 +44,7 @@
     "gulp-util": "^3.0.6",
     "jscs": "1.8.1",
     "livereactload": "0.7.0",
-    "mocha": "2.2.4",
+    "mocha": "2.3.3",
     "vinyl-buffer": "1.0.0",
     "vinyl-source-stream": "1.1.0",
     "watchify": "3.3.1"
