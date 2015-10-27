@@ -4,7 +4,6 @@
   'use strict';
 
   const {Record, Union, Maybe} = require('typed-immutable');
-  const {Element, VirtualAttribute} = require('./element');
   const Focusable = require('./focusable');
 
   // Model
@@ -67,28 +66,3 @@
     action;
 
   exports.update = update;
-
-  // Field
-
-  const Field = {
-    selection: new VirtualAttribute((node, current, past) => {
-      if (current !== past) {
-        if (node.setSelectionRange) { // FIXME: remove once Servo supports setSelectionRange
-          const {start, end, direction} = current;
-          node.setSelectionRange(start === Infinity ? node.value.length : start,
-                                 end === Infinity ? node.value.length : end,
-                                 direction);
-        }
-      }
-      return node;
-    })
-  };
-  exports.Field = Field;
-
-  // View
-
-  const view = Element('input', {
-    isFocused: Focusable.Field.isFocused,
-    selection: Field.selection
-  });
-  exports.view = view;

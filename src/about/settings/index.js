@@ -4,7 +4,7 @@
 
   'use strict';
 
-  const {render, html, Address, Application} = require('reflex');
+  const {thunk:render, html, Address, Application} = require('reflex');
   const {Record, Any, Maybe, Union} = require('typed-immutable');
   const {Map} = require('immutable');
   const Settings = require('../../service/settings');
@@ -170,11 +170,11 @@
       value,
       onClick: event => {
         if (event.altKey) {
-          address.receive(StartEdit({name}));
+          address(StartEdit({name}));
         }
       },
       onChange: event => {
-        address.receive(Settings.Update({
+        address(Settings.Update({
           name, value: event.target.valueAsNumber
         }));
       }
@@ -185,9 +185,9 @@
       style: style.boolean,
       onClick: event => {
         if (event.altKey) {
-          address.receive(StartEdit({name}));
+          address(StartEdit({name}));
         } else {
-          address.receive(Settings.Update({name, value: !value}));
+          address(Settings.Update({name, value: !value}));
         }
       }
     }, JSON.stringify(value));
@@ -196,7 +196,7 @@
     html.code({
       style: style.json,
       onClick: event => {
-        address.receive(StartEdit({name}));
+        address(StartEdit({name}));
       }
     }, JSON.stringify(value));
 
@@ -216,7 +216,7 @@
     html.code({
       style: style.error,
       onClick: event => {
-        address.receive(StartEdit({name}))
+        address(StartEdit({name}))
       }
     }, input);
 
@@ -231,27 +231,27 @@
           const result = parseInput(event.target.value);
 
           if (result instanceof Error) {
-            address.receive(StopEdit({name}));
+            address(StopEdit({name}));
           } else if (result === value) {
-            address.receive(CancelEdit({name}));
+            address(CancelEdit({name}));
           } else {
-            address.receive(Settings.Update({name, value: result}));
+            address(Settings.Update({name, value: result}));
           }
         }
 
         if (event.key === 'Escape') {
-          address.receive(CancelEdit({name}));
+          address(CancelEdit({name}));
         }
       },
       onChange: event => {
-        address.receive(Edit({name, input: event.target.value}));
+        address(Edit({name, input: event.target.value}));
       },
       onBlur: event => {
         const value = parseInput(event.target.value);
         if (value instanceof Error) {
-          address.receive(StopEdit({name}));
+          address(StopEdit({name}));
         } else {
-          address.receive(Settings.Update({name, value}));
+          address(Settings.Update({name, value}));
         }
       }
     });
@@ -301,4 +301,4 @@
 
   const settings = Settings.service(address);
 
-  address.receive(Settings.Fetch({id: 'about:settings', query: '*'}));
+  address(Settings.Fetch({id: 'about:settings', query: '*'}));

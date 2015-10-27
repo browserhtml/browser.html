@@ -285,7 +285,7 @@ have a following structure.
                 TopPages.sample(page, this.options.topPageLimit));
 
       if (this.options.address) {
-        this.options.address.send(page);
+        this.options.address(page);
       }
     }
   };

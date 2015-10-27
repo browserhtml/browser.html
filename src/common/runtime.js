@@ -101,16 +101,16 @@
 
   const service = address => {
     // Start listening for runtime events.
-    const handler = address.pass(Incoming);
+    const handler = event => address(Incoming(event));
     window.addEventListener('mozChromeEvent', handler);
 
     return action => {
       if (action instanceof LiveReload) {
         window.removeEventListener('mozChromeEvent', handler);
       } else if (action instanceof RemoteDebugRequest) {
-        address.receive(RemoteDebugResponse({value: true}));
+        address(RemoteDebugResponse({value: true}));
       } else if (action instanceof UpdateDownloaded) {
-        address.receive(DownloadUpdate());
+        address(DownloadUpdate());
       } else if (action instanceof Unknown) {
         console.warn(`Unknown runtime event ${action}`)
       } else if (action instanceof CheckUpdate ||

@@ -386,7 +386,7 @@
       const iframe = document.getElementById(`web-view-${action.id}`);
       if (iframe && iframe.executeScript) {
         iframe.executeScript(script, {url: iframe.dataset.uri})
-              .then(address.pass(readCard, action, action.action.uri));
+              .then(data => address(readCard(action, action.action.uri, data)));
       }
     }
 

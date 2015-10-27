@@ -74,7 +74,7 @@
       const hostname = URI.getDomainName(action.action.uri);
       const theme = curated[hostname];
       if (theme) {
-        address.receive(action.set('action', AnnounceCuratedColor({
+        address(action.set('action', AnnounceCuratedColor({
           color: theme.join('|')
         })));
       }

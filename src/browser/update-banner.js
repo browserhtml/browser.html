@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
   'use strict';
 
-  const {html} = require('reflex');
+  const {html, forward} = require('reflex');
   const {StyleSheet, Style} = require('../common/style');
   const {Record} = require('typed-immutable');
   const Runtime = require('../common/runtime');
@@ -78,12 +78,12 @@
       html.div({
         key: 'bannerMessage',
         style: style.message
-      }, 'Hey! An update just for you!'),
+      }, ['Hey! An update just for you!']),
       html.button({
         key:  'bannerButton',
         style: style.button,
-        onClick: Action && address.pass(Action)
-      }, `Apply ${message}`)
+        onClick: Action && forward(address, Action)
+      }, [`Apply ${message}`])
     ]);
   };
 

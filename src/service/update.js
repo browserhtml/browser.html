@@ -93,8 +93,9 @@
 
 
 
-    localHEAD.then(address.pass(UpdateHead), address.pass(UnknownHead));
+    localHEAD.then(data => address(UpdateHead(data)),
+                   error => address(UnknownHead(error)));
     const update = new Promise(pull);
-    update.then(address.send, error => console.warn(error));
+    update.then(address, error => console.warn(error));
   }
   exports.service = service;

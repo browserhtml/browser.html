@@ -23,51 +23,27 @@
 
 
   const GoBack = Record({
-    description: 'Navigate web-view back'
+    description: 'Navigate web-view back',
+    isGoBack: true
   },'WebView.Navigation.GoBack');
-  GoBack.Task = class {
-    run(node) {
-      if (node.goBack) {
-        node.goBack();
-      }
-    }
-  };
   exports.GoBack = GoBack;
 
   const GoForward = Record({
-    description: 'Navigate web-view forward'
+    description: 'Navigate web-view forward',
+    isGoForward: true
   }, 'WebView.Navigation.GoForward');
-  GoForward.Task = class {
-    run(node) {
-      if (node.goForward) {
-        node.goForward();
-      }
-    }
-  };
   exports.GoForward = GoForward;
 
   const Stop = Record({
-    description: 'Interupt web-view navigation'
+    description: 'Interupt web-view navigation',
+    isStop: true
   }, 'WebView.Navigation.Stop');
-  Stop.Task = class {
-    run(node) {
-      if (node.stop) {
-        node.stop();
-      }
-    }
-  };
   exports.Stop = Stop;
 
   const Reload = Record({
-    description: 'Reload web-view'
+    description: 'Reload web-view',
+    isReload: true
   },  'WebView.Navigation.Reload');
-  Reload.Task = class {
-    run(node) {
-      if (node.reload) {
-        node.reload();
-      }
-    }
-  };
   exports.Reload = Reload;
 
   const Action = Union(CanGoBackChanged, CanGoForwardChanged,
@@ -79,7 +55,7 @@
   const Model = Record({
     canGoBack: false,
     canGoForward: false,
-    task: Any
+    state: Maybe(Union(Stop, Reload, GoBack, GoForward))
   });
   exports.Model = Model;
 
@@ -92,15 +68,15 @@
     action instanceof CanGoForwardChanged ?
       state.set('canGoForward', action.value) :
     action instanceof GoBack ?
-      state.set('task', new GoBack.Task()) :
+      state.set('state', GoBack({isGoBack: true})) :
     action instanceof GoForward ?
-      state.set('task', new GoForward.Task()) :
+      state.set('state', GoForward({isGoForward: true})) :
     action instanceof Stop ?
-      state.set('task', new Stop.Task()) :
+      state.set('state', Stop({isStop: true})) :
     action instanceof Reload ?
-      state.set('task', new Reload.Task()) :
+      state.set('state', Reload({isReload: true})) :
     action instanceof Loader.LocationChanged ?
-      state.set('task', null) :
+      state.set('state', null) :
     action instanceof Progress.LoadStarted ?
       state.clear() :
     action instanceof Loader.Load ?

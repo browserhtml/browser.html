@@ -33,19 +33,19 @@
 
       if (action instanceof Input.Action) {
         if (action.action instanceof Focusable.Blur) {
-          address.receive(Suggestions.Unselect());
+          address(Suggestions.Unselect());
         }
 
         if (action.action instanceof Editable.Change) {
           if (action.action.value === "") {
-            address.receive(Suggestions.Clear());
+            address(Suggestions.Clear());
           } else {
             requestSuggestions(action.action);
           }
         }
 
         if (action.action instanceof Input.Submit) {
-          address.receive(Suggestions.Clear())
+          address(Suggestions.Clear())
         }
       }
     };

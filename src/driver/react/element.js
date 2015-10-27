@@ -3,7 +3,7 @@
  * file, you can obtain one at http://mozilla.org/mpl/2.0/. */
   'use strict';
 
-  const React = require('../common/react');
+  const React = require('./react');
   const {node} = require('reflex');
 
   /*::

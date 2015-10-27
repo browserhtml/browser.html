@@ -41,7 +41,8 @@
 
   const service = address => {
     if (navigator.mozSettings) {
-      navigator.mozSettings.onsettingchange = address.pass(Changed.read);
+      navigator.mozSettings.onsettingchange = event =>
+        address(Changed.read(event));
 
       return action => {
         if (action instanceof Update) {
@@ -54,7 +55,8 @@
           navigator.mozSettings
                    .createLock()
                    .get(action.query)
-                   .then(address.pass(Fetched.read, action));
+                   .then(settings => Fetched.read(action, settings))
+                   .then(address);
         }
       }
     } else {

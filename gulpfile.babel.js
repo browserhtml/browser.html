@@ -11,10 +11,11 @@ import watchify from 'watchify';
 import child from 'child_process';
 import http from 'http';
 import path from 'path';
-import reload from 'livereactload';
 import babelify from 'babelify';
 import sequencial from 'gulp-sequence';
 import ecstatic from 'ecstatic';
+import hmr from 'browserify-hmr';
+import hotify from 'hotify';
 
 var settings = {
   port: process.env.BROWSER_HTML_PORT ||
@@ -26,6 +27,8 @@ var settings = {
   cache: {},
   packageCache: {},
   transforms: {},
+  plugins: {},
+  plugin: [],
   transform: [
     babelify.configure({
       "optional": [
@@ -51,7 +54,9 @@ var Bundler = function(entry) {
     cache: {},
     packageCache: {},
     transform: [...settings.transform,
-                ...(settings.transforms[entry] || [])]
+                ...(settings.transforms[entry] || [])],
+    plugin: [...settings.plugin,
+             ...(settings.plugins[entry] || [])]
   });
 
   this.watcher = settings.watch &&
@@ -139,10 +144,22 @@ gulp.task('watcher', function() {
   settings.watch = true
 });
 
-gulp.task('livereloader', function() {
-  settings.transforms['browser/index'] = [[reload, {global: true}]];
-  reload.monitor('./dist/browser/index.js', {displayNotification: true});
-  reload.monitor('./dist/service/history-worker.js', {displayNotification: true});
+gulp.task('hotreload', function() {
+
+  settings.plugins['browser/index'] = [[hmr, {
+    port: 3124,
+    url: "http://localhost:3124"
+  }]]
+  settings.plugins['service/history-worker'] = [[hmr, {
+    port: 3125,
+    url: "http://localhost:3125"
+  }]]
+  settings.plugins['about/settings/index'] = [[hmr, {
+    port: 3126,
+    url: "http://localhost:3126"
+  }]]
+
+  settings.transform.push(hotify);
 });
 
 bundler('browser/index');
@@ -166,7 +183,7 @@ gulp.task('watch', [
 gulp.task('develop', sequencial('watch', 'server', 'application'));
 gulp.task('build-server', sequencial('watch', 'server'));
 
-gulp.task('live', ['livereloader', 'develop']);
-gulp.task('live-server', ['livereloader', 'build-server']);
+gulp.task('live', ['hotreload', 'develop']);
+gulp.task('live-server', ['hotreload', 'build-server']);
 
 gulp.task('default', ['develop']);

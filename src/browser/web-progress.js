@@ -5,7 +5,7 @@
 
   const {Record, Union} = require('typed-immutable');
   const {StyleSheet, Style} = require('../common/style');
-  const {html, render} = require('reflex');
+  const {html, thunk:render} = require('reflex');
   const Loader = require('./web-loader');
 
   // Model
@@ -49,9 +49,9 @@
 
     container: {
       width: '100%',
-      height: 4,
-      minHeight: 4,
-      marginBottom: -4,
+      height: '4px',
+      minHeight: '4px',
+      marginBottom: '-4px',
       position: 'relative',
       overflowX: 'hidden',
       pointerEvents: 'none',
@@ -61,7 +61,7 @@
     bar: {
       position: 'absolute',
       top: 0,
-      height: 4,
+      height: '4px',
       width: '100%',
       transitionProperty: 'transform, opacity',
       transitionDuration: '300ms, 200ms',
@@ -89,10 +89,10 @@
     },
 
     arrow: {
-      width: 4,
-      height: 4,
+      width: '4px',
+      height: '4px',
       float: 'right',
-      marginRight: -4,
+      marginRight: '-4px',
     },
 
   });
@@ -100,6 +100,7 @@
   const progressbarView = (id, progress, isSelected, theme) => {
     return html.div({
       key: `progressbar-${id}`,
+      className: `progressbar-${id}`,
       style: Style(style.bar,
                    !isSelected ? style.hidden : style.visible,
                    !progress.loading ? style.loaded : style.loading, {
@@ -116,14 +117,15 @@
   const view = (mode, loaders, progress, selected, theme) => {
     return html.div({
       key: 'progressbars',
+      className: 'web-progress',
       style: style.container
-    }, loaders.map((loader, index) =>
+    }, [...loaders.map((loader, index) =>
       render(`progressbar@${loader.id}`, progressbarView,
              loader.id,
              progress.get(index),
              // If not in show-web-view pass -1 to hide all progressbars.
              mode === 'show-web-view' && index === selected,
-             theme)));
+             theme))]);
   };
 
   exports.view = view;

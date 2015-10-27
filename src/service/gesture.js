@@ -32,7 +32,7 @@
       }
 
       if (delta < -200) {
-        address.receive(Pinch());
+        address(Pinch());
       }
     }
 

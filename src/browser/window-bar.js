@@ -4,7 +4,7 @@
 
   'use strict';
 
-  const {html, render} = require('reflex')
+  const {html, thunk:render} = require('reflex')
   const {StyleSheet, Style} = require('../common/style');
   const Preview = require('./web-preview');
 
@@ -43,6 +43,7 @@
 
   const view = (mode, id, shell, theme, address) => html.div({
     key: 'WindowBar',
+    className: 'window-bar-panel',
     style: Style(style.panel,
                  (id && mode === 'show-web-view') ? style.visible :
                  style.invisible,
@@ -50,6 +51,7 @@
   }, [
     html.div({
       key: 'header',
+      className: 'window-bar-header',
       style: Style(style.header,
                    theme.isDark ? style.dark : style.light)
     }, [

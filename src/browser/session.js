@@ -5,6 +5,7 @@
 
   const {Record} = require('typed-immutable');
   const WebView = require('./web-view');
+  const {forward} = require('reflex');
 
   // Action
 
@@ -23,6 +24,23 @@
   }, 'Session.ResetSession');
   exports.ResetSession = ResetSession;
 
+  const restore = (version, construct, initial) => {
+    const session = localStorage[`session@${version}`];
+    if (session) {
+      try {
+        return construct(JSON.parse(session));
+      } catch (error) {
+        console.error(`Failed to restore a session`, error);
+      }
+    } else {
+      console.error('Compatible session was not found, loading default');
+    }
+
+    return initial;
+  }
+  exports.restore = restore
+
+
   // Todo: Refactor this module into a service and store session into pouch instead of localStorage.
   exports.update = (state, action) => {
     if (action instanceof SaveSession) {
@@ -37,25 +55,11 @@
     }
 
     if (action instanceof ResetSession) {
-      return state.clear().merge({
-        shell: {isFocused: true},
-        input: {isFocused: true}
-      });
+      return reset(data => state.clean().merge(data))
     }
 
     if (action instanceof RestoreSession) {
-      const session = localStorage[`session@${state.version}`];
-      if (session) {
-        try {
-          return state.clear().merge(JSON.parse(session));
-        } catch (error) {
-          console.error(`Failed to restore a session`, error);
-        }
-      } else {
-        console.error('Compatible session was not found, loading default');
-      }
-
-      return exports.update(state, ResetSession());
+      return restore(state.version, data => state.clean().merge(data))
     }
 
     return state

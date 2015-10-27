@@ -1,7 +1,7 @@
 {
   "name": "browser.html",
   "description": "browser.html",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "homepage": "https://github.com/mozilla/browser.html",
   "repository": {
     "type": "git",
@@ -10,6 +10,9 @@
   },
   "bugs": {
     "url": "http://github.com/mozilla/browser.html/issues/"
+  },
+  "browser": {
+    "driver": "./src/driver/virtual-dom/index.js"
   },
   "scripts": {
     "live": "gulp live",
@@ -24,30 +27,37 @@
   "dependencies": {
     "immutable": "3.7.0",
     "pouchdb": "4.0.0",
-    "react": "0.13.3",
-    "reflex": "0.0.28",
+    "reflex": "0.0.50",
+    "reflex-virtual-dom-driver": "0.0.2",
     "tinycolor2": "1.1.2",
     "typed-immutable": "0.0.7"
   },
   "devDependencies": {
+    "ecstatic": "0.8.0",
+
+    "browserify": "11.0.1",
+    "watchify": "3.3.1",
+    "babelify": "6.1.3",
+
+    "browserify-hmr": "0.3.1",
+    "hotify": "0.0.1",
+
     "babel-core": "5.8.23",
     "babel-runtime": "5.8.20",
-    "babelify": "6.1.3",
-    "browserify": "11.0.1",
-    "ecstatic": "0.8.0",
+
+    "mocha": "2.2.4",
     "graphene-marionette-runner": "0.0.9",
     "graphene-marionette-client": "1.0.0",
+
     "gulp": "3.9.0",
     "gulp-sequence": "0.4.1",
     "gulp-sourcemaps": "1.5.2",
-    "gulp-uglify": "^1.2.0",
-    "gulp-util": "^3.0.6",
-    "jscs": "1.8.1",
-    "livereactload": "0.7.0",
-    "mocha": "2.2.4",
+    "gulp-uglify": "1.2.0",
+    "gulp-util": "3.0.6",
     "vinyl-buffer": "1.0.0",
     "vinyl-source-stream": "1.1.0",
-    "watchify": "3.3.1"
+
+    "jscs": "1.8.1"
   },
   "license": "MPL-2.0"
 }

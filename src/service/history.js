@@ -46,7 +46,7 @@
 
     worker.onmessage = ({data: {type, action}}) => {
       if (type === 'PageResult') {
-        address.receive(PageResult(action));
+        address(PageResult(action));
       }
     }
 

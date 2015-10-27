@@ -3,18 +3,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
   'use strict';
 
-  const {html, node, render, cache} = require('reflex');
+  const {html, node, thunk: render, forward} = require('reflex');
   const {Record, Maybe} = require('typed-immutable');
   const {inspect} = require('../common/debug');
   const {StyleSheet, Style} = require('../common/style');
   const WindowBar = require('./window-bar');
   const WindowControls = require('./window-controls');
+  const WindowShell = require('./window-shell');
   const LocationBar = require('./location-bar');
   const Progress = require('./web-progress');
   const Theme = require('./theme');
   const {KeyBindings} = require('../common/keyboard');
   const Focusable = require('../common/focusable');
-  const {Main} = require('./main');
   const Updates = require('./update-banner');
   const WebView = require('./web-view');
   const Shell = require('./web-shell');
@@ -29,20 +29,30 @@
   const SynthesisUI = require('./synthesis-ui');
   const DevtoolsHUD = require('./devtools-hud');
   const Selector = require('../common/selector');
+  const {on, onWindow, title, scrollGrab} = require('driver');
+  const {identity} = require('../lang/functional');
+
+
+  const getOwnerWindow = node => node.ownerDocument.defaultView;
 
   // Model
   const Model = Record({
     version: require('../../package.json').version,
     mode: 'create-web-view', // or show-web-view, edit-web-view, choose-web-view
     transition: Maybe(String), // zoom, fade, or null (no transition)
-    shell: Focusable.Model({isFocused: true}),
+    shell: WindowShell.Model,
     updates: Updates.Model,
     webViews: WebView.Model,
     input: Input.Model,
     suggestions: Suggestions.Model,
-    devtoolsHUD: DevtoolsHUD.Model,
+    devtoolsHUD: DevtoolsHUD.Model
   });
   exports.Model = Model;
+
+  const initialize = () => Model({
+    shell: WindowShell.initialize(true)
+  });
+  exports.initialize = initialize;
 
   // Actions
 
@@ -81,40 +91,7 @@
 
   // Update
 
-
-  // Utility function takes `update` functions and attepts to handle action
-  // with each one in the order they were passed until one of them returns
-  // updated state in which case it returns that state and no longer calls
-  // any further update functions.
-  const pipeline = updaters => {
-    const count = updaters.length
-    return (state, action) => {
-      var index = 0
-      var before = state
-      while (index < count) {
-        const after = updaters[index](before, action)
-        index = index + 1
-
-        if (before !== after) {
-          return after
-        }
-      }
-      return state
-    }
-  };
-
-  const update = pipeline([
-    SynthesisUI.update,
-    (state, action) =>
-      state.set('webViews', WebView.update(state.webViews, action)),
-    (state, action) =>
-      state.set('input', Input.update(state.input, action)),
-    Session.update,
-    (state, action) =>
-      state.set('devtoolsHUD', DevtoolsHUD.update(state.devtoolsHUD, action)),
-    (state, action) =>
-      state.set('suggestions', Suggestions.update(state.suggestions, action))
-  ]);
+  const update = SynthesisUI.update;
   exports.update = update;
 
 
@@ -144,22 +121,22 @@
     const id = loader && loader.id;
     const theme =
       (mode === 'show-web-view' && page) ?
-        cache(Theme.read, page.pallet) :
+        Theme.read(page.pallet) :
       mode === 'show-web-view' ?
         Theme.default :
       Theme.dashboard;
 
-    return Main({
+    return html.div({
       key: 'root',
-      windowTitle: !loader ? '' :
+      title: title(!loader ? '' :
                    !page ? loader.uri :
-                   page.title || loader.uri,
-      onKeyDown: address.pass(KeyDown),
-      onKeyUp: address.pass(KeyUp),
-      onWindowBlur: address.pass(Focusable.Blured),
-      onWindowFocus: address.pass(Focusable.Focused),
-      onUnload: address.pass(Session.SaveSession),
-      onOpenWindow: address.pass(OpenWindow),
+                   page.title || loader.uri),
+      onKeyDown: onWindow(forward(address, KeyDown), identity),
+      onKeyUp: onWindow(forward(address, KeyUp), identity),
+      onBlur: onWindow(forward(address, Focusable.Blured)),
+      onFocus: onWindow(forward(address, Focusable.Focused)),
+      onUnload: onWindow(forward(address, Session.SaveSession)),
+      onMozBrowserOpenWindow: onWindow(address, OpenWindow),
       tabIndex: 1,
       className: theme.isDark ? 'is-dark' : '',
       style: Style(style.shell, {
@@ -167,7 +144,8 @@
         backgroundColor: theme.shell,
       })
     }, [
-      render('WindowControls', WindowControls.view, shell, theme, address),
+      render('WindowControls', WindowControls.view,
+        shell.isFocused, shell.controls.isHovering, theme, address),
       render('WindowBar', WindowBar.view,
         state.mode, id, shell, theme, address),
       render('ProgressBars', Progress.view,
@@ -189,7 +167,7 @@
         // We use this container to position it properly.
         style: style.webviewsContainer,
         key: 'web-views-container',
-      },
+      }, [
         render('WebViews', WebView.view,
           state.mode,
           state.transition,
@@ -199,7 +177,8 @@
           webViews.page,
           webViews.sheet,
           address,
-          webViews.selected)),
+          webViews.selected)
+      ]),
       render('DevtoolsHUD', DevtoolsHUD.view, state.devtoolsHUD, address),
       render('Updater', Updates.view, state.updates, address)
     ])

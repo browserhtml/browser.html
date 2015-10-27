@@ -4,7 +4,6 @@
   'use strict';
 
   const {Record, Union} = require('typed-immutable');
-  const {VirtualAttribute} = require('./element');
 
   // Model
 
@@ -52,20 +51,3 @@
     action instanceof Blured ? blur(state) :
     state;
   exports.update = update;
-
-
-  // Fields
-
-  const Field = {
-    isFocused: new VirtualAttribute((node, current, past) => {
-      if (current != past) {
-        if (current) {
-          node.focus();
-        } else {
-          node.blur();
-        }
-      }
-      return node;
-    })
-  };
-  exports.Field = Field;

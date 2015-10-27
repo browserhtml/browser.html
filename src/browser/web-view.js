@@ -4,12 +4,11 @@
   'use strict';
 
   const {Record, Union, List, Maybe, Any} = require('typed-immutable');
-  const {html, render} = require('reflex');
+  const {html, thunk:render, forward} = require('reflex');
   const {StyleSheet, Style} = require('../common/style');
   const URI = require('../common/url-helper');
   const Editable = require('../common/editable');
   const Focusable = require('../common/focusable');
-  const IFrame = require('./iframe');
   const Progress = require('./web-progress');
   const Shell = require('./web-shell');
   const Navigation = require('./web-navigation');
@@ -20,8 +19,9 @@
   const Force = require('../service/force');
   const Card = require('./web-card');
   const Sheet = require('./web-sheet');
-  const {animate} = require('../common/animation');
-  const {Element, BubbledEvent, CapturedEvent} = require('../common/element');
+  const {onAnimationFrame, on, focus, visiblity, zoom, opener, navigate,
+         onCanGoBackChange, onCanGoForwardChange} = require('driver');
+
 
   // Model
   const Model = Record({
@@ -100,11 +100,16 @@
   }, 'WebViews.SelectByID');
   exports.SelectByID = SelectByID;
 
+  const None = Record({
+    description: 'This is like a null action'
+  }, 'WebView.None');
+  exports.None = None;
+
 
   // Just a union type for all possible actions that are targeted at specific
   // web view.
   const Action = Union(
-    Close, Open, OpenInBackground,
+    Close, Open, OpenInBackground, None,
     Loader.Action, Progress.Action, Navigation.Action, Focusable.Action,
     Page.Action, Security.Action, Shell.Action, Card.Action, Sheet.Action,
     Failure, ContextMenu, ModalPrompt, Authentificate);
@@ -209,6 +214,7 @@
     action instanceof Open ? open(state, action) :
     action instanceof OpenInBackground ? open(state, action) :
     changeByIndex(state, n, action);
+  exports.updateByIndex = updateByIndex;
 
   const changeByIndex = (state, n, action) => {
     const {loader, shell, page, progress, navigation, security, card, sheet} = state;
@@ -317,52 +323,56 @@
     }
   });
 
-  const swipingDiv = Element('div', {
-    onMozSwipeGestureStart: new BubbledEvent('MozSwipeGestureStart'),
-    onMozSwipeGestureUpdate: new BubbledEvent('MozSwipeGestureUpdate'),
-    onMozSwipeGestureEnd: new BubbledEvent('MozSwipeGestureEnd'),
-    onMozSwipeGesture: new BubbledEvent('MozSwipeGesture')
-  });
-
   // See: https://dxr.mozilla.org/mozilla-central/source/dom/interfaces/events/nsIDOMSimpleGestureEvent.idl?offset=100#108-109
   const DIRECTION_LEFT = 4;
   const DIRECTION_RIGHT = 8;
 
+
+  const decodeSwapeGestureStart = event => {
+    if (event.direction === DIRECTION_LEFT ||
+        event.direction === DIRECTION_RIGHT)
+    {
+      event.allowedDirections = DIRECTION_LEFT | DIRECTION_RIGHT;
+      event.preventDefault();
+
+
+      return Sheet.BeginSwipe({
+        delta: event.delta,
+        timeStamp: performance.now()
+      });
+    } else {
+      return None();
+    }
+  }
+
+  const decodeSwipeGestureUpdate = event => Sheet.ContinueSwipe({
+    delta: event.delta,
+    timeStamp: performance.now()
+  })
+
+  const decodeSwipeGestureEnd = event => Sheet.ContinueSwipe({
+    delta: event.delta,
+    timeStamp: performance.now()
+  });
+
+  const decodeSwipeGestureStop = event => Sheet.EndSwipe({
+    timeStamp: performance.now()
+  });
+
   const viewWebView = (loader, shell, navigation, thumbnail, sheet, isSelected, address) => {
-    const node = swipingDiv({
+    return html.div({
       key: 'web-view',
       style: webviewStyle.perspective,
-      onMozSwipeGestureStart: event => {
-        if (event.direction === DIRECTION_LEFT ||
-            event.direction === DIRECTION_RIGHT)
-        {
-          event.allowedDirections = DIRECTION_LEFT | DIRECTION_RIGHT;
-          event.preventDefault();
-
-
-          address.receive(Sheet.BeginSwipe({
-            delta: event.delta,
-            timeStamp: performance.now()
-          }));
+      MozSwipeGestureStart: on(address, decodeSwapeGestureStart),
+      MozSwipeGestureUpdate: on(address, decodeSwipeGestureUpdate),
+      MozSwipeGestureEnd: on(address, decodeSwipeGestureEnd),
+      MozSwipeGesture: on(address, decodeSwipeGestureStop),
+      onAnimationFrame: sheet.isInMotion && onAnimationFrame(timeStamp => {
+        if (sheet.action != null) {
+          address(sheet.action);
         }
-      },
-      onMozSwipeGestureUpdate: (event) => {
-        address.receive(Sheet.ContinueSwipe({
-          delta: event.delta,
-          timeStamp: performance.now()
-        }));
-      },
-      onMozSwipeGestureEnd(event) {
-        address.receive(Sheet.ContinueSwipe({
-          delta: event.delta,
-          timeStamp: performance.now()
-        }));
-      },
-      onMozSwipeGesture: (event) => {
-        address.receive(Sheet.EndSwipe({
-          timeStamp: performance.now()
-        }));
-      }
+        address(Sheet.AnimationFrame({timeStamp}));
+      })
     }, [
       html.figure({
         key: 'goBack',
@@ -371,7 +381,7 @@
                      navigation.canGoBack ?
                       {opacity: Math.abs(sheet.value)} :
                       webviewStyle.inactive)
-      }, webviewStyle.backArrow.content),
+      }, [webviewStyle.backArrow.content]),
       html.figure({
         key: 'goForward',
         style: Style(webviewStyle.navigationArrow,
@@ -379,7 +389,7 @@
                      navigation.canGoForward ?
                       {opacity: Math.abs(sheet.value)} :
                       webviewStyle.inactive)
-      }, webviewStyle.forwardArrow.content),
+      }, [webviewStyle.forwardArrow.content]),
       html.div({
         key: 'perspective',
         style: Style(webviewStyle.base,
@@ -392,27 +402,24 @@
                      (sheet.isInMotion && !sheet.isForced) ? {
                        transition: `${sheet.releaseDuration}ms transform ease-out`
                      } : null),
-      }, viewWebFrame(loader, shell, navigation, thumbnail, isSelected, address))
+      }, [
+        viewWebFrame(loader, shell, navigation, thumbnail, isSelected, address)
+      ])
     ]);
-
-    return animate(node, event => {
-      address.receive(sheet.action);
-      address.receive(Sheet.AnimationFrame(event));
-    }, sheet.isInMotion);
   };
 
   const viewWebFrame = (loader, shell, navigation, thumbnail, isSelected, address) => {
     // Do not render anything unless viewer has an `uri`
     if (loader.uri == null) return null;
 
-    const action = address.pass(Event);
+    const action = forward(address, Event);
     const location = URI.resolve(loader.src);
 
-    return IFrame.view({
+    return html.iframe({
       id: `web-view-${loader.id}`,
       src: location,
       'data-uri': loader.uri,
-      opener: loader.opener,
+      opener: opener(loader.opener),
       className: `web-view ${isSelected ? 'selected' : ''}`,
       // This is a workaround for Bug #266 that prevents capturing
       // screenshots if iframe or it's ancesstors have `display: none`.
@@ -422,40 +429,44 @@
                    isSelected ? webviewStyle.active :
                    !thumbnail ? webviewStyle.passive :
                    webviewStyle.inactive),
-      mozbrowser: true,
-      remote: true,
-      mozapp: URI.isPrivileged(location) ? URI.getManifestURL().href : null,
-      mozallowfullscreen: true,
-      isVisible: isSelected || !thumbnail,
-      zoom: shell.zoom,
-      task: navigation.task,
+      attributes: {
+        mozbrowser: true,
+        remote: true,
+        mozapp: URI.isPrivileged(location) ? URI.getManifestURL().href : void(0),
+        mozallowfullscreen: true
+      },
+      isVisible: visiblity(isSelected || !thumbnail),
+      zoom: zoom(shell.zoom),
+      navigation: navigate(navigation.state),
 
-      isFocused: shell.isFocused,
+      isFocused: focus(shell.isFocused),
 
-      onCanGoBackChanged: action,
-      onCanGoForwardChanged: action,
-      onBlur: action,
-      onFocus: action,
-      // onAsyncScroll: action
-      onClose: action,
-      onOpenWindow: action,
-      onOpenTab: action,
-      onMenu: action,
-      onError: action,
-      onLoadStarted: action,
-      onLoadEnded: action,
-      onFirstPaint: action,
-      onDocumentFirstPaint: action,
-      onLoadProgressChange: action,
-      onLocationChanged: action,
-      onMetaChanged: action,
-      onIconChanged: action,
-      onLocationChanged: action,
-      onSecurityChanged: action,
-      onTitleChanged: action,
-      onPrompt: action,
-      onAuthentificate: action,
-      onScrollAreaChange: action,
+      onBlur: on(address, decodeBlur),
+      onFocus: on(address, decodeFocus),
+      // onMozbrowserAsyncScroll: on(address, decodeAsyncScroll),
+
+      onMozBrowserCanGoBackChange: onCanGoBackChange(address, decodeCanGoBackChange),
+      onMozBrowserCanGoForwardChange: onCanGoForwardChange(address, decodeCanGoForwardChange),
+
+      onMozBrowserClose: on(address, decodeClose),
+      onMozBrowserOpenWindow: on(address, decodeOpenWindow),
+      onMozBrowserOpenTab: on(address, decodeOpenTab),
+      onMozBrowserContextMenu: on(address, decodeContexMenu),
+      onMozBrowserError: on(address, decodeError),
+      onMozBrowserLoadStart: on(address, decodeLoadStart),
+      onMozBrowserLoadEnd: on(address, decodeLoadEnd),
+      onMozBrowserFirstPaint: on(address, decodeFirstPaint),
+      onMozBrowserDocumentFirstPaint: on(address, decodeDocumentFirstPaint),
+      // onMozBrowserLoadProgressChange: on(address, decodeProgressChange),
+      onMozBrowserLocationChange: on(address, decodeLocationChange),
+      onMozBrowserMetaChange: on(address, decodeMetaChange),
+      onMozBrowserIconChange: on(address, decodeIconChange),
+      onMozBrowserLocationChange: on(address, decodeLocationChange),
+      onMozBrowserSecurityChange: on(address, decodeSecurityChange),
+      onMozBrowserTitleChange: on(address, decodeTitleChange),
+      onMozBrowserShowModalPrompt: on(address, decodeShowModalPrompt),
+      onMozBrowserUserNameAndPasswordRequired: on(address, decodeAuthenticate),
+      onMozBrowserScrollAreaChanged: on(address, decodeScrollAreaChange),
     });
   };
   exports.viewWebView = viewWebView;
@@ -515,44 +526,42 @@
     html.div({
       key: 'web-views',
       style: Style(webviewsStyle.base, getModeStyle(mode, transition)),
-    }, loader.map((loader, index) =>
+    }, [...loader.map((loader, index) =>
       render(`web-view@${loader.id}`, viewWebView,
-             loader,
-             shell.get(index),
-             navigation.get(index),
-             page.get(index).thumbnail,
-             sheet.get(index),
-             index === selected,
-             address.forward(action =>
-               // If action is boxed in Force.Action we want to keep it
-               // that way.
-               action instanceof Force.Action ?
-                action.set('action', ByID({id: loader.id,
-                                           action: action.action})) :
-                ByID({id: loader.id, action})))));
+              loader,
+              shell.get(index),
+              navigation.get(index),
+              page.get(index).thumbnail,
+              sheet.get(index),
+              index === selected,
+              forward(address, action =>
+                // If action is boxed in Force.Action we want to keep it
+                // that way.
+                action instanceof Force.Action ?
+                  action.set('action', ByID({
+                    id: loader.id,
+                    action: action.action
+                  })) :
+                  ByID({id: loader.id, action}))))]);
   exports.view = view;
 
   // Actions that web-view produces but `update` does not handles.
 
 
-
-  const Event = event =>
-    Event[event.type](event);
-
-  Event.mozbrowserdocumentfirstpaint = event =>
+  const decodeDocumentFirstPaint = event =>
     Page.DocumentFirstPaint();
 
-  Event.mozbrowserfirstpaint = event =>
+  const decodeFirstPaint = event =>
     Page.FirstPaint();
 
-  Event.mozbrowserlocationchange = ({detail: uri, timeStamp}) =>
+  const decodeLocationChange = ({target, detail: uri, timeStamp}) =>
     Loader.LocationChanged({uri, timeStamp});
 
   // TODO: Figure out what's in detail
-  Event.mozbrowserclose = ({detail}) =>
+  const decodeClose = ({detail}) =>
     Close();
 
-  Event.mozbrowseropenwindow = ({detail}) =>
+  const decodeOpenWindow = ({detail}) =>
     Force.Action({
       action: Open({
         uri: detail.url,
@@ -562,7 +571,7 @@
       })
     });
 
-  Event.mozbrowseropentab = ({detail}) =>
+  const decodeOpenTab = ({detail}) =>
     Force.Action({
       action: OpenInBackground({
         uri: detail.url,
@@ -571,61 +580,59 @@
     });
 
   // TODO: Figure out what's in detail
-  Event.mozbrowsercontextmenu = ({detail}) =>
+  const decodeContexMenu = ({detail}) =>
     ContextMenu();
 
   // TODO: Figure out what's in detail
-  Event.mozbrowsershowmodalprompt = ({detail}) =>
+  const decodeShowModalPrompt = ({detail}) =>
     ModalPrompt();
 
   // TODO: Figure out what's in detail
-  Event.mozbrowserusernameandpasswordrequired = ({detail}) =>
+  const decodeAuthenticate = ({detail}) =>
     Authentificate();
 
   // TODO: Figure out what's in detail
-  Event.mozbrowsererror = ({detail}) =>
+  const decodeError = ({detail}) =>
     Failure({detail});
 
 
-  Event.focus = ({id}) =>
-    Focusable.Focused({id});
+  const decodeFocus = (_) =>
+    Focusable.Focused();
 
-  Event.blur = ({id}) =>
-    Focusable.Blured({id});
+  const decodeBlur = (_) =>
+    Focusable.Blured();
 
-
-  Event.mozbrowsergobackchanged = ({detail: value}) =>
+  const decodeCanGoBackChange = ({detail: value}) =>
     Navigation.CanGoBackChanged({value});
 
-  Event.mozbrowsergoforwardchanged = ({detail: value}) =>
+  const decodeCanGoForwardChange = ({detail: value}) =>
     Navigation.CanGoForwardChanged({value});
 
-
-  Event.mozbrowserloadstart = ({target, timeStamp}) =>
+  const decodeLoadStart = ({target, timeStamp}) =>
     Progress.LoadStarted({uri: target.dataset.uri, timeStamp});
 
-  Event.mozbrowserloadend = ({target, timeStamp}) =>
+  const decodeLoadEnd = ({target, timeStamp}) =>
     Progress.LoadEnded({uri: target.dataset.uri, timeStamp});
 
-  Event.mozbrowsertitlechange = ({target, detail: title}) =>
+  const decodeTitleChange = ({target, detail: title}) =>
     Page.TitleChanged({uri: target.dataset.uri, title});
 
-  Event.mozbrowsericonchange = ({target, detail: icon}) =>
+  const decodeIconChange = ({target, detail: icon}) =>
     Page.IconChanged({uri: target.dataset.uri, icon});
 
-  Event.mozbrowsermetachange = ({detail: {content, name}}) =>
+  const decodeMetaChange = ({detail: {content, name}}) =>
     Page.MetaChanged({content, name});
 
   // TODO: Figure out what's in detail
-  Event.mozbrowserasyncscroll = ({detail}) =>
+  const decodeAsyncScroll = ({detail}) =>
     Page.Scrolled();
 
-  Event.mozbrowserscrollareachanged = ({target, detail}) =>
+  const decodeScrollAreaChange = ({target, detail}) =>
     Page.OverflowChanged({
       overflow: detail.height > target.parentNode.clientHeight
     });
 
-  Event.mozbrowsersecuritychange = ({detail}) =>
+  const decodeSecurityChange = ({detail}) =>
     Security.SecurityChanged({
       state: detail.state,
       extendedValidation: detail.extendedValidation

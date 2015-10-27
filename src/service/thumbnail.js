@@ -48,8 +48,8 @@
       const uri = iframe.dataset.uri;
       const id = action.id;
       if (iframe) {
-        fetchScreenshot(iframe).then(address.pass(blob =>
-          action.set('action', Page.ThumbnailChanged({
+        fetchScreenshot(iframe).then(blob =>
+          address(action.set('action', Page.ThumbnailChanged({
             uri, image: URL.createObjectURL(blob)
           }))));
       }

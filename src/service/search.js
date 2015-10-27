@@ -54,13 +54,13 @@
         const query = action.input.trim();
 
         if (!query) {
-          address.receive(Result({id: action.id}));
+          address(Result({id: action.id}));
         } else {
           request = new XMLHttpRequest({mozSystem: true});
           request.open('GET', `https://ac.duckduckgo.com/ac/?q=${query}&type=list`, true);
           request.responseType = 'json';
           request.send();
-          request.onload = address.pass(respond, action, request);
+          request.onload = () => address(respond(action, request));
         }
       }
     };

@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
   'use strict';
 
-  const {html, render} = require('reflex');
+  const {html, thunk:render, forward} = require('reflex');
   const URI = require('../common/url-helper');
   const {StyleSheet, Style} = require('../common/style');
 
@@ -17,6 +17,7 @@
   const Input = require('./web-input');
   const Suggestions = require('./suggestion-box');
   const ClassSet = require('../common/class-set');
+  const {focus, selection} = require('driver')
 
   // Model
 
@@ -35,7 +36,7 @@
     bar: {
       display: 'inline-block',
       MozWindowDragging: 'no-drag',
-      borderRadius: 5,
+      borderRadius: '5px',
       overflow: 'hidden',
       // Contains absolute elements
       position: 'relative',
@@ -43,30 +44,30 @@
       width: null
     },
     inactive: {
-      height: 22,
+      height: '22px',
       lineHeight: '22px',
       padding: '0 22px',
-      top: 3,
-      width: 250,
+      top: '3px',
+      width: '250px',
     },
     active: {
       backgroundColor: 'rgba(255,255,255,0.2)',
       color: 'rgba(255,255,255,0.7)',
-      height: 30,
+      height: '30px',
       lineHeight: '30px',
       padding: '0 30px',
-      width: 400,
-      top: 40,
+      width: '400px',
+      top: '40px',
     },
     // Display styles when location bar is displaying suggested result.
     suggesting: {
       backgroundColor: 'white',
       color: 'rgba(0,0,0,0.7)',
-      height: 30,
+      height: '30px',
       lineHeight: '30px',
       padding: '0 30px',
-      width: 400,
-      top: 40
+      width: '400px',
+      top: '40px'
     },
     button: {
       opacity: null,
@@ -78,8 +79,8 @@
       color: 'inherit',
       position: 'absolute',
       top: 0,
-      width: 30,
-      height: 30,
+      width: '30px',
+      height: '30px',
       fontFamily: 'FontAwesome',
       textAlign: 'center',
       fontSize: '17px',
@@ -142,7 +143,7 @@
 
     security: {
       fontFamily: 'FontAwesome',
-      marginRight: 6,
+      marginRight: '6px',
       verticalAlign: 'middle'
     }
   });
@@ -186,6 +187,7 @@
 
   const viewBar = mode => (address, children) => html.div({
     style: style.container,
+    className: 'location-bar-container'
   }, [
     html.div({
       key: 'LocationBar',
@@ -193,7 +195,7 @@
         'location-bar': true
       }),
       style: Style(style.bar, style[mode]),
-      onClick: address.pass(Focusable.Focus)
+      onClick: forward(address, Focusable.Focus)
     }, children)
   ]);
 
@@ -205,7 +207,7 @@
 
   const viewInDashboard = (loader, security, page, input, suggestions, address) => {
     // Make forwarding addres that wraps actions into `Input.Action`.
-    const inputAddress = address.forward(InputAction);
+    const inputAddress = forward(address, InputAction);
 
     const view = Suggestions.isSuggesting(input, suggestions) ?
       viewSuggestingBar : viewActiveBar;
@@ -213,9 +215,10 @@
     return view(inputAddress, [
       html.span({
         key: 'icon',
+        className: 'location-search-icon',
         style: Style(style.searchIconLarge, style.visible)
-      }, SEARCH_ICON),
-      Editable.view({
+      }, [SEARCH_ICON]),
+      html.input({
         key: 'input',
         className: 'location-bar-input',
         placeholder: 'Search or enter address',
@@ -225,13 +228,13 @@
             Suggestions.entries(suggestions).get(suggestions.selected).uri :
             (input.value || ''),
         style: style.input,
-        isFocused: input.isFocused,
-        selection: input.selection,
-        onChange: inputAddress.pass(Changed),
-        onSelect: inputAddress.pass(Selected),
-        onFocus: inputAddress.pass(Focusable.Focused),
-        onBlur: inputAddress.pass(Focusable.Blured),
-        onKeyDown: address.pass(Binding)
+        isFocused: focus(input.isFocused),
+        selection: selection(input.selection),
+        onInput: forward(inputAddress, Changed),
+        onSelect: forward(inputAddress, Selected),
+        onFocus: forward(inputAddress, Focusable.Focused),
+        onBlur: forward(inputAddress, Focusable.Blured),
+        onKeyDown: forward(address, Binding)
       })
     ]);
   }
@@ -252,24 +255,25 @@
       children.push(html.span({
         key: 'securityicon',
         style: style.security
-      }, GearIcon));
+      }, [GearIcon]));
     } else if (isSecure) {
       children.push(html.span({
         key: 'securityicon',
         style: style.security
-      }, LockIcon));
+      }, [LockIcon]));
     }
 
     children.push(title);
 
-    return viewInactiveBar(address.forward(InputAction), [
+    return viewInactiveBar(forward(address, InputAction), [
       html.span({
         key: 'icon',
         className: 'location-search-icon',
         style: style.searchIconSmall
-      }, SEARCH_ICON),
+      }, [SEARCH_ICON]),
       html.div({
         key: 'page-summary',
+        className: 'location-bar-page-summary',
         style: style.summary
       }, children)
     ]);

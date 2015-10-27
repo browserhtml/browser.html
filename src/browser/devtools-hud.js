@@ -51,10 +51,15 @@
 
   exports.ToggleDevtoolsHUD = ToggleDevtoolsHUD;
 
+  // FIXME: DevtoolHUD should not react to settings actions
+  // instead settings should be requested as effects and
+  // mapped so they will be directed at devtools hud.
+  exports.Changed = Settings.Changed;
+  exports.Fetched = Settings.Fetched;
+
   // update
 
   const update = (state, action) => {
-
     const updateSettingIfNeeded = (name, value) => {
       if (name in state.get('settings')) {
         state = state.setIn(['settings', name], value);
@@ -93,23 +98,23 @@
     }
     fetched = true;
     for (var name of [...state.get('settings').keys()]) {
-      address.receive(Settings.Fetch({
+      address(Settings.Fetch({
         id: 'devtools:fetch' + name,
         query: name}));
     }
     var name = 'debugger.remote-mode';
-    address.receive(Settings.Fetch({
+    address(Settings.Fetch({
       id: 'devtools:fetch:debugger.remote-mode',
       query: name}));
   }
 
   const style = StyleSheet.create({
     checkbox: {
-      marginRight: 6,
+      marginRight: '6px',
       MozAppearance: 'checkbox',
     },
     label: {
-      padding: 6,
+      padding: '6px',
       MozUserSelect: 'none',
       display: 'block',
     },
@@ -117,14 +122,14 @@
       display: 'block',
       border: '1px solid #AAA',
       padding: '3px 6px',
-      margin: 6,
-      borderRadius: 3,
+      margin: '6px',
+      borderRadius: '3px',
     },
     container: {
-      padding: 10,
+      padding: '10px',
       position: 'absolute',
-      bottom: 10,
-      left: 10,
+      bottom: '10px',
+      left: '10px',
       width: '300px',
       height: '400px',
       color: 'black',
@@ -151,7 +156,7 @@
       }, [
         html.input({
           type: 'checkbox',
-          checked: state.getIn(['settings', settingName]),
+          checked: state.getIn(['settings', settingName]) ? true : void(0),
           style: style.checkbox,
           onChange: e => {
             var setting = {};
@@ -164,20 +169,21 @@
     const runtimeButtons = [
       html.button({
         style: style.button,
-        onClick: address.send(Runtime.Restart())
-      }, 'Restart'),
+        onClick: _ => address(Runtime.Restart())
+      }, ['Restart']),
       html.button({
         style: style.button,
-        onClick: address.send(Runtime.CleanRestart())
-      }, 'Clear cache and restart'),
+        onClick: _ => address(Runtime.CleanRestart())
+      }, ['Clear cache and restart']),
       html.button({
         style: style.button,
-        onClick: address.send(Runtime.CleanReload())
-      }, 'Clear cache and reload')
+        onClick: _ => address(Runtime.CleanReload())
+      }, ['Clear cache and reload'])
     ];
 
     return html.div({
       key: 'devtools-toolbox',
+      className: 'devtools toolbox',
       style: Style(style.container,
           state.enableHUD ? style.containerVisible : style.containerHidden),
     }, [
@@ -187,15 +193,19 @@
       }, [
         html.input({
           type: 'checkbox',
-          checked: state.get('enableRemoteDevtools'),
+          checked: state.get('enableRemoteDevtools') ? true : void(0),
           style: style.checkbox,
           onChange: e => {
             navigator.mozSettings.createLock().set({
               'debugger.remote-mode': e.target.checked ? 'adb-devtools' : 'disabled'
             });
           }
-        }), 'Enable Remote DevTools'
-      ]), [...settingsCheckboxes, runtimeButtons]]);
+        }),
+        'Enable Remote DevTools'
+      ]),
+      ...settingsCheckboxes,
+      ...runtimeButtons
+    ]);
   };
 
   exports.view = view;

@@ -144,7 +144,7 @@
 
   const service = address => action => {
     if (action instanceof KeyboardAction) {
-      address.receive(action.action);
+      address(action.action);
     }
   }
   exports.service = service;
