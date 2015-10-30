@@ -19,6 +19,7 @@
   const Force = require('../service/force');
   const Card = require('./web-card');
   const Sheet = require('./web-sheet');
+  const {Effects} = require('reflex');
   const {onAnimationFrame, on, focus, visiblity, zoom, opener, navigate,
          onCanGoBackChange, onCanGoForwardChange} = require('driver');
 
@@ -229,9 +230,53 @@
       security: security.set(n, Security.update(security.get(n), action)),
       navigation: navigation.set(n, Navigation.update(navigation.get(n), action)),
       card: card.set(n, Card.update(card.get(n), action)),
-      sheet: sheet.set(n, Sheet.update(sheet.get(n), action))
+      sheet: sheet.set(n, Sheet.physics(sheet.get(n), action))
     }));
   };
+
+
+  const stepByIndex = (state, n, action) => {
+    if (action instanceof Open) {
+      return [open(state, action), Effects.none]
+    }
+
+    if (action instanceof OpenInBackground) {
+      return [open(state, action), Effects.none]
+    }
+
+    if (action instanceof Close) {
+      [closeByIndex(state, n, action), Effects.none]
+    }
+
+    // If load is initiatied need to update web-view loader & shell to
+    // focus given web-view.
+    if (action instanceof Loader.Load) {
+
+    }
+
+    // Web view shell update.
+
+    if (action instanceof Focusable.Focus ||
+        action instanceof Focusable.Focused) {
+
+      return [
+        state.set('selected', n)
+             .setIn(['shell', n], Shell.update(shell.get(n), action)),
+        Effects.none
+      ]
+    }
+
+    if (action instanceof VisibilityChanged ||
+        action instanceof ZoomIn ||
+        action instanceof ZoomOut ||
+        action instanceof ResetZoom ||
+        action instanceof Focusable.Blur ||
+        action instanceof Focusable.Blured) {
+
+    }
+
+
+
 
 
 
@@ -273,6 +318,29 @@
       open(state, action) :
     state;
   exports.update = update;
+
+
+  const reportUnknown = action => {
+    console.warn(`Unsupported action ${action} received on web-view`)
+    return action
+  }
+
+  const step = (state, action) =>
+    action instanceof Select ?
+      [select(state, action.action), Effects.none] :
+    action instanceof Preview ?
+      [preview(state, action.action), Effects.none] :
+    action instanceof ByID ?
+      stepByIndex(state, indexByID(state, action.id), action.action) :
+    action instanceof BySelected ?
+      stepByIndex(state, state.selected, action.action) :
+    action instanceof Open ?
+      [open(state, action), Effects.none] :
+    action instanceof OpenInBackground ?
+      [open(state, action), Effects.none] :
+      [state, reportUnknown(action)]
+    exports.update = update;
+
 
 
   // View
@@ -372,13 +440,7 @@
       MozSwipeGestureStart: on(address, decodeSwapeGestureStart),
       MozSwipeGestureUpdate: on(address, decodeSwipeGestureUpdate),
       MozSwipeGestureEnd: on(address, decodeSwipeGestureEnd),
-      MozSwipeGesture: on(address, decodeSwipeGestureStop),
-      onAnimationFrame: sheet.isInMotion && onAnimationFrame(timeStamp => {
-        if (sheet.action != null) {
-          address(sheet.action);
-        }
-        address(Sheet.AnimationFrame({timeStamp}));
-      })
+      MozSwipeGesture: on(address, decodeSwipeGestureStop)
     }, [
       html.figure({
         key: 'goBack',

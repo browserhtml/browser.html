@@ -5,6 +5,7 @@
 
 import {Record, Union, List, Maybe, Any} from 'typed-immutable';
 import {GoBack, GoForward} from './web-navigation';
+import * as Effects from "reflex";
 
 // Action
 
@@ -30,6 +31,8 @@ export const AnimationFrame = Record({
   timeStamp: Number
 }, 'Sheet.AnimationFrame');
 
+export const Tick = timeStamp => AnimationFrame({timeStamp});
+
 export const Action = Union(BeginSwipe, EndSwipe, ContinueSwipe,
                             AnimationFrame);
 
@@ -38,11 +41,6 @@ export const Action = Union(BeginSwipe, EndSwipe, ContinueSwipe,
 
 export const Model = Record({
   isForced: Boolean,
-  isInMotion: Boolean,
-  // Action that needs to trigger when motion is complete.
-  // This is an ugly workaround that we need to use until
-  // we allow update to request an action.
-  action: Maybe(Union(GoBack, GoForward)),
 
   // Tilt progress in range of -1 to 1 where negative
   // value is for left tilt and positive for right tilt.
@@ -63,7 +61,6 @@ export const Model = Record({
 
 export const init = () => Model({
   isForced: false,
-  isInMotion: false,
   action: null,
 
   x: 0,
@@ -86,7 +83,6 @@ const maxReleaseAnimationDuration = 300;
 const threshold = 0.8;
 
 const clear = (state, _) => state.merge({
-  isInMotion: false,
   isForced: false,
   action: null,
 
@@ -106,26 +102,40 @@ const force = (state, action) =>
     state;
 
 // Tilt model according to the applied force.
-const tilt = (state, action) => {
-  return state.isForced ?
-            state.merge({
-              x: Math.floor(state.value * maxX),
-              z: Math.floor(Math.abs(state.value) * maxZ),
-              angle: Math.floor(state.value * maxAngle * 10) / 10,
-            }) :
-          state.releaseTime + state.releaseDuration <=  action.timeStamp ?
-            clear(state) :
-          state;
+const tilt = (state, action) =>
+  // Is force still being applied then update x, z, and angle & request next
+  // animation frame.
+  state.isForced ?
+    [
+      state.merge({
+        x: Math.floor(state.value * maxX),
+        z: Math.floor(Math.abs(state.value) * maxZ),
+        angle: Math.floor(state.value * maxAngle * 10) / 10,
+      }),
+      Effects.tick(Tick)
+    ] :
+  // If force is no longer applied and release animation is complete
+  // then clear the model and request an appropriate action.
+  state.releaseTime + state.releaseDuration <= action.timeStamp ?
+    [
+      clear(state),
+      Math.abs(state.value) < threshold) ?
+          Effects.none :
+        state.value < 0 ?
+          GoBack() :
+          GoForward()
+    ] :
+    // If force isn't applied leave model as is and let css transation do the
+    // work.
+    [state, Effects.none]
 };
 
-const touch = (state, action) => state.merge({
+// Start a tilting motion.
+const drag = (state, action) => state.merge({
   isForced: true,
   isInMotion: true,
-  action: null,
 
-  x: 0,
-  z: 0,
-  angle: 0,
+  angle: 0, x: 0, z: 0,
   value: 0,
 
   releaseTime: null,
@@ -136,31 +146,21 @@ const touch = (state, action) => state.merge({
 // otherwise just reset fields and compute release animation duration.
 const release = (state, action) =>
   state.merge({
-    action: Math.abs(state.value) < threshold ? null :
-            state.value < 0 ? GoBack() :
-            GoForward(),
-    angle: 0, x: 0, z: 0,
     isForced: false,
+
+    angle: 0, x: 0, z: 0,
+
     releaseTime: action.timeStamp,
     releaseDuration: Math.abs(Math.floor(state.value * maxReleaseAnimationDuration))
-  });
+  })
 
 const physics = (state, action) =>
-  action instanceof GoBack ?
-    state.set('action', null) :
-  action instanceof GoForward ?
-    state.set('action', null) :
   action instanceof BeginSwipe ?
-    touch(state, action) :
-  !state.isInMotion ?
-    state :
+    [drag(state, action), Effects.tick(Tick)] :
   action instanceof EndSwipe ?
-    release(state, action) :
+    [release(state, action), Effects.none] :
   action instanceof ContinueSwipe ?
-    force(state, action) :
+    [force(state, action), Effects.none] :
   action instanceof AnimationFrame ?
     tilt(state, action) :
-    state;
-
-export const update = (state, action) =>
-  physics(state, action);
+    [state, Effects.none];

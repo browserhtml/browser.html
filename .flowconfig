@@ -1,0 +1,29 @@
+[ignore]
+.*/src/test/.*
+.*/dist/.*
+.*/node_modules/reflex/examples/.*
+.*/node_modules/reflex-virtual-dom-driver/lib/.*
+.*/node_modules/reflex/lib/.*
+.*/node_modules/eased/lib/.*
+.*/node_modules/eased/dist/.*
+.*/node_modules/eased/.*/lib/.*
+.*/node_modules/eased/.*/dist/.*
+.*/browser.html/src/.*
+.*/browser.html/test/.*
+.*/browser.html/graphene/.*
+.*/browser.html/css/.*
+.*/browser.html/.profile/.*
+.*/browser.html/.bin/.*
+.*/gulpfile.*
+
+[libs]
+./node_modules/reflex/interfaces/
+./node_modules/reflex-virtual-dom-driver/interfaces/
+
+[include]
+
+[options]
+module.name_mapper='reflex-virtual-dom-driver' -> 'reflex-virtual-dom-driver/src/index'
+module.name_mapper='reflex' -> 'reflex/src/index'
+module.name_mapper='eased' -> 'eased/src/index'
+module.name_mapper='color-structure' -> 'color-structure/src/index'

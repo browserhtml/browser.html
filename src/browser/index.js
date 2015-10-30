@@ -53,6 +53,11 @@
 
   const renderer = new Renderer({target: document.body})
   application.view.subscribe(renderer.address)
+  application.task.subscribe(task => {
+    if (task.$type != "Effects.None") {
+      console.log(task)
+    }
+  })
 
 
   const address = action => {
@@ -60,6 +65,8 @@
     if (isForced) {
       action = action.action;
     }
+
+    console.log(action + '')
 
     application.address(action);
     thumbnail(action);
