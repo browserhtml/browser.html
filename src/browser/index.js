@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {start, Effects} from "reflex";
+import * as PerspectiveUI from "./perspective-ui";
 import * as Browser from "./browser";
 import * as Runtime from "../common/runtime";
 
@@ -32,7 +33,7 @@ const application = start({
             window.application.model.value :
             Browser.initialize(),
   step: logger(Browser.step),
-  view: Browser.view
+  view: PerspectiveUI.view
 });
 
 
