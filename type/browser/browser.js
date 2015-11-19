@@ -3,6 +3,7 @@
 import type {Address, VirtualTree, Effects} from "reflex/type"
 import type {Version, For} from "../common/prelude"
 import * as Devtools from "../common/devtools"
+import * as PerspectiveUI from "./perspective-ui"
 import * as Shell from "./shell"
 import * as WebView from "./web-view"
 import * as Updater from "./updater"
@@ -13,6 +14,7 @@ import * as Assistant from "./assistant"
 
 export type Model = {
   version: Version,
+  mode: PerspectiveUI.Model,
   shell: Shell.Model,
   input: Input.Model,
   suggestions: Assistant.Model,

@@ -1,28 +1,18 @@
 /* @flow */
 
 import {version} from "../../package.json";
-import {Effects, html, forward, thunk} from "reflex";
+import {Effects, html, forward} from "reflex";
 
+import * as PerspectiveUI from "./perspective-ui";
 import * as Shell from "./shell";
 import * as Input from "./input";
 import * as Assistant from "./assistant";
-import * as WindowControls from "./window-controls";
-import * as Sidebar from "./sidebar";
 
 // import * as Updater from "./updater"
 // import * as Devtools from "./devtools"
 import * as WebViews from "./web-views"
 
 import {asFor, merge, always} from "../common/prelude";
-import * as Focusable from "../common/focusable";
-import * as OS from '../common/os';
-import * as Keyboard from '../common/keyboard';
-import {Style, StyleSheet} from '../common/style';
-
-import {identity} from "../lang/functional";
-import {updateIn} from "../lang/object";
-
-import {onWindow} from "driver";
 
 /*:: import * as type from "../../type/browser/browser" */
 
@@ -32,6 +22,7 @@ export const initialize/*:type.initialize*/ = () => {
 
   const model = {
     version,
+    mode: PerspectiveUI.initial,
     shell: Shell.initial,
     input: Input.initial,
     suggestions: Assistant.initial,
@@ -48,43 +39,6 @@ export const initialize/*:type.initialize*/ = () => {
 
   return [model, Effects.none];
 }
-
-const asForInput = asFor('input');
-
-const modifier = OS.platform() == 'linux' ? 'alt' : 'accel';
-
-const FocusInput = asForInput(Focusable.Focus);
-
-const keyDown = Keyboard.bindings({
-  'accel l': always(asForInput(Focusable.Focus)),
-  // 'accel t': _ => SynthesisUI.OpenNew(),
-  // 'accel 0': _ => WebView.BySelected({action: Shell.ResetZoom()}),
-  // 'accel -': _ => WebView.BySelected({action: Shell.ZoomOut()}),
-  // 'accel =': _ => WebView.BySelected({action: Shell.ZoomIn()}),
-  // 'accel shift =': _ => WebView.BySelected({action: Shell.ZoomIn()}),
-  // 'accel w': _ => WebView.BySelected({action: WebView.Close()}),
-  // 'accel shift ]': _ => WebView.Preview({action: Selector.Next()}),
-  // 'accel shift [': _ => WebView.Preview({action: Selector.Previous()}),
-  // 'control tab': _ => WebView.Preview({action: Selector.Next()}),
-  // 'control shift tab': _ => WebView.Preview({action: Selector.Previous()}),
-  // 'accel shift backspace': _ => Session.ResetSession(),
-  // 'accel shift s': _ => Session.SaveSession(),
-  // 'accel r': _ => WebView.BySelected({action: Navigation.Reload()}),
-  // 'escape': _ => WebView.BySelected({action: Navigation.Stop()}),
-  // [`${modifier} left`]: _ => WebView.BySelected({action: Navigation.GoBack()}),
-  // [`${modifier} right`]: _ => WebView.BySelected({action: Navigation.GoForward()}),
-
-  // TODO: `meta alt i` generates `accel alt i` on OSX we need to look
-  // more closely into this but so declaring both shortcuts should do it.
-  // 'accel alt i': _ => DevtoolsHUD.ToggleDevtoolsHUD(),
-  // 'accel alt ˆ': _ => DevtoolsHUD.ToggleDevtoolsHUD(),
-  // 'F12': _ => DevtoolsHUD.ToggleDevtoolsHUD()
-});
-
-const keyUp = Keyboard.bindings({
-  // 'control': _ => SynthesisUI.ShowSelected(),
-  // 'accel': _ => SynthesisUI.ShowSelected(),
-});
 
 // Unbox For actions and route them to their location.
 const stepFor = (target, model, action) => {
@@ -133,49 +87,3 @@ export const step/*:type.step*/ = (model, action) =>
   action.type === 'For' ?
     stepFor(action.target, model, action.action) :
     [model, Effects.none];
-
-const style = StyleSheet.create({
-  root: {
-    background: '#24303D',
-    perspective: '1000px',
-    // These styles prevent scrolling with the arrow keys in the root window
-    // when elements move outside of viewport.
-    width: '100vw',
-    height: '100vh',
-    overflow: 'hidden',
-    position: 'absolute'
-  }
-});
-
-export const view/*:type.view*/ = (model, address) =>
-  html.div({
-    className: 'root',
-    style: style.root,
-    tabIndex: 1,
-    onKeyDown: onWindow(forward(address, asFor("Browser.KeyDown")), keyDown),
-    onKeyUp: onWindow(forward(address, asFor("Browser.KeyUp")), keyUp),
-    onBlur: onWindow(forward(address, asFor("shell")), Focusable.asBlur),
-    onFocus: onWindow(forward(address, asFor("shell")), Focusable.asFocus),
-    // onUnload: () => address(Session.SaveSession),
-  }, [
-    thunk('web-views',
-          WebViews.view,
-          model.webViews,
-          forward(address, asFor("webViews"))),
-    thunk('sidebar',
-          Sidebar.view,
-          model.webViews,
-          forward(address, asFor("webViews"))),
-    thunk('input',
-          Input.view,
-          model.input,
-          forward(address, asFor("input"))),
-    thunk('suggestions',
-          Assistant.view,
-          model.suggestions,
-          address),
-    thunk('controls',
-      WindowControls.view,
-      model.shell,
-      forward(address, asFor("shell")))
-  ]);
