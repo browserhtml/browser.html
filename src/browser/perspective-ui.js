@@ -134,6 +134,10 @@ export const step = (model, action) => {
       const [browser, fx] = Browser.step(model.browser, action);
       return [asShowWebView(browser), fx];
     }
+    else if (action.target === 'Browser.KeyUp') {
+      const [browser, fx] = Browser.step(model.browser, action);
+      return [asShowWebView(browser), fx];
+    }
   }
   else if (model.mode === 'show-web-view') {
     if (isFocusInput(action)) {
