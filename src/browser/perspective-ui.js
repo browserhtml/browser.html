@@ -134,7 +134,7 @@ export const step = (model, action) => {
       const [browser, fx] = Browser.step(model.browser, action);
       return [asShowWebView(browser), fx];
     }
-    else if (action.target === 'Browser.KeyUp') {
+    else if (action.target === 'Browser.KeyUp' && action.action.key === 'Escape') {
       const [browser, fx] = Browser.step(model.browser, action);
       return [asShowWebView(browser), fx];
     }
