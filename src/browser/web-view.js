@@ -224,13 +224,16 @@ const comboboxWidth = '250px';
 
 const style = StyleSheet.create({
   webview: {
-    position: 'absolute', // to stack webview on top of each other
-    top: 0,
+    //position: 'absolute', // to stack webview on top of each other
+    //top: 0,
+    // position: 'absolute',
+    position: 'sticky',
+    overflow: 'hidden', // hide progress bar
     left: 0,
     width: '100%',
     height: '100%',
     mozUserSelect: 'none',
-    cursor: 'default',
+    cursor: 'default'
   },
 
   webViewInactive: {
@@ -402,10 +405,11 @@ export const view/*:type.view*/ = (model, address) => {
   const isModelDark = isDark(model);
   return html.div({
     className: isModelDark ? 'webview webview-is-dark' : 'webview',
-    style: Style(
-      style.webview,
-      !model.isActive && style.webViewInactive
-    )
+    style: style.webview
+    // Style(
+    //   style.webview,
+    //   !model.isActive && style.webViewInactive
+    // )
   }, [
     viewFrame(model, address),
     html.div({

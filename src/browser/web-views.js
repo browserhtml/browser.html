@@ -308,10 +308,12 @@ const style = StyleSheet.create({
     height: '100%',
     width: '100%',
     left: 0,
-    overflow: 'hidden', // necessary to clip the radius
+    // overflow: 'hidden', // necessary to clip the radius
     position: 'absolute', // to position webviews relatively to stack
     top: 0,
     willChange: 'transform',
+    transformStyle: 'preserve-3d',
+    transformOrigin: 'left',
     // WARNING: will slow down animations! (Gecko)
     // xBorderRadius: '4px',
   }
@@ -320,7 +322,12 @@ const style = StyleSheet.create({
 export const view/*:type.view*/ = (model, address, modeStyle) =>
   html.div({
     className: 'webviews-stack',
-    style: Style(style.webviews, modeStyle)
+    style: Style(style.webviews, modeStyle, {
+      transform
+        : (modeStyle.transform || '')
+        + ' '
+        + `translateY(${model.selected * -100}%)`
+    })
   }, model
       .entries
       .map(entry => thunk(entry.id,
