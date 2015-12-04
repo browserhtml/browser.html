@@ -199,13 +199,16 @@ const comboboxWidth = '250px';
 
 const style = StyleSheet.create({
   webview: {
-    position: 'absolute', // to stack webview on top of each other
-    top: 0,
+    //position: 'absolute', // to stack webview on top of each other
+    //top: 0,
+    // position: 'absolute',
+    position: 'sticky',
+    overflow: 'hidden', // hide progress bar
     left: 0,
     width: '100%',
     height: '100%',
     mozUserSelect: 'none',
-    cursor: 'default',
+    cursor: 'default'
   },
 
   webViewInactive: {
@@ -341,13 +344,14 @@ const viewFrame = (model, address) =>
     onMozBrowserScrollAreaChanged: on(address, decodeScrollAreaChange),
   });
 
-export const view/*:type.view*/ = (model, address) =>
-  html.div({
+export const view/*:type.view*/ = (model, address) => {
+  return html.div({
     className: isDark(model) ? 'webview webview-is-dark' : 'webview',
-    style: Style(
-      style.webview,
-      !model.isActive && style.webViewInactive
-    )
+    style: style.webview
+    // Style(
+    //   style.webview,
+    //   !model.isActive && style.webViewInactive
+    // )
   }, [
     viewFrame(model, address),
     html.div({className: 'webview-local-overlay'}),
