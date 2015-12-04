@@ -29,8 +29,6 @@
   // to minimize object creation. Returns style object that is the result of
   // mixing styles together.
   const Style = (...styles) => {
-    var id = '0';
-
     var length = styles.length;
     var index = 0;
     while (index < length) {
@@ -50,11 +48,24 @@
       }
     }
 
-    if (id && !composedStyles[id]) {
-      composedStyles[id] = Object.assign({[ID]: id}, ...styles);
-    }
+    const composedStyle = id !== null ?
+      composedStyles[id] :
+      null;
 
-    return composedStyles[id] || Object.assign({}, ...styles);
+    if (composedStyle != null) {
+      return composedStyle
+    }
+    else if (id != null) {
+      const composedStyle = Object.assign({}, ...styles);
+      composedStyle[ID] = id;
+      composedStyles[id] = composedStyle;
+      return composedStyle;
+    }
+    else {
+      const composedStyle = Object.assign({}, ...styles);
+      composedStyle[ID] = null;
+      return composedStyle;
+    }
   }
   exports.Style = Style;
 

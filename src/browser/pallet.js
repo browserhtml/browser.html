@@ -7,6 +7,8 @@
 /*:: import * as type from "../../type/browser/pallet" */
 
 import tinycolor from 'tinycolor2';
+import {Effects, Task} from 'reflex';
+import * as URI from '../common/url-helper';
 
 // Hand-curated themes for popular websites.
 const curated = {
@@ -50,3 +52,23 @@ export const initialize/*:type.initialize*/ = (background, foreground) => ({
   background, foreground,
   isDark: isDark(background),
 });
+
+export const CuratedColorNotFound = {
+  type: 'WebView.Page.CuratedColorNotFound'
+};
+
+export const asCuratedColorUpdate = theme => ({
+  type: 'WebView.Page.CuratedColorUpdate',
+  color: theme
+});
+
+export const requestCuratedColor = uri => Effects.task(Task.future(() => {
+  const hostname = URI.getDomainName(uri);
+  const theme = hostname == null ?
+                  null :
+                  curated[hostname];
+
+  return Promise.resolve(theme ?
+                          asCuratedColorUpdate(theme) :
+                          CuratedColorNotFound);
+}));

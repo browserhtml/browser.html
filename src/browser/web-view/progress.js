@@ -40,7 +40,7 @@ export const start/*:type.start*/ = (timeStamp) => [
   {
     loadStart: timeStamp,
     // Predict a 5s load if we don't know.
-    loadEnd: timeStamp + (5 * second),
+    loadEnd: timeStamp + (7 * second),
     updateTime: timeStamp
   },
   Effects.tick(asTick)
@@ -51,10 +51,16 @@ export const start/*:type.start*/ = (timeStamp) => [
 //    {...model, loadEnd: timeStamp},
 //    Effects.none
 //  ]
-export const end = (timeStamp, model) => [
-  merge(model, {loadEnd: timeStamp + 500}),
-  Effects.none
-];
+export const end = (timeStamp, model) =>
+  // It maybe that our estimated load time was naive and we finished load
+  // animation before we received loadEnd. In such case we update both `loadEnd`
+  // & `updateTime` so that load progress will remain complete. Otherwise we
+  // update `loadEnd` with `timeStamp + 500` to make progressbar sprint to the
+  // end in next 500ms.
+  model.loadEnd > model.updateTime ?
+    [merge(model, {loadEnd: timeStamp + 500}), Effects.none] :
+    [merge(model, {loadEnd: timeStamp + 500,
+                   updateTime: timeStamp + 500}), Effects.none];
 
 // Update the progress and request another tick.
 // Returns a new model and a tick effect.

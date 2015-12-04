@@ -81,7 +81,7 @@ export const observe = (name) =>
   Effects.task(Task.io(deliver => {
     const observer = change => {
       navigator.mozSettings.removeObserver(name, observer);
-      deliver(asChanged(change.settingName, change.settingValue));
+      deliver(Task.succeed(asChanged(change.settingName, change.settingValue)));
     }
 
     if (navigator.mozSettings) {

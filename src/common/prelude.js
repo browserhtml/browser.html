@@ -14,8 +14,30 @@ export const asError/*:type.asError*/ = error =>
   ({type: "Error", error})
 
 
-export const merge = /*::<model>*/(model/*:model*/, changes/*:{}*/)/*:model*/ =>
-  Object.assign({}, model, changes)
+export const merge = /*::<model>*/(model/*:model*/, changes/*:{}*/)/*:model*/ => {
+  let result = model
+  for (let key in changes) {
+    if (changes.hasOwnProperty(key)) {
+      const value = changes[key]
+
+      if (model[key] !== value) {
+        if (result === model) {
+          result = {}
+          for (let key in model) {
+            if (model.hasOwnProperty(key)) {
+              result[key] = model[key]
+            }
+          }
+        }
+
+        result[key] = value
+      }
+    }
+  }
+
+  return result
+}
+
 
 export const take = /*::<item>*/(items/*:Array<item>*/, n/*:number*/)/*:Array<item>*/ =>
   items.length <= n ?

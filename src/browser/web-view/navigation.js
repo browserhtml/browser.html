@@ -33,7 +33,7 @@ export const asLoad/*:type.asLoad*/ = uri =>
   ({type: "WebView.Navigation.Load", uri});
 
 export const asLocationChanged/*:type.asLocationChanged*/ = (id, uri, time) =>
-  ({type: "WebView.Loader.LocationChanged", uri, timeStamp: time});
+  ({type: "WebView.Navigation.LocationChanged", id, uri, timeStamp: time});
 
 export const load/*:type.load*/ = (model, uri) =>
   merge(model, {initiatedURI: uri, currentURI: uri});

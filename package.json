@@ -18,7 +18,7 @@
     "live": "gulp live",
     "start": "gulp develop",
     "server": "gulp server",
-    "client": "gulp client",
+    "application": "gulp application",
     "deploy": "./.bin/deploy.sh",
     "build": "NODE_ENV=production gulp build",
     "build-server": "gulp build-server",
@@ -28,7 +28,7 @@
     "eased": "0.0.4",
     "immutable": "3.7.0",
     "pouchdb": "4.0.0",
-    "reflex": "0.0.50",
+    "reflex": "0.0.51",
     "reflex-virtual-dom-driver": "0.0.2",
     "tinycolor2": "1.1.2",
     "typed-immutable": "0.0.7"

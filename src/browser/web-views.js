@@ -219,6 +219,17 @@ const set = (array, index, item) => {
   return items
 }
 
+export const getByID = (model, id) =>
+  getByIndex(model, id);
+
+export const getActive = (model) =>
+  getByIndex(model, model.active);
+
+export const getByIndex = (model, index) =>
+  index < 0 ? null :
+  index >= model.entries.length ? null :
+  model.entries[index];
+
 
 export const stepByIndex/*:type.stepByIndex*/ = (model, index, action) => {
   const {entries} = model;
@@ -236,6 +247,9 @@ export const stepByIndex/*:type.stepByIndex*/ = (model, index, action) => {
 
 
 export const step/*:type.step*/ = (model, action) => {
+  if (action.type === "Focusable.FocusRequest") {
+    return stepByActive(model, action);
+  }
   if (action.type === "WebViews.NavigateTo") {
     return navigateTo(model, action.uri);
   }
@@ -287,17 +301,21 @@ export const asNavigateTo/*:type.asNavigateTo*/
 
 const style = StyleSheet.create({
   webviews: {
-    height: '100vh',
+    // @TODO box shadow slows down animations significantly (Gecko)
+    // boxShadow: '0 50px 80px rgba(0,0,0,0.25)',
+    // @WORKAROUND use percent instead of vw/vh to work around
+    // https://github.com/servo/servo/issues/8754
+    height: '100%',
+    width: '100%',
     left: 0,
     // overflow: 'hidden', // necessary to clip the radius
     position: 'absolute', // to position webviews relatively to stack
     top: 0,
-    width: '100vw',
     willChange: 'transform',
-
     transformStyle: 'preserve-3d',
     transformOrigin: 'left',
-    xBorderRadius: '4px', // WARNING: will slow down animations! (Gecko)
+    // WARNING: will slow down animations! (Gecko)
+    // xBorderRadius: '4px',
   }
 });
 

@@ -10,6 +10,8 @@ import * as WindowControls from "./window-controls";
 
 // import * as Updater from "./updater"
 import * as Devtools from "../common/devtools";
+import * as Runtime from "../common/runtime";
+import * as URI from '../common/url-helper';
 import * as WebViews from "./web-views";
 import * as WebView from "./web-view";
 
@@ -47,20 +49,22 @@ export const initialize/*:type.initialize*/ = () => {
   return [model, fx];
 }
 
-const asByInput = asFor('input');
-const asByWebViews = asFor('webViews');
-const asByActiveWebView = action => asByWebViews(WebViews.asByActive(action));
-const asByDevtools = asFor('devtools');
+export const asByInput = asFor('input');
+export const asByWebViews = asFor('webViews');
+export const asByActiveWebView = action =>
+  asByWebViews(WebViews.asByActive(action));
+export const asByDevtools = asFor('devtools');
 
 const modifier = OS.platform() == 'linux' ? 'alt' : 'accel';
 
 const FocusInput = asByInput(Focusable.Focus);
 
 export const CreateWebView = ({type: 'Browser.CreateWebView'});
+export const Escape = ({type: 'Browser.Escape'});
 export const asOpenWebView = uri => asByWebViews(WebViews.asOpen({uri}));
 
 const keyDown = Keyboard.bindings({
-  'accel l': always(asByInput(Focusable.Focus)),
+  'accel l': always(asByActiveWebView(WebView.Edit)),
   'accel t': always(CreateWebView),
   'accel 0': always(asByActiveWebView(WebView.RequestZoomReset)),
   'accel -': always(asByActiveWebView(WebView.RequestZoomOut)),
@@ -74,7 +78,7 @@ const keyDown = Keyboard.bindings({
   // 'accel shift backspace': _ => Session.ResetSession(),
   // 'accel shift s': _ => Session.SaveSession(),
   'accel r': always(asByActiveWebView(WebView.RequestReload)),
-  'escape': always(asByActiveWebView(WebView.RequestStop)),
+  'escape': always(Escape),
   [`${modifier} left`]: always(asByActiveWebView(WebView.RequestGoBack)),
   [`${modifier} right`]: always(asByActiveWebView(WebView.RequestGoForward)),
 
@@ -82,7 +86,9 @@ const keyDown = Keyboard.bindings({
   // more closely into this but so declaring both shortcuts should do it.
   'accel alt i': always(asByDevtools(Devtools.Toggle)),
   'accel alt ˆ': always(asByDevtools(Devtools.Toggle)),
-  'F12': always(asByDevtools(Devtools.Toggle))
+  'F12': always(asByDevtools(Devtools.Toggle)),
+  'F5': always(Runtime.Reload),
+  'meta control r': always(Runtime.Reload)
 });
 
 const keyUp = Keyboard.bindings({
@@ -105,7 +111,7 @@ const stepFor = (target, model, action) => {
     if (action.type === 'Input.Submit') {
       const [input, inputFx] = Input.step(model.input, action);
 
-      const navigate = WebViews.asNavigateTo(model.input.value);
+      const navigate = WebViews.asNavigateTo(URI.read(model.input.value));
       const [webViews, viewFx] = WebViews.step(model.webViews, navigate);
       // more things need to happen here.
       return [
@@ -115,7 +121,21 @@ const stepFor = (target, model, action) => {
           viewFx.map(asFor('webViews'))
         ])
       ]
-    } else {
+    }
+    else if (action.type === 'Input.Abort') {
+      const [input, inputFx] = Input.step(model.input, action);
+      const [webViews, viewFx] = WebViews.step(model.webViews,
+                                               Focusable.FocusRequest);
+
+      return [
+        merge(model, {input, webViews}),
+        Effects.batch([
+          inputFx.map(asByInput(inputFx)),
+          viewFx.map(asByActiveWebView(viewFx))
+        ])
+      ];
+    }
+    else {
       const [input, fx] = Input.step(model.input, action);
       return [merge(model, {input}), fx.map(asFor('input'))];
     }
@@ -125,8 +145,25 @@ const stepFor = (target, model, action) => {
     return [merge(model, {shell}), fx.map(asFor('shell'))];
   }
   else if (target === 'webViews') {
-    const [webViews, fx] = WebViews.step(model.webViews, action);
-    return [merge(model, {webViews}), fx.map(asFor('webViews'))];
+    if ((action.type === 'WebViews.ByID' ||
+          action.type === 'WebViews.ByActive') &&
+        action.action.type === 'WebView.Edit')
+    {
+
+      const webView = action.type === 'WebViews.ByID' ?
+                        WebViews.getByID(model.webViews, action.id) :
+                        WebViews.getActive(model.webViews);
+      const uri = webView ?
+        webView.navigation.currentURI :
+        '';
+
+      const [input, fx] = Input.step(model.input, Input.asEditSelection(uri));
+      return [merge(model, {input}), fx.map(asFor('input'))];
+    }
+    else {
+      const [webViews, fx] = WebViews.step(model.webViews, action);
+      return [merge(model, {webViews}), fx.map(asFor('webViews'))];
+    }
   }
   else if (target === 'devtools') {
     const [devtools, fx] = Devtools.step(model.devtools, action);
@@ -140,6 +177,10 @@ const stepFor = (target, model, action) => {
 export const step/*:type.step*/ = (model, action) =>
   action.type === 'For' ?
     stepFor(action.target, model, action.action) :
+  action.type === 'Runtime.Reload' ?
+    [model, Runtime.reload()] :
+  action.type === 'Browser.CreateWebView' ?
+    stepFor('input', model, Input.Enter) :
     [model, Effects.none];
 
 const style = StyleSheet.create({
@@ -151,10 +192,13 @@ const style = StyleSheet.create({
     perspectiveOrigin: 'calc(50% - 380px)',
     // These styles prevent scrolling with the arrow keys in the root window
     // when elements move outside of viewport.
-    width: '100vw',
-    height: '100vh',
+    // @WORKAROUND Use percent, not vw and vh to work around
+    // https://github.com/servo/servo/issues/8754
+    width: '100%',
+    height: '100%',
     overflow: 'hidden',
-    position: 'absolute'
+    position: 'absolute',
+    MozWindowDragging: 'drag',
   }
 });
 

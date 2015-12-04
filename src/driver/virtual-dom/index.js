@@ -118,9 +118,9 @@ export const on = (address, decode, options, getTarget) => {
   return address[id]
 }
 
-const getWindow = target => target.ownerDocument.defaultView
+const getRoot = target => target.ownerDocument
 export const onWindow = (address, decode, options) =>
-  on(address, decode, options, getWindow)
+  on(address, decode, options, getRoot)
 
 class MetaProperty {
   constructor(value, update) {

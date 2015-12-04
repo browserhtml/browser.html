@@ -17,11 +17,17 @@
   border: 0;
 }
 
+/* @WORKAROUND using percentage instead of vh/vw to work around
+https://github.com/servo/servo/issues/8754 */
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
 /* Prevents scrollbars to show up with out-of-window elements */
 body {
   font: 12px/1.5 "Helvetica Neue", sans-serif;
-  width: 100vw;
-  height: 100vh;
   overflow: hidden;
 }
 

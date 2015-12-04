@@ -1,32 +1,42 @@
 /* @flow */
 
-import type {Address, VirtualTree, Effects} from "reflex/type"
-import type {URI} from "../common/prelude"
+import type {Address, VirtualTree} from "reflex/type"
+import type {Effects} from "reflex/type/effects"
+import type {URI, For} from "../common/prelude"
 import * as WebViewList from "./web-views"
 import * as Browser from "./browser"
+import * as Animation from "../common/animation"
+import * as Overlay from "../browser/overlay"
 
 // Application states (or modes rather) are expressed in terms of
 // model types (blue nodes from spec diagram)
 
+export type State = {
+  browser: Browser.Model,
+  overlay: Overlay.Model,
+  animation: ?Animation.Model
+}
+
 export type EditWebView
   = {mode: "edit-web-view"}
-  & Browser.Model
+  & State
+
 
 export type ShowWebView
   = {mode: "show-web-view"}
-  & Browser.Model
+  & State
 
 export type CreateWebView
   = {mode: "create-web-view"}
-  & Browser.Model
+  & State
 
 export type SelectWebView
   = {mode: "select-web-view"}
-  & Browser.Model
+  & State
 
 export type ShowTabs
   = {mode: "show-tabs"}
-  & Browser.Model
+  & State
 
 // Application can be in any of the above state there for it's model is union
 // of every mode state.
@@ -38,52 +48,43 @@ export type Model
   | SelectWebView
   | ShowTabs
 
+export type Action
+  = Browser.Action
+  | For<"animation", Animation.Action>
+  | For<"overlay", Overlay.Action>
 
-// Corresponds to "Esc" nodes in the diagram. This action will be received
-// once escape key will be released on the browser root node.
-export type Abort = {
-  type: "PerspectiveUI.Abort"
-}
+export type ActionPredicate = (action:Action) => boolean
 
-// Action will be received once user clicks "create tab button" or invokes "Command T"
-// key binding.
-export type Create = {
-  type: "PerspectiveUI.Create"
-}
-
-// Action is triggered by:
-// - 3D Touch: Pop
-// - Click on tabs button
-export type ZoomOut = {
-  type: "PerspectiveUI.ZoomOut"
-}
-
-export type ZoomIn = {
-  type: "PerspectiveUI.ZoomIn"
-}
-
-
-
-
-// Application mode transitions are expressed in form of functions that take
-// application model in one state and return application model in other state
-// (green nodes from spec diagram)
-
-// Note: In diagram this is "Hide search" at top left area.
-export type abortEdit = (model:EditWebView) => ShowWebView
-// Note: In diagram this is "change page and hide search" at top middle area.
-export type loadPage = (model:EditWebView, uri:URI) => ShowWebView
-
-// Note: In diagram this is "Hide search" in bottom left corner.
-export type abortOpen = (model:CreateWebView) => ShowWebView
-// Note: In diagram this is "Change page & hide search" at bottom left area.
-export type openPage = (model:CreateWebView, options:WebViewList.NewWebViewOptions) => ShowWebView
+export type isInputAction = ActionPredicate
+export type isWebViewAction = ActionPredicate
+export type isFocusAction = ActionPredicate
+export type isAbort = ActionPredicate
+export type isSubmit = ActionPredicate
+export type isFocusInput = ActionPredicate
+export type isKeyDown = ActionPredicate
+export type isKeyUp = ActionPredicate
+export type isCreateTab = ActionPredicate
+export type isShowTabs = ActionPredicate
+export type isEscape = ActionPredicate
+export type isActivateSelected = ActionPredicate
+export type isActivateSelectedWebView = ActionPredicate
+export type isFocusWebView = ActionPredicate
+export type isActivateWebView = ActionPredicate
+export type isEditWebview = ActionPredicate
+export type isSelectRelativeWebView = ActionPredicate
+export type isSwitchSelectedWebView = ActionPredicate
 
 
-export type showTabs = (model:ShowWebView) => ShowTabs
-export type selectWebView = (model:ShowWebView) => SelectWebView
 
-export type hideTabs = (model:ShowTabs) => ShowWebView
-export type activateTab = (model:ShowTabs) => ShowWebView
 
-export type activateWebView = (model:SelectWebView) => ShowWebView
+export type initilize = () => [Model, Effects<Action>]
+export type step = (model:Model, action:Action) => [Model, Effects<Action>]
+
+export type View <Model> = (model:Model, address:Address<Action>) => VirtualTree
+
+export type view = View<Model>
+export type viewAsEditWebView = View<EditWebView>
+export type viewAsShowWebView = View<ShowWebView>
+export type viewAsCreateWebView = View<CreateWebView>
+export type viewAsSelectWebView = View<SelectWebView>
+export type viewAsShowTabs = View<ShowTabs>

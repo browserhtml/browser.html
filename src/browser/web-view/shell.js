@@ -82,4 +82,10 @@ export const step/*:type.step*/ = (model, action) =>
     [merge(model, {zoom: action.zoom}), Effects.none] :
   action.type === 'WebView.Shell.RequestBy' ?
     [model, request(model, action)] :
+  action.type === 'Focusable.Focus' ?
+    [Focusable.update(model, action), Effects.none] :
+  action.type === 'Focusable.FocusRequest' ?
+    [Focusable.update(model, action), Effects.none] :
+  action.type === 'Focusable.Blur' ?
+    [Focusable.update(model, action), Effects.none] :
     [model, Effects.none];

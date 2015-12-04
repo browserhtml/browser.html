@@ -7,7 +7,7 @@
 /*:: import * as type from "../../type/browser/web-view" */
 
 import {Effects, html} from 'reflex';
-import {merge, always} from '../common/prelude';
+import {merge, always, asFor} from '../common/prelude';
 import {on} from 'driver';
 import * as Shell from './web-view/shell';
 import * as Progress from './web-view/progress';
@@ -37,6 +37,14 @@ export const Activate/*:type.Activate*/
 export const Close/*:type.Close*/
   = {type: "WebView.Close"};
 
+export const Edit/*:type.Edit*/
+  = {type: 'WebView.Edit'};
+
+export const RequestShowTabs/*:type.RequestShowTabs*/
+ = {type: 'WebView.RequestShowTabs'};
+
+export const Create = ({type: 'WebView.Create'});
+
 export const open/*:type.open*/ = (id, options) => ({
   id: id,
   name: options.name,
@@ -46,8 +54,8 @@ export const open/*:type.open*/ = (id, options) => ({
   shell: Shell.initial,
   security: Security.initial,
   navigation: Navigation.initiate(options.uri),
+  page: Page.initiate(options.uri),
   progress: null,
-  page: null
 })
 
 const selected = {isSelected: true};
@@ -64,7 +72,7 @@ export const unselect/*:type.unselect*/ = model =>
     model;
 
 export const activate/*:type.activate*/ = model =>
-  model.isActive ?
+  (model.isActive && model.isFocused) ?
     model :
     merge(model, {
       isActive: true,
@@ -123,7 +131,7 @@ export const step/*:type.step*/ = (model, action) => {
   }
   else if (action.type === 'WebView.Progress.Start') {
     const [progress, progressFx] = Progress.start(action.timeStamp);
-    const [page, pageFx] = Page.start(model.navigation.currentURI);
+    const [page, pageFx] = Page.step(model.page, action);
     const security = Security.initial;
 
     return [
@@ -132,19 +140,36 @@ export const step/*:type.step*/ = (model, action) => {
         progressFx,
         pageFx
       ])
-    ]
+    ];
+
   }
   else if (action.type === 'WebView.Progress.End') {
-    const [progress, fx] = Progress.step(model.progress, action);
+    const [progress, progressFx] = Progress.step(model.progress, action);
+    const [page, pageFx] = Page.step(model.page, action);
 
-    return [merge(model, {progress}), fx];
+    return [
+      merge(model, {progress, page}),
+      Effects.batch([
+        progressFx,
+        pageFx
+      ])
+    ];
   }
+  // Note: WebView dispatches `WebView.LocationChanged` action but `Navigation`
+  // needs to know the id of the web-view to schedule effects. There for
+  // in here we create `WebView.Navigation.LocationChanged` action (name diff is
+  // subtle & would be nice to improve) that also contains id of the web-view.
   else if (action.type === 'WebView.LocationChanged') {
     const request = Navigation.asLocationChanged(model.id,
                                                   action.uri,
                                                   action.timeStamp);
-    const [navigation, fx] = Navigation.step(model.navigation, request);
-    return [merge(model, {navigation}), fx];
+    const [navigation, navigationFx] = Navigation.step(model.navigation,
+                                                        request);
+    const [page, pageFx] = Page.step(model.page, action);
+    return [
+      merge(model, {navigation, page}),
+      Effects.batch([navigationFx, pageFx])
+    ];
   }
   else if (action.type === 'WebView.Navigation.Request') {
     const request = Navigation.asRequestBy(model.id, action.action);
@@ -168,6 +193,7 @@ export const step/*:type.step*/ = (model, action) => {
         || action.type === 'WebView.Page.ColorScraped'
         || action.type === 'WebView.Page.DocumentFirstPaint'
         || action.type === 'WebView.Page.FirstPaint'
+        || action.type === 'WebView.Page.DocumentFakePaint'
         || action.type === 'WebView.Page.MetaChanged'
         || action.type === 'WebView.Page.TitleChanged'
         || action.type === 'WebView.Page.IconChanged'
@@ -193,7 +219,6 @@ export const step/*:type.step*/ = (model, action) => {
 }
 
 const topBarHeight = '27px';
-const topBarMaxHeight = '66vh';
 const comboboxHeight = '21px';
 const comboboxWidth = '250px';
 
@@ -227,27 +252,20 @@ const style = StyleSheet.create({
     mozUserSelect: 'none', // necessary to pass text drag to iframe's content
     borderWidth: 0,
     backgroundColor: 'white',
+    MozWindowDragging: 'no-drag'
   },
 
   topbar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: topBarHeight + 'px',
-  },
-
-  topbarBackground: {
-    position: 'absolute',
-    height: topBarMaxHeight,
-    width: '100%',
-    top: 0,
-    left: 0,
-    transform: `translateY(calc(-1 * ${topBarMaxHeight} + ${topBarHeight}))`,
     backgroundColor: 'white', // dynamic
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: topBarHeight,
   },
 
   combobox: {
+    MozWindowDragging: 'no-drag',
     position: 'absolute',
     left: '50%',
     top: 0,
@@ -256,13 +274,19 @@ const style = StyleSheet.create({
     width: comboboxWidth,
     marginTop: `calc(${topBarHeight} / 2 - ${comboboxHeight} / 2)`,
     marginLeft: `calc(${comboboxWidth} / -2)`,
-    color: 'rgba(0, 0, 0, 0.8)',
     borderRadius: '5px',
     cursor: 'text',
   },
 
+  lightText: {
+    color: 'rgba(0, 0, 0, 0.8)',
+  },
+
+  darkText: {
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+
   titleContainer: {
-    color: 'rgba(0,0,0,0.8)',
     position: 'absolute',
     top: 0,
     left: 0,
@@ -278,7 +302,6 @@ const style = StyleSheet.create({
 
   // Also has some hover styles defined in theme.css
   iconSearch: {
-    color: 'rgba(0,0,0,0.7)',
     fontFamily: 'FontAwesome',
     fontSize: '14px',
     left: '5px',
@@ -287,12 +310,46 @@ const style = StyleSheet.create({
 
   iconSecure: {
     fontFamily: 'FontAwesome',
-    color: 'rgba(0,0,0,0.7)',
     marginRight: '6px'
   },
 
   iconInsecure: {
     display: 'none'
+  },
+
+  iconShowTabs: {
+    MozWindowDragging: 'no-drag',
+    backgroundImage: 'url(css/hamburger.sprite.png)',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: '0 0',
+    backgroundSize: '50px auto',
+    position: 'absolute',
+    height: '13px',
+    right: '8px',
+    top: '7px',
+    width: '14px'
+  },
+
+  iconShowTabsDark: {
+    backgroundPosition: '0 -50px'
+  },
+
+  iconCreateTab: {
+    MozWindowDragging: 'no-drag',
+    color: 'rgba(0,0,0,0.8)',
+    fontFamily: 'FontAwesome',
+    fontSize: '18px',
+    lineHeight: '32px',
+    position: 'absolute',
+    textAlign: 'center',
+    bottom: 0,
+    right: 0,
+    width: '30px',
+    height: '32px',
+  },
+
+  iconCreateTabDark: {
+    color: 'rgba(255,255,255,0.8)',
   }
 });
 
@@ -345,8 +402,9 @@ const viewFrame = (model, address) =>
   });
 
 export const view/*:type.view*/ = (model, address) => {
+  const isModelDark = isDark(model);
   return html.div({
-    className: isDark(model) ? 'webview webview-is-dark' : 'webview',
+    className: isModelDark ? 'webview webview-is-dark' : 'webview',
     style: style.webview
     // Style(
     //   style.webview,
@@ -354,18 +412,20 @@ export const view/*:type.view*/ = (model, address) => {
     // )
   }, [
     viewFrame(model, address),
-    html.div({className: 'webview-local-overlay'}),
     html.div({
       className: 'webview-topbar',
-      style: style.topbar
+      style: Style(
+        style.topbar,
+        model.page.pallet.background && {backgroundColor: model.page.pallet.background}
+      )
     }, [
       html.div({
-        className: 'webview-topbar-background',
-        style: style.topbarBackground
-      }),
-      html.div({
         className: 'webview-combobox',
-        style: style.combobox
+        style: Style(
+          style.combobox,
+          isModelDark ? style.darkText : style.lightText
+        ),
+        onClick: on(address, always(Edit))
       }, [
         html.span({
           className: 'webview-search-icon',
@@ -388,11 +448,26 @@ export const view/*:type.view*/ = (model, address) => {
           ])
         ])
       ]),
-      html.div({className: 'webview-show-sidebar-button'})
+      html.div({
+        className: 'webview-show-tabs-icon',
+        style: Style(
+          style.iconShowTabs,
+          isModelDark && style.iconShowTabsDark
+        ),
+        onClick: on(address, always(RequestShowTabs))
+      })
     ]),
-    Progress.view(model.progress, address)
+    Progress.view(model.progress, address),
+    html.div({
+      className: 'global-create-tab-icon',
+      style: Style(
+        style.iconCreateTab,
+        isModelDark && style.iconCreateTabDark
+      ),
+      onClick: () => address(Create)
+    }, [''])
   ]);
-
+};
 
 
 const decodeClose = always(Close);

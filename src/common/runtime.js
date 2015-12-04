@@ -26,6 +26,9 @@ export const CleanRestart/*:type.CleanRestart*/
 export const CleanReload/*:type.CleanReload*/
   = {type: "Runtime.CleanReload"};
 
+export const Reload/*:type.Reload*/
+  = {type: "Runtime.Reload"};
+
 export const Closed/*:type.Closed*/
   = {type: "Runtime.Closed"};
 
@@ -102,3 +105,10 @@ export const cleanReload/*:type.cleanReload*/ = () =>
   Effects.task(Task.io((deliver) => {
     dispatchRequest({type: "clear-cache-and-reload"});
   }));
+
+export const reload/*:type.reload*/ = () =>
+  Effects.task(Task.io(deliver => {
+    try {
+      window.location.reload();
+    } catch (error) {}
+  }))
