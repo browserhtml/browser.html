@@ -45,8 +45,6 @@ export const Edit/*:type.Edit*/
 export const RequestShowTabs/*:type.RequestShowTabs*/
  = {type: 'WebView.RequestShowTabs'};
 
-export const Create = ({type: 'WebView.Create'});
-
 export const open/*:type.open*/ = (id, options) => ({
   id: id,
   name: options.name,
@@ -391,24 +389,6 @@ const style = StyleSheet.create({
   iconShowTabsDark: {
     backgroundPosition: '0 -50px'
   },
-
-  iconCreateTab: {
-    MozWindowDragging: 'no-drag',
-    color: 'rgba(0,0,0,0.8)',
-    fontFamily: 'FontAwesome',
-    fontSize: '18px',
-    lineHeight: '32px',
-    position: 'absolute',
-    textAlign: 'center',
-    bottom: 0,
-    right: 0,
-    width: '30px',
-    height: '32px',
-  },
-
-  iconCreateTabDark: {
-    color: 'rgba(255,255,255,0.8)',
-  }
 });
 
 const viewFrame = (model, address) =>
@@ -517,14 +497,6 @@ export const view/*:type.view*/ = (model, address) => {
       })
     ]),
     Progress.view(model.progress, address),
-    html.div({
-      className: 'global-create-tab-icon',
-      style: Style(
-        style.iconCreateTab,
-        isModelDark && style.iconCreateTabDark
-      ),
-      onClick: () => address(Create)
-    }, [''])
   ]);
 };
 

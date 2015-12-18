@@ -7,6 +7,7 @@ import * as Sidebar from './sidebar';
 import * as Browser from './browser';
 import * as WebViews from './web-views';
 import * as Overlay from './overlay';
+import * as CreateButton from './create-button';
 import {asFor, merge, cursor} from '../common/prelude';
 import * as URI from '../common/url-helper';
 import {Style, StyleSheet} from '../common/style';
@@ -15,16 +16,19 @@ import {ease, easeOutCubic, float} from 'eased';
 
 
 export const OverlayClicked = {type: "OverlayClicked"};
+export const CreateButtonClicked = {type: "CreateButtonClicked"};
 
 export const initialize/*:type.initialize*/ = () => {
   const [browser, browserFx] = Browser.initialize();
   const [sidebar, sidebarFx] = Sidebar.init();
   const [overlay, overlayFx] = Overlay.init(false, false);
+  const [createButton, createButtonFx] = CreateButton.init();
   const model = {
     mode: 'create-web-view',
     browser,
     sidebar,
     overlay,
+    createButton,
     animation: null,
   };
 
@@ -33,7 +37,8 @@ export const initialize/*:type.initialize*/ = () => {
     Effects.batch([
       browserFx,
       overlayFx.map(OverlayAction),
-      sidebarFx.map(SidebarAction)
+      sidebarFx.map(SidebarAction),
+      createButtonFx.map(CreateButtonAction)
     ])
   ];
 };
@@ -49,6 +54,11 @@ const OverlayAction = action =>
   ? OverlayClicked
   : ({type: "Overlay", action});
 
+const CreateButtonAction = action =>
+    action.type === "Click"
+  ? CreateButtonClicked
+  : ({type: "CreateButton", action});
+
 const sidebar = cursor({
   get: model => model.sidebar,
   set: (model, sidebar) => merge(model, {sidebar}),
@@ -61,6 +71,13 @@ const overlay = cursor({
   set: (model, overlay) => merge(model, {overlay}),
   tag: OverlayAction,
   update: Overlay.step
+});
+
+const createButton = cursor({
+  get: model => model.createButton,
+  set: (model, createButton) => merge(model, {createButton}),
+  tag: CreateButtonAction,
+  update: CreateButton.step
 });
 
 export const isOverlayClick = action =>
@@ -103,8 +120,7 @@ export const isKeyUp = action =>
   action.target === 'Browser.KeyUp';
 
 export const isCreateTab = action =>
-  (isWebViewAction(action) &&
-   action.action.action.type === 'WebView.Create') ||
+  (action === CreateButtonClicked) ||
   (action.type === 'Browser.CreateWebView' ||
    (isKeyDown(action) && action.action.type === 'Browser.CreateWebView'));
 
@@ -161,6 +177,9 @@ export const step = (model, action) => {
   }
   else if (action.type === "Overlay") {
     return overlay(model, action.action);
+  }
+  else if (action.type === 'CreateButton') {
+    return createButton(model, action.action);
   }
   else if (action.type === 'For' && action.target === 'animation') {
     // @TODO Right now we set animation to null whet it is not running but
@@ -276,16 +295,28 @@ export const step = (model, action) => {
       const [browser, fx] = Browser.step(model.browser, action);
       const [overlay, overlayFx] = Overlay.step(model.overlay, Overlay.Show);
       const [sidebar, sidebarFx] = Sidebar.step(model.sidebar, Sidebar.Open);
+      const [createButton, createButtonFx] = CreateButton.step(
+        model.createButton,
+        CreateButton.asMove(false, true)
+      );
       const [animation, animationFx]
         = Animation.initialize(performance.now(), showTabsTransitionDuration);
 
       return [
-        merge(model, {browser, overlay, sidebar, animation, mode: 'show-tabs'}),
+        merge(model, {
+          browser,
+          overlay,
+          sidebar,
+          createButton,
+          animation,
+          mode: 'show-tabs'
+        }),
         Effects.batch([
           fx,
           sidebarFx.map(SidebarAction),
           animationFx.map(asByAnimation),
-          overlayFx.map(OverlayAction)
+          overlayFx.map(OverlayAction),
+          createButtonFx.map(CreateButtonAction)
         ])
       ];
     }
@@ -294,15 +325,27 @@ export const step = (model, action) => {
       const [browser, fx] = Browser.step(model.browser, action);
       const [overlay, overlayFx] = Overlay.step(model.overlay, Overlay.Show);
       const [sidebar, sidebarFx] = Sidebar.step(model.sidebar, Sidebar.Open);
+      const [createButton, createButtonFx] = CreateButton.step(
+        model.createButton,
+        CreateButton.asMove(false, true)
+      );
       const [animation, animationFx]
         = Animation.initialize(time, showTabsTransitionDuration);
 
       return [
-        merge(model, {browser, sidebar, overlay, animation, mode: 'select-web-view'}),
+        merge(model, {
+          browser,
+          sidebar,
+          overlay,
+          createButton,
+          animation,
+          mode: 'select-web-view'
+        }),
         Effects.batch([
           fx,
           overlayFx.map(OverlayAction),
           sidebarFx.map(SidebarAction),
+          createButtonFx.map(CreateButtonAction),
           // If animation was running no need for another tick.
           model.animation ? Effects.none : animationFx.map(asByAnimation)
         ])
@@ -331,16 +374,31 @@ export const step = (model, action) => {
       const [browser, fx] = Browser.step(model.browser, action);
       const [overlay, overlayFx] = Overlay.step(model.overlay, Overlay.Hide);
       const [sidebar, sidebarFx] = Sidebar.step(model.sidebar, Sidebar.Close);
+      const [createButton, createButtonFx] = CreateButton.step(
+        model.createButton,
+        CreateButton.asMove(
+          !model.sidebar.isAttached,
+          WebViews.isDark(model.browser.webViews)
+        )
+      );
       // TODO: Handle already running animation case (see #747).
       const [animation, animationFx]
         = Animation.initialize(time, hideTabsTransitionDuration);
 
       return [
-        merge(model, {browser, sidebar, overlay, animation, mode: 'show-web-view'}),
+        merge(model, {
+          browser,
+          sidebar,
+          overlay,
+          createButton,
+          animation,
+          mode: 'show-web-view'
+        }),
         Effects.batch([
           fx,
           sidebarFx.map(SidebarAction),
           overlayFx.map(OverlayAction),
+          createButtonFx.map(CreateButtonAction),
           // If animation was running no need for another tick.
           model.animation ? Effects.none : animationFx.map(asByAnimation)
         ])
@@ -350,12 +408,26 @@ export const step = (model, action) => {
       const [browser, fx] = Browser.step(model.browser, action);
       const [overlay, overlayFx] = Overlay.step(model.overlay, Overlay.Hide);
       const [sidebar, sidebarFx] = Sidebar.step(model.sidebar, Sidebar.Close);
+      const [createButton, createButtonFx] = CreateButton.step(
+        model.createButton,
+        CreateButton.asMove(
+          !model.sidebar.isAttached,
+          WebViews.isDark(model.browser.webViews)
+        )
+      );
       return [
-        merge(model, {browser, sidebar, overlay, mode: 'create-web-view'}),
+        merge(model, {
+          browser,
+          sidebar,
+          overlay,
+          createButton,
+          mode: 'create-web-view'
+        }),
         Effects.batch([
           fx,
           sidebarFx.map(SidebarAction),
-          overlayFx.map(OverlayAction)
+          overlayFx.map(OverlayAction),
+          createButtonFx.map(CreateButtonAction)
         ])
       ];
     }
@@ -365,12 +437,25 @@ export const step = (model, action) => {
       const [browser, fx] = Browser.step(model.browser, action);
       const [overlay, overlayFx] = Overlay.step(model.overlay, Overlay.Show);
       const [sidebar, sidebarFx] = Sidebar.step(model.sidebar, Sidebar.Close);
+      const [createButton, createButtonFx] = CreateButton.step(
+        model.createButton,
+        CreateButton.asMove(
+          !model.sidebar.isAttached,
+          WebViews.isDark(model.browser.webViews)
+        )
+      );
       return [
-        merge(model, {browser, overlay, mode: 'edit-web-view'}),
+        merge(model, {
+          browser,
+          overlay,
+          createButton,
+          mode: 'edit-web-view'
+        }),
         Effects.batch([
           fx,
           overlayFx.map(OverlayAction),
           sidebarFx.map(SidebarAction),
+          createButtonFx.map(CreateButtonAction),
           // If animation was running no need for another tick.
           model.animation ? Effects.none : animationFx.map(asByAnimation)
         ])
@@ -383,15 +468,30 @@ export const step = (model, action) => {
       const [browser, fx] = Browser.step(model.browser, action);
       const [overlay, overlayFx] = Overlay.step(model.overlay, Overlay.Hide);
       const [sidebar, sidebarFx] = Sidebar.step(model.sidebar, Sidebar.Close);
+      const [createButton, createButtonFx] = CreateButton.step(
+        model.createButton,
+        CreateButton.asMove(
+          !model.sidebar.isAttached,
+          WebViews.isDark(model.browser.webViews)
+        )
+      );
       const [animation, animationFx]
         = Animation.initialize(time, hideTabsTransitionDuration);
 
       return [
-        merge(model, {browser, sidebar, overlay, animation, mode: 'show-web-view'}),
+        merge(model, {
+          browser,
+          sidebar,
+          overlay,
+          createButton,
+          animation,
+          mode: 'show-web-view'
+        }),
         Effects.batch([
           fx,
           overlayFx.map(OverlayAction),
           sidebarFx.map(SidebarAction),
+          createButtonFx.map(CreateButtonAction),
           // If animation was running no need for another tick.
           model.animation ? Effects.none : animationFx.map(asByAnimation)
         ])
@@ -478,8 +578,35 @@ const style = StyleSheet.create({
     // @WORKAROUND use percent instead of vw/vh to work around
     // https://github.com/servo/servo/issues/8754
     height: '100%'
+  },
+
+  iconShowTabs: {
+    MozWindowDragging: 'no-drag',
+    backgroundImage: 'url(css/hamburger.sprite.png)',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: '0 0',
+    backgroundSize: '50px auto',
+    position: 'absolute',
+    height: '13px',
+    right: '18px',
+    top: '7px',
+    width: '14px'
+  },
+
+  iconShowTabsDark: {
+    backgroundPosition: '0 -50px'
   }
 });
+
+const renderShowTabsButton = (isDark) =>
+  html.div({
+    className: 'global-show-tabs-icon',
+    style: Style(
+      style.iconShowTabs,
+      isDark && style.iconShowTabsDark
+    ),
+    // onClick: () => address(RequestShowTabs)
+  });
 
 export const view = (model, address) =>
   model.mode === 'edit-web-view' ?
@@ -526,7 +653,14 @@ const viewAsEditWebView = (model, address) =>
           Sidebar.view,
           model.sidebar,
           model.browser.webViews,
-          forward(address, SidebarAction))
+          forward(address, SidebarAction)),
+    thunk('create-tab-button',
+          CreateButton.view,
+          model.createButton,
+          forward(address, CreateButtonAction)),
+    thunk('show-tabs-button',
+          renderShowTabsButton,
+          model.sidebar.isAttached)
   ]);
 
 const viewAsShowWebView = (model, address) =>
@@ -563,7 +697,14 @@ const viewAsShowWebView = (model, address) =>
           Sidebar.view,
           model.sidebar,
           model.browser.webViews,
-          forward(address, SidebarAction))
+          forward(address, SidebarAction)),
+    thunk('create-tab-button',
+          CreateButton.view,
+          model.createButton,
+          forward(address, CreateButtonAction)),
+    thunk('show-tabs-button',
+          renderShowTabsButton,
+          model.sidebar.isAttached)
   ]);
 
 const viewAsCreateWebView = (model, address) =>
@@ -601,7 +742,14 @@ const viewAsCreateWebView = (model, address) =>
           Sidebar.view,
           model.sidebar,
           model.browser.webViews,
-          forward(address, SidebarAction))
+          forward(address, SidebarAction)),
+    thunk('create-tab-button',
+          CreateButton.view,
+          model.createButton,
+          forward(address, CreateButtonAction)),
+    thunk('show-tabs-button',
+          renderShowTabsButton,
+          model.sidebar.isAttached)
   ]);
 
 const viewAsSelectWebView = (model, address) =>
@@ -639,7 +787,14 @@ const viewAsSelectWebView = (model, address) =>
           Sidebar.view,
           model.sidebar,
           model.browser.webViews,
-          forward(address, SidebarAction))
+          forward(address, SidebarAction)),
+    thunk('create-tab-button',
+          CreateButton.view,
+          model.createButton,
+          forward(address, CreateButtonAction)),
+    thunk('show-tabs-button',
+          renderShowTabsButton,
+          model.sidebar.isAttached)
   ]);
 
 const viewAsShowTabs = (model, address) =>
@@ -677,5 +832,12 @@ const viewAsShowTabs = (model, address) =>
           Sidebar.view,
           model.sidebar,
           model.browser.webViews,
-          forward(address, SidebarAction))
+          forward(address, SidebarAction)),
+    thunk('create-tab-button',
+          CreateButton.view,
+          model.createButton,
+          forward(address, CreateButtonAction)),
+    thunk('show-tabs-button',
+          renderShowTabsButton,
+          model.sidebar.isAttached)
   ]);

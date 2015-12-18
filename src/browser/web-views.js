@@ -245,6 +245,11 @@ export const getByIndex = (model, index) =>
   index >= model.entries.length ? null :
   model.entries[index];
 
+// Check if active webview is dark.
+export const isDark = model => {
+  const active = getActive(model);
+  return active ? WebView.isDark(active) : false;
+}
 
 export const stepByIndex/*:type.stepByIndex*/ = (model, index, action) => {
   const {entries} = model;
