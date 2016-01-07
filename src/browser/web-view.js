@@ -14,6 +14,7 @@ import * as Progress from './web-view/progress';
 import * as Navigation from './web-view/navigation';
 import * as Security from './web-view/security';
 import * as Page from './web-view/page';
+import * as Tab from "./sidebar/tab";
 import {Style, StyleSheet} from '../common/style';
 import * as Driver from 'driver';
 import * as URI from '../common/url-helper';
@@ -57,6 +58,7 @@ export const open/*:type.open*/ = (id, options) => ({
   security: Security.initial,
   navigation: Navigation.initiate(options.uri),
   page: Page.initiate(options.uri),
+  tab: Tab.initial,
   progress: null,
   animation: null
 })
@@ -128,6 +130,9 @@ export const isDark/*:type.isDark*/ = (model) =>
   model.page ? model.page.pallet.isDark : false;
 
 export const step/*:type.step*/ = (model, action) => {
+  if (action.type === "Point") {
+    return Tab.update(model, action);
+  }
   // Shell actions
   if (action.type === "WebView.Select") {
     return select(model);

@@ -40,7 +40,7 @@ export const initialize/*:type.initialize*/ = () => {
 };
 
 const SidebarAction = action =>
-    action.type === "Tabs"
+    action.type === "Tab"
   ? asByWebViews(action.action)
   : action.type === 'CreateWebView'
   ? CreateWebView

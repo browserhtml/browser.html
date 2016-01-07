@@ -6,17 +6,16 @@
 
 import {html, thunk, forward, Effects} from 'reflex';
 import {asByID} from './web-views';
-import * as WebView from './web-view';
 import {Style, StyleSheet} from '../common/style';
-import {readTitle, readFaviconURI} from './web-view';
 import * as Toolbar from "./sidebar/toolbar";
+import * as Tab from './sidebar/tab';
 import {cursor, merge, always} from "../common/prelude";
 import * as Unknown from "../common/unknown";
 import * as Stopwatch from "../common/stopwatch";
 import * as Easing from "eased";
 
 
-const styles = StyleSheet.create({
+const style = StyleSheet.create({
   sidebar: {
     // WARNING: will slow down animations! (gecko)
     // boxShadow: 'rgba(0, 0, 0, 0.5) -50px 0 80px',
@@ -39,39 +38,6 @@ const styles = StyleSheet.create({
     paddingTop: '34px',
     overflowY: 'scroll',
     boxSizing: 'border-box'
-  },
-
-  tab: {
-    MozWindowDragging: 'no-drag',
-    borderRadius: '5px',
-    height: '34px',
-    lineHeight: '34px',
-    color: '#fff',
-    fontSize: '14px',
-    overflow: 'hidden',
-    position: 'relative',
-  },
-
-  tabSelected: {
-    backgroundColor: '#3D91F2'
-  },
-
-  title: {
-    display: 'block',
-    margin: '0 10px 0 34px',
-    overflow: 'hidden',
-    width: '270px',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
-  },
-
-  favicon: {
-    borderRadius: '3px',
-    left: '9px',
-    position: 'absolute',
-    top: '9px',
-    width: '16px',
-    height: '16px',
   }
 });
 
@@ -115,8 +81,6 @@ const toolbar = cursor({
   tag: ToolbarAction,
   update: Toolbar.step
 });
-
-
 
 const stopwatch = cursor({
   tag: Animation,
@@ -239,56 +203,17 @@ const ToolbarAction = action =>
   ? CreateWebView
   : ({type: "Toolbar", action});
 
-const Tabs = action =>
-  ({type: "Tabs", action});
-
-const viewImage = (uri, style) =>
-  html.img({
-    style: Style({
-      backgroundImage: `url(${uri})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center center',
-      backgroundRepeat: 'no-repeat',
-      border: 'none'
-    }, style)
-  });
-
-const viewTab = (model, address, {tabWidth, titleOpacity}) =>
-  html.div({
-    className: 'sidebar-tab',
-    style: Style(
-      styles.tab,
-      model.isSelected && styles.tabSelected,
-      {width: `${tabWidth}px`}
-    ),
-    onMouseDown: () => address(WebView.Select),
-    onMouseUp: () => address(WebView.Activate)
-  }, [
-    thunk('favicon',
-          viewImage,
-          readFaviconURI(model),
-          styles.favicon),
-    html.div({
-      className: 'sidebar-tab-title',
-      style: Style(
-        styles.title,
-        {opacity: titleOpacity}
-      )
-    }, [
-      // @TODO localize this string
-      readTitle(model, 'Untitled')
-    ])
-  ]);
-
+const TabAction = action =>
+  ({type: "Tab", action});
 
 const viewSidebar = (key) => (model, {entries}, address) => {
-  const tabs = forward(address, Tabs);
+  const tabs = forward(address, TabAction);
   const {display} = model;
   return html.div({
     key: key,
     className: key,
     style: Style
-      ( styles.sidebar
+      ( style.sidebar
       , {
           transform: `translateX(${display.x}px)`,
           boxShadow: `rgba(0, 0, 0, ${display.shadow}) -50px 0 80px`,
@@ -299,9 +224,9 @@ const viewSidebar = (key) => (model, {entries}, address) => {
   }, [
     html.div({
       className: 'sidebar-tabs-scrollbox',
-      style: styles.scrollbox
+      style: style.scrollbox
     }, entries.map(entry =>
-        thunk(entry.id, viewTab, entry, forward(tabs, asByID(entry.id)), display))),
+        thunk(entry.id, Tab.view, entry, forward(tabs, asByID(entry.id)), display))),
     thunk('sidebar-toolbar',
           Toolbar.view,
           model.toolbar,
