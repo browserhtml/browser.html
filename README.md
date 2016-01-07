@@ -9,6 +9,7 @@ This repository is for Browser.html (the front-end). Active development of Graph
 
 We welcome contributions from anyone. See [CONTRIBUTING.md](https://github.com/mozilla/browser.html/blob/master/CONTRIBUTING.md) for help getting started.
 
+![browser](./browser.gif)
 
 ### Prerequisites and Setup
 
