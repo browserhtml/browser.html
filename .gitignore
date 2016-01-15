@@ -5,3 +5,4 @@ node_modules/
 !.profile
 !.profile/user.js
 dist/
+servo/

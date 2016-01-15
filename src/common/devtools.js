@@ -182,15 +182,15 @@ const styleSheet = StyleSheet.create
       , MozAppearance: 'checkbox'
       }
     , label:
-      { padding: '6px'
+      { servo$padding: '6px'
       , MozUserSelect: 'none'
       , display: 'block'
       }
     , button:
       { display: 'block'
       , border: '1px solid #AAA'
-      , padding: '3px 6px'
-      , margin: '6px'
+      , servo$padding: '3px 6px'
+      , servo$margin: '6px'
       , borderRadius: '3px'
       }
     , toolbox:

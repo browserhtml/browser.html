@@ -264,7 +264,7 @@ export const view/*:type.view*/ = (model, webViews, address) =>
     , style: Style
       ( styleSheet.base
       , { transform: `translateX(${model.display.x}px)`
-        , boxShadow: `rgba(0, 0, 0, ${model.display.shadow}) -50px 0 80px`
+        , servo$boxShadow: `rgba(0, 0, 0, ${model.display.shadow}) -50px 0 80px`
         , paddingLeft: `${model.display.spacing}px`
         , paddingRight: `${model.display.spacing}px`
         }

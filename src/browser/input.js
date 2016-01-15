@@ -166,7 +166,7 @@ const style = StyleSheet.create({
     left: '50%',
     marginLeft: `calc(-1 * (${inputWidth} / 2))`,
     position: 'absolute',
-    padding: '0 32px',
+    servo$padding: '0 32px',
     top: '40px',
     width: `calc(${inputWidth} - ${32 * 2}px)`
   },

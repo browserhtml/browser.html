@@ -107,7 +107,7 @@ const viewPin = Toggle.view('pin-button', StyleSheet.create({
     cursor: 'pointer',
     height: '34px',
     width: '34px',
-    margin: '8px',
+    servo$margin: '8px',
     borderRadius: '5px',
     backgroundRepeat: 'no-repeat',
     backgroundColor: 'transparent',

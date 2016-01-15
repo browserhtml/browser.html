@@ -12,6 +12,7 @@ import * as Result from "../common/result"
 import * as Runtime from "../common/runtime"
 import * as Unknown from "../common/unknown"
 import * as URI from "../common/url-helper"
+import * as WhatWGFetch from "../polyfill/fetch"
 import {Style, StyleSheet} from '../common/style'
 
 /*:: import * as type from "../../type/browser/updater" */
