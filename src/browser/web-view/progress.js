@@ -113,7 +113,7 @@ const style = StyleSheet.create({
     width: '4px',
     height: '4px',
     position: 'absolute',
-    right: '-4px',
+    servo$right: '-4px',
   },
 });
 
