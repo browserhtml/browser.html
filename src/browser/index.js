@@ -6,23 +6,11 @@
 
 import {start, Effects} from "reflex";
 import * as UI from "./perspective-ui";
-
-// import * as Session from "./session";
+import * as Monitor from "../devtools/monitor";
 import {version} from "../../package.json";
 import {Renderer} from "driver";
 
 
-const logger = (update) => (model, action) => {
-  console.log('>>> Action:', action);
-
-  console.group();
-  const out = update(model, action);
-  console.groupEnd();
-
-  console.log('<<< Model:', out[0])
-  console.log('<<< Effects:', out[1]);
-  return out;
-}
 
 const isReload = window.application != null;
 
@@ -35,9 +23,9 @@ if (isReload) {
 const application = start({
   initial: isReload ?
             window.application.model.value :
-            UI.init(),
-  step: logger(UI.update),
-  view: UI.view
+            Monitor.initializer(UI.init)(),
+  step: Monitor.updater(UI.update),
+  view: Monitor.viewer(UI.view)
 });
 
 

@@ -28,6 +28,7 @@ const descriptions =
   , 'layers.dump': 'Layers dump'
   , 'layers.enable-tiles': 'Enable tiles'
   , 'layers.async-pan-zoom.enabled': 'Enable APZC (restart required)'
+  , 'tools.monitor': 'Enable transaction monitor'
   };
 
 const writeValue = (key, value) =>
