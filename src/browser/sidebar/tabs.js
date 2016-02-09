@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {html, thunk, forward, Effects} from 'reflex';
-import {merge, setIn} from '../../common/prelude';
+import {merge} from '../../common/prelude';
 import {Style, StyleSheet} from '../../common/style';
 import {cursor, join} from '../../common/cursor';
 import * as Toolbar from './toolbar';

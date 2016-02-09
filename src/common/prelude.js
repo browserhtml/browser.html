@@ -42,50 +42,6 @@ export const merge = /*::<model:{[key:string]:any}>*/(model/*:model*/, changes/*
 }
 
 
-export const take = /*::<item>*/(items/*:Array<item>*/, n/*:number*/)/*:Array<item>*/ =>
-  items.length <= n ?
-    items :
-    items.slice(0, n)
-
-export const move = /*::<item>*/(items/*:Array<item>*/, from/*:number*/, to/*:number*/)/*:Array<item>*/ => {
-  const count = items.length
-  if (from === to) {
-    return items
-  } else if (from >= count) {
-    return items
-  } else if (to >= count) {
-    return items
-  } else {
-    const result = items.slice(0)
-    const target = result.splice(from, 1)[0]
-    result.splice(to, 0, target)
-    return result
-  }
-}
-
-export const remove = /*::<item>*/(items/*:Array<item>*/, index/*:number*/)/*:Array<item>*/ =>
-  ( index < 0
-  ? items
-  : index >= items.length
-  ? items
-  : index === 0
-  ? items.slice(1)
-  : index === items.length - 1
-  ? items.slice(0, index)
-  : items.slice(0, index).concat(items.slice(index + 1))
-  );
-
-
-export const setIn = /*::<item>*/(items/*:Array<item>*/, index/*:number*/, item/*:item*/)/*:Array<item>*/ => {
-  if (items[index] === item) {
-    return items
-  } else {
-    const next = items.slice(0)
-    next[index] = item
-    return next
-  }
-};
-
 const Always = {
   toString() {
     return `always(${this.value})`

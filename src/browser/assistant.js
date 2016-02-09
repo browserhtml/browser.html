@@ -4,7 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {always, batch, merge, take, tag, tagged, move} from "../common/prelude"
+import {always, batch, merge, tag, tagged} from "../common/prelude"
 import {Effects, html, thunk, forward} from "reflex"
 import * as History from "./assistant/history"
 import * as Search from "./assistant/search"

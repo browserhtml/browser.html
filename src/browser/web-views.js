@@ -8,7 +8,8 @@
 
 import {html, thunk, Effects, forward} from "reflex";
 import * as Driver from "driver";
-import {merge, setIn, remove, always, batch} from "../common/prelude";
+import {merge, always, batch} from "../common/prelude";
+import {exclude} from "../common/array";
 import {cursor} from "../common/cursor";
 import {indexOfOffset} from "../common/selector";
 import * as WebView from "../browser/web-view";
@@ -344,7 +345,7 @@ const removeByID = (model, id) =>
   [ merge
     ( model
     , { entries: merge(model.entries, {[id]: void(0)})
-      , order: remove(model.order, model.order.indexOf(id))
+      , order: exclude(id, model.order)
       }
     )
   , ( model.order.length === 1
