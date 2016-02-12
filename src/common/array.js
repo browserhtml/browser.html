@@ -9,8 +9,8 @@ export const empty/*:Array<any>*/ =
 
 export const take = /*::<item>*/
   (n/*:number*/, items/*:Array<item>*/)/*:Array<item>*/ =>
-  ( items.length <= n ?
-  ? items :
+  ( items.length <= n
+  ? items
   : items.slice(0, n)
   )
 
@@ -84,37 +84,38 @@ export const push = /*::<item>*/
 
 export const unshift = /*::<item>*/
   ( item/*:item*/
-  , items/*Array<item>*/
+  , items/*:Array<item>*/
   )/*:Array<item>*/ =>
   [item, ...items];
 
 export const pop = /*::<item>*/
-  (items/*Array<item>*/) =>
+  (items/*:Array<item>*/)/*:Array<item>*/ =>
   items.slice(0, -1);
 
 export const shift = /*::<item>*/
-  (items/*Array<item>*/) =>
+  (items/*:Array<item>*/)/*:Array<item>*/ =>
   items.slice(1);
 
 export const get = /*::<item>*/
-  (index/*:Array<item>*/)/*:(array:Array<item>) => ?item*/ =>
-  (items) =>
+  (index/*:number*/)/*:(array:Array<item>) => ?item*/ =>
+  (items/*:Array<item>*/)/*:?item*/ =>
   items[index];
 
-
-export const first = get(0);
-export const second = get(1);
-export const third = get(2);
-export const fourth = get(3);
-export const fifth = get(4);
 export const last = /*::<item>*/
-  (items/*Array<item>*/) =>
+  (items/*:Array<item>*/)/*:?item*/ =>
   items[items.length - 1];
+
+export const first = (get(0)/*::,last*/);
+export const second = (get(1)/*::,last*/);
+export const third = (get(2)/*::,last*/);
+export const fourth = (get(3)/*::,last*/);
+export const fifth = (get(4)/*::,last*/);
+
 
 export const include = /*::<item>*/
   ( item/*:item*/
   , items/*:Array<item>*/
-  ) =>
+  )/*:Array<item>*/ =>
   ( items.indexOf(item) < 0
   ? [...items, item]
   : items
@@ -122,8 +123,17 @@ export const include = /*::<item>*/
 
 export const exclude = /*::<item>*/
   ( item/*:item*/
-  , items/*Array<item>*/
-  ) => {
+  , items/*:Array<item>*/
+  )/*:Array<item>*/ => {
     const index = items.indexOf(item)
-    const
-      ( items
+    const result =
+      ( index < 0
+      ? items
+      : index === 0
+      ? items.slice(0)
+      : items.length - 1 === index
+      ? items.slice(0, index)
+      : items.slice(0, index).concat(items.slice(index))
+      )
+    return result
+  }

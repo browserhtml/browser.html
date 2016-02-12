@@ -1,0 +1,26 @@
+/* @flow */
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+ export type ID = string
+ export type Revision = string
+ export type URI = string
+ export type Time = number
+
+export type Model =
+  { type: "Visit"
+  , start: Time
+  , end: Time
+  , id: ID
+  , device: string
+  }
+
+declare export function begin
+  (tabID:ID, time:Time, device:string):
+  Model
+
+declare export function end
+  (model:Model):
+  Model

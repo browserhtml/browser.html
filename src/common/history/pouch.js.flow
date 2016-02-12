@@ -1,0 +1,205 @@
+/* @flow */
+
+type Adapter
+  = 'idb'
+  | 'leveldb'
+  | 'websql'
+  | 'http'
+  | 'localstorage'
+  | 'memory'
+  | 'fruitdown'
+
+
+type Storage
+  = 'persistent'
+  | 'temporary'
+
+type PouchDBOptions =
+  { name: string
+  , auto_compaction?: boolean
+  , adapter?: Adapter
+  , revs_limit?: number
+
+  // Options for remote databases:
+  , ajax?: Ajax
+  , auth?: Auth
+
+  // IndexedDB-only options:
+  , storage?: Storage
+
+  // WebSQL-only options:
+
+  , size?: number
+
+  // SQLite Plugin-only options:
+  , location?: number
+  }
+
+type Auth =
+  { username: string
+  , password: string
+  }
+
+type Ajax =
+  { timeout?: number
+  , cache?: boolean
+  , headers?: {[key:string]: string}
+  , username?: string
+  , password?: string
+  , withCredentials?: boolean
+  , skip_setup?: boolean
+  }
+
+
+export type Failure =
+  { error: true
+  , status: number
+  , name: string
+  , message: string
+  }
+
+export type Response =
+  { ok: true
+  , id: ID
+  , rev: Revision
+  }
+
+
+export type ID = string
+export type Revision = string
+
+export type NewDocument =
+  { [key:any]: any }
+
+export type RemovedDocument =
+  { _id: ID
+  , _ref: Revision
+  , _deleted: true
+  , [key:any]: any
+  }
+
+type Attachment =
+  { content_type: string
+  , data: string
+  , digest: string
+  }
+
+type Attachments =
+  { [key:string]: Attachment }
+
+export type VersionedDocument =
+  { _id: ID
+  , _ref: Revision
+  , _attachments: ?Attachments
+  , [key:any]: any
+  }
+
+export type WriteDocument
+  = RemovedDocument
+  | VersionedDocument
+
+export type Document
+  = NewDocument
+  | RemovedDocument
+  | VersionedDocument
+
+export type Unknown = any
+
+export type GetOptions =
+  { rev?: boolean
+  , revs?: boolean
+  , revs_info?: boolean
+  , open_revs?: "all"
+  , conflicts?: boolean
+  , attachments?: boolean
+  , binary?: boolean
+  , ajax?: Ajax
+  }
+
+type AllDocsOptions =
+  { attachments?: boolean
+  , include_docs?: boolean
+  , startkey?: ?string
+  , endkey?: ?string
+  }
+
+type Row <document> =
+  { doc: ?document
+  , id: ID
+  , key: string
+  , value: {rev: Revision}
+  }
+
+type AllDocsResult <document> =
+  { total_row: number
+  , offset: number
+  , rows: Array<Row<document>>
+  }
+
+type ChangeMethod
+  = 'change'
+  | 'complete'
+  | 'error'
+
+type Change <document:VersionedDocument> =
+  { id: ID
+  , changes: Array<{rev:Revision}>
+  , doc?: document
+  , deleted: ?true
+  , seq: number
+  }
+
+type CompleteChanges <document:VersionedDocument> =
+  { results: Array<Change<document>>
+  , last_seq: number
+  }
+
+type ChangeListener <document> =
+  (change:Change<document>) => void
+
+type CompleteListener <document> =
+  (result:CompleteChanges<document>) => void
+
+type ErrorListener =
+  (error:Error) => void
+
+type Listener <document>
+  = ChangeListener<document>
+  | CompleteListener<document>
+  | ErrorListener
+
+declare export class Changes <document>
+  { cancel():void
+  , on <change> (method:ChangeMethod, listener:Listener<document>):void
+  }
+
+type ChangeOptions =
+  { live?: boolean
+  , include_docs?: boolean
+  , conflicts?: boolean
+  , attachments?: boolean
+  , binary?: boolean
+  , descending?: boolean
+  , since?: string
+  , limit?: number
+  , timeout?: number | false
+  , heartbeat?: number | false
+  , filter?: string
+  , doc_ids?: Array<ID>
+  , query_params?: {[key:string]: ?string|number|boolean}
+  , view?: string
+  , return_docs?: boolean
+  , batch_size?: number
+  , style?: 'main_only' | 'all_docs'
+  }
+
+declare export class PouchDB
+  { constructor(options?:PouchDBOptions):this
+  , destroy(options:?{ajax:boolean}):Promise<Response, Unknown>
+  , put <document> (doc:document, id?:ID, rev?:Revision, options?:Unknown):Promise<Response>
+  , post <document:NewDocument> (doc:document, options?:Unknown):Promise<Response>
+  , get <document:VersionedDocument> (id:ID, options?:GetOptions):Promise<document>
+  , bulkDocs <document> (docs:Array<document>, options?:Unknown):Promise<Array<Response>>
+  , allDocs <document> (options?:AllDocsOptions):Promise<AllDocsResult<document>>
+  , changes <document> (options:ChangeOptions):Changes<document>
+}

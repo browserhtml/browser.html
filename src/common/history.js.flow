@@ -1,0 +1,113 @@
+/* @flow */
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+import type {Task} from "reflex/type";
+import type {Never, Effects} from "reflex/type/effects";
+import type {PouchDB, ID, Response, Failure} from "./history/pouch";
+import type {Result} from "../../type/common/result";
+import type {Tagged} from "../../type/common/prelude";
+import * as Page from "./history/page";
+import * as ImportStatus from "./history/import-status";
+
+type TabInfo =
+  { tabID: ID
+  , uri: Page.URI
+  , time: Page.Time
+  , device: string
+  }
+
+type TitleInfo =
+  { uri: Page.URI
+  , title: string
+  }
+
+type IconInfo =
+  { uri: Page.URI
+  , icon: Page.URI
+  }
+
+type Query =
+  { input: string
+  }
+
+declare export function Updated
+  (result:Result<Failure, Response>):
+  Tagged<"Updated", Result<Failure, Response>>
+
+declare export function BeginVisit
+  (info:TabInfo):
+  Tagged<"StartVisit", TabInfo>
+
+declare export function EndVisit
+  (info:TabInfo):
+  Tagged<"EndVisit", TabInfo>
+
+declare export function Search
+  (input:string):
+  Tagged<"Search", Query>
+
+declare export function IconChange
+  (info:IconInfo):
+  Tagged<"IconChange", IconInfo>
+
+declare export function TitleChange
+  (info:TitleInfo):
+  Tagged<"TitleChange", TitleInfo>
+
+declare export function Import
+  (action:ImportStatus.Action):
+  Tagged<"Import", ImportStatus.Action>
+
+declare export function Found
+  (result:Result<Failure, Array<Page.Model>>):
+  Tagged<"Found", Result<Failure, Array<Page.Model>>>
+
+
+export type Action
+  = Tagged<"BeginVisit", TabInfo>
+  | Tagged<"EndVisit", TabInfo>
+  | Tagged<"TitleChange", TitleInfo>
+  | Tagged<"IconChange", IconInfo>
+  | Tagged<"Search", Query>
+  | Tagged<"Import", ImportStatus.Action>
+  | Tagged<"Found", Result<Failure, Array<Page.Model>>>
+  | Tagged<"Updated", Result<Failure, Response>>
+
+export type Model =
+  { name: string
+  , db: PouchDB
+  , query: ?string
+  , importStatus: ImportStatus.Model
+  }
+
+declare export function init
+  (name:string):
+  [Model, Effects<Action>]
+
+
+declare export function update
+  (model:Model, action:Action):
+  [Model, Effects<Action>]
+
+
+// Task
+
+declare export function beginVisit
+  (info:TabInfo, db:PouchDB):
+  Task<Failure, Response>
+
+declare export function endVisit
+  (info:TabInfo, db:PouchDB):
+  Task<Failure, Response>
+
+declare export function changeTitle
+  (info:TitleInfo, db:PouchDB):
+  Task<Failure, Response>
+
+declare export function changeIcon
+  (info:IconInfo, db:PouchDB):
+  Task<Failure, Response>

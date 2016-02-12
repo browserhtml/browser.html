@@ -1,0 +1,96 @@
+/* @flow */
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+declare export var empty:Array<any>
+
+declare export function take <item>
+  (n:number, items:Array<item>):
+  Array<item>
+
+declare export function drop <item>
+  (n:number, items:Array<item>):
+  Array<item>
+
+declare export function move <item>
+  ( from:number
+  , to:number
+  , items:Array<item>
+  ):
+  Array<item>
+
+declare export function remove <item>
+  ( index:number
+  , items:Array<item>
+  ):
+  Array<item>
+
+declare export function set <item>
+  ( index:number
+  , item:item
+  , items:Array<item>
+  ):
+  Array<item>
+
+declare export function push <item>
+  ( item:item
+  , items:Array<item>
+  ):
+  Array<item>
+
+declare export function unshift <item>
+  ( item:item
+  , items:Array<item>
+  ):
+  Array<item>
+
+declare export function pop <item>
+  (items:Array<item>):
+  Array<item>
+
+declare export function shift <item>
+  (items:Array<item>):
+  Array<item>
+
+declare export function get <item>
+  (index:Array<item>):
+  (array:Array<item>) => ?item
+
+
+declare export function first <item>
+  (array:Array<item>):
+  ?item
+
+declare export function second <item>
+  (array:Array<item>):
+  ?item
+
+declare export function third <item>
+  (array:Array<item>):
+  ?item
+
+declare export function fourth <item>
+  (array:Array<item>):
+  ?item
+
+declare export function fifth <item>
+  (array:Array<item>):
+  ?item
+
+declare export function last <item>
+  (array:Array<item>):
+  ?item
+
+declare export function include <item>
+  ( item:item
+  , items:Array<item>
+  ):
+  Array<item>
+
+declare export function exclude <item>
+  ( item:item
+  , items:Array<item>
+  ):
+  Array<item>
