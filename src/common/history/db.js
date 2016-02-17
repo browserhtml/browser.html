@@ -99,12 +99,12 @@ export const query = /*::<document:{_id:ID, [key:string]: any}>*/
       , startKey:
         ( input === ""
         ? null
-        : `${input}/`
+        : `${input}`
         )
       , endKey:
         ( input === ""
         ? null
-        : `${input}/\uffff`
+        : `${input}\uffff`
         )
       }
     )

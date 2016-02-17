@@ -24,6 +24,13 @@ export type Model =
   , image: ?Blob
   }
 
+export type Match =
+  { uri: URI
+  , title: ?string
+  , isTopHit: boolean
+  , score: number
+  }
+
 
 declare export function frequency
   (page:Model):

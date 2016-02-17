@@ -12,7 +12,7 @@
 export type Model =
   { type: "Visit"
   , start: Time
-  , end: Time
+  , end: ?Time
   , id: ID
   , device: string
   }

@@ -11,21 +11,24 @@ import type {Result} from "../../common/result";
 import type {Tagged} from "../../common/prelude";
 import * as Title from "./title";
 import * as Suggestion from "./suggestion";
+import * as Page from "../../../src/common/history/page";
 
-type URI = string
+export type URI = string
+export type PID = number
+export type Match = Page.Match
 
 export type Action
   = Tagged<"Query", string>
   | Tagged<"SelectNext", void>
   | Tagged<"SelectPrevious", void>
   | Tagged<"Unselect", void>
-  | Tagged<"UpdateMatches", Result<Error, Array<Match>>>
+  | Tagged<"UpdateMatches", Array<Match>>
   | Tagged<"Abort", number>
+  | Tagged<"Spawned", Result<Error, PID>>
+  | Tagged<"Killed", Result<Error, PID>>
+  | Tagged<"Sent", Result<Error, PID>>
+  | Tagged<"Received", Result<Error, Tagged<"UpdateMatches",  Array<Match>>>>
 
-export type Match =
-  { uri: URI
-  , title: ?string
-  }
 
 export type Model =
   { size: number
@@ -35,6 +38,7 @@ export type Model =
   , selected: ?number
   , matches: {[key:string]: Match}
   , items: Array<URI>
+  , pid: ?PID
   }
 
 export type view =

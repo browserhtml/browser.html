@@ -30,8 +30,10 @@ type IconInfo =
   , icon: Page.URI
   }
 
-type Query =
+export type Query =
   { input: string
+  , type: 'Page' // | 'Tag' | 'Quote'
+  , limit: number
   }
 
 declare export function Updated
@@ -76,11 +78,12 @@ export type Action
   | Tagged<"Import", ImportStatus.Action>
   | Tagged<"Found", Result<Failure, Array<Page.Model>>>
   | Tagged<"Updated", Result<Failure, Response>>
+  | Tagged<"UpdataMatches", Array<Page.Match>>
 
 export type Model =
   { name: string
   , db: PouchDB
-  , query: ?string
+  , query: ?Query
   , importStatus: ImportStatus.Model
   }
 

@@ -10,7 +10,7 @@
  export type Time = number
  export type Name = string
 
-export Model =
+export type Model =
   { type: "Tag"
   , _id: ID
   , _rev: ?Revision
@@ -18,8 +18,9 @@ export Model =
   , items: Array<ID>
   }
 
-export Target =
+export type Target =
   { _id: ID
+  , tags: Array<Name>
   }
 
 
@@ -45,9 +46,9 @@ declare export function removeTag <item:Target>
   item
 
 declare export function tag <item:Target>
-  (target:item, tag:Model) =>
+  (target:item, tag:Model):
   [item, Model]
 
 declare export function untag <item:Target>
-  (target:item, tag:Model) =>
+  (target:item, tag:Model):
   [item, Model]

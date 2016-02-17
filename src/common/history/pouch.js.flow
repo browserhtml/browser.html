@@ -199,7 +199,7 @@ declare export class PouchDB
   , put <document> (doc:document, id?:ID, rev?:Revision, options?:Unknown):Promise<Response>
   , post <document:NewDocument> (doc:document, options?:Unknown):Promise<Response>
   , get <document:VersionedDocument> (id:ID, options?:GetOptions):Promise<document>
-  , bulkDocs <document> (docs:Array<document>, options?:Unknown):Promise<Array<Response>>
+  , bulkDocs <document> (docs:Array<document>, options?:Unknown):Promise<Array<Failure|Response>>
   , allDocs <document> (options?:AllDocsOptions):Promise<AllDocsResult<document>>
   , changes <document> (options:ChangeOptions):Changes<document>
 }

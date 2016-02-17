@@ -8,8 +8,8 @@
 import * as Tag from "./tag"
 */
 
-import {merge} from "../common/prelude";
-import {exclude} from "../common/array";
+import {merge} from "../../common/prelude";
+import {exclude, include} from "../../common/array";
 
 
 export const init =
@@ -58,7 +58,7 @@ export const addTag = /*::<item:Tag.Target>*/
 
 export const removeTag = /*::<item:Tag.Target>*/
   ( name/*:Tag.Name*/
-  , target/*item*/
+  , target/*:item*/
   )/*:item*/ =>
   merge
   ( target
@@ -67,14 +67,14 @@ export const removeTag = /*::<item:Tag.Target>*/
   );
 
 export const tag = /*::<item:Tag.Target>*/
-  (item/*:item*/, tag/*:Tag.Target*/)/*:[item, Tag.Target]*/ =>
+  (item/*:item*/, tag/*:Tag.Model*/)/*:[item, Tag.Model]*/ =>
   [ addTag(tag.name, item)
-  , addItem(item, tag)
+  , addItem(item._id, tag)
   ];
 
 
 export const untag = /*::<item:Tag.Target>*/
-  (item/*:item*/, tag/*:Tag.Target*/)/*:[item, Tag.Target]*/ =>
+  (item/*:item*/, tag/*:Tag.Model*/)/*:[item, Tag.Model]*/ =>
   [ removeTag(tag.name, item)
-  , removeItem(item, tag)
+  , removeItem(item._id, tag)
   ];

@@ -20,5 +20,5 @@ export type Model =
   }
 
 declare export function sample
-  (page:Page.Model, limit:number):
-  (top:Model):Model
+  (page:Page.Model, limit:number, top:Model):
+  Model

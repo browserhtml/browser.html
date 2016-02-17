@@ -6,10 +6,11 @@
 
 
 import {Effects, Task, html, forward, thunk} from "reflex";
-import {merge, always, tag, batch} from "../../common/prelude";
+import {merge, always, tag, tagged, batch} from "../../common/prelude";
+import {result, promise} from "../../common/history/util";
 import {Style, StyleSheet} from '../../common/style';
 import * as Result from '../../common/result';
-
+import PouchDB from 'PouchDB';
 import * as Page from './page';
 import * as TopHit from './top-hit';
 import * as Title from "./title";
@@ -18,33 +19,32 @@ import * as Icon from "./icon";
 import * as Suggestion from "./suggestion";
 import * as Unknown from '../../common/unknown';
 
+
+
 /*::
 import * as History from "../../../type/browser/assistant/history"
+import type {Model, Action, PID} from "../../../type/browser/assistant/history"
+import type {Address, VirtualTree} from "reflex/type"
 */
 
 
 const Abort = tag("Abort");
 export const Query = tag("Query");
+const Search = tag("Search");
 const UpdateMatches = tag("UpdateMatches");
+const Spawned = tag("Spawned");
+const Killed = tag("Killed");
+const Sent = tag("Sent");
+const Received = tag("Received");
+const byURI =
+  uri =>
+  action =>
+  tagged("ByURI", {uri, action});
 
 
-const pendingRequests = Object.create(null);
 
-const abort =
-  id =>
-  Task.future(() => new Promise(resolve => {
-
-  }));
-
-const search/*:History.search*/ =
-  (id, input, limit) =>
-  Task.future(() => new Promise(resolve => {
-
-  }));
-
-
-export const init/*:History.init*/ =
-  (query, limit) =>
+export const init =
+  (query/*:string*/, limit/*:number*/)/*:[Model, Effects<Action>]*/ =>
   [ { query
     , size: 0
     , queryID: 0
@@ -52,8 +52,10 @@ export const init/*:History.init*/ =
     , selected: null
     , matches: {}
     , items: []
+    , pid: null
     }
-  , Effects.none
+  , Effects.task(result(spawn('../../../dist/worker/history.js')))
+    .map(Spawned)
   ]
 
 const unselect =
@@ -99,27 +101,29 @@ const updateQuery =
   ( model.query === query
   ? [ model, Effects.none ]
   : [ merge(model, {query, queryID: model.queryID + 1 })
-    , Effects.batch
-      ( [ Effects.task
-          (abort(model.queryID))
-          .map(Abort)
-
-        , Effects.task
-          (search(model.queryID + 1, query, model.limit))
-          .map(UpdateMatches)
-        ]
+    , ( model.pid == null
+      ? Effects.none
+      : Effects.task
+        ( result
+          ( send
+            ( model.pid
+            , Search
+              ( { input: query
+                , type: 'Page'
+                , limit: model.limit
+                }
+              )
+            )
+          )
+        )
+        .map(Sent)
       )
     ]
   );
 
 
-const updateMatches = (model, result) =>
-  ( result.isOk
-  ? replaceMatches(model, result.value)
-  : [ model
-    , Effects.task(Unknown.error(result.error))
-    ]
-  )
+const updateMatches = (model, matches) =>
+  replaceMatches(model, matches);
 
 const replaceMatches = (model, results) => {
   const items = results.map(match => match.uri)
@@ -147,8 +151,78 @@ const retainSelected = (model, {matches, items}) => {
   return merge(model, {size, selected, items, matches})
 };
 
-export const update/*:History.update*/ =
-  (model, action) =>
+const report =
+  (...args) =>
+  Effects.task(Unknown.error(...args));
+
+const spawned = (model, input) =>
+  ( input.isOk
+  ? [ merge(model, {pid: input.value})
+    , Effects.task
+      (result(receive(input.value)))
+      .map(Received)
+    ]
+  : [ model
+    , report(input.error)
+    ]
+  )
+
+const killed = (model, result) =>
+  ( result.isOk
+  ? ( model.pid === result.value
+    ? [ merge(model, {pid: null})
+      , Effects.none
+      ]
+    : [ model
+      , report(`Unknown worker ${result.value} was killed`)
+      ]
+    )
+  : [ model
+    , report(`Failed to kill a worker ${model.pid}`, result.error)
+    ]
+  );
+
+
+const sent = (model, result) =>
+  ( result.isOk
+  ? [ model
+    , Effects.none
+    ]
+  : [ model
+    , report(result.error)
+    ]
+  );
+
+const received = (model, input) => {
+  if (input.isOk) {
+    const [next, fx] = update(model, input.value)
+    const out =
+      [ model
+      , Effects.batch
+        ( [ fx
+          , ( model.pid == null
+            ? Effects.none
+            : Effects.task
+              ( result(receive(model.pid)) )
+              .map(Received)
+            )
+          ]
+        )
+      ];
+    return out
+  }
+  else {
+    const out =
+      [ model
+      , report(input.error)
+      ]
+
+    return out;
+  }
+};
+
+export const update =
+  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
   ( action.type === "Query"
   ? updateQuery(model, action.source)
   : action.type === "SelectNext"
@@ -159,6 +233,16 @@ export const update/*:History.update*/ =
   ? unselect(model)
   : action.type === "UpdateMatches"
   ? updateMatches(model, action.source)
+
+  : action.type === "Spawned"
+  ? spawned(model, action.source)
+  : action.type === "Killed"
+  ? killed(model, action.source)
+  : action.type === "Sent"
+  ? sent(model, action.source)
+  : action.type === "Received"
+  ? received(model, action.source)
+
   : Unknown.update(model, action)
   )
 
@@ -170,8 +254,8 @@ const innerView =
   ];
 
 
-export const render/*:History.view*/ =
-  (model, address) =>
+export const render =
+  (model/*:Model*/, address/*:Address<Action>*/)/*:VirtualTree*/ =>
   html.embed
   ( null
   , model.items.map
@@ -187,11 +271,75 @@ export const render/*:History.view*/ =
     )
   )
 
-export const view/*:History.view*/ =
-  (model, address) =>
+export const view =
+  (model/*:Model*/, address/*:Address<Action>*/)/*:VirtualTree*/ =>
   thunk
   ( 'history'
   , render
   , model
   , address
   );
+
+// Task.
+
+const byPID =
+  (pid/*:number*/)/*:?Worker*/ =>
+  window.Worker[`_${pid}`];
+
+// Spawn a new web worker.
+const spawn = uri =>
+  Task.future(() => new Promise((resolve) => {
+    if (window.Worker.nextPID == null) {
+      window.Worker.nextPID = 0
+    }
+
+    const pid = ++window.Worker.nextPID
+    window.Worker[`_${pid}`] = new window.Worker(uri);
+    resolve(pid);
+  }));
+
+const receive = (pid/*:PID*/)/*:Task<Error, Array<History.Match>>*/ =>
+  Task.future(() => new Promise((resolve, reject) => {
+    const worker = byPID(pid);
+    if (worker == null) {
+      reject('Worker with given PID: ${pid} not fould');
+    }
+    else {
+      const onMessage = event => {
+        event.target.removeEventListener("message", onMessage);
+        resolve(JSON.parse(event.data));
+      };
+
+      // @FlowIssue: https://github.com/facebook/flow/issues/1413
+      worker.addEventListener("message",  onMessage);
+    }
+  }));
+
+const kill = pid =>
+  Task.future(() => new Promise((resolve, reject) => {
+    const worker = byPID(pid);
+    if (worker) {
+      worker.terminate();
+      delete window.Worker[`_${pid}`];
+
+      resolve();
+    }
+    else {
+      reject('Worker with given PID: ${pid} not fould');
+    }
+  }));
+
+const send = (pid, data) =>
+  Task.future(() => new Promise((resolve, reject) => {
+    const worker = byPID(pid);
+    if (worker) {
+      worker.postMessage(JSON.stringify(data));
+      resolve(pid);
+    }
+    else {
+      reject('Worker with given PID: ${pid} not fould');
+    }
+  }));
+
+const request = (pid, data) =>
+  send(pid, data).chain(receive);
