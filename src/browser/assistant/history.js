@@ -27,7 +27,7 @@ import type {Model, Action, PID} from "../../../type/browser/assistant/history"
 import type {Address, VirtualTree} from "reflex/type"
 */
 
-
+export const Reset = tag("Reset");
 const Abort = tag("Abort");
 export const Query = tag("Query");
 const Search = tag("Search");
@@ -57,6 +57,21 @@ export const init =
   , Effects.task(result(spawn('../../../dist/worker/history.js')))
     .map(Spawned)
   ]
+
+export const reset =
+  (model/*:Model*/)/*:[Model, Effects<Action>]*/ =>
+  [ merge
+    ( model
+    , { query: null
+      , queryID: model.queryID + 1
+      , selected: null
+      , matches: {}
+      , items: []
+      }
+    )
+  , Effects.none
+  ];
+
 
 const unselect =
   model =>
@@ -233,6 +248,8 @@ export const update =
   ? unselect(model)
   : action.type === "UpdateMatches"
   ? updateMatches(model, action.source)
+  : action.type === "Reset"
+  ? reset(model)
 
   : action.type === "Spawned"
   ? spawned(model, action.source)

@@ -18,6 +18,7 @@ import * as Unknown from '../../common/unknown';
 
 /*::
 import * as Search from "../../../type/browser/assistant/search"
+import type {Model, Action} from "../../../type/browser/assistant/search"
 */
 
 
@@ -26,6 +27,7 @@ export const SelectNext = tagged("SelectNext");
 export const SelectPrevious = tagged("SelectPrevious");
 export const Suggest = tag("Suggest");
 export const Query = tag("Query");
+export const Reset = tag("Reset");
 export const Execute = tag("Execute");
 export const Activate = tag("Activate");
 const UpdateMatches = tag("UpdateMatches");
@@ -119,7 +121,21 @@ export const init/*:Search.init*/ =
     , items: []
     }
   , Effects.none
-  ]
+  ];
+
+export const reset =
+  (model/*:Model*/)/*:[Model, Effects<Action>]*/ =>
+  [ merge
+    ( model
+    , { selected: -1
+      , query: null
+      , queryID: model.queryID + 1
+      , matches: {}
+      , items: []
+      }
+    )
+  , Effects.none
+  ];
 
 const unselect =
   model =>
@@ -260,6 +276,8 @@ export const update/*:Search.update*/ =
   (model, action) =>
   ( action.type === "Query"
   ? updateQuery(model, action.source)
+  : action.type === "Reset"
+  ? reset(model)
   : action.type === "SelectNext"
   ? selectNext(model)
   : action.type === "SelectPrevious"

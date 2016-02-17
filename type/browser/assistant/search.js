@@ -16,6 +16,7 @@ type URI = string
 
 export type Action
   = Tagged<"Query", string>
+  | Tagged<"Reset", any>
   | Tagged<"SelectNext", void>
   | Tagged<"SelectPrevious", void>
   | Tagged<"Unselect", void>

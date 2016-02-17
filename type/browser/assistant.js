@@ -3,8 +3,8 @@
 import type {Address, VirtualTree} from "reflex/type"
 import type {Effects} from "reflex/type/effects"
 import type {Tagged} from "../common/prelude"
-import * as History from "./history"
-import * as Search from "./search"
+import * as History from "./assistant/history"
+import * as Search from "./assistant/search"
 
 export type Suggestion =
   { match: string
@@ -12,7 +12,9 @@ export type Suggestion =
   }
 
 export type Model =
-  { query: string
+  { isOpen: boolean
+  , isExpanded: boolean
+  , query: string
   , selected: number
   , history: History.Model
   , search: Search.Model
