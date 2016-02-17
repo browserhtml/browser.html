@@ -130,10 +130,14 @@ export const exclude = /*::<item>*/
       ( index < 0
       ? items
       : index === 0
-      ? items.slice(0)
+      ? items
+        .slice(1)
       : items.length - 1 === index
-      ? items.slice(0, index)
-      : items.slice(0, index).concat(items.slice(index))
+      ? items
+        .slice(0, index)
+      : items
+        .slice(0, index)
+        .concat(items.slice(index))
       )
     return result
   }
