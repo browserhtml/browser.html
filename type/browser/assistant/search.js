@@ -22,6 +22,7 @@ export type Action
   | Tagged<"Unselect", void>
   | Tagged<"UpdateMatches", Result<Error, Array<Match>>>
   | Tagged<"Abort", number>
+  | Tagged<"Terminate", void>
 
 export type Match =
   { uri: URI

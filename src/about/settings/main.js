@@ -12,7 +12,7 @@ const isReload = window.application != null;
 // If hotswap change address so it points to a new mailbox &r
 // re-render.
 if (isReload) {
-  window.application.address(UI.LiveReload);
+  window.application.address(UI.Terminate);
 }
 
 

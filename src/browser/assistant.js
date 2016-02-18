@@ -13,9 +13,12 @@ import {cursor} from '../common/cursor';
 import {prettify} from '../common/url-helper';
 import * as Unknown from '../common/unknown';
 
-/*:: import * as type from "../../type/browser/assistant" */
+/*::
+import * as type from "../../type/browser/assistant"
+import type {Model, Action} from "../../type/browser/assistant"
+*/
 
-
+export const Terminate = tagged("Terminate");
 export const Open = tagged("Open");
 export const Close = tagged("Close");
 export const Expand = tagged("Expand");
@@ -61,6 +64,16 @@ export const init =
 
     return [model, fx]
   }
+
+export const terminate =
+  (model/*:Model*/)/*:[Model, Effects<Action>]*/ =>
+  batch
+  ( update
+  , model
+  , [ SearchAction(Search.Terminate)
+    , HistoryAction(History.Terminate)
+    ]
+  );
 
 const clear =
   (model, action) =>
@@ -192,6 +205,8 @@ export const update/*:type.update*/ =
   ? updateSearch(model, action.source)
   : action.type === "Suggest"
   ? [model, Effects.none]
+  : action.type === "Terminate"
+  ? terminate(model)
   : Unknown.update(model, action)
   );
 

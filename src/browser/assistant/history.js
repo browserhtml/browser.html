@@ -27,6 +27,7 @@ import type {Model, Action, PID} from "../../../type/browser/assistant/history"
 import type {Address, VirtualTree} from "reflex/type"
 */
 
+export const Terminate = tagged("Terminate");
 export const Reset = tag("Reset");
 const Abort = tag("Abort");
 export const Query = tag("Query");
@@ -57,6 +58,17 @@ export const init =
   , Effects.task(result(spawn('../../../dist/worker/history.js')))
     .map(Spawned)
   ]
+
+export const terminate =
+  (model/*:Model*/)/*:[Model, Effects<Action>]*/ =>
+  [ merge
+    ( model
+    , { pid: null }
+    )
+  , Effects.task
+    (result(kill(model.pid)))
+    .map(Killed)
+  ];
 
 export const reset =
   (model/*:Model*/)/*:[Model, Effects<Action>]*/ =>
@@ -117,7 +129,8 @@ const updateQuery =
   ? [ model, Effects.none ]
   : [ merge(model, {query, queryID: model.queryID + 1 })
     , ( model.pid == null
-      ? Effects.none
+      ? Effects.task(result(spawn('../../../dist/worker/history.js')))
+        .map(Spawned)
       : Effects.task
         ( result
           ( send
@@ -173,9 +186,30 @@ const report =
 const spawned = (model, input) =>
   ( input.isOk
   ? [ merge(model, {pid: input.value})
-    , Effects.task
-      (result(receive(input.value)))
-      .map(Received)
+    , Effects.batch
+      ( [ Effects.task
+          (result(receive(input.value)))
+          .map(Received)
+        , ( model.query == null
+          ? Effects.none
+          : model.query === ""
+          ? Effects.none
+          : Effects.task
+            ( result
+              ( send
+                ( input.value
+                , Search
+                  ( { input: model.query
+                    , type: 'Page'
+                    , limit: model.limit
+                    }
+                  )
+                )
+              )
+            )
+          )
+        ]
+      )
     ]
   : [ model
     , report(input.error)
@@ -185,6 +219,13 @@ const spawned = (model, input) =>
 const killed = (model, result) =>
   ( result.isOk
   ? ( model.pid === result.value
+    ? [ merge(model, {pid: null})
+      , Effects.none
+      ]
+    : model.pid === null
+    // On terminate we set `pid` to `null` so that new verison of application
+    // will resume from the state without `pid`. Which is why we don't want to
+    // report error here if we already cleared out `model.pid`.
     ? [ merge(model, {pid: null})
       , Effects.none
       ]
@@ -250,6 +291,8 @@ export const update =
   ? updateMatches(model, action.source)
   : action.type === "Reset"
   ? reset(model)
+  : action.type === "Terminate"
+  ? terminate(model)
 
   : action.type === "Spawned"
   ? spawned(model, action.source)
@@ -338,8 +381,7 @@ const kill = pid =>
     if (worker) {
       worker.terminate();
       delete window.Worker[`_${pid}`];
-
-      resolve();
+      resolve(pid);
     }
     else {
       reject('Worker with given PID: ${pid} not fould');

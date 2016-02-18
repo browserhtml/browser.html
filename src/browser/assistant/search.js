@@ -23,6 +23,7 @@ import type {Model, Action} from "../../../type/browser/assistant/search"
 
 
 const Abort = tag("Abort");
+export const Terminate = tagged("Terminate");
 export const SelectNext = tagged("SelectNext");
 export const SelectPrevious = tagged("SelectPrevious");
 export const Suggest = tag("Suggest");
@@ -81,7 +82,7 @@ const abort =
       pendingRequests[id].abort();
       delete pendingRequests[id];
     }
-  })
+  });
 
 const search/*:Search.search*/ =
   (id, input, limit) =>
@@ -121,6 +122,22 @@ export const init/*:Search.init*/ =
     , items: []
     }
   , Effects.none
+  ];
+
+export const terminate =
+  (model/*:Model*/)/*:[Model, Effects<Action>]*/ =>
+  [ merge
+    ( model
+    , { selected: -1
+      , query: null
+      , queryID: 0
+      , matches: {}
+      , items: []
+      }
+    )
+  , Effects.task
+    (abort(model.queryID))
+    .map(Abort)
   ];
 
 export const reset =
@@ -290,6 +307,8 @@ export const update/*:Search.update*/ =
   ? updateByURI(model, action.source)
   : action.type === "Activate"
   ? activate(model)
+  : action.type === "Terminate"
+  ? terminate(model)
   : Unknown.update(model, action)
   )
 

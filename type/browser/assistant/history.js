@@ -19,6 +19,7 @@ export type Match = Page.Match
 
 export type Action
   = Tagged<"Query", string>
+  | Tagged<"Terminate", void>
   | Tagged<"Reset", any>
   | Tagged<"SelectNext", void>
   | Tagged<"SelectPrevious", void>

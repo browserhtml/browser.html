@@ -40,6 +40,7 @@ export type Action
   | Tagged<"Search", Search.Action>
   | Tagged<"Query", string>
   | Tagged<"Suggest", Suggestion>
+  | Tagged<"Terminate", void>
   | Trigger
   | Activate
   | SelectNext
