@@ -20,7 +20,7 @@ import * as Tab from './sidebar/tab';
 import * as Unknown from '../common/unknown';
 import * as Stopwatch from '../common/stopwatch';
 import {Style, StyleSheet} from '../common/style';
-import {readTitle, isDark} from './web-view/util';
+import {readTitle, isDark, isNewTab} from './web-view/util';
 import * as Driver from 'driver';
 import * as URI from '../common/url-helper';
 import * as Focusable from '../common/focusable';
@@ -585,6 +585,11 @@ const styleSheet = StyleSheet.create({
     MozWindowDragging: 'no-drag'
   },
 
+  iframeFull: {
+    top: 0,
+    height: '100%',
+  },
+
   topbar: {
     backgroundColor: 'white', // dynamic
     position: 'absolute',
@@ -617,6 +622,7 @@ const styleSheet = StyleSheet.create({
   },
 
   titleContainer: {
+    fontSize: '13px',
     position: 'absolute',
     top: 0,
     left: 0,
@@ -624,7 +630,6 @@ const styleSheet = StyleSheet.create({
     paddingRight: '30px',
     width: 'calc(100% - 60px)',
     textAlign: 'center',
-    fontWeight: 'bold',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis'
@@ -686,7 +691,7 @@ const styleSheet = StyleSheet.create({
   iconCreateTabBright: null
 });
 
-const viewFrame = (model, address) =>
+const FrameView = (style) => (model, address) =>
   html.iframe({
     id: `web-view-${model.id}`,
     src: model.navigation.initiatedURI,
@@ -694,7 +699,7 @@ const viewFrame = (model, address) =>
     'data-name': model.name,
     'data-features': model.features,
     element: Driver.element,
-    style: styleSheet.iframe,
+    style,
     attributes: {
       mozbrowser: true,
       remote: true,
@@ -734,7 +739,35 @@ const viewFrame = (model, address) =>
     onMozBrowserScrollAreaChanged: on(address, decodeScrollAreaChange),
   });
 
-export const view/*:type.view*/ = (model, address) => {
+const viewFrame = FrameView(styleSheet.iframe);
+const viewFrameFull = FrameView(Style(styleSheet.iframe, styleSheet.iframeFull));
+
+const viewNewTab = (model, address) => {
+  const isModelDark = isDark(model);
+  return html.div
+  ( { className:
+      ( isModelDark
+      ? `webview webview-is-dark web-view-${model.id}`
+      : `webview web-view-${model.id}`
+      )
+    , style: Style
+      ( styleSheet.webview
+      , ( model.isActive
+        ? styleSheet.webviewActive
+        : model.isSelected
+        ? styleSheet.webviewSelected
+        : styleSheet.webviewInactive
+        )
+      , model.display
+      )
+    }
+  , [ viewFrameFull(model, address)
+    , Progress.view(model.progress, address)
+    ]
+  );
+}
+
+const viewWebView = (model, address) => {
   const isModelDark = isDark(model);
   return html.div
   ( { className:
@@ -838,6 +871,11 @@ export const view/*:type.view*/ = (model, address) => {
   );
 };
 
+export const view/*:type.view*/ = (model, address) =>
+  ( isNewTab(model)
+  ? viewNewTab(model, address)
+  : viewWebView(model, address)
+  );
 
 const decodeClose = always(Close);
 

@@ -180,7 +180,7 @@ const readSelect = compose
       Editable.Select(readSelection(target))
   );
 
-const inputWidth = 460;
+const inputWidth = 480;
 const inputHeight = 40;
 const inputXPadding = 32;
 
@@ -194,7 +194,7 @@ const style = StyleSheet.create({
     width: `${inputWidth}px`
   },
   field: {
-    background: '#EBEEF2',
+    backgroundColor: '#EBEEF2',
     borderRadius: '5px',
     borderWidth: '3px',
     borderStyle: 'solid',
@@ -209,6 +209,7 @@ const style = StyleSheet.create({
     width: `${(inputWidth - 6) - (inputXPadding * 2)}px`
   },
   fieldFocused: {
+    backgroundColor: '#fff',
     borderColor: '#3D91F2'
   },
   inactive: {
@@ -216,24 +217,13 @@ const style = StyleSheet.create({
     pointerEvents: 'none'
   },
   searchIcon: {
-    color: 'rgba(0,0,0,0.5)',
+    color: 'rgba(0,0,0,0.7)',
     fontFamily: 'FontAwesome',
     fontSize: '16px',
-    left: '10px',
+    left: '13px',
     lineHeight: '40px',
     position: 'absolute',
     top: 0
-  },
-  clearIcon: {
-    color: 'rgba(0,0,0,0.5)',
-    fontFamily: 'FontAwesome',
-    fontSize: '16px',
-    right: '10px',
-    lineHeight: '40px',
-    position: 'absolute'
-  },
-  clearIconInactive: {
-    opacity: 0
   },
   hidden: {
     opacity: 0,
@@ -256,17 +246,6 @@ export const view/*:type.view*/ = (model, address) =>
       className: 'input-search-icon',
       style: style.searchIcon
     }, ['']),
-    html.span({
-      className: 'input-clear-icon',
-      style: Style(
-        style.clearIcon,
-        ( model.value === ''
-        ? style.clearIconInactive
-        : null
-        )
-      ),
-      onClick: () => address(Clear)
-    }, ['']),
     html.input({
       className: 'input-field',
       placeholder: 'Search or enter address',

@@ -386,7 +386,6 @@ export const FocusInput = InputAction(Input.Focus);
 
 const OpenAssistant = AssistantAction(Assistant.Open);
 const CloseAssistant = AssistantAction(Assistant.Close);
-const ExpandAssistant = AssistantAction(Assistant.Expand);
 const QueryAssistant = compose(AssistantAction, Assistant.Query);
 
 const OpenSidebar = SidebarAction(Sidebar.Open);
@@ -472,12 +471,22 @@ const createWebView = model =>
   batch
   ( update
   , merge(model, {mode: 'create-web-view'})
-  , [ ShowInput
-    , ExpandAssistant
+  , [ Open
+      ( { uri: URI.read('about:newtab')
+        , inBackground: false
+        , name: ''
+        , features: ''
+        }
+      )
+    , ShowInput
+    // @TODO need to introduce action for integrated assistant that doesn't
+    // show up until there are results. Will take the place of ExpandAssistant.
+    , OpenAssistant
     , CloseSidebar
     , HideOverlay
     , FoldWebViews
     , EnterInput
+    , ReceiveOpenURLNotification
     ]
   );
 

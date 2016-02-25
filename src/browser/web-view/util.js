@@ -26,3 +26,9 @@ export const isDark/*:type.isDark*/ = (model) =>
  ? model.page.pallet.isDark
  : false
  );
+
+// Determine if a webview model is displaying newtab page.
+// @TODO is there a better way to do this? We might want to make WebView an
+// enum of WebView or NewTab?
+export const isNewTab = (model) =>
+  URI.read(model.page.uri) === URI.read('about:newtab');

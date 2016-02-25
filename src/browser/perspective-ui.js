@@ -25,7 +25,7 @@ export const update = (model, action) =>
     ? batch
       ( Browser.update
       , model
-      , [ Browser.OpenWebView
+      , [ action
         , Browser.ShowWebView
         ]
       )

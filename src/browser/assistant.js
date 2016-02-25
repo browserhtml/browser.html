@@ -200,7 +200,8 @@ const styleSheet = StyleSheet.create
       { height: '100%'
       }
     , shrinked:
-      {}
+      { minHeight: '120px'
+      }
 
     , open:
       {
@@ -212,9 +213,9 @@ const styleSheet = StyleSheet.create
 
     , results:
       { listStyle: 'none'
-      , margin: '120px auto 0'
+      , margin: '90px auto 40px'
       , padding: '0px'
-      , width: '460px'
+      , width: '480px'
       }
     }
   );

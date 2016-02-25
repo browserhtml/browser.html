@@ -205,6 +205,11 @@ gulp.task('hotreload', function() {
       ]
     ]
 
+  settings.plugins['about/newtab/main'] = [[hmr, {
+    port: 3128,
+    url: "http://localhost:3128"
+  }]]
+
   settings.transform.push(hotify);
 });
 
@@ -212,6 +217,7 @@ bundler('browser/index');
 bundler('service/history-worker');
 bundler('about/settings/main');
 bundler('about/repl/main');
+bundler('about/newtab/main');
 
 gulp.task('build', [
   'compressor',
@@ -226,7 +232,8 @@ gulp.task('watch', [
   'browser/index',
   // 'service/history-worker',
   'about/settings/main',
-  'about/repl/main'
+  'about/repl/main',
+  'about/newtab/main'
 ]);
 
 gulp.task('develop', sequencial('watch', 'server', 'gecko'));

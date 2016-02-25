@@ -6,6 +6,7 @@
 }
 
 * {
+  font-family: "San Francisco Text", "Helvetica Neue", "Helvetica", sans-serif;
   -moz-appearance: none;
   margin: 0;
   padding: 0;
@@ -35,7 +36,8 @@ body {
 
 /* Prevents scrollbars to show up with out-of-window elements */
 body {
-  font: 12px/1.5 "Helvetica Neue", sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
   overflow: hidden;
 }
 

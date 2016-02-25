@@ -19,7 +19,7 @@ const styleSheet = StyleSheet.create
       { color: 'rgba(0,0,0,0.7)'
       , fontFamily: 'FontAwesome'
       , fontSize: '17px'
-      , left: '10px'
+      , left: '13px'
       , position: 'absolute'
       // top:0 should not be required, but it's necessary for Servo.
       // See https://github.com/servo/servo/issues/9687
