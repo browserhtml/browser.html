@@ -76,7 +76,7 @@ Bundler.prototype.build = function() {
     .bundle()
     .on('error', (error) => {
       gutil.beep();
-      console.error(`Failed to browserify: '${this.entry}'`, error.message);
+      console.error(`Failed to browserify:`, error.message);
     })
     .pipe(source(this.entry + '.js'))
     .pipe(buffer())
@@ -209,14 +209,14 @@ gulp.task('hotreload', function() {
 });
 
 bundler('browser/index');
-bundler('service/history-worker');
+bundler('worker/history');
 bundler('about/settings/main');
 bundler('about/repl/main');
 
 gulp.task('build', [
   'compressor',
   'browser/index',
-  // 'service/history-worker',
+  'worker/history',
   'about/settings/main',
   'about/repl/main'
 ]);
@@ -224,7 +224,7 @@ gulp.task('build', [
 gulp.task('watch', [
   'watcher',
   'browser/index',
-  // 'service/history-worker',
+  'worker/history',
   'about/settings/main',
   'about/repl/main'
 ]);

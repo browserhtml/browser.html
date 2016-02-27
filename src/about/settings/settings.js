@@ -13,6 +13,7 @@ import * as Setting from './setting';
 
 // Actions
 
+export const Terminate = tagged("Terminate");
 const Save = tag("Save");
 const Saved = tag("Saved");
 const Observe = tagged("Observe");
@@ -157,6 +158,13 @@ const updateSettingByName = (model, name, action) => {
   return result
 }
 
+// @TODO: Should remove setting observers during termination.
+const terminate =
+  model =>
+  [ model
+  , Effects.none
+  ];
+
 export const update/*:type.update*/ =
   (model, action) =>
   ( action.type === 'Save'
@@ -179,6 +187,9 @@ export const update/*:type.update*/ =
 
   : action.type === 'Setting'
   ? updateSettingByName(model, action.name, action.source)
+
+  : action.type === 'Terminate'
+  ? terminate(model)
 
   : Unknown.update(model, action)
   );

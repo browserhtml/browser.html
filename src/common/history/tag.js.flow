@@ -1,0 +1,54 @@
+/* @flow */
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+ export type ID = string
+ export type Revision = string
+ export type URI = string
+ export type Time = number
+ export type Name = string
+
+export type Model =
+  { type: "Tag"
+  , _id: ID
+  , _rev: ?Revision
+  , name: Name
+  , items: Array<ID>
+  }
+
+export type Target =
+  { _id: ID
+  , tags: Array<Name>
+  }
+
+
+declare export function init
+  (id:ID, name:Name):
+  Model
+
+declare export function addItem
+  (id:ID, tag:Model):
+  Model
+
+declare export function removeItem
+  (id:ID, tag:Model):
+  Model
+
+
+declare export function addTag <item:Target>
+  (name:Name, item:item):
+  item
+
+declare export function removeTag <item:Target>
+  (name:Name, item:item):
+  item
+
+declare export function tag <item:Target>
+  (target:item, tag:Model):
+  [item, Model]
+
+declare export function untag <item:Target>
+  (target:item, tag:Model):
+  [item, Model]

@@ -1,0 +1,53 @@
+/* @flow */
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+import type {Tagged} from "../../../type/common/prelude"
+import type {Task} from "reflex/type";
+import type {Effects, Never} from "reflex/type/effects"
+import type {PouchDB, ID, Revision, Response, Failure} from "./pouch";
+import type {Result} from "../../common/result"
+import * as Page from "./page"
+
+export type Status =
+  { _id: ID // Should be "ImportStatus" but flow fails on that.
+  , _rev: ?Revision
+  , value: number
+  }
+
+export type Model =
+  { db: PouchDB
+  , status: ?Status
+  }
+
+type ImportStatusUpdate
+  = Tagged<"ImportStatusUpdate", Result<Failure, Status>>
+
+type TopSitesURISFetched
+  = Tagged<"TopSitesURIs", Result<Error, Array<Page.URI>>>
+
+type PagesImported
+  = Tagged<"PagesImported", Result<Failure, Array<Page.Model>>>
+
+type StatusUpdated
+  = Tagged<"StatusUpdated", Result<Failure, Status>>
+
+export type Action
+  = ImportStatusUpdate
+  | TopSitesURISFetched
+  | PagesImported
+  | StatusUpdated
+
+declare export function status
+  (value:number):
+  Status
+
+declare export function init
+  (db:PouchDB):
+  [Model, Effects<Action>]
+
+declare export function update
+  (model:Model, action:Action):
+  [Model, Effects<Action>]

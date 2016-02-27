@@ -255,7 +255,7 @@ const updateApplicationAvailable = (model, response) =>
   ( response.isOk
   ? updateAvailableApplicationInfo(model, response.value)
   : [ model
-    , Effects.task(Unknown.error(version.error))
+    , Effects.task(Unknown.error(response.error))
     ]
   );
 

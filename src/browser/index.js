@@ -18,9 +18,9 @@ const logger = (update) => (model, action) => {
   if (console.group != null) {
     console.group();
   }
-  
+
   const out = update(model, action);
-  
+
   if (console.groupEnd != null) {
     console.groupEnd();
   }
@@ -35,7 +35,7 @@ const isReload = window.application != null;
 // If hotswap change address so it points to a new mailbox &r
 // re-render.
 if (isReload) {
-  window.application.address(UI.LiveReload);
+  window.application.address(UI.Terminate);
 }
 
 const application = start({

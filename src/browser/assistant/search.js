@@ -18,14 +18,17 @@ import * as Unknown from '../../common/unknown';
 
 /*::
 import * as Search from "../../../type/browser/assistant/search"
+import type {Model, Action} from "../../../type/browser/assistant/search"
 */
 
 
 const Abort = tag("Abort");
+export const Terminate = tagged("Terminate");
 export const SelectNext = tagged("SelectNext");
 export const SelectPrevious = tagged("SelectPrevious");
 export const Suggest = tag("Suggest");
 export const Query = tag("Query");
+export const Reset = tag("Reset");
 export const Execute = tag("Execute");
 export const Activate = tag("Activate");
 const UpdateMatches = tag("UpdateMatches");
@@ -79,7 +82,7 @@ const abort =
       pendingRequests[id].abort();
       delete pendingRequests[id];
     }
-  })
+  });
 
 const search/*:Search.search*/ =
   (id, input, limit) =>
@@ -119,7 +122,37 @@ export const init/*:Search.init*/ =
     , items: []
     }
   , Effects.none
-  ]
+  ];
+
+export const terminate =
+  (model/*:Model*/)/*:[Model, Effects<Action>]*/ =>
+  [ merge
+    ( model
+    , { selected: -1
+      , query: null
+      , queryID: 0
+      , matches: {}
+      , items: []
+      }
+    )
+  , Effects.task
+    (abort(model.queryID))
+    .map(Abort)
+  ];
+
+export const reset =
+  (model/*:Model*/)/*:[Model, Effects<Action>]*/ =>
+  [ merge
+    ( model
+    , { selected: -1
+      , query: null
+      , queryID: model.queryID + 1
+      , matches: {}
+      , items: []
+      }
+    )
+  , Effects.none
+  ];
 
 const unselect =
   model =>
@@ -260,6 +293,8 @@ export const update/*:Search.update*/ =
   (model, action) =>
   ( action.type === "Query"
   ? updateQuery(model, action.source)
+  : action.type === "Reset"
+  ? reset(model)
   : action.type === "SelectNext"
   ? selectNext(model)
   : action.type === "SelectPrevious"
@@ -272,6 +307,8 @@ export const update/*:Search.update*/ =
   ? updateByURI(model, action.source)
   : action.type === "Activate"
   ? activate(model)
+  : action.type === "Terminate"
+  ? terminate(model)
   : Unknown.update(model, action)
   )
 

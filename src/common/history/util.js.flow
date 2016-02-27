@@ -1,0 +1,29 @@
+/* @flow */
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+import type {Task} from 'reflex/type';
+import type {Result} from '../../common/result';
+import type {Never} from "reflex/type/effects";
+
+declare export function promise <x, a>
+  (promise:Promise<a>):
+  Task<x, a>;
+
+declare export function map2 <x, a, b, c>
+  ( combine:(a:a, b:b) => c
+  , left:Task<x, a>
+  , right:Task<x, b>
+  ):
+  Task<x, c>
+
+declare export function result<x, a>
+  (task:Task<x, a>):
+  Task<Never, Result<x, a>>
+
+
+declare export function sequence <x, a>
+  (tasks:Array<Task<x, a>>):
+  Task<x, Array<a>>

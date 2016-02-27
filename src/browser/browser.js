@@ -81,6 +81,15 @@ export const init/*:type.init*/ = () => {
   return [model, fx];
 }
 
+const terminate =
+  (model, source) =>
+  batch
+  ( update
+  , model
+  , [ AssistantAction(Assistant.Terminate)
+    ]
+  );
+
 const SidebarAction = action =>
   ( action.type === "CreateWebView"
   ? CreateWebView
@@ -406,9 +415,7 @@ const HideOverlay = OverlayAction(Overlay.Hide);
 const ShowOverlay = OverlayAction(Overlay.Show);
 const FadeOverlay = OverlayAction(Overlay.Fade);
 
-export const LiveReload =
-  { type: 'LiveReload'
-  };
+export const Terminate = tagged("Terminate");
 
 // Animation
 
@@ -792,8 +799,8 @@ export const update/*:type.update*/ = (model, action) =>
   : action.type === 'Reloaded'
   ? [model, Effects.none]
   // TODO: Delegate to modules that need to do cleanup.
-  : action.type === 'LiveReload'
-  ? [model, Effects.none]
+  : action.type === 'Terminate'
+  ? terminate(model)
 
   : Unknown.update(model, action)
   );

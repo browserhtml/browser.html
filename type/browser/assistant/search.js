@@ -16,11 +16,13 @@ type URI = string
 
 export type Action
   = Tagged<"Query", string>
+  | Tagged<"Reset", any>
   | Tagged<"SelectNext", void>
   | Tagged<"SelectPrevious", void>
   | Tagged<"Unselect", void>
   | Tagged<"UpdateMatches", Result<Error, Array<Match>>>
   | Tagged<"Abort", number>
+  | Tagged<"Terminate", void>
 
 export type Match =
   { uri: URI

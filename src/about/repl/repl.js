@@ -47,6 +47,8 @@ const Print =
     }
   );
 
+const Terminate = tagged("Terminate");
+
 
 const CellAction =
   id =>
@@ -76,6 +78,13 @@ export const init =
     , active: -1
     }
   );
+
+
+const terminate =
+  model =>
+  [ model
+  , Effects.none
+  ];
 
 const createCell =
   model => {
@@ -161,6 +170,8 @@ export const update =
   ? focus(model)
   : action.type === 'CreateCell'
   ? createCell(model)
+  : action.type === 'Terminate'
+  ? terminate(model)
   : Unknown.update(model, action)
   );
 

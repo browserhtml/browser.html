@@ -1,0 +1,49 @@
+/* @flow */
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+import * as Visit from './visit'
+import * as Tag from './tag'
+
+export type ID = string
+export type Revision = string
+export type URI = string
+export type Time = number
+
+export type Model =
+  { _id: ID
+  , _rev: ?Revision
+  , type: "Page"
+  , uri: URI
+  , title: ?string
+  , visits: Array<Visit.Model>
+  , tags: Array<Tag.Name>
+  , icon: ?URI
+  , image: ?Blob
+  }
+
+export type Match =
+  { uri: URI
+  , title: ?string
+  , isTopHit: boolean
+  , score: number
+  }
+
+
+declare export function frequency
+  (page:Model):
+  number
+
+declare export function init
+  (uri:URI, title:?string):
+  Model
+
+declare export function beginVisit
+  (id:ID, time:Time, device:string, page:Model):
+  Model
+
+declare export function endVisit
+  (id:ID, device:string, time:Time, page:Model)
+  : Model

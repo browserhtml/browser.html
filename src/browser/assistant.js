@@ -4,7 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {always, batch, merge, take, tag, tagged, move} from "../common/prelude"
+import {always, batch, merge, tag, tagged} from "../common/prelude"
 import {Effects, html, thunk, forward} from "reflex"
 import * as History from "./assistant/history"
 import * as Search from "./assistant/search"
@@ -13,9 +13,12 @@ import {cursor} from '../common/cursor';
 import {prettify} from '../common/url-helper';
 import * as Unknown from '../common/unknown';
 
-/*:: import * as type from "../../type/browser/assistant" */
+/*::
+import * as type from "../../type/browser/assistant"
+import type {Model, Action} from "../../type/browser/assistant"
+*/
 
-
+export const Terminate = tagged("Terminate");
 export const Open = tagged("Open");
 export const Close = tagged("Close");
 export const Expand = tagged("Expand");
@@ -39,42 +42,59 @@ const SearchAction =
 const HistoryAction = tag("History");
 
 export const init =
-  () =>
-  clear
-  ( { isOpen: false
-    , isExpanded: false
-    }
-  )
-
-const reset =
-  model =>
-  init();
-
-const clear =
-  model => {
-    const query = null
+  ()/*:[Model, Effects<Action>]*/ => {
+    const query = "";
     const [search, fx1] = Search.init(query, 5);
     const [history, fx2] = History.init(query, 5);
+
+    const model =
+      { isOpen: false
+      , isExpanded: false
+      , query: ""
+      , selected: -1
+      , search
+      , history
+      };
+
     const fx = Effects.batch
     ( [ fx1.map(SearchAction)
       , fx2.map(HistoryAction)
       ]
     )
 
-    const result =
-      [ merge
-        ( model
-        , { query
-          , search
-          , history
-          , selected: -1
-          }
-        )
-      , fx
-      ]
-
-    return result
+    return [model, fx]
   }
+
+export const terminate =
+  (model/*:Model*/)/*:[Model, Effects<Action>]*/ =>
+  batch
+  ( update
+  , model
+  , [ SearchAction(Search.Terminate)
+    , HistoryAction(History.Terminate)
+    ]
+  );
+
+const clear =
+  (model, action) =>
+  batch
+  ( update
+  , model
+  , [ SearchAction(Search.Reset(action))
+    , HistoryAction(History.Reset(action))
+    ]
+  );
+
+const reset =
+  (model, action) =>
+  clear
+  ( merge
+    ( model
+    , { isExpanded: false
+      , isOpen: false
+      }
+    )
+  );
 
 const expand =
   model =>
@@ -185,6 +205,8 @@ export const update/*:type.update*/ =
   ? updateSearch(model, action.source)
   : action.type === "Suggest"
   ? [model, Effects.none]
+  : action.type === "Terminate"
+  ? terminate(model)
   : Unknown.update(model, action)
   );
 
