@@ -14,20 +14,21 @@ import {Renderer} from "driver";
 
 
 const logger = (update) => (model, action) => {
-  console.log('>>> Action:', action);
+  // Disabled until we find a better way to enable/disable logs in Servo
+  // console.log('>>> Action:', action);
 
-  if (console.group != null) {
-    console.group();
-  }
+  // if (console.group != null) {
+  //   console.group();
+  // }
   
   const out = update(model, action);
   
-  if (console.groupEnd != null) {
-    console.groupEnd();
-  }
+  // if (console.groupEnd != null) {
+  //   console.groupEnd();
+  // }
 
-  console.log('<<< Model:', out[0])
-  console.log('<<< Effects:', out[1]);
+  // console.log('<<< Model:', out[0])
+  // console.log('<<< Effects:', out[1]);
   return out;
 }
 
