@@ -1,0 +1,78 @@
+{ "nextIndex": 12
+, "order":
+  [ "0"
+  , "1"
+  , "2"
+  , "3"
+  , "4"
+  , "5"
+  , "6"
+  , "7"
+  , "8"
+  , "9"
+  , "10"
+  , "11"
+  ]
+, "entries":
+  { "0":
+    { "title": "YouTube"
+    , "uri": "https://youtube.com"
+    , "src": "tiles/youtube.com.png"
+    }
+  , "1":
+    { "title": "Facebook"
+    , "uri": "https://facebook.com"
+    , "src": "tiles/facebook.com.png"
+    }
+  , "2":
+    { "title": "Amazon"
+    , "uri": "https://amazon.com"
+    , "src": "tiles/amazon.com.png"
+    }
+  , "3":
+    { "title": "Twitter"
+    , "uri": "https://twitter.com"
+    , "src": "tiles/twitter.com.png"
+    }
+  , "4":
+    { "title": "Wikipedia"
+    , "uri": "https://wikipedia.org"
+    , "src": "tiles/wikipedia.org.png"
+    }
+  , "5":
+    { "title": "Quartz"
+    , "uri": "https://qz.com"
+    , "src": "tiles/qz.com.png"
+    }
+  , "6":
+    { "title": "Medium"
+    , "uri": "https://medium.com"
+    , "src": "tiles/medium.com.png"
+    }
+  , "7":
+    { "title": "Vox"
+    , "uri": "https://vox.com"
+    , "src": "tiles/vox.com.png"
+    }
+  , "8":
+    { "title": "Tumblr"
+    , "uri": "https://tumblr.com"
+    , "src": "tiles/tumblr.com.png"
+    }
+  , "9":
+    { "title": "Github"
+    , "uri": "https://github.com"
+    , "src": "tiles/github.com.png"
+    }
+  , "10":
+    { "title": "Stack Overflow"
+    , "uri": "https://github.com/browserhtml/browserhtml/issues"
+    , "src": "tiles/stackoverflow.com.png"
+    }
+  , "11":
+    { "title": "browser.html Slack"
+    , "uri": "https://browserhtml.slack.com"
+    , "src": "tiles/slack.com.png"
+    }
+  }
+}

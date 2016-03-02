@@ -11,6 +11,7 @@ import {Effects, html, forward, thunk} from "reflex";
 
 import * as Shell from "./shell";
 import * as Input from "./input";
+import * as NewTab from "./new-tab";
 import * as Assistant from "./assistant";
 import * as Sidebar from './sidebar';
 import * as WebViews from "./web-views";
@@ -44,6 +45,7 @@ export const init/*:type.init*/ = () => {
   const [webViews, webViewsFx] = WebViews.init();
   const [sidebar, sidebarFx] = Sidebar.init();
   const [assistant, assistantFx] = Assistant.init();
+  const [newTab, newTabFx] = NewTab.init();
   const [overlay, overlayFx] = Overlay.init(false, false);
 
   const model =
@@ -52,6 +54,7 @@ export const init/*:type.init*/ = () => {
     , shell
     , input
     , assistant
+    , newTab
     , webViews
     , sidebar
     , overlay
@@ -71,6 +74,7 @@ export const init/*:type.init*/ = () => {
       , updaterFx.map(UpdaterAction)
       , sidebarFx.map(SidebarAction)
       , assistantFx.map(AssistantAction)
+      , newTabFx.map(NewTabAction)
       , overlayFx.map(OverlayAction)
       , Effects.receive(CreateWebView)
       , Effects
@@ -172,6 +176,12 @@ const AssistantAction =
   : tagged('Assistant', action)
   );
 
+const NewTabAction = action =>
+  ( action.type === 'Open'
+  ? OpenURL({url: action.uri})
+  : tagged('NewTab', action)
+  );
+
 const UpdaterAction = action =>
   ( { type: 'Updater'
     , source: action
@@ -226,6 +236,14 @@ const updateOverlay = cursor({
   tag: OverlayAction,
   update: Overlay.update
 });
+
+const updateNewTab = cursor
+  ( { get: model => model.newTab
+    , set: (model, newTab) => merge(model, {newTab})
+    , update: NewTab.update
+    , tag: NewTabAction
+    }
+  );
 
 const updateUpdater = cursor
   ( { get: model => model.updater
@@ -387,11 +405,15 @@ export const FocusInput = InputAction(Input.Focus);
 
 const OpenAssistant = AssistantAction(Assistant.Open);
 const CloseAssistant = AssistantAction(Assistant.Close);
-const ExpandAssistant = AssistantAction(Assistant.Expand);
+const OpenAssistantResults = AssistantAction(Assistant.OpenResults);
 const QueryAssistant = compose(AssistantAction, Assistant.Query);
+
+const ShowNewTab = NewTabAction(NewTab.Show);
+const HideNewTab = NewTabAction(NewTab.Hide);
 
 const OpenSidebar = SidebarAction(Sidebar.Open);
 const CloseSidebar = SidebarAction(Sidebar.Close);
+const CloseSidebarImmediate = SidebarAction(Sidebar.CloseImmediate);
 
 const DockSidebar =
   { type: "Sidebar"
@@ -461,6 +483,7 @@ const showWebView = model =>
   ( update
   , merge(model, {mode: 'show-web-view'})
   , [ HideInput
+    , HideNewTab
     , CloseAssistant
     , CloseSidebar
     , HideOverlay
@@ -474,8 +497,9 @@ const createWebView = model =>
   ( update
   , merge(model, {mode: 'create-web-view'})
   , [ ShowInput
-    , ExpandAssistant
-    , CloseSidebar
+    , ShowNewTab
+    , OpenAssistantResults
+    , CloseSidebarImmediate
     , HideOverlay
     , FoldWebViews
     , EnterInput
@@ -779,6 +803,10 @@ export const update/*:type.update*/ = (model, action) =>
   : action.type === 'SuggestPrevious'
   ? updateAssistant(model, Assistant.SuggestPrevious)
 
+  // New Tab
+  : action.type === 'NewTab'
+  ? updateNewTab(model, action.source)
+
   : action.type === 'Devtools'
   ? updateDevtools(model, action.action)
   : action.type === 'Sidebar'
@@ -855,7 +883,14 @@ export const view/*:type.view*/ = (model, address) =>
           ( 'overlay'
           , Overlay.view
           , model.overlay
-          , forward(address, OverlayAction))
+          , forward(address, OverlayAction)
+          )
+        , thunk
+          ( 'new-tab'
+          , NewTab.view
+          , model.newTab
+          , forward(address, NewTabAction)
+          )
         , thunk
           ( 'assistant'
           , Assistant.view

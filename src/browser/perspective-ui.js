@@ -19,6 +19,11 @@ export const update = (model, action) =>
       ? Browser.update(model, Browser.ShowWebView)
       : [ model, Effects.none ]
       )
+    : action.type === 'Escape'
+    ? ( model.webViews.order.length > 0
+      ? Browser.update(model, Browser.ShowWebView)
+      : [ model, Effects.none ]
+      )
     // If uri is submitted in create-web-view mode then
     // opne new web-view.
     : action.type === 'SubmitInput'
