@@ -7,7 +7,7 @@
 
 import {version} from "../../package.json";
 import * as Config from "../../browserhtml.json";
-import {Effects, html, forward, thunk} from "reflex";
+import {Effects, Task, html, forward, thunk} from "reflex";
 
 import * as Shell from "./shell";
 import * as Input from "./input";
@@ -273,6 +273,12 @@ export const ShowTabs/*:type.ShowTabs*/ =
   { type: 'ShowTabs'
   };
 
+export const TriggerTabSelector =
+  tagged('TriggerTabSelector');
+
+export const RequestTabSelector =
+  tagged('RequestTabSelector');
+
 export const SelectWebView/*:type.SelectWebView*/ =
   { type: 'SelectWebView'
   };
@@ -345,9 +351,11 @@ export const Reload = WebViewsAction(WebViews.Reload);
 export const CloseWebView = WebViewsAction(WebViews.CloseActive);
 export const GoBack = WebViewsAction(WebViews.GoBack);
 export const GoForward = WebViewsAction(WebViews.GoForward);
+
 export const SelectNext = WebViewsAction(WebViews.SelectNext);
 export const SelectPrevious = WebViewsAction(WebViews.SelectPrevious);
 export const ActivateSeleted = WebViewsAction(WebViews.ActivateSelected);
+
 export const FocusWebView = WebViewsAction(WebViews.Focus);
 export const NavigateTo = compose(WebViewsAction, WebViews.NavigateTo);
 const UnfoldWebViews = WebViewsAction(WebViews.Unfold);
@@ -692,7 +700,35 @@ const updateResizeAnimation = (model, action) => {
   return result;
 }
 
+const requestTabSelector =
+  model =>
+  [ merge(model, {isSelectorRequested: true})
+  , Effects.task
+    ( Task.sleep(100) )
+    .map(always(TriggerTabSelector))
+  ];
 
+const triggerTabSelector =
+  model =>
+  ( model.isSelectorRequested
+  ? [ merge(model, {isSelectorRequested: false})
+    , Effects.receive
+      ( SelectWebView )
+    ]
+  : [ model
+    , Effects.none
+    ]
+  );
+
+const activateTab =
+  (model, action) =>
+  updateWebViews
+  ( merge
+    ( model
+    , { isSelectorRequested: false }
+    )
+  , action
+  );
 
 // Unbox For actions and route them to their location.
 export const update/*:type.update*/ = (model, action) =>
@@ -716,6 +752,10 @@ export const update/*:type.update*/ = (model, action) =>
   ? showTabs(model)
   : action.type === 'SelectWebView'
   ? selectWebView(model)
+  : action.type === 'RequestTabSelector'
+  ? requestTabSelector(model)
+  : action.type === 'TriggerTabSelector'
+  ? triggerTabSelector(model)
   // @TODO Change this to toggle tabs instead.
   : action.type === 'Escape'
   ? showTabs(model)
@@ -762,7 +802,7 @@ export const update/*:type.update*/ = (model, action) =>
   : action.type === 'ActivateTabByID'
   ? updateWebViews(model, action.source)
   : action.type === 'ActivateTab'
-  ? updateWebViews(model, action.source)
+  ? activateTab(model, action.source)
 
   : action.type === 'Shell'
   ? updateShell(model, action.source)

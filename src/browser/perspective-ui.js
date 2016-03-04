@@ -85,7 +85,7 @@ export const update = (model, action) =>
       ( Browser.update
       , model
       , [ action
-        , Browser.SelectWebView
+        , Browser.RequestTabSelector
         ]
       )
     : action.type === 'Focus'
