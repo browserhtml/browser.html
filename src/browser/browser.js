@@ -777,7 +777,7 @@ export const update/*:type.update*/ = (model, action) =>
 
 const styleSheet = StyleSheet.create({
   root: {
-    background: '#24303D',
+    background: '#171814',
     perspective: '1000px',
     // These styles prevent scrolling with the arrow keys in the root window
     // when elements move outside of viewport.

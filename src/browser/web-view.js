@@ -694,7 +694,28 @@ const styleSheet = StyleSheet.create({
   iconCreateTabDark: {
     color: 'rgba(255,255,255,0.8)',
   },
-  iconCreateTabBright: null
+
+  iconCreateTabBright: null,
+
+  iconBack: {
+    MozWindowDragging: 'no-drag',
+    color: 'rgba(0,0,0,0.8)',
+    fontFamily: 'FontAwesome',
+    fontSize: '18px',
+    lineHeight: '32px',
+    position: 'absolute',
+    textAlign: 'center',
+    bottom: 0,
+    left: 0,
+    width: '30px',
+    height: '32px',
+  },
+
+  iconBackDark: {
+    color: 'rgba(255,255,255,0.8)',
+  },
+
+  iconBackBright: null
 });
 
 const viewFrame = (model, address) =>
@@ -844,6 +865,20 @@ export const view/*:type.view*/ = (model, address) => {
         , onClick: forward(address, always(Create))
         }
       , ['']
+      )
+    , html.div
+      ( { className: 'global-create-tab-icon'
+        , style:
+            Style
+            ( styleSheet.iconBack
+            , ( isModelDark
+              ? styleSheet.iconBackDark
+              : styleSheet.iconBackBright
+              )
+            )
+        , onClick: forward(address, always(GoBack))
+        }
+      , ['']
       )
     ]
   );
