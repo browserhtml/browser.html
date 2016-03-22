@@ -18,7 +18,7 @@ import * as Easing from "eased";
 
 const styleSheet = StyleSheet.create({
   base:
-  { backgroundColor: '#24303D'
+  { backgroundColor: '#272822'
   , height: '100%'
   , position: 'absolute'
   , right: 0
