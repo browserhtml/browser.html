@@ -84,6 +84,18 @@ export const Focus/*:type.Focus*/ =
   { type: 'Focus'
   };
 
+// The push action is sent by Force Touch on webview.
+export const Push = force =>
+  ( { type: 'Push'
+    , force
+    }
+  );
+
+// This action is sent up as effect to WebViews.
+export const Pushed =
+  { type: 'Pushed'
+  };
+
 export const Load/*:type.Load*/ = uri =>
   ( { type: 'Load'
     , uri
@@ -479,6 +491,12 @@ const changeLocation = (model, uri) =>
     ]
   );
 
+const push = (model, force) =>
+  ( force > 1.8
+  ? [ model, Effects.receive(Pushed) ]
+  : [ model, Effects.none ]
+  );
+
 const close = model =>
   [ model, Effects.receive(Closed) ];
 
@@ -523,6 +541,9 @@ export const update/*:type.update*/ = (model, action) =>
 
   : action.type === "Close"
   ? close(model)
+
+  : action.type === "Push"
+  ? push(model, action.force)
 
   // Shell Requests
   : action.type === "ZoomIn"
@@ -750,6 +771,7 @@ const viewFrame = (model, address) =>
     onBlur: on(address, always(BlurShell)),
     onFocus: on(address, always(FocusShell)),
     // onMozbrowserAsyncScroll: on(address, decodeAsyncScroll),
+    onServoMouseForceChanged: on(address, decodeForceChanged),
     onMozBrowserClose: on(address, always(Close)),
     onMozBrowserOpenWindow: on(address, decodeOpenWindow),
     onMozBrowserOpenTab: on(address, decodeOpenTab),
@@ -968,3 +990,7 @@ const decodeScrollAreaChange = ({detail, target}) =>
 const decodeSecurityChange =
   ({detail: {state, extendedValidation}}) =>
   SecurityChanged(state, extendedValidation);
+
+const decodeForceChanged =
+  ({servoForce}) =>
+  Push(servoForce);

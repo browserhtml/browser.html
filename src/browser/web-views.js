@@ -134,6 +134,8 @@ const WebViewAction = (id, action) =>
   ? Activated(id)
   : action.type === "Closed"
   ? Closed(id)
+  : action.type === "Pushed"
+  ? action
   : action.type === "ShowTabs"
   ? ShowTabs
   : action.type === "Create"
@@ -447,6 +449,13 @@ const selectByID = (model, id) =>
 
 // Animations
 
+const push = (model) =>
+  ( model.isFolded
+  // If model is folded, we should forward this action up a level.
+  ? [ model, Effects.receive(ShowTabs) ]
+  : [ model, Effects.none ]
+  );
+
 const fold = model =>
   ( model.isFolded
   ? [ model, Effects.none ]
@@ -556,6 +565,9 @@ export const update/*:type.update*/ = (model, action) =>
 
   : action.type === "Closed"
   ? removeByID(model, action.id)
+
+  : action.type === "Pushed"
+  ? push(model)
 
   // Change activate web-view
   : action.type === "ActivateSelected"
