@@ -7,7 +7,7 @@
 /*:: import * as type from "../../type/browser/web-view" */
 
 import {Effects, html, forward} from 'reflex';
-import {merge, always, batch} from '../common/prelude';
+import {merge, always, batch, tag, tagged} from '../common/prelude';
 import {cursor} from '../common/cursor';
 import {compose} from '../lang/functional';
 import {on} from 'driver';
@@ -17,6 +17,9 @@ import * as Navigation from './web-view/navigation';
 import * as Security from './web-view/security';
 import * as Page from './web-view/page';
 import * as Tab from './sidebar/tab';
+import * as Input from "./input";
+import * as Overlay from './overlay';
+import * as Assistant from "./assistant";
 import * as Unknown from '../common/unknown';
 import * as Stopwatch from '../common/stopwatch';
 import {Style, StyleSheet} from '../common/style';
@@ -121,6 +124,63 @@ export const LocationChanged/*:type.LocationChanged*/ = (uri, time) =>
 export const ContextMenu/*:type.ContextMenu*/ = detail =>
   ({type: "ContextMenu", detail});
 
+export const OverlayClicked/*:type.OverlayClicked*/ =
+  { type: "OverlayClicked"
+  };
+
+export const SubmitInput/*:type.SubmitInput*/ =
+  { type: 'SubmitInput'
+  };
+
+export const ExitInput/*:type.ExitInput*/ =
+  { type: 'ExitInput'
+  , source: Input.Abort
+  };
+
+const Query = tag('Query');
+
+export const InputAction = action =>
+  ( action.type === 'Submit'
+  ? SubmitInput
+  : action.type === 'Abort'
+  ? ExitInput
+  : action.type === 'Query'
+  ? Query(action.source)
+  : action.type === 'SuggestNext'
+  ? SuggestNext
+  : action.type === 'SuggestPrevious'
+  ? SuggestPrevious
+  : tagged('Input', action)
+  );
+
+const ShowInput = InputAction(Input.Show);
+const HideInput = InputAction(Input.Hide);
+const EnterInput = InputAction(Input.Enter);
+const EnterInputSelection = compose(InputAction, Input.EnterSelection);
+export const FocusInput = InputAction(Input.Focus);
+
+export const AssistantAction =
+  action =>
+  ( action.type === 'Suggest'
+  ? Suggest(action.source)
+  : tagged('Assistant', action)
+  );
+
+const OpenAssistant = AssistantAction(Assistant.Open);
+const CloseAssistant = AssistantAction(Assistant.Close);
+const QueryAssistant = compose(AssistantAction, Assistant.Query);
+
+export const OverlayAction = action =>
+  ( action.type === "Click"
+  ? OverlayClicked
+  : { type: "Overlay"
+    , action
+    }
+  );
+
+const HideOverlay = OverlayAction(Overlay.Hide);
+const ShowOverlay = OverlayAction(Overlay.Show);
+
 const ShellAction = action =>
   ({type: 'Shell', action});
 
@@ -202,6 +262,31 @@ const TabAction = action =>
     }
   );
 
+export const SuggestNext = tagged('SuggestNext');
+export const SuggestPrevious = tagged('SuggestPrevious');
+export const Suggest = tag('Suggest');
+
+const updateAssistant = cursor({
+  get: model => model.assistant,
+  set: (model, assistant) => merge(model, {assistant}),
+  update: Assistant.update,
+  tag: AssistantAction
+});
+
+const updateOverlay = cursor({
+  get: model => model.overlay,
+  set: (model, overlay) => merge(model, {overlay}),
+  tag: OverlayAction,
+  update: Overlay.update
+});
+
+const updateInput = cursor({
+  get: model => model.input,
+  set: (model, input) => merge(model, {input}),
+  update: Input.update,
+  tag: InputAction
+});
+
 const ProgressAction/*type.ProgressAction*/ = action =>
   ({type: "Progress", action});
 
@@ -219,6 +304,24 @@ const SelectAnimationAction = action =>
   : { type: "SelectAnimation"
     , action
     }
+  );
+
+const submitInput = model =>
+  batch
+  ( update
+  , model
+  , [ NavigateTo(URI.read(model.input.value))
+    , ShowWebView
+    ]
+  );
+
+const exitInput = model =>
+  batch
+  ( update
+  , model
+  , [ CloseAssistant
+    , Focus
+    ]
   );
 
 const updateProgress = cursor
@@ -287,6 +390,13 @@ const updateNavigation = cursor
     }
   );
 
+const updateQuery =
+  (model, action) =>
+  updateAssistant
+  ( model
+  , Assistant.Query(model.input.value)
+  );
+
 const updateStopwatch = cursor
   ( { get: model => model.animation
     , set: (model, animation) => merge(model, {animation})
@@ -334,6 +444,9 @@ export const init/*:type.init*/ = (id, options) => {
   const [progress, progressFx] = Progress.init();
   const [animation, animationFx] = Stopwatch.init();
   const [tab, tabFx] = Tab.init();
+  const [input, inputFx] = Input.init(false, false, "");
+  const [assistant, assistantFx] = Assistant.init();
+  const [overlay, overlayFx] = Overlay.init(true, true);
 
   return [
     { id
@@ -341,6 +454,7 @@ export const init/*:type.init*/ = (id, options) => {
     , features: options.name
     , isSelected: false
     , isActive: false
+    , isEditing: true
     , display:
       { opacity:
           ( options.inBackground
@@ -354,6 +468,9 @@ export const init/*:type.init*/ = (id, options) => {
     , page
     , tab
     , progress
+    , input
+    , assistant
+    , overlay
     , animation
     }
   , Effects.batch
@@ -363,6 +480,9 @@ export const init/*:type.init*/ = (id, options) => {
       , securityFx.map(SecurityAction)
       , navigationFx.map(NavigationAction)
       , progressFx.map(ProgressAction)
+      , inputFx.map(InputAction)
+      , assistantFx.map(AssistantAction)
+      , overlayFx.map(OverlayAction)
       , animationFx.map(AnimationAction)
       , ( options.inBackground
         ? Effects.none
@@ -482,11 +602,38 @@ const changeLocation = (model, uri) =>
 const close = model =>
   [ model, Effects.receive(Closed) ];
 
+const showWebView = model =>
+  batch
+  ( update
+  , merge(model, {isEditing: false})
+  , [ HideInput
+    , CloseAssistant
+    , HideOverlay
+    , Focus
+    ]
+  );
+
+const editWebView = model =>
+  batch
+  ( update
+  , merge(model, {isEditing: true})
+  , [ ShowInput
+    , OpenAssistant
+    , ShowOverlay
+    , EnterInputSelection(model.navigation.currentURI)
+    ]
+  );
+
 export const update/*:type.update*/ = (model, action) =>
   ( action.type === "Select"
   ? select(model)
   : action.type === "Selected"
   ? [ model, Effects.none ]
+
+  : action.type === 'EditWebView'
+  ? editWebView(model)
+  : action.type === 'ShowWebView'
+  ? showWebView(model)
 
   : action.type === "Unselect"
   ? unselect(model)
@@ -507,6 +654,14 @@ export const update/*:type.update*/ = (model, action) =>
   : action.type === 'Load'
   ? load(model, action.uri)
 
+  : action.type === 'OverlayClicked'
+  ? showWebView(model)
+
+  // If uri is submitted in create-web-view mode then
+  // opne new web-view.
+  : action.type === 'SubmitInput'
+  ? submitInput(model)
+
   // Dispatch
 
   : action.type === "LoadStart"
@@ -524,6 +679,20 @@ export const update/*:type.update*/ = (model, action) =>
   : action.type === "Close"
   ? close(model)
 
+  : action.type === 'ExitInput'
+  ? exitInput(model)
+
+  : action.type === 'Suggest'
+  ? updateInput
+    ( model
+    , Input.Suggest
+      ( { query: model.assistant.query
+        , match: action.source.match
+        , hint: action.source.hint
+        }
+      )
+    )
+
   // Shell Requests
   : action.type === "ZoomIn"
   ? updateShell(model, Shell.ZoomIn(model.id))
@@ -537,6 +706,22 @@ export const update/*:type.update*/ = (model, action) =>
   ? updateSelectAnimation(model, action.action)
 
   // Delegate
+
+  : action.type === 'Input'
+  ? updateInput(model, action.source)
+
+  : action.type === 'Overlay'
+  ? updateOverlay(model, action.action)
+
+  // Assistant
+  : action.type === "Assistant"
+  ? updateAssistant(model, action.source)
+  : action.type === 'Query'
+  ? updateQuery(model)
+  : action.type === 'SuggestNext'
+  ? updateAssistant(model, Assistant.SuggestNext)
+  : action.type === 'SuggestPrevious'
+  ? updateAssistant(model, Assistant.SuggestPrevious)
 
   : action.type === "Progress"
   ? updateProgress(model, action.action)

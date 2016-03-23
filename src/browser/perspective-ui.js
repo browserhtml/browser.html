@@ -14,23 +14,9 @@ export const init = Browser.init
 
 export const update = (model, action) =>
   ( model.mode === 'create-web-view'
-  ? ( action.type === 'ExitInput'
-    ? ( model.webViews.order.length > 0
-      ? Browser.update(model, Browser.ShowWebView)
-      : [ model, Effects.none ]
-      )
-    // If uri is submitted in create-web-view mode then
-    // opne new web-view.
-    : action.type === 'SubmitInput'
-    ? batch
-      ( Browser.update
-      , model
-      , [ Browser.OpenWebView
-        , Browser.ShowWebView
-        ]
-      )
+  ? (
     // Focus input when window regains focuse in create mode.
-    : action.type === 'Focus'
+      action.type === 'Focus'
     ? batch
       ( Browser.update
       , model
@@ -48,20 +34,10 @@ export const update = (model, action) =>
     : Browser.update(model, action)
   )
   : model.mode === 'edit-web-view'
-  ? ( action.type === 'ExitInput'
-    ? Browser.update(model, Browser.ShowWebView)
+  ? (
     // When overlay is clicked show web-view.
-    : action.type === 'OverlayClicked'
+      action.type === 'OverlayClicked'
     ? Browser.update(model, Browser.ShowWebView)
-    // When input is submitted delegate & show web-view.
-    : action.type === 'SubmitInput'
-    ? batch
-      ( Browser.update
-      , model
-      , [ action
-        , Browser.ShowWebView
-        ]
-      )
     // Focus input when window regains focus in edit mode.
     : action.type === 'Focus'
     ? batch
