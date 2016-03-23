@@ -298,6 +298,12 @@ export const BlurInput =
   , source: Input.Blur
   };
 
+export const WebViewsModeChanged = (mode) =>
+  ( { type: 'WebViewsModeChanged'
+    , mode
+    }
+  );
+
 // ## Resize actions
 
 export const SuggestNext = tagged('SuggestNext');
@@ -361,7 +367,7 @@ export const FocusInput = InputAction(Input.Focus);
 
 const OpenAssistant = AssistantAction(Assistant.Open);
 const CloseAssistant = AssistantAction(Assistant.Close);
-const ExpandAssistant = AssistantAction(Assistant.Expand);
+const IntegrateAssistant = AssistantAction(Assistant.Integrate);
 const QueryAssistant = compose(AssistantAction, Assistant.Query);
 
 const OpenSidebar = SidebarAction(Sidebar.Open);
@@ -448,7 +454,7 @@ const createWebView = model =>
   ( update
   , merge(model, {mode: 'create-web-view'})
   , [ ShowInput
-    , ExpandAssistant
+    , IntegrateAssistant
     , CloseSidebar
     , HideOverlay
     , FoldWebViews

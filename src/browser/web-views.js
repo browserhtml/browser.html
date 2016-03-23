@@ -106,6 +106,11 @@ const Activated/*:type.Activated*/ = id =>
     }
   );
 
+const IntegrateWebView = id =>
+  ( { type: 'IntegrateWebView'
+    , id
+    }
+  );
 
 // ### Switch mode
 
@@ -140,6 +145,8 @@ const WebViewAction = (id, action) =>
   ? Create
   : action.type === "Edit"
   ? Edit
+  : action.type === 'IntegrateWebView'
+  ? IntegrateWebView(id)
   : { type: "WebView"
     , id
     , action
@@ -445,6 +452,16 @@ const selectByID = (model, id) =>
   : [ model, Effects.none ]
   );
 
+const integrateWebView = (model, id) =>
+  ( model.selector && model.selector.active === id
+  ? [ model
+    , Effects.receive(Create)
+    ]
+  : [ model
+    , Effects.none
+    ]
+  );
+
 // Animations
 
 const fold = model =>
@@ -578,6 +595,8 @@ export const update/*:type.update*/ = (model, action) =>
   : action.type === "Selected"
   ? [ model, Effects.none ]
 
+  : action.type === 'IntegrateWebView'
+  ? integrateWebView(model, action.id)
 
   // Fold / Unfold animations
   : action.type === "Fold"

@@ -159,8 +159,16 @@ const SecurityChanged =
   );
 
 
+export const IntegrateWebView =
+  ( { type: 'IntegrateWebView'
+    }
+  );
+
 const PageAction = action =>
-  ({type: "Page", action});
+  ( action.type === 'Integrate'
+  ? IntegrateWebView
+  : {type: "Page", action}
+  );
 
 const FirstPaint = PageAction(Page.FirstPaint);
 const DocumentFirstPaint = PageAction(Page.DocumentFirstPaint);
@@ -243,16 +251,7 @@ const updatePage = cursor
   ( { get: model => model.page
     , set: (model, page) => merge(model, {page})
     , tag: PageAction
-    , update: (model, action) =>
-        Page.update
-        ( model
-        , ( action.type === "LoadStart"
-          ? Page.LoadStart
-          : action.type === "LoadEnd"
-          ? Page.LoadEnd
-          : action
-          )
-        )
+    , update: Page.update
     }
   );
 
@@ -482,6 +481,9 @@ const changeLocation = (model, uri) =>
 const close = model =>
   [ model, Effects.receive(Closed) ];
 
+const changeMode = (model, action) =>
+  update(model, PageAction(action.action));
+
 export const update/*:type.update*/ = (model, action) =>
   ( action.type === "Select"
   ? select(model)
@@ -523,6 +525,10 @@ export const update/*:type.update*/ = (model, action) =>
 
   : action.type === "Close"
   ? close(model)
+
+  : action.type === "ModeChanged"
+  ? changeMode(model, action)
+
 
   // Shell Requests
   : action.type === "ZoomIn"
@@ -594,6 +600,11 @@ const styleSheet = StyleSheet.create({
     borderWidth: 0,
     backgroundColor: 'white',
     MozWindowDragging: 'no-drag'
+  },
+
+  iframeFull: {
+    top: 0,
+    height: '100%',
   },
 
   topbar: {
@@ -718,7 +729,7 @@ const styleSheet = StyleSheet.create({
   iconBackBright: null
 });
 
-const viewFrame = (model, address) =>
+const FrameView = (style) => (model, address) =>
   html.iframe({
     id: `web-view-${model.id}`,
     src: model.navigation.initiatedURI,
@@ -726,7 +737,7 @@ const viewFrame = (model, address) =>
     'data-name': model.name,
     'data-features': model.features,
     element: Driver.element,
-    style: styleSheet.iframe,
+    style,
     attributes: {
       mozbrowser: true,
       remote: true,
@@ -765,7 +776,34 @@ const viewFrame = (model, address) =>
     onMozBrowserScrollAreaChanged: on(address, decodeScrollAreaChange),
   });
 
-export const view/*:type.view*/ = (model, address) => {
+const viewFrame = FrameView(styleSheet.iframe);
+const viewFrameFull = FrameView(Style(styleSheet.iframe, styleSheet.iframeFull));
+
+const viewWebViewOverlay = (model, address) => {
+  const isModelDark = isDark(model);
+  return html.div
+  ( { className:
+      ( isModelDark
+      ? `webview webview-is-dark web-view-${model.id}`
+      : `webview web-view-${model.id}`
+      )
+    , style: Style
+      ( styleSheet.webview
+      , ( model.isActive
+        ? styleSheet.webviewActive
+        : model.isSelected
+        ? styleSheet.webviewSelected
+        : styleSheet.webviewInactive
+        )
+      , model.display
+      )
+    }
+  , [ viewFrameFull(model, address)
+    ]
+  );
+}
+
+const viewWebView = (model, address) => {
   const isModelDark = isDark(model);
   return html.div
   ( { className:
@@ -882,6 +920,14 @@ export const view/*:type.view*/ = (model, address) => {
     ]
   );
 };
+
+const isModeOverlay = model => model.page.pageMode === 'integrated';
+
+export const view/*:type.view*/ = (model, address) =>
+  ( isModeOverlay(model)
+  ? viewWebViewOverlay(model, address)
+  : viewWebView(model, address)
+  );
 
 
 const decodeClose = always(Close);

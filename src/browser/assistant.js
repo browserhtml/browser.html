@@ -18,7 +18,7 @@ import * as Unknown from '../common/unknown';
 
 export const Open = tagged("Open");
 export const Close = tagged("Close");
-export const Expand = tagged("Expand");
+export const Integrate = tagged('Integrate');
 export const Unselect = tagged("Unselect");
 export const Reset = tagged("Reset");
 export const SuggestNext = tagged("SuggestNext");
@@ -27,7 +27,6 @@ export const Suggest = tag("Suggest");
 export const Query = tag("Query");
 export const Execute = tag("Execute");
 export const Activate = tag("Activate");
-
 
 const SearchAction =
   action =>
@@ -38,11 +37,19 @@ const SearchAction =
 
 const HistoryAction = tag("History");
 
+// Closed always
+const ClosedMode = 'closed';
+
+// Open always
+const OpenedMode = 'opened';
+
+// Open if there are results
+const IntegratedMode = 'integrated'
+
 export const init =
   () =>
   clear
-  ( { isOpen: false
-    , isExpanded: false
+  ( { mode: ClosedMode
     }
   )
 
@@ -76,12 +83,11 @@ const clear =
     return result
   }
 
-const expand =
+const integrate =
   model =>
   [ merge
     ( model
-    , { isOpen: true
-      , isExpanded: true
+    , { mode: IntegratedMode
       }
     )
   , Effects.none
@@ -91,8 +97,7 @@ const open =
   model =>
   [ merge
     ( model
-    , { isOpen: true
-      , isExpanded: false
+    , { mode: OpenedMode
       }
     )
   , Effects.none
@@ -103,8 +108,7 @@ const close =
   clear
   ( merge
     ( model
-    , { isOpen: false
-      , isExpanded: false
+    , { mode: ClosedMode
       }
     )
   );
@@ -167,8 +171,8 @@ export const update/*:type.update*/ =
   ? open(model)
   : action.type === "Close"
   ? close(model)
-  : action.type === "Expand"
-  ? expand(model)
+  : action.type === "Integrate"
+  ? integrate(model)
   : action.type === "Reset"
   ? reset(model)
   : action.type === "Unselect"
@@ -195,12 +199,7 @@ const styleSheet = StyleSheet.create
       , position: 'absolute'
       , top: '0px'
       , width: '100%'
-      }
-    , expanded:
-      { height: '100%'
-      }
-    , shrinked:
-      { minHeight: '120px'
+      , minHeight: '120px'
       }
 
     , open:
@@ -225,11 +224,7 @@ export const view/*:type.view*/ = (model, address) =>
   ( { className: 'assistant'
     , style: Style
       ( styleSheet.base
-      , ( model.isExpanded
-        ? styleSheet.expanded
-        : styleSheet.shrinked
-        )
-      , ( model.isOpen
+      , ( model.mode === OpenedMode
         ? styleSheet.open
         : styleSheet.closed
         )

@@ -11,6 +11,7 @@ import {merge} from '../../common/prelude';
 import * as Favicon from '../../common/favicon';
 import * as Pallet from '../../browser/pallet';
 import * as Unknown from '../../common/unknown';
+import * as URI from '../../common/url-helper';
 
 export const DocumentFirstPaint/*:type.DocumentFirstPaint*/ =
   {type: "DocumentFirstPaint"};
@@ -49,6 +50,25 @@ export const LoadEnd/*:type.LoadEnd*/ =
 export const LocationChanged/*:type.LocationChanged*/ = uri =>
   ({type: "LocationChanged", uri});
 
+export const Integrate =
+  ( { type: 'Integrate'
+    }
+  );
+
+const decodeMetaChange = ({detail: {name, content}}) =>
+  MetaChanged(name, content);
+
+const requestPageModeMeta = uri =>
+  Task.future(() => new Promise(resolve =>
+    ( URI.read(uri) === URI.read('about:newtab')
+    ? resolve({ detail:
+        { name: 'browserhtml-page-mode'
+        , content: 'integrated'
+        }
+      })
+    : null
+    )
+  ));
 
 const send = action =>
   Task.future(() => Promise.resolve(action));
@@ -68,12 +88,12 @@ const updateIcon = (model, {icon}) => {
 };
 
 const updateMeta = (model, {name, content}) =>
-  [ ( name === 'theme-color'
-    ? merge(model, {themeColor: content})
-    : model
-    )
-  , Effects.none
-  ];
+  ( name === 'theme-color'
+  ? [ merge(model, {themeColor: content}), Effects.none ]
+  : name === 'browserhtml-page-mode' && content === 'integrated'
+  ? [ merge(model, {pageMode: content}), Effects.receive(Integrate) ]
+  : model
+  );
 
 const updatePallet = (model, _) =>
   [ merge
@@ -103,6 +123,8 @@ export const init/*:type.init*/ = uri =>
     , curatedColor: null
 
     , pallet: Pallet.blank
+
+    , pageMode: null
     }
   , Effects.none
   ];
@@ -119,11 +141,19 @@ export const update/*:type.update*/ = (model, action) =>
         , curatedColor: null
 
         , pallet: Pallet.blank
+
+        , pageMode: null
         }
       )
-    , Effects
-        .task(Pallet.requestCuratedColor(model.uri))
-        .map(CuratedColorUpdate)
+    , Effects.batch
+      ( [ Effects
+          .task(Pallet.requestCuratedColor(model.uri))
+          .map(CuratedColorUpdate)
+        , Effects
+          .task(requestPageModeMeta(model.uri))
+          .map(decodeMetaChange)
+        ]
+      )
     ]
   : action.type === 'LoadEnd'
   // If you go back / forward `DocumentFirstPaint` is not fired there for
@@ -155,11 +185,18 @@ export const update/*:type.update*/ = (model, action) =>
           , { uri: action.uri
             , curatedColor: null
             , themeColor: null
+            , pageMode: null
             }
           )
-      , Effects
-          .task(Pallet.requestCuratedColor(action.uri))
-          .map(CuratedColorUpdate)
+      , Effects.batch
+        ( [ Effects
+            .task(Pallet.requestCuratedColor(action.uri))
+            .map(CuratedColorUpdate)
+          , Effects
+            .task(requestPageModeMeta(action.uri))
+            .map(decodeMetaChange)
+          ]
+        )
       ]
     : [ model, Effects.none ]
     )
