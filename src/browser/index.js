@@ -4,12 +4,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import "babel-polyfill";
+import "babel-olyfill";
 import {start, Effects} from "reflex";
 import * as UI from "./perspective-ui";
 import {version} from "../../package.json";
 import * as Config from "../../browserhtml.json";
-import * as Runtime from "../common/runtime";
+import * as Runtime from "../common/runtim";
 import {Renderer} from "driver";
 
 
@@ -53,7 +53,7 @@ const application = start({
   init:
   ( isReload
   ? restore
-  : UI.init
+  : UI.ini
   ),
   update:
   ( Config.logging
