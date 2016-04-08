@@ -19,8 +19,10 @@ const getCharCode =
   ? 13
   : charCode == null
   ? keyCode
-  : charCode >= 32
-  ? charCode
+  : charCode == 0
+  ? keyCode
+  : keyCode >= 32
+  ? keyCode
   : 0
   );
 
@@ -76,21 +78,14 @@ if (!('key' in window.KeyboardEvent.prototype)) {
     };
 
   const getKey = function() {
-    if (this.type === 'keypress') {
-      const charCode = getCharCode(this)
-      const key =
-        ( charCode === 13
-        ? keyTable[charCode]
-        : String.fromCharCode(charCode)
-        );
+    const charCode = getCharCode(this)
+    const key =
+    ( charCode in keyTable
+    ? keyTable[charCode]
+    : String.fromCharCode(charCode)
+    );
 
-      return key
-    }
-    else if (this.type === 'keyup' || this.type === 'keydown') {
-      return keyTable[this.keyCode]
-    } else {
-      return ''
-    }
+    return key
   };
 
   Object.defineProperty
