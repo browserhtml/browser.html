@@ -366,6 +366,8 @@ const CloseWebViewByID =
 export const ToggleDevtools = DevtoolsAction(Devtools.Toggle);
 const PrintSnapshot = { type: "PrintSnapshot" };
 const PublishSnapshot = { type: "PublishSnapshot" };
+const StartRecording = { type: "StartRecording" };
+const StopRecording = { type: "StopRecording" };
 export const Blur = ShellAction(Shell.Blur);
 export const Focus = ShellAction(Shell.Focus);
 
@@ -441,7 +443,9 @@ const decodeKeyDown = Keyboard.bindings({
   'F5': always(ReloadRuntime),
   'meta control r': always(ReloadRuntime),
   'meta alt 3': always(PrintSnapshot),
-  'meta alt 4': always(PublishSnapshot)
+  'meta alt 4': always(PublishSnapshot),
+  'meta alt 5': always(StartRecording),
+  'meta alt 6': always(StopRecording)
 });
 
 const decodeKeyUp = Keyboard.bindings({
@@ -796,6 +800,10 @@ export const update =
   : action.type === 'PrintSnapshot'
   ? [model, Effects.none]
   : action.type === 'UploadSnapshot'
+  ? [model, Effects.none]
+  : action.type === 'StopRecording'
+  ? [model, Effects.none]
+  : action.type === 'StartRecording'
   ? [model, Effects.none]
   // TODO: Delegate to modules that need to do cleanup.
   : action.type === 'LiveReload'

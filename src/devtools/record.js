@@ -8,10 +8,12 @@ import * as Unknown from "../common/unknown"
 import * as Style from "../common/style"
 
 /*::
+import {performance} from "../common/performance"
 import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} from "reflex"
 import type {Result} from "../common/result"
 import type {URI, ID} from "../common/prelude"
 
+export type Time = number
 
 export type Gist =
   { id: ID
@@ -33,14 +35,22 @@ export type Gist =
   , updated_at: String
   }
 
+export type Event <action> =
+  { time: Time
+  , action: action
+  }
+
 export type Model <model, action> =
-  { status: 'Idle' | 'Pending'
+  { isUploading: boolean
   , description: string
+  , record: ?Record<model, action>
   }
 
 export type Action <model, action> =
   | { type: "NoOp" }
   | { type: "Debuggee", debuggee: action }
+  | { type: "StartRecording" }
+  | { type: "StopRecording" }
   | { type: "PrintSnapshot" }
   | { type: "PrintedSnapshot" }
   | { type: "PublishSnapshot" }
@@ -52,6 +62,62 @@ type Step <model, action> =
   ]
 */
 
+class Record /*::<model, action>*/ {
+  /*::
+  version: number;
+  time: Time;
+  state: model;
+  timeline: Array<Time>;
+  events: Array<number>;
+  index: Array<action>;
+
+  lookup: Array<string>;
+  */
+  constructor(time/*:Time*/, state/*:model*/, version/*:number*/=0.1) {
+    this.version = version;
+    this.time = time;
+    this.state = state;
+
+    this.timeline = [];
+    this.index = [];
+    this.events = [];
+    this.lookup = [];
+  }
+  static write(event/*:action*/, source/*:Record<model, action>*/)/*:Record<model, action>*/ {
+    const record = new Record(source.time, source.state, source.version);
+
+    record.timeline = [...source.timeline, performance.now() - source.time];
+
+    // @TODO: We should serialize actions in chunks instead. To reduce size of
+    // the record even further.
+    const hash = JSON.stringify(event);
+    const index = source.lookup.indexOf(hash);
+    if (index < 0) {
+      record.lookup = [...source.lookup, hash];
+      record.index = [...source.index, event];
+      record.events = [...source.events, source.index.length];
+    }
+    else {
+      record.lookup = source.lookup;
+      record.index = source.index;
+      record.events = [...source.events, index];
+    }
+
+    return record
+  }
+  static encode(record/*:Record<model, action>*/)/*:string*/ {
+    const string = JSON.stringify
+    ( { version: record.version
+      , time: record.time
+      , state: record.state
+      , timeline: record.timeline
+      , events: record.events
+      , index: record.index
+      }
+    )
+    return string
+  }
+}
 
 
 const NoOp = always({ type: "NoOp" });
@@ -67,8 +133,9 @@ const PublishedSnapshot = /*::<model, action>*/
 
 export const init = /*::<model, action, flags>*/
   ()/*:Step<model, action>*/ =>
-  ( [ { status: "Idle"
+  ( [ { isUploading: false
       , description: ""
+      , record: null
       }
     , Effects.none
     ]
@@ -80,6 +147,10 @@ export const update = /*::<model, action>*/
   )/*:Step<model, action>*/ =>
   ( action.type === "NoOp"
   ? nofx(model)
+  : action.type === "StartRecording"
+  ? startRecording(model)
+  : action.type === "StopRecording"
+  ? stopRecording(model)
   : action.type === "PrintSnapshot"
   ? printSnapshot(model)
   : action.type === "PrintedSnapshot"
@@ -89,12 +160,12 @@ export const update = /*::<model, action>*/
   : action.type === "PublishedSnapshot"
   ? publishedSnapshot(model, action.result)
   : action.type === "Debuggee"
-  ? nofx(model)
+  ? recordEvent(model, action.debuggee)
   : Unknown.update(model, action)
   )
 
-const nofx =
-  model =>
+const nofx = /*::<model, action>*/
+  (model/*:model*/)/*:[model, Effects<action>]*/ =>
   [ model
   , Effects.none
   ]
@@ -137,7 +208,7 @@ const printedSnapshot = /*::<model, action>*/
 
 const publishSnapshot = /*::<model, action>*/
   (model/*:Model<model, action>*/)/*:Step<model, action>*/ =>
-  [ merge(model, {status: "Pending", description: "Publishing..." })
+  [ merge(model, {isUploading: true, description: "Publishing..."})
   , Effects.task
     ( createSnapshot(model)
       .chain(uploadSnapshot)
@@ -151,7 +222,7 @@ const publishedSnapshot = /*::<model, action>*/
   ( model/*:Model<model, action>*/
   , result/*:Result<Error, Gist>*/
   )/*:Step<model, action>*/ =>
-  [ merge(model, {status: "Idle", description: "" })
+  [ merge(model, {isUploading: false, description: "" })
   , Effects.task
     ( result.isError
     ? Unknown.error(result.error)
@@ -184,6 +255,52 @@ const uploadSnapshot =
     : fail(Error(`Failed to upload snapshot : ${request.statusText}`))
     )
   });
+
+const startRecording = /*::<model, action>*/
+  ( model/*:Model<model, action>*/ )/*:Step<model, action>*/ =>
+  nofx
+  ( merge
+    ( model
+    , { record: new Record
+        ( performance.now()
+        , window.application.model.value.debuggee
+        )
+      }
+    )
+  )
+
+
+
+const stopRecording =/*::<model, action>*/
+  (model/*:Model<model, action>*/)/*:Step<model, action>*/ =>
+  [ merge
+    ( model
+    , { record: null }
+    )
+  , Effects.task
+    ( new Task((succeed) => {
+        if (model.record != null) {
+          console.log(`\n\n${Record.encode(model.record)}\n\n`);
+        }
+        succeed(void(0));
+      })
+    )
+    .map(NoOp)
+  ];
+
+const recordEvent = /*::<model, action>*/
+  ( model/*:Model<model, action>*/
+  , action/*:action*/
+  )/*:Step<model, action>*/ =>
+  nofx
+  ( model.record == null
+  ? model
+  : merge
+    ( model
+    , { record: Record.write(action, model.record)
+      }
+    )
+  );
 
 export const render = /*::<model, action>*/
   ( model/*:Model<model, action>*/

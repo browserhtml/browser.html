@@ -66,6 +66,8 @@ export type Action =
   | { type: "ReloadRuntime" }
   | { type: "PrintSnapshot" }
   | { type: "PublishSnapshot" }
+  | { type: "StartRecording" }
+  | { type: "StopRecording" }
   | { type: "WebViews", source: WebViews.Action }
   | { type: "Input", source: Input.Action }
   | { type: "Sidebar", action: Sidebar.Action }

@@ -84,6 +84,12 @@ const TagDebuggee = /*::<model, action>*/
   : /*::typeof(action) === "object" && action != null && */
     action.type === "PublishSnapshot"
   ? TagRecord(action)
+  : /*::typeof(action) === "object" && action != null && */
+    action.type === "StartRecording"
+  ? TagRecord(action)
+  : /*::typeof(action) === "object" && action != null && */
+    action.type === "StopRecording"
+  ? TagRecord(action)
   : { type: "Debuggee"
     , debuggee: action
     }
