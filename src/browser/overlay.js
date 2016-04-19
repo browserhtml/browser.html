@@ -14,7 +14,30 @@ import * as Unknown from "../common/unknown";
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {Model, Action} from "./overlay"
+import type {Time} from "../common/prelude"
+
+type Visible = 0.1
+type Invisible = 0
+type Display =
+  { opacity: Visible | Invisible
+  }
+
+export type Model =
+  { display: Display
+  , isCapturing: boolean
+  , isVisible: boolean
+  , animation: Stopwatch.Model
+  }
+
+export type Action =
+  | { type: "Click" }
+  | { type: "Show" }
+  | { type: "Hide" }
+  | { type: "Fade" }
+  | { type: "Shown" }
+  | { type: "Hidden" }
+  | { type: "Faded" }
+  | { type: "Animation", animation: Stopwatch.Action }
 */
 
 const visible = 0.1;
@@ -26,15 +49,20 @@ export const Show/*:Action*/ = {type: "Show"};
 export const Hide/*:Action*/ = {type: "Hide"};
 export const Fade/*:Action*/ = {type: "Fade"};
 
-const AnimationAction = action => ({type: "Animation", action});
+const AnimationAction =
+  action =>
+  ( { type: "Animation", animation: action
+    }
+  );
+
 const Shown = always({type: "Shown"});
 const Hidden = always({type: "Hidden"});
 const Faded = always({type: "Faded"});
 
 
 export const init =
-  ( isVisible/*:boolean*/
-  , isCapturing/*:boolean*/
+  ( isVisible/*:boolean*/=false
+  , isCapturing/*:boolean*/=false
   )/*:[Model, Effects<Action>]*/ =>
   [ { isCapturing
     , isVisible
@@ -57,7 +85,7 @@ const updateStopwatch = cursor({
 
 
 const animationUpdate = (model, action) => {
-  const [{animation}, fx] = updateStopwatch(model, action.action);
+  const [{animation}, fx] = updateStopwatch(model, action);
 
   // @TODO: We should not be guessing what is the starnig point
   // that makes no sense & is likely to be incorrect at a times.
@@ -100,7 +128,7 @@ const animationUpdate = (model, action) => {
 export const update =
   (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
   ( action.type === "Animation"
-  ? animationUpdate(model, action)
+  ? animationUpdate(model, action.animation)
   : action.type === "Shown"
   ? updateStopwatch(model, Stopwatch.End)
   : action.type === "Hidden"
