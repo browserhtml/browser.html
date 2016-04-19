@@ -184,7 +184,7 @@ const createSnapshot = /*::<model, action>*/
 
 const printSnapshot = /*::<model, action>*/
   (model/*:Model<model, action>*/)/*:Step<model, action>*/ =>
-  [ merge(model, { status: 'Pending', description: 'Printing...' })
+  [ merge(model, { isUploading: true, description: 'Printing...' })
   , Effects.batch
     ( [ Effects.task
         ( createSnapshot(model)
@@ -202,7 +202,7 @@ const printSnapshot = /*::<model, action>*/
 
 const printedSnapshot = /*::<model, action>*/
   (model/*:Model<model, action>*/)/*:Step<model, action>*/ =>
-  [ merge(model, { status: 'Idle', description: '' })
+  [ merge(model, { isUploading: false, description: '' })
   , Effects.none
   ];
 
@@ -310,7 +310,7 @@ export const render = /*::<model, action>*/
   ( { id: "record"
     , style: Style.mix
       ( styleSheet.base
-      , ( model.status === 'Pending'
+      , ( model.isUploading
         ? styleSheet.flash
         : styleSheet.noflash
         )
