@@ -15,6 +15,11 @@ import {Renderer} from "@driver";
 import * as Devtools from "./devtools"
 
 const isReload = window.application != null;
+console.timeStamp =
+  ( console.timeStamp == null
+  ? console.log
+  : console.timeStamp
+  );
 
 // If hotswap change address so it points to a new mailbox &r
 // re-render.
