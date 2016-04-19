@@ -45,7 +45,7 @@ export const parse = (input/*:string*/)/*:URL*/ => {
   try {
     return new URL(input);
   } catch(_) {
-    return nullURL;
+    return (nullURL/*::, new URL(input)*/);
   }
 }
 
