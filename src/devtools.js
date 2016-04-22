@@ -7,7 +7,7 @@ import {ok, error} from "./common/result"
 import * as Runtime from "./common/runtime"
 import * as Unknown from "./common/unknown"
 import * as Replay from "./devtools/replay"
-import * as Record from "./devtools/record"
+import * as Record from "./devtools/Record"
 import * as Log from "./devtools/log"
 
 /*::
@@ -15,7 +15,7 @@ import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} fro
 import type {Result} from "./common/result"
 
 export type Model <model, action> =
-  { record: ?Record.Model<model, action>
+  { record: ?Record.Model<action, model>
   , replay: ?Replay.Model<model, action>
   , log: ?Log.Model<model, action>
 
@@ -102,7 +102,7 @@ export const init = /*::<model, action, flags>*/
     const [record, recordFX] =
       ( Runtime.env.record == null
       ? disable
-      : Record.init(flags)
+      : Record.transact(Record.init())
       );
 
     const [replay, replayFX] =
@@ -182,7 +182,7 @@ const updateRecord = /*::<model, action>*/
     const [record, fx] =
       ( model.record == null
       ? ignore
-      : Record.update(model.record, action)
+      : Record.transact(Record.update(model.record, action))
       )
     return [merge(model, {record}), fx.map(TagRecord)]
   }
@@ -225,7 +225,7 @@ const updateDebuggee = /*::<model, action>*/
     const [record, recordFX] =
       ( model.record == null
       ? ignore
-      : Record.update(model.record, {type: "Debuggee", debuggee: action})
+      : Record.transact(Record.update(model.record, {type: "Debuggee", debuggee: action}))
       );
 
     const [replay, replayFX] =
