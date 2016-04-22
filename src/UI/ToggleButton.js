@@ -194,7 +194,7 @@ export const panic = /*::<action>*/
 export const fx =
   (model/*:Model*/)/*:Effects<Action>*/ =>
   Effects.batch
-  ( [ IO.fx(model.io)
+  ( [ model.io
     , Button.fx(model.button).map(Tag.button)
     ]
   )

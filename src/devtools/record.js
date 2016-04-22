@@ -367,7 +367,7 @@ const writeInput = /*::<input, state>*/
 export const fx = /*::<input, state>*/
   (model/*:Model<input, state>*/)/*:Effects<Action<input, state>>*/ =>
   Effects.batch
-  ( [ IO.fx(model.io)
+  ( [ model.io
     , Menu.fx(model.menu).map(tagMenu)
     ]
   )

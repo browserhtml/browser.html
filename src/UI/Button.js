@@ -260,7 +260,7 @@ export const panic = /*::<action>*/
 
 export const fx =
   (model/*:Model*/)/*:Effects<Action>*/ =>
-  IO.fx(model.io)
+  model.io
 
 export const renderStyled =
   ( rules/*:?Style.Rules*/

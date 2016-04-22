@@ -145,7 +145,7 @@ export const captureSnapshot =
 export const fx =
   (model/*:Model*/)/*:Effects<Action>*/ =>
   Effects.batch
-  ( [ IO.fx(model.io)
+  ( [ model.io
     , ClipButton.fx(model.clipButton).map(tagClip)
     , SnapshotButton.fx(model.snapshotButton).map(tagSnapshot)
     ]
