@@ -5,8 +5,11 @@ import {lens} from "../../common/lens"
 import * as Style from "../../common/style"
 import * as IO from "../../common/IO"
 import * as Console from "../../common/Console"
-import * as ClipButton from "./Menu/ClipButton"
-import * as SnapshotButton from "./Menu/SnapshotButton"
+
+import * as Clip from "./Menu/Clip"
+import * as Snapshot from "./Menu/Snapshot"
+import * as Publish from "./Menu/Publish"
+import * as Print from "./Menu/Print"
 
 /*::
 export type Time = number
@@ -16,8 +19,14 @@ import type {Address, DOM} from "reflex"
 import {performance} from "../../common/performance"
 
 export type Action =
-  | { type: "Clip", clip: ClipButton.Action }
-  | { type: "Snapshot", snapshot: SnapshotButton.Action }
+  | { type: "#Clip", clip: Clip.Action }
+  | { type: "#Snapshot", snapshot: Snapshot.Action }
+  | { type: "#Print", print: Print.Action }
+  | { type: "#Publish", publish: Publish.Action }
+  | { type: "Printing" }
+  | { type: "Printed" }
+  | { type: "Publishing" }
+  | { type: "Published" }
   | { type: "ToggleRecording" }
   | { type: "StartRecording" }
   | { type: "StopRecording" }
@@ -26,13 +35,17 @@ export type Action =
 
 export class Model {
   /*::
-  clipButton: ClipButton.Model;
-  snapshotButton: SnapshotButton.Model;
+  clip: Clip.Model;
+  snapshot: Snapshot.Model;
+  print: Print.Model;
+  publish: Publish.Model;
   io: IO.Model;
   */
-  constructor(clipButton, snapshotButton, io) {
-    this.clipButton = clipButton
-    this.snapshotButton = snapshotButton
+  constructor(clip, snapshot, print, publish, io) {
+    this.clip = clip
+    this.snapshot = snapshot
+    this.print = print
+    this.publish = publish
     this.io = io
   }
 }
@@ -41,7 +54,7 @@ const tagSnapshot =
   ( action ) =>
   ( action.type === "Press"
   ? CaptureSnapshot
-  : { type: "Snapshot"
+  : { type: "#Snapshot"
     , snapshot: action
     }
   )
@@ -50,49 +63,107 @@ const tagClip =
   ( action ) =>
   ( action.type === "Toggle"
   ? ToggleRecording
-  : { type: "Clip"
+  : { type: "#Clip"
     , clip: action
     }
   )
 
+const tagPrint =
+  ( action ) =>
+  ( action.type === "Toggle"
+  ? Printing
+  : { type: "#Print"
+    , print: action
+    }
+  )
+
+const tagPublish =
+  ( action ) =>
+  ( action.type === "Toggle"
+  ? Publishing
+  : { type: "#Publish"
+    , publish: action
+    }
+  )
+
+
 const snapshot = lens
-  ( ( {snapshotButton} ) => snapshotButton
-  , ( model, snapshotButton ) =>
-    ( model.snapshotButton === snapshotButton
+  ( ( {snapshot} ) => snapshot
+  , ( model, snapshot ) =>
+    ( model.snapshot === snapshot
     ? model
     : new Model
-      ( model.clipButton
-      , snapshotButton
+      ( model.clip
+      , snapshot
+      , model.print
+      , model.publish
       , model.io
       )
     )
   )
 
 const clip = lens
-  ( ( {clipButton} ) => clipButton
-  , ( model, clipButton ) =>
-    ( model.clipButton === clipButton
+  ( ( {clip} ) => clip
+  , ( model, clip ) =>
+    ( model.clip === clip
     ? model
     : new Model
-      ( clipButton
-      , model.snapshotButton
+      ( clip
+      , model.snapshot
+      , model.print
+      , model.publish
       , model.io
       )
     )
   )
 
+const print = lens
+  ( ( {print} ) => print
+  , ( model, print ) =>
+    ( model.print === print
+    ? model
+    : new Model
+      ( model.clip
+      , model.snapshot
+      , print
+      , model.publish
+      , model.io
+      )
+    )
+  )
+
+const publish = lens
+  ( ( {publish} ) => publish
+  , ( model, publish ) =>
+    ( model.publish === publish
+    ? model
+    : new Model
+      ( model.clip
+      , model.snapshot
+      , model.print
+      , publish
+      , model.io
+      )
+    )
+  )
 
 const CaptureSnapshot = { type: "CaptureSnapshot" }
 const ToggleRecording = { type: "ToggleRecording" }
 const StartRecording = { type: "StartRecording" }
 const StopRecording = { type: "StopRecording" }
+const Printing = { type: "Printing" }
+const Printed = { type: "Printed" }
+const Publishing = { type: "Publishing" }
+const Published = { type: "Published" }
 
 
 export const init =
   ()/*:Model*/ =>
   new Model
-  ( ClipButton.init("\uf03d")
-  , SnapshotButton.init("\uf030")
+  ( Clip.init("\uf03d")
+  , Snapshot.init("\uf030")
+  , Print.init("\uf02f")
+  , Publish.init("\uf0ee")
   , IO.init()
   )
 
@@ -108,18 +179,32 @@ export const update =
   ? stopRecording(model)
   : action.type === "ToggleRecording"
   ? toggleRecording(model)
-  : action.type === "Clip"
-  ? clip.swap(ClipButton.update, model, action.clip)
-  : action.type === "Snapshot"
-  ? snapshot.swap(SnapshotButton.update, model, action.snapshot)
+  : action.type === "Printing"
+  ? printing(model)
+  : action.type === "Printed"
+  ? printed(model)
+  : action.type === "Publishing"
+  ? publishing(model)
+  : action.type === "Published"
+  ? published(model)
+  : action.type === "#Clip"
+  ? clip.swap(Clip.update, model, action.clip)
+  : action.type === "#Snapshot"
+  ? snapshot.swap(Snapshot.update, model, action.snapshot)
+  : action.type === "#Print"
+  ? print.swap(Print.update, model, action.print)
+  : action.type === "#Publish"
+  ? publish.swap(Publish.update, model, action.publish)
   : panic(model, action)
   )
 
 export const panic = /*::<action>*/
   (model/*:Model*/, action/*:action*/)/*:Model*/ =>
   new Model
-  ( model.clipButton
-  , model.snapshotButton
+  ( model.clip
+  , model.snapshot
+  , model.print
+  , model.publish
   , IO.perform
     ( model.io
     , Console.error(`Panic! Unknown action was passed to update`, action)
@@ -128,26 +213,44 @@ export const panic = /*::<action>*/
 
 export const startRecording =
   (model/*:Model*/)/*:Model*/ =>
-  clip.swap(ClipButton.check, model)
+  clip.swap(Clip.check, model)
 
 export const stopRecording =
   (model/*:Model*/)/*:Model*/ =>
-  clip.swap(ClipButton.uncheck, model)
+  clip.swap(Clip.uncheck, model)
 
 export const toggleRecording =
   (model/*:Model*/)/*:Model*/ =>
-  clip.swap(ClipButton.toggle, model)
+  clip.swap(Clip.toggle, model)
 
 export const captureSnapshot =
   (model/*:Model*/)/*:Model*/ =>
-  snapshot.swap(SnapshotButton.press, model)
+  snapshot.swap(Snapshot.press, model)
+
+export const printing =
+  (model/*:Model*/)/*:Model*/ =>
+  print.swap(Print.check, model)
+
+export const printed =
+  (model/*:Model*/)/*:Model*/ =>
+  print.swap(Print.uncheck, model)
+
+export const publishing =
+  (model/*:Model*/)/*:Model*/ =>
+  publish.swap(Publish.check, model)
+
+export const published =
+  (model/*:Model*/)/*:Model*/ =>
+  publish.swap(Publish.uncheck, model)
 
 export const fx =
   (model/*:Model*/)/*:Effects<Action>*/ =>
   Effects.batch
   ( [ model.io
-    , ClipButton.fx(model.clipButton).map(tagClip)
-    , SnapshotButton.fx(model.snapshotButton).map(tagSnapshot)
+    , Clip.fx(model.clip).map(tagClip)
+    , Snapshot.fx(model.snapshot).map(tagSnapshot)
+    , Print.fx(model.print).map(tagPrint)
+    , Publish.fx(model.publish).map(tagPublish)
     ]
   )
 
@@ -158,8 +261,10 @@ export const render =
   )/*:DOM*/ =>
   html.menu
   ( { style: styleSheet.base }
-  , [ SnapshotButton.view(model.snapshotButton, forward(address, tagSnapshot))
-    , ClipButton.view(model.clipButton, forward(address, tagClip))
+  , [ Snapshot.view(model.snapshot, forward(address, tagSnapshot))
+    , Clip.view(model.clip, forward(address, tagClip))
+    , Print.view(model.print, forward(address, tagPrint))
+    , Publish.view(model.publish, forward(address, tagPublish))
     ]
   );
 

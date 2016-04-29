@@ -1,6 +1,6 @@
 /* @flow */
 
-import {Effects, Task} from "reflex"
+import {Effects, Task, forward} from "reflex"
 import {remove} from "./prelude"
 
 /*::
@@ -14,16 +14,18 @@ const raise =
 const None = Effects.none.constructor
 const never/*:Task<Never, any>*/ = new Task((succeed, fail) => void(0))
 
-export class IO /*::<a>*/ extends Effects/*::<a>*/ {
+
+class IO /*::<a>*/ extends Effects /*::<a>*/ {
   /*::
   queue: Array<Task<Never, a>>;
+  tag: ?<b> (input:b) => a;
   */
   constructor(queue/*:Array<Task<Never, a>>*/) {
     super(never)
     this.queue = queue
   }
-  map/*::<b>*/(f/*:(a:a)=>b*/)/*:IO<b>*/ {
-    return new IO(this.queue.map(task => task.map(f)))
+  map/*::<b>*/(f/*:(a:a)=>b*/)/*:Effects<b>*/ {
+    return new Lift(this, f)
   }
   send(address/*:Address<a>*/)/*:Task<Never, void>*/ {
     return new Task((succeed, fail) => {
@@ -38,8 +40,30 @@ export class IO /*::<a>*/ extends Effects/*::<a>*/ {
       succeed(void(0))
     })
   }
-  toJSON() {
+  perform(task/*:Task<Never, a>*/)/*:IO<a>*/ {
+    return new IO(this.queue.concat(task))
+  }
+  toJSON()/*:{}*/ {
     return { queue: [] }
+  }
+}
+
+
+export class Lift /*::<a, b>*/ extends Effects/*::<b>*/ {
+  /*::
+  source: Effects<a>;
+  f: (input:a) => b;
+  */
+  constructor(source/*:Effects<a>*/, f/*:(input:a) => b*/) {
+    super(never)
+    this.source = source
+    this.f = f
+  }
+  map/*::<c>*/(f/*:(a:b)=>c*/)/*:Effects<c>*/ {
+    return new Lift(this, f)
+  }
+  send(address/*:Address<b>*/)/*:Task<Never, void>*/ {
+    return this.source.send(forward(address, this.f))
   }
 }
 

@@ -53,7 +53,8 @@ export type Action <input, state> =
   | { type: "ToggleRecording" }
   | { type: "CaptureSnapshot" }
   | { type: "Print" }
-  | { type: "Upload" }
+  | { type: "Printed" }
+  | { type: "Publish" }
   | { type: "UploadedClip", uploadedClip: Gist }
   | { type: "UploadFailed", uploadFailed: Error }
   | { type: "Menu", menu: Menu.Action }
@@ -63,6 +64,9 @@ const CaptureSnapshot = { type: "CaptureSnapshot" }
 const ToggleRecording = { type: "ToggleRecording" }
 const StartRecording = { type: "StartRecording" }
 const StopRecording = { type: "StopRecording" }
+const Print = { type: "Print" }
+const Printed = { type: "Printed" }
+const Publish = { type: "Publish" }
 
 const UploadFailed = /*::<input, state>*/
   ( error/*:Error*/ )/*:Action<input, state>*/ =>
@@ -183,24 +187,31 @@ export const init = /*::<input, state>*/
   , false
   )
 
-const createClip = /*::<input, state>*/
-  ( model/*:Model<input, state>*/ )/*:Model<input, state>*/ =>
-  model
-  .set
-  ( clip
-  , Clip.init
-    ( window.application.model.value.debuggee
-    , performance.now()
-    )
-  )
+// const createClip = /*::<input, state>*/
+//   ( model/*:Model<input, state>*/ )/*:Model<input, state>*/ =>
+//   model
+//   .set
+//   ( clip
+//   , Clip.init
+//     ( window.application.model.value.debuggee
+//     , performance.now()
+//     )
+//   )
 
 export const captureSnapshot = /*::<input, state>*/
   ( model/*:Model<input, state>*/ )/*:Model<input, state>*/ =>
-  model
-  .asMutable()
-  .swap(menu, Menu.captureSnapshot)
-  .map(createClip)
-  .asImmutable()
+  // model
+  // .asMutable()
+  // .swap(menu, Menu.captureSnapshot)
+  // .map(createClip)
+  // .asImmutable()
+  model.modify
+  ( model.isUploading
+  , model.isRecording
+  , Clip.init(window.application.state.value.debuggee, performance.now())
+  , model.menu
+  , model.io
+  )
 
 const clip = lens
   ( ({clip}) => clip
@@ -288,6 +299,7 @@ const publish = /*::<input, state>*/
   : model
     .asMutable()
     .set(isUploading, true)
+    .swap(menu, Menu.publishing)
     .swap
     ( io
     , IO.perform
@@ -299,16 +311,61 @@ const publish = /*::<input, state>*/
     .asImmutable()
   );
 
+const published = /*::<input, state>*/
+  ( model/*:Model<input, state>*/, gist/*:Gist*/ )/*:Model<input, state>*/ =>
+  // ( model
+  //   .asMutable()
+  //   .set(clip, null)
+  //   .set(isUploading, false)
+  //   .swap(menu, Menu.published)
+  //   .swap(io, IO.perform, Console.log(`Record was published to  ${gist.url}`))
+  //   .asMutable()
+  // )
+  model.modify
+  ( false
+  , false
+  , null
+  , Menu.published(model.menu)
+  , IO.perform(model.io, Console.log(`Record was published to  ${gist.url}`))
+  )
+
+
 const print = /*::<input, state>*/
   (model/*:Model<input, state>*/)/*:Model<input, state>*/ =>
-  ( model.clip == null
-  ? model
-  : model.swap
-    ( io
-    , IO.perform
-    , Console.log(`\n\n\n${JSON.stringify(Clip.encode(model.clip))}\n\n\n`)
+  ( model.clip != null
+  ? model.modify
+    ( model.isUploading
+    , model.isRecording
+    , model.clip
+    , Menu.printing(model.menu)
+    , model.io
+      .perform(Console.log(`\n\n\n${JSON.stringify(model.clip ? Clip.encode(model.clip) : model.clip)}\n\n\n`))
+      .perform(Task.sleep(100).map(always(Printed)))
     )
+  : model
   )
+  // : model
+  //   .asMutable()
+  //   .swap
+  //   ( io
+  //   , IO.perform
+  //   , Console.log(`\n\n\n${JSON.stringify(Clip.encode(model.clip))}\n\n\n`)
+  //   )
+  //   .swap
+  //   ( menu
+  //   , Menu.printing
+  //   )
+  //   .swap
+  //   ( io
+  //   , IO.perform
+  //   , Task.sleep(100).map(always(Printed))
+  //   )
+  //   .asImmutable()
+  // )
+
+const printed = /*::<input, state>*/
+  (model/*:Model<input, state>*/)/*:Model<input, state>*/ =>
+  model.swap(menu, Menu.printed)
 
 const panic = /*::<message, input, state>*/
   (model/*:Model<input, state>*/, message/*:message*/)/*:Model<input, state>*/ =>
@@ -316,6 +373,14 @@ const panic = /*::<message, input, state>*/
   ( io
   , IO.perform
   , Console.log(`Panic! Unsupported action was received`, message)
+  )
+
+const failure = /*::<message, input, state>*/
+  (model/*:Model<input, state>*/, message/*:message*/)/*:Model<input, state>*/ =>
+  model.swap
+  ( io
+  , IO.perform
+  , Console.error(`Failure! Enexpected error occured`, message)
   )
 
 const startRecording = /*::<input, state>*/
@@ -387,6 +452,10 @@ const tagMenu =
   ? StopRecording
   : action.type === "CaptureSnapshot"
   ? CaptureSnapshot
+  : action.type === "Printing"
+  ? Print
+  : action.type === "Publishing"
+  ? Publish
   : { type: "Menu"
     , menu: action
     }
@@ -425,8 +494,14 @@ export const update = /*::<action, model>*/
   ? model
   : action.type === "Print"
   ? print(model)
+  : action.type === "Printed"
+  ? printed(model)
   : action.type === "Publish"
   ? publish(model)
+  : action.type === "UploadedClip"
+  ? published(model, action.uploadedClip)
+  : action.type === "uploadFailed"
+  ? failure(model, action.uploadFailed)
   : action.type === "StartRecording"
   ? startRecording(model)
   : action.type === "StopRecording"
