@@ -1,7 +1,7 @@
 /* @flow */
 
 import {Effects, html, thunk, forward} from "reflex"
-import {lens} from "../../common/lens"
+import {lens, Lens} from "../../common/lens"
 import * as Style from "../../common/style"
 import * as IO from "../../common/IO"
 import * as Console from "../../common/Console"
@@ -47,6 +47,13 @@ export class Model {
     this.print = print
     this.publish = publish
     this.io = io
+  }
+  swap /*::<state, input>*/ (
+    lens/*:Lens<Model, state>*/
+  , modify/*:(state:state, input:input) => state*/
+  , input/*:input*/
+  )/*:Model*/ {
+    return lens.swap(modify, this, input)
   }
 }
 
@@ -188,13 +195,13 @@ export const update =
   : action.type === "Published"
   ? published(model)
   : action.type === "#Clip"
-  ? clip.swap(Clip.update, model, action.clip)
+  ? model.swap(clip, Clip.update, action.clip)
   : action.type === "#Snapshot"
-  ? snapshot.swap(Snapshot.update, model, action.snapshot)
+  ? model.swap(snapshot, Snapshot.update, action.snapshot)
   : action.type === "#Print"
-  ? print.swap(Print.update, model, action.print)
+  ? model.swap(print, Print.update, action.print)
   : action.type === "#Publish"
-  ? publish.swap(Publish.update, model, action.publish)
+  ? model.swap(publish, Publish.update, action.publish)
   : panic(model, action)
   )
 
@@ -213,35 +220,35 @@ export const panic = /*::<action>*/
 
 export const startRecording =
   (model/*:Model*/)/*:Model*/ =>
-  clip.swap(Clip.check, model)
+  model.swap(clip, Clip.check)
 
 export const stopRecording =
   (model/*:Model*/)/*:Model*/ =>
-  clip.swap(Clip.uncheck, model)
+  model.swap(clip, Clip.uncheck)
 
 export const toggleRecording =
   (model/*:Model*/)/*:Model*/ =>
-  clip.swap(Clip.toggle, model)
+  model.swap(clip, Clip.toggle)
 
 export const captureSnapshot =
   (model/*:Model*/)/*:Model*/ =>
-  snapshot.swap(Snapshot.press, model)
+  model.swap(snapshot, Snapshot.press)
 
 export const printing =
   (model/*:Model*/)/*:Model*/ =>
-  print.swap(Print.check, model)
+  model.swap(print, Print.check)
 
 export const printed =
   (model/*:Model*/)/*:Model*/ =>
-  print.swap(Print.uncheck, model)
+  model.swap(print, Print.uncheck)
 
 export const publishing =
   (model/*:Model*/)/*:Model*/ =>
-  publish.swap(Publish.check, model)
+  model.swap(publish, Publish.check)
 
 export const published =
   (model/*:Model*/)/*:Model*/ =>
-  publish.swap(Publish.uncheck, model)
+  model.swap(publish, Publish.uncheck)
 
 export const fx =
   (model/*:Model*/)/*:Effects<Action>*/ =>

@@ -142,31 +142,38 @@ export const init = /*::<model, action, flags>*/
 export const update = /*::<model, action, flags>*/
   ( model/*:Model<model, action>*/
   , action/*:Action<model, action>*/
-  )/*:Step<model, action>*/ =>
-  ( action.type === "Record"
-  ? ( model.record == null
-    ? nofx(model)
-    : updateRecord(model, action.record)
-    )
-  : action.type === "Replay"
-  ? ( model.replay == null
-    ? nofx(model)
-    : updateReply(model, action.replay)
-    )
-  : action.type === "Log"
-  ? ( model.log == null
-    ? nofx(model)
-    : updateLog(model, action.log)
-    )
-  : action.type === "Debuggee"
-  ? ( model.debuggee == null
-    ? nofx(model)
-    : updateDebuggee(model, action.debuggee)
-    )
-  : action.type === "ReplayDebuggee"
-  ? replayDebuggee(model, action.model)
-  : Unknown.update(model, action)
-  )
+  )/*:Step<model, action>*/ => {
+    switch (action.type) {
+      case "Record":
+        return (
+            model.record == null
+          ? nofx(model)
+          : updateRecord(model, action.record)
+          );
+      case "Replay":
+        return (
+            model.replay == null
+          ? nofx(model)
+          : updateReply(model, action.replay)
+          );
+      case "Log":
+        return (
+            model.log == null
+          ? nofx(model)
+          : updateLog(model, action.log)
+          )
+      case "Debuggee":
+        return (
+            model.debuggee == null
+          ? nofx(model)
+          : updateDebuggee(model, action.debuggee)
+          )
+      case "ReplayDebuggee":
+        return replayDebuggee(model, action.model)
+      default:
+        return Unknown.update(model, action)
+    }
+  }
 
 const nofx = /*::<model, action>*/
   (model/*:model*/)/*:[model, Effects<action>]*/ =>
