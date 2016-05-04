@@ -117,8 +117,8 @@ export const isNotURL = (input/*:string*/)/*:boolean*/ => {
     str = 'http://' + str;
   }
   try {
-    new URL(str);
-    return false;
+    // Electron does not throw on `new URL('foo bar')`.
+    return new URL(str).hostname.includes('%20');
   } catch (e) {
     return true;
   }
