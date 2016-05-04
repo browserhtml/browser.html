@@ -340,7 +340,7 @@ const innerView =
 
 export const render =
   (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
-  html.embed
+  html.section
   ( null
   , model
     .items
