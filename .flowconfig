@@ -7,6 +7,7 @@
 .*/node_modules/tap/.*
 .*/node_modules/reflex-virtual-dom-driver/examlpes/.*
 .*/type/.*
+.*/node_modules/json5/test/*
 
 [libs]
 
