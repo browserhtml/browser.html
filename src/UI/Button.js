@@ -9,7 +9,7 @@ import {html, Effects, forward} from "reflex"
 import {merge, always, tag} from "../common/prelude"
 import {lens} from "../common/lens"
 
-import * as Console from "../common/console";
+import * as Console from "../common/Console";
 import * as IO from "../common/IO";
 import * as Ref from "./Control/Ref";
 import * as Pointer from "./Control/Pointer";
@@ -20,7 +20,6 @@ import * as Style from "../common/style"
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {Transaction} from "../common/update"
 
 export type StyleSheet =
   { base: Style.Rules

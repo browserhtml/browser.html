@@ -4,8 +4,6 @@ import {Task} from "reflex"
 import * as Ref from "./Ref"
 
 /*::
-import type { Transaction } from "../../common/update"
-
 export type Model = boolean
 
 export type Action =

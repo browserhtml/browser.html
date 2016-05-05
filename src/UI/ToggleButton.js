@@ -10,7 +10,7 @@ import {merge, always, tag} from "../common/prelude"
 import {lens} from "../common/lens"
 
 import * as Style from "../common/style"
-import * as Console from "../common/console";
+import * as Console from "../common/Console";
 import * as IO from "../common/IO";
 import * as Ref from "./Control/Ref";
 import * as Toggle from "./Control/Toggle";
@@ -18,7 +18,6 @@ import * as Button from "./Button";
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {Transaction} from "../common/update"
 
 export type StyleSheet =
   { base: Style.Rules
