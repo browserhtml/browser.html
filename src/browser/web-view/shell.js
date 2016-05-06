@@ -51,7 +51,7 @@ const ZoomChanged =
   ({type: "ZoomChanged", zoomResult: result});
 
 const setZoom = (id, level) =>
-  Task.future(() => {
+  Task.create(resolve => {
     const target = document.getElementById(`web-view-${id}`);
     const result
       = target == null
@@ -65,7 +65,7 @@ const setZoom = (id, level) =>
       target.zoom(level)
     }
 
-    return Promise.resolve(result)
+    return resolve(result);
   });
 
 const ZOOM_MIN = 0.5;
@@ -86,7 +86,7 @@ export const resetZoom =
 
 export const setVisibility =
   (id/*:ID*/, isVisible/*:boolean*/)/*:Task<Never, Result<Error, boolean>>*/ =>
-  Task.future(() => {
+  Task.create(resolve => {
     const target = document.getElementById(`web-view-${id}`);
     const result
       = target == null
@@ -100,7 +100,7 @@ export const setVisibility =
       target.setVisible(isVisible);
     }
 
-    return Promise.resolve(result);
+    return resolve(result);
   });
 
 // Reports error as a warning in a console.

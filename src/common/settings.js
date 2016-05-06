@@ -58,32 +58,31 @@ const merges =
 
 export const fetch =
   (names/*:Array<Name>*/)/*:Task<Never, Result<Error, Settings>>*/ =>
-  Task.future(() => {
+  Task.create(resolve => {
     if (navigator.mozSettings != null) {
       const lock = navigator.mozSettings.createLock();
       const settings = names.map(name => lock.get(name));
-
-      return Promise.all(settings)
-                    .then(merges)
-                    .then(ok, error);
+      Promise.all(settings)
+        .then(merges)
+        .then(ok, error)
+        .then(resolve);
     } else {
-      return Promise.resolve(error(NotSupported));
+      resolve(error(NotSupported));
     }
   });
 
 
 export const change =
   (settings/*:Settings*/)/*:Task<Never, Result<Error, Settings>>*/ =>
-  Task.future(() => {
+  Task.create(resolve => {
     if (navigator.mozSettings != null) {
       const lock = navigator.mozSettings.createLock();
-      const result =
-        lock
+      lock
         .set(settings)
-        .then(always(ok(settings)), error);
-      return result
+        .then(always(ok(settings)), error)
+        .then(resolve);
     } else {
-      return Promise.resolve(error(NotSupported));
+      resolve(error(NotSupported));
     }
   });
 

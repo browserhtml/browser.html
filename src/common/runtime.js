@@ -84,7 +84,7 @@ export const never/*:Task<Never, any>*/ =
 
 export const respond = /*::<message>*/
   (message/*:message*/)/*:Task<Never, message>*/ =>
-  Task.future(() => Promise.resolve(message));
+  Task.create(resolve => resolve(message));
 
 export const send = /*::<message>*/
   (message/*:message*/)/*:Task<Never, void>*/ =>
