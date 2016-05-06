@@ -80,6 +80,19 @@ export const write = /*::<input, state>*/
   , [...model.input, input]
   );
 
+export const updateDuration = /*::<input, state>*/
+  ( model/*:Model<input, state>*/
+  , time/*:Time*/
+  )/*:Model<input, state>*/ =>
+  new Model
+  ( model.state
+  , model.time
+  , time + (2 * 1000) - model.time
+  , model.version
+  , model.timeline
+  , model.input
+  );
+
 export const encode = /*::<input, state>*/
   ( model/*:Model<input, state>*/ )/*:EncodedClip<input, state>*/ => {
     const index = [];

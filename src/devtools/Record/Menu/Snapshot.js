@@ -13,6 +13,7 @@ export type Action = Button.Action
 export const init = Button.init
 export const update = Button.update
 export const press = Button.press
+export const release = Button.release
 export const fx = Button.fx
 
 export const render =

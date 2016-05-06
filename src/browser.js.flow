@@ -65,6 +65,7 @@ export type Action =
   | { type: "Unload" }
   | { type: "ReloadRuntime" }
   | { type: "PrintSnapshot" }
+  | { type: "CaptureSnapshot" }
   | { type: "PublishSnapshot" }
   | { type: "StartRecording" }
   | { type: "StopRecording" }

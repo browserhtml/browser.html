@@ -92,7 +92,7 @@ export const updatePosition = /*::<input, state>*/
   , Math.max(0, Math.min(model.clip.duration, model.position + (delta / model.zoom)))
   )
 
-const setPosition = /*::<input, state>*/
+export const setPosition = /*::<input, state>*/
   ( model/*:Model<input, state>*/
   , position/*:Time*/
   )/*:Model<input, state>*/ =>
@@ -142,8 +142,8 @@ export const updateClip = /*::<input, state>*/
   new Model
   ( clip
   , ( model.position === model.clip.duration
-    ? model.position
-    : clip.duration
+    ? clip.duration
+    : model.position
     )
   , model.zoom
   , model.io
@@ -157,7 +157,7 @@ const panic = /*::<message, input, state>*/
   , model.zoom
   , IO.perform
     ( model.io
-    , Console.log(`Panic! Unsupported action was received`, message)
+    , Console.error(`Panic! Unsupported action was received`, message)
     )
   )
 

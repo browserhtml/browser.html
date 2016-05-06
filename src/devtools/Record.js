@@ -3,6 +3,7 @@
 import {Effects, Task, html, thunk, forward} from "reflex"
 import {merge, always} from "../common/prelude"
 import {ok, error} from "../common/result"
+import {Lens, lens} from "../common/Lens"
 import * as IO from "../common/IO"
 import * as Console from "../common/Console"
 import * as Runtime from "../common/runtime"
@@ -50,6 +51,7 @@ export type Action <input, state> =
   | { type: "Debuggee", debuggee: input }
   | { type: "StartRecording" }
   | { type: "StopRecording" }
+  | { type: "AnimationFrame", time: Time }
   | { type: "ToggleRecording" }
   | { type: "CaptureSnapshot" }
   | { type: "Print" }
@@ -57,18 +59,18 @@ export type Action <input, state> =
   | { type: "Publish" }
   | { type: "UploadedClip", uploadedClip: Gist }
   | { type: "UploadFailed", uploadFailed: Error }
-  | { type: "#menu", menu: Menu.Action }
-  | { type: "#player", player: Player.Action<input, state>}
+  | { type: "menu", menu: Menu.Action }
+  | { type: "player", player: Player.Action<input, state>}
 */
 
 const NoOp = always({type: "NoOp"})
-const CaptureSnapshot = { type: "CaptureSnapshot" }
+export const CaptureSnapshot = { type: "CaptureSnapshot" }
 const ToggleRecording = { type: "ToggleRecording" }
-const StartRecording = { type: "StartRecording" }
-const StopRecording = { type: "StopRecording" }
-const Print = { type: "Print" }
+export const StartRecording = { type: "StartRecording" }
+export const StopRecording = { type: "StopRecording" }
+export const Print = { type: "Print" }
 const Printed = { type: "Printed" }
-const Publish = { type: "Publish" }
+export const Publish = { type: "Publish" }
 
 const UploadFailed = /*::<input, state>*/
   ( error/*:Error*/ )/*:Action<input, state>*/ =>
@@ -84,6 +86,13 @@ const UploadedClip = /*::<input, state>*/
     }
   );
 
+const AnimationFrame = /*::<input, state>*/
+  ( time/*:Time*/ )/*:Action<input, state>*/ =>
+  ( { type: "AnimationFrame"
+    , time
+    }
+  );
+
 
 export class Model /*::<input, state>*/ {
   /*::
@@ -93,6 +102,7 @@ export class Model /*::<input, state>*/ {
   player: ?Player.Model<input, state>;
   menu: Menu.Model;
   io: IO.Model;
+  isMutable: boolean;
   */
   constructor(
     isUploading/*:boolean*/
@@ -101,6 +111,7 @@ export class Model /*::<input, state>*/ {
   , player/*:?Player.Model<input, state>*/
   , menu/*:Menu.Model*/
   , io/*:IO.Model*/
+  , isMutable/*:boolean*/
   ) {
     this.isUploading = isUploading
     this.isRecording = isRecording
@@ -108,8 +119,78 @@ export class Model /*::<input, state>*/ {
     this.player = player
     this.menu = menu
     this.io = io
+    this.isMutable = isMutable
+  }
+  modify(
+    isUploading/*:boolean*/
+  , isRecording/*:boolean*/
+  , clip/*:?Clip.Model<input, state>*/
+  , player/*:?Player.Model<input, state>*/
+  , menu/*:Menu.Model*/
+  , io/*:IO.Model*/
+  )/*:Model<input, state>*/ {
+    if (this.isMutable) {
+      this.isUploading = isUploading
+      this.isRecording = isRecording
+      this.clip = clip
+      this.player = player
+      this.menu = menu
+      this.io = io
+      return this
+    }
+    else {
+      const model = new Model
+      ( isUploading
+      , isRecording
+      , clip
+      , player
+      , menu
+      , io
+      , false
+      )
+
+      return model
+    }
+  }
+  asMutable()/*:Model<input, state>*/ {
+    const model =
+      ( this.isMutable
+      ? this
+      : new Model
+        ( this.isUploading
+        , this.isRecording
+        , this.clip
+        , this.player
+        , this.menu
+        , this.io
+        , true
+        )
+      )
+
+    return model
+  }
+
+  asImmutable()/*:Model<input, state>*/ {
+    this.isMutable = false
+    return this
+  }
+
+  swap /*::<inner, context>*/(
+    lens/*:Lens<*, inner>*/
+  , f/*:(value:inner, context:context) => inner*/
+  , context/*:context*/
+  )/*:Model<input, state>*/ {
+    return lens.set(this, f(lens.get(this), context))
+  }
+
+  set /*::<inner>*/(
+    lens/*:Lens<*, *>*/
+  , value/*:inner*/
+  )/*:Model<input, state>*/ {
+    return lens.set(this, value)
   }
 }
+
 
 export const init = /*::<input, state>*/
   ( isUploading/*:boolean*/=false
@@ -118,6 +199,7 @@ export const init = /*::<input, state>*/
   , player/*:?Player.Model<input, state>*/=null
   , menu/*:Menu.Model*/=Menu.init()
   , io/*:IO.Model*/=IO.init()
+  , isMutable/*:boolean*/=false
   )/*:Model<input, state>*/ =>
   new Model
   ( isUploading
@@ -126,7 +208,9 @@ export const init = /*::<input, state>*/
   , player
   , menu
   , io
+  , isMutable
   )
+
 
 const createClip = /*::<input, state>*/
   (time/*:Time*/)/*:Clip.Model<input, state>*/ =>
@@ -134,6 +218,7 @@ const createClip = /*::<input, state>*/
   ( window.application.model.value.debuggee
   , time
   )
+
 
 export const captureSnapshot = /*::<input, state>*/
   ( model/*:Model<input, state>*/ )/*:Model<input, state>*/ =>
@@ -144,21 +229,15 @@ export const captureSnapshot = /*::<input, state>*/
   , null
   , Menu.captureSnapshot(model.menu)
   , model.io
+  , model.isMutable
   )
-
 
 const updateMenu = /*::<input, state>*/
   ( model/*:Model<input, state>*/
   , action/*:Menu.Action*/
   )/*:Model<input, state>*/ =>
-  new Model
-  ( model.isUploading
-  , model.isRecording
-  , model.clip
-  , model.player
-  , Menu.update(model.menu, action)
-  , model.io
-  )
+  model.swap(menu, Menu.update, action)
+
 
 const updatePlayer = /*::<input, state>*/
   ( model/*:Model<input, state>*/
@@ -166,14 +245,7 @@ const updatePlayer = /*::<input, state>*/
   )/*:Model<input, state>*/ =>
   ( model.player == null
   ? model
-  : new Model
-    ( model.isUploading
-    , model.isRecording
-    , model.clip
-    , Player.update(model.player, action)
-    , model.menu
-    , model.io
-    )
+  : model.set(player, Player.update(model.player, action))
   )
 
 
@@ -187,119 +259,124 @@ const publish = /*::<input, state>*/
   : publishClip(model, model.clip)
   )
 
+
 const publishClip = /*::<input, state>*/
   ( model/*:Model<input, state>*/
   , clip/*:Clip.Model<input, state>*/
   )/*:Model<input, state>*/ =>
-  new Model
-  ( true
-  , model.isRecording
-  , model.clip
-  , model.player
-  , Menu.publishing(model.menu)
-  , model.io.perform
-    ( upload(JSON.stringify(Clip.encode(clip)))
+  model
+  .asMutable()
+  .set(isUploading, true)
+  .swap(menu, Menu.publishing)
+  .swap
+    ( io
+    , IO.perform
+    , upload(JSON.stringify(Clip.encode(clip)))
       .map(UploadedClip)
       .capture(error => Task.succeed(UploadFailed(error)))
     )
-  )
+  .asImmutable()
 
 const published = /*::<input, state>*/
   ( model/*:Model<input, state>*/, gist/*:Gist*/ )/*:Model<input, state>*/ =>
-  new Model
-  ( false
-  , false
-  , null
-  , null
-  , Menu.published(model.menu)
-  , model.io.perform(Console.log(`Record was published to  ${gist.url}`))
-  )
+  model
+  .asMutable()
+  .swap(menu, Menu.published)
+  .swap(io, IO.perform, Console.log(`Record was published to  ${gist.url}`))
+  .asImmutable()
 
 
 const print = /*::<input, state>*/
   (model/*:Model<input, state>*/)/*:Model<input, state>*/ =>
-  ( model.clip != null
-  ? new Model
-    ( model.isUploading
-    , model.isRecording
-    , model.clip
-    , model.player
-    , Menu.printing(model.menu)
-    , model.io
-      .perform(Console.log(`\n\n\n${JSON.stringify(model.clip ? Clip.encode(model.clip) : model.clip)}\n\n\n`))
-      .perform(Task.sleep(100).map(always(Printed)))
-    )
+  ( model.clip == null
+  ? model
   : model
+    .asMutable()
+    .swap(menu, Menu.printing)
+    .swap
+      ( io
+      , IO.perform
+      , Console.log(`\n\n\n${JSON.stringify(model.clip ? Clip.encode(model.clip) : model.clip)}\n\n\n`)
+      )
+    .swap(io, IO.perform, Task.sleep(100).map(always(Printed)))
+    .asImmutable()
   )
+
 
 const printed = /*::<input, state>*/
   (model/*:Model<input, state>*/)/*:Model<input, state>*/ =>
-  new Model
-  ( model.isUploading
-  , model.isRecording
-  , model.clip
-  , model.player
-  , Menu.printed(model.menu)
-  , model.io
-  )
+  model.swap(menu, Menu.printed)
 
 const panic = /*::<message, input, state>*/
   (model/*:Model<input, state>*/, message/*:message*/)/*:Model<input, state>*/ =>
-  new Model
-  ( model.isUploading
-  , model.isRecording
-  , model.clip
-  , model.player
-  , model.menu
+  model.swap
+  ( io
   , IO.perform
-    ( model.io
-    , Console.log(`Panic! Unsupported action was received`, message)
-    )
+  , Console.error(`Panic! Unsupported action was received`, message)
   )
+
 
 const failure = /*::<message, input, state>*/
   (model/*:Model<input, state>*/, message/*:message*/)/*:Model<input, state>*/ =>
-  new Model
-  ( model.isUploading
-  , model.isRecording
-  , model.clip
-  , model.player
-  , model.menu
+  model.swap
+  ( io
   , IO.perform
-    ( model.io
-    , Console.error(`Failure! Enexpected error occured`, message)
-    )
+  , Console.error(`Failure! Enexpected error occured`, message)
   )
+
 
 const startRecording = /*::<input, state>*/
   ( model/*:Model<input, state>*/
-  , clip/*:Clip.Model<input, state>*/=createClip(performance.now())
-  )/*:Model<input, state>*/ =>
-  ( model.isRecording
-  ? model
-  : new Model
-    ( model.isUploading
-    , true
-    , clip
-    , Player.init(clip)
-    , Menu.startRecording(model.menu)
-    , model.io
+  )/*:Model<input, state>*/ => {
+    const value = createClip(performance.now())
+    const result =
+    ( model.isRecording
+    ? model
+    : model
+      .asMutable()
+      .set(isRecording, true)
+      .set(clip, value)
+      .set(player, Player.init(value))
+      .swap(menu, Menu.startRecording)
+      .swap(io, IO.perform, requestFrame())
+      .asImmutable()
     )
-  )
+
+    return result
+  }
+
 
 const stopRecording = /*::<input, state>*/
   (model/*:Model<input, state>*/)/*:Model<input, state>*/ =>
   ( model.isRecording
-  ? new Model
-    ( model.isUploading
-    , false
-    , model.clip
-    , model.player
-    , Menu.stopRecording(model.menu)
-    , model.io
-    )
+  ? model
+    .asMutable()
+    .swap(menu, Menu.stopRecording)
+    .set(isRecording, false)
+    .asImmutable()
   : model
   )
+
+
+const updateRecording = /*::<input, state>*/
+  (model/*:Model<input, state>*/, time/*:Time*/)/*:Model<input, state>*/ =>
+  ( !model.isRecording
+  ? model
+  : model.clip == null
+  ? model
+  : model
+    .asMutable()
+    .set
+    ( clip
+    , ( model.clip == null
+      ? model.clip
+      : Clip.updateDuration(model.clip, time)
+      )
+    )
+    .swap(io, IO.perform, requestFrame())
+    .asImmutable()
+  )
+
 
 const toggleRecording = /*::<input, state>*/
   ( model/*:Model<input, state>*/)/*:Model<input, state>*/ =>
@@ -308,31 +385,122 @@ const toggleRecording = /*::<input, state>*/
   : startRecording(model)
   )
 
+
 const writeInput = /*::<input, state>*/
   ( model/*:Model<input, state>*/
   , input/*:input*/
   )/*:Model<input, state>*/ =>
   ( !model.isRecording
   ? model
-  : model.clip == null
-  ? model
-  : updateClip(model, Clip.write(model.clip, input))
+  : model.set
+    ( clip
+    , ( model.clip == null
+      ? null
+      : Clip.write(model.clip, input)
+      )
+    )
   )
 
-const updateClip = /*::<input, state>*/
-  ( model/*:Model<input, state>*/
-  , clip/*:Clip.Model<input, state>*/
-  )/*:Model<input, state>*/ =>
-  new Model
-  ( model.isUploading
-  , model.isRecording
-  , clip
-  , ( model.player == null
-    ? model.player
-    : Player.updateClip(model.player, clip)
+
+// Lens
+
+const clip = lens
+  ( /*::<input, state>*/
+    (model/*:Model<input, state>*/)/*:?Clip.Model<input, state>*/ =>
+      model.clip
+  , /*::<input, state>*/
+    ( model/*:Model<input, state>*/
+    , clip/*:?Clip.Model<input, state>*/
+    )/*:Model<input, state>*/ =>
+    model.modify
+    ( model.isUploading
+    , model.isRecording
+    , clip
+    , ( model.player == null
+      ? model.player
+      : clip == null
+      ? null
+      : Player.updateClip(model.player, clip)
+      )
+    , model.menu
+    , model.io
     )
-  , model.menu
-  , model.io
+  )
+
+const player = lens
+  ( model => model.player
+  , ( model, player ) =>
+    model.modify
+    ( model.isUploading
+    , model.isRecording
+    , model.clip
+    , player
+    , model.menu
+    , model.io
+    )
+  )
+
+
+const menu = lens
+  ( model => model.menu
+  , (model, menu) =>
+    ( model.menu === menu
+    ? model
+    : model.modify
+      ( model.isUploading
+      , model.isRecording
+      , model.clip
+      , model.player
+      , menu
+      , model.io
+      )
+    )
+  )
+
+
+const io = lens
+  ( model => model.io
+  , ( model, io ) =>
+    model.modify
+    ( model.isUploading
+    , model.isRecording
+    , model.clip
+    , model.player
+    , model.menu
+    , io
+    )
+  )
+
+
+const isUploading = lens
+  ( model => model.isUploading
+  , ( model, isUploading) =>
+    model.modify
+    ( isUploading
+    , model.isRecording
+    , model.clip
+    , model.player
+    , model.menu
+    , model.io
+    )
+  )
+
+
+
+const isRecording = lens
+  ( model => model.isRecording
+  , ( model, isRecording) =>
+    ( model.isRecording == isRecording
+    ?  model
+    : model.modify
+      ( model.isUploading
+      , isRecording
+      , model.clip
+      , model.player
+      , model.menu
+      , model.io
+      )
+    )
   )
 
 
@@ -344,10 +512,8 @@ export const fx = /*::<input, state>*/
     ]
   )
 
-export const transact = /*::<input, state>*/
-  ( model/*:Model<input, state>*/
-  )/*:[Model<input, state>, Effects<Action<input, state>>]*/ =>
-  [ model, fx(model) ]
+
+
 
 const tagMenu =
   action =>
@@ -363,17 +529,20 @@ const tagMenu =
   ? Print
   : action.type === "Publishing"
   ? Publish
-  : { type: "#menu"
+  : { type: "menu"
     , menu: action
     }
   )
 
+
 const tagPlayer =
   action =>
-  ( { type: "#player"
+  ( { type: "player"
     , player: action
     }
   )
+
+
 
 
 const upload =
@@ -387,19 +556,26 @@ const upload =
       ( { "description": "Browser.html generated state snapshot"
         , "public": true
         , "files":
-          { "snapshot.json":
-            { "content": content }
+          { "snapshot.json": {content}
           }
         }
       )
-    );
-
-    request.onload = () =>
-    ( request.status === 201
-    ? succeed((request.response/*:Gist*/))
-    : fail(Error(`Failed to upload snapshot : ${request.statusText}`))
     )
-  });
+
+    request.onload =
+      () =>
+      ( request.status === 201
+      ? succeed((request.response/*:Gist*/))
+      : fail(Error(`Failed to upload snapshot : ${request.statusText}`))
+      )
+  })
+
+
+export const requestFrame = /*::<input, state>*/
+  ()/*:Task<Never, Action<input, state>>*/ =>
+  Task
+  .requestAnimationFrame()
+  .map(AnimationFrame)
 
 export const update = /*::<action, model>*/
   ( model/*:Model<action, model>*/
@@ -422,20 +598,23 @@ export const update = /*::<action, model>*/
         return startRecording(model)
       case "StopRecording":
         return stopRecording(model)
+      case "AnimationFrame":
+        return updateRecording(model, action.time)
       case "ToggleRecording":
         return toggleRecording(model)
       case "CaptureSnapshot":
         return captureSnapshot(model)
       case "Debuggee":
         return writeInput(model, action.debuggee)
-      case "#menu":
+      case "menu":
         return updateMenu(model, action.menu)
-      case "#player":
+      case "player":
         return updatePlayer(model, action.player)
       default:
         return panic(model, action)
     }
   }
+
 
 export const render = /*::<model, action>*/
   ( model/*:Model<model, action>*/
@@ -450,12 +629,14 @@ export const render = /*::<model, action>*/
         : styleSheet.noflash
         )
       )
+
     , open: true
     }
   , [ Menu.view
       ( model.menu
       , forward(address, tagMenu)
       )
+
     , ( model.player == null
       ? ""
       : Player.view
@@ -464,7 +645,7 @@ export const render = /*::<model, action>*/
         )
       )
     ]
-  );
+  )
 
 export const view = /*::<input, state>*/
   ( model/*:Model<input, state>*/
@@ -475,7 +656,7 @@ export const view = /*::<input, state>*/
   , render
   , model
   , address
-  );
+  )
 
 
 const styleSheet = Style.createSheet
@@ -494,6 +675,7 @@ const styleSheet = Style.createSheet
     , flash:
       { opacity: 0.9
       }
+
     , noflash: null
     }
-  );
+  )

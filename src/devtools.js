@@ -9,275 +9,343 @@ import * as Unknown from "./common/unknown"
 import * as Replay from "./devtools/replay"
 import * as Record from "./devtools/Record"
 import * as Log from "./devtools/log"
+import * as Debug from "./devtools/debug"
+import * as Console from "./common/Console"
+import * as IO from "./common/IO"
 
 /*::
 import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} from "reflex"
 import type {Result} from "./common/result"
 
-export type Model <model, action> =
-  { record: ?Record.Model<action, model>
-  , replay: ?Replay.Model<model, action>
-  , log: ?Log.Model<model, action>
-
-  , Debuggee: Debuggee<model, action>
-  , debuggee: ?model
+export type Debuggee <input, state> =
+  { init: Init<state, input, any>
+  , update: Update<state, input>
+  , view: View<state, input>
   }
 
-export type Action <model, action> =
-  | { type: "Debuggee", debuggee: action }
-  | { type: "Record", record: Record.Action<model, action> }
-  | { type: "Replay", replay: Replay.Action<model, action> }
-  | { type: "Log", log: Log.Action<model, action> }
-  | { type: "ReplayDebuggee", model: model }
+export type Action <input, state> =
+  | { type: "debuggee", debuggee: input }
+  | { type: "record", record: any }
+  | { type: "replay", replay: any }
+  | { type: "log", log: any }
+  | { type: "debug", debug: any }
 
-
-
-export type Debuggee <model, action> =
-  { init: Init<model, action, any>
-  , update: Update<model, action>
-  , view: View<model, action>
-  }
-
-export type Step <model, action> =
-  [Model<model, action>, Effects<Action<model, action>>]
-
-type Flags <model, action, flags> =
-  { Debuggee: Debuggee<model, action>
+type Flags <input, state, flags> =
+  { Debuggee: Debuggee<input, state>
   , flags: flags
   }
 */
 
-const TagRecord = /*::<model, action>*/
-  (action/*:Record.Action<model, action>*/)/*:Action<model, action>*/ =>
-  ( { type: "Record"
+
+export class Model /*::<input, state>*/ {
+  /*::
+  record: ?Record.Model<input, state>;
+  replay: ?Replay.Model<input, state>;
+  log: ?Log.Model<input, state>;
+
+  Debuggee: Debuggee<input, state>;
+  debuggee: state;
+  io: IO.Model<Action<input, state>>;
+  fx: Effects<input>;
+  */
+  constructor(
+    Debuggee/*:Debuggee<input, state>*/
+  , debuggee/*:state*/
+  , io/*:IO.Model<Action<input, state>>*/
+  , fx/*:Effects<input>*/
+  , record/*:?Record.Model<input, state>*/
+  , replay/*:?Replay.Model<input, state>*/
+  , log/*:?Log.Model<input, state>*/
+  ) {
+    this.Debuggee = Debuggee
+    this.debuggee = debuggee
+    this.io = io
+    this.fx = fx
+    this.record = record
+    this.replay = replay
+    this.log = log
+  }
+}
+
+const tagRecord = /*::<input, state>*/
+  ( action/*:Record.Action<input, state>*/ )/*:Action<input, state>*/ =>
+  ( { type: "record"
     , record: action
     }
   );
 
-const TagLog = /*::<model, action>*/
-  (action/*:Log.Action<model, action>*/)/*:Action<model, action>*/ =>
-  ( { type: "Log"
+const tagLog = /*::<input, state>*/
+  ( action/*:Log.Action<input, state>*/ )/*:Action<input, state>*/ =>
+  ( { type: "log"
     , log: action
     }
   );
 
-const TagReplay = /*::<model, action>*/
-  (action/*:Replay.Action<model, action>*/)/*:Action<model, action>*/ =>
-  ( action.type === "Replay"
-  ? { type: "ReplayDebuggee"
-    , model: action.replay
+const tagReplay = /*::<input, state>*/
+  ( action/*:Replay.Action<input, state>*/)/*:Action<input, state>*/ =>
+  ( action.type === "Debug"
+  ? { type: "debug"
+    , debug: action.debug
     }
-  : { type: "Replay"
+  : { type: "replay"
     , replay: action
     }
   );
 
-const TagDebuggee = /*::<model, action>*/
-  (action/*:action*/)/*:Action<model, action>*/ =>
+const tagDebuggee = /*::<input, state>*/
+  ( action/*:input*/ )/*:Action<input, state>*/ =>
   ( action == null
-  ? { type: "Debuggee"
+  ? { type: "debuggee"
     , debuggee: action
     }
   : /*::typeof(action) === "object" && action != null && */
     action.type === "PrintSnapshot"
-  ? TagRecord(action)
+  ? tagRecord(Record.Print)
+  : /*::typeof(action) === "object" && action != null && */
+    action.type === "CaptureSnapshot"
+  ? tagRecord(Record.CaptureSnapshot)
   : /*::typeof(action) === "object" && action != null && */
     action.type === "PublishSnapshot"
-  ? TagRecord(action)
+  ? tagRecord(Record.Publish)
   : /*::typeof(action) === "object" && action != null && */
     action.type === "StartRecording"
-  ? TagRecord(action)
+  ? tagRecord(Record.StartRecording)
   : /*::typeof(action) === "object" && action != null && */
     action.type === "StopRecording"
-  ? TagRecord(action)
-  : { type: "Debuggee"
+  ? tagRecord(Record.StopRecording)
+  : { type: "debuggee"
     , debuggee: action
     }
   )
 
-export const init = /*::<model, action, flags>*/
-  ({Debuggee, flags}/*:Flags<model, action, flags>*/)/*:Step<model, action>*/ => {
-    const disable = [null, Effects.none]
-
-    const [record, recordFX] =
+export const initTools = /*::<input, state, flags>*/
+  ({Debuggee, flags}/*:Flags<input, state, flags>*/)/*:Model<input, state>*/ => {
+    const record =
       ( Runtime.env.record == null
-      ? disable
-      : Record.transact(Record.init())
+      ? null
+      : Record.init()
       );
 
-    const [replay, replayFX] =
+    const replay =
       ( Runtime.env.replay == null
-      ? disable
+      ? null
       : Replay.init(flags)
       );
 
-    const [log, logFX] =
+    const log =
       ( Runtime.env.log == null
-      ? disable
+      ? null
       : Log.init(flags)
       );
 
-    const [debuggee, debuggeeFX] = Debuggee.init(flags);
+    const [debuggee, fx] = Debuggee.init(flags)
 
-    const model =
-      { record
-      , replay
-      , log
-      , debuggee
-      , Debuggee
-      , flags
-      }
-
-    const fx = Effects.batch
-      ( [ recordFX.map(TagRecord)
-        , replayFX.map(TagReplay)
-        , logFX.map(TagLog)
-        , debuggeeFX.map(TagDebuggee)
-        ]
-      )
-
-    return [model, fx]
+    return new Model
+    ( Debuggee
+    , debuggee
+    , IO.init()
+    , fx
+    , record
+    , replay
+    , log
+    )
   }
 
-export const update = /*::<model, action, flags>*/
-  ( model/*:Model<model, action>*/
-  , action/*:Action<model, action>*/
-  )/*:Step<model, action>*/ => {
+export const updateTools = /*::<input, state, flags>*/
+  ( model/*:Model<input, state>*/
+  , action/*:Action<input, state>*/
+  )/*:Model<input, state>*/ => {
     switch (action.type) {
-      case "Record":
+      case "record":
         return (
             model.record == null
-          ? nofx(model)
-          : updateRecord(model, action.record)
+          ? model
+          : updateRecord(model, model.record, action.record)
           );
-      case "Replay":
-        return (
+      case "replay":
+          return (
             model.replay == null
-          ? nofx(model)
-          : updateReply(model, action.replay)
+          ? model
+          : updateReply(model, model.replay, action.replay)
           );
-      case "Log":
+      case "log":
         return (
             model.log == null
-          ? nofx(model)
-          : updateLog(model, action.log)
+          ? model
+          : updateLog(model, model.log, action.log)
           )
-      case "Debuggee":
+      case "debuggee":
         return (
             model.debuggee == null
-          ? nofx(model)
+          ? model
           : updateDebuggee(model, action.debuggee)
           )
-      case "ReplayDebuggee":
-        return replayDebuggee(model, action.model)
+      case "debug":
+        return debug(model, action.debug)
       default:
-        return Unknown.update(model, action)
+        return panic(model, action)
     }
   }
 
-const nofx = /*::<model, action>*/
-  (model/*:model*/)/*:[model, Effects<action>]*/ =>
-  [ model
+const panic = /*::<message, input, state>*/
+  (model/*:Model<input, state>*/, message/*:message*/)/*:Model<input, state>*/ =>
+  new Model
+  ( model.Debuggee
+  , model.debuggee
+  , IO.perform
+    ( model.io
+    , Console.error(`Panic! Unsupported action was received`, message)
+    )
   , Effects.none
+  , model.record
+  , model.replay
+  , model.log
+  )
+
+const updateRecord = /*::<input, state>*/
+  ( model/*:Model<input, state>*/
+  , record/*:Record.Model<input, state>*/
+  , action/*:Record.Action<input, state>*/
+  )/*:Model<input, state>*/ =>
+  new Model
+  ( model.Debuggee
+  , model.debuggee
+  , model.io
+  , Effects.none
+  , Record.update(record, action)
+  , model.replay
+  , model.log
+  )
+
+const updateReply = /*::<input, state>*/
+  ( model/*:Model<input, state>*/
+  , replay/*:Replay.Model<input, state>*/
+  , action/*:Replay.Action<input, state>*/
+  )/*:Model<input, state>*/ =>
+  new Model
+  ( model.Debuggee
+  , model.debuggee
+  , model.io
+  , Effects.none
+  , model.record
+  , Replay.update(replay, action)
+  , model.log
+  )
+
+const updateLog = /*::<input, state>*/
+  ( model/*:Model<input, state>*/
+  , log/*:Log.Model<input, state>*/
+  , action/*:Log.Action<input, state>*/
+  )/*:Model<input, state>*/ =>
+  new Model
+  ( model.Debuggee
+  , model.debuggee
+  , model.io
+  , Effects.none
+  , model.record
+  , model.replay
+  , Log.update(log, action)
+  )
+
+
+const updateDebuggee = /*::<input, state>*/
+  ( model/*:Model<input, state>*/
+  , input/*:input*/
+  )/*:Model<input, state>*/ => {
+    const [debuggee, fx] = model.Debuggee.update(model.debuggee, input);
+    const next = new Model
+    ( model.Debuggee
+    , debuggee
+    , model.io
+    , fx
+    , ( model.record == null
+      ? null
+      : Record.update(model.record, {type: "Debuggee", debuggee: input})
+      )
+    , ( model.replay == null
+      ? null
+      : Replay.update(model.replay, {type: "Debuggee", debuggee: input})
+      )
+    , ( model.log == null
+      ? null
+      : Log.update(model.log, {type: "Debuggee", debuggee: input})
+      )
+    )
+
+    return next
+  }
+
+
+const debug = /*::<input, state>*/
+  ( model/*:Model<input, state>*/
+  , command/*:Debug.Command<input, state>*/
+  )/*:Model<input, state>*/ => {
+    switch(command.type) {
+      case "send":
+        const [debuggee, fx] = model.Debuggee.update
+          ( model.debuggee
+          , command.send
+          )
+        return setDebuggee(model, debuggee, fx)
+      case "reset":
+        return setDebuggee(model, command.reset, Effects.none)
+      default:
+        return panic(model, command);
+    }
+  }
+
+const setDebuggee = /*::<input, state>*/
+  ( model/*:Model<input, state>*/
+  , debuggee/*:state*/
+  , fx/*:Effects<input>*/
+  )/*:Model<input, state>*/ =>
+  new Model
+  ( model.Debuggee
+  , debuggee
+  , model.io
+  , fx
+  , model.record
+  , model.replay
+  , model.log
+  )
+
+const fx = /*::<input, state>*/
+  (model/*:Model<input, state>*/)/*:Effects<Action<input, state>>*/ =>
+  Effects.batch
+  ( [ model.io
+    , model.fx.map(tagDebuggee)
+    , ( model.record == null
+      ? Effects.none
+      : Record.fx(model.record).map(tagRecord)
+      )
+    , ( model.replay == null
+      ? Effects.none
+      : Replay.fx(model.replay).map(tagReplay)
+      )
+    , ( model.log == null
+      ? Effects.none
+      : Log.fx(model.log).map(tagLog)
+      )
+    ]
+  )
+
+export const transact = /*::<input, state>*/
+  ( model/*:Model<input, state>*/
+  )/*:[Model<input, state>, Effects<Action<input, state>>]*/ =>
+  [ model
+  , fx(model)
   ]
 
-const updateRecord = /*::<model, action>*/
-  ( model/*:Model<model, action>*/
-  , action/*:Record.Action<model, action>*/
-  )/*:Step<model, action>*/ => {
-    const ignore = [null, Effects.none]
-    const [record, fx] =
-      ( model.record == null
-      ? ignore
-      : Record.transact(Record.update(model.record, action))
-      )
-    return [merge(model, {record}), fx.map(TagRecord)]
-  }
+export const init = /*::<input, state, flags>*/
+  (flags/*:Flags<input, state, flags>*/)/*:[Model<input, state>, Effects<Action<input, state>>]*/ =>
+  transact(initTools(flags));
 
+export const update = /*::<input, state>*/
+  ( model/*:Model<input, state>*/
+  , action/*:Action<input, state>*/
+  )/*:[Model<input, state>, Effects<Action<input, state>>]*/ =>
+  transact(updateTools(model, action));
 
-const updateReply = /*::<model, action>*/
-  ( model/*:Model<model, action>*/
-  , action/*:Replay.Action<model, action>*/
-  )/*:Step<model, action>*/ => {
-    const ignore = [null, Effects.none]
-    const [replay, fx] =
-      ( model.replay == null
-      ? ignore
-      : Replay.update(model.replay, action)
-      )
-    return [merge(model, {replay}), fx.map(TagReplay)]
-  }
-
-const updateLog = /*::<model, action>*/
-  ( model/*:Model<model, action>*/
-  , action/*:Log.Action<model, action>*/
-  )/*:Step<model, action>*/ => {
-    const ignore = [null, Effects.none]
-    const [log, fx] =
-      ( model.log == null
-      ? ignore
-      : Log.update(model.log, action)
-      )
-    return [merge(model, {log}), fx.map(TagLog)]
-  }
-
-
-const updateDebuggee = /*::<model, action>*/
-  ( model/*:Model<model, action>*/
-  , action/*:action*/
-  )/*:Step<model, action>*/ => {
-    const {Debuggee} = model
-    const ignore = [null, Effects.none]
-
-    const [record, recordFX] =
-      ( model.record == null
-      ? ignore
-      : Record.transact(Record.update(model.record, {type: "Debuggee", debuggee: action}))
-      );
-
-    const [replay, replayFX] =
-      ( model.replay == null
-      ? ignore
-      : Replay.update(model.replay, {type: "Debuggee", debuggee: action})
-      );
-
-    const [log, logFX] =
-      ( model.log == null
-      ? ignore
-      : Log.update(model.log, {type: "Debuggee", debuggee: action})
-      );
-
-
-
-    const [debuggee, debuggeeFX] =
-      ( model.debuggee == null
-      ? ignore
-      : Debuggee.update(model.debuggee, action)
-      )
-
-    const fx = Effects.batch
-      ( [ recordFX.map(TagRecord)
-        , replayFX.map(TagReplay)
-        , logFX.map(TagLog)
-        , debuggeeFX.map(TagDebuggee)
-        ]
-      )
-
-    const next = merge
-      ( model
-      , { record
-        , replay
-        , log
-        , debuggee
-        }
-      )
-
-    return [next, fx]
-  }
-
-const replayDebuggee = /*::<model, action>*/
-  (model/*:Model<model, action>*/, debuggee/*:model*/)/*:Step<model, action>*/ =>
-  nofx(merge(model, {debuggee}))
 
 export const view = /*::<model, action>*/
   ( model/*:Model<model, action>*/
@@ -288,19 +356,19 @@ export const view = /*::<model, action>*/
     }
   , [ ( model.debuggee == null
       ? ""
-      : model.Debuggee.view(model.debuggee, forward(address, TagDebuggee))
+      : model.Debuggee.view(model.debuggee, forward(address, tagDebuggee))
       )
     , ( model.record == null
       ? ""
-      : Record.view(model.record, forward(address, TagRecord))
+      : Record.view(model.record, forward(address, tagRecord))
       )
     , ( model.replay == null
       ? ""
-      : Replay.view(model.replay, forward(address, TagReplay))
+      : Replay.view(model.replay, forward(address, tagReplay))
       )
     , ( model.log == null
       ? ""
-      : Log.view(model.log, forward(address, TagLog))
+      : Log.view(model.log, forward(address, tagLog))
       )
     ]
   )

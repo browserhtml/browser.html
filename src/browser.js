@@ -364,6 +364,7 @@ const CloseWebViewByID =
 // there for we define them by just wrapping actions from that module to avoid
 // additional wiring (which is implementation detail that may change).
 export const ToggleDevtools = DevtoolsAction(Devtools.Toggle);
+const CaptureSnapshot = { type: "CaptureSnapshot" };
 const PrintSnapshot = { type: "PrintSnapshot" };
 const PublishSnapshot = { type: "PublishSnapshot" };
 const StartRecording = { type: "StartRecording" };
@@ -442,7 +443,9 @@ const decodeKeyDown = Keyboard.bindings({
   'F12': always(ToggleDevtools),
   'F5': always(ReloadRuntime),
   'meta control r': always(ReloadRuntime),
-  'meta alt 3': always(PrintSnapshot),
+
+  'meta alt 2': always(PrintSnapshot),
+  'meta alt 3': always(CaptureSnapshot),
   'meta alt 4': always(PublishSnapshot),
   'meta alt 5': always(StartRecording),
   'meta alt 6': always(StopRecording)

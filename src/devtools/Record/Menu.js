@@ -1,7 +1,8 @@
 /* @flow */
 
-import {Effects, html, thunk, forward} from "reflex"
+import {Effects, Task, html, thunk, forward} from "reflex"
 import {lens, Lens} from "../../common/lens"
+import {always} from "../../common/prelude"
 import * as Style from "../../common/style"
 import * as IO from "../../common/IO"
 import * as Console from "../../common/Console"
@@ -31,6 +32,7 @@ export type Action =
   | { type: "StartRecording" }
   | { type: "StopRecording" }
   | { type: "CaptureSnapshot" }
+  | { type: "CapturedSnapshot" }
 */
 
 export class Model {
@@ -154,6 +156,7 @@ const publish = lens
     )
   )
 
+const CapturedSnapshot = always({ type: "CapturedSnapshot" })
 const CaptureSnapshot = { type: "CaptureSnapshot" }
 const ToggleRecording = { type: "ToggleRecording" }
 const StartRecording = { type: "StartRecording" }
@@ -177,33 +180,38 @@ export const init =
 export const update =
   ( model/*:Model*/
   , action/*:Action*/
-  )/*:Model*/ =>
-  ( action.type === "CaptureSnapshot"
-  ? captureSnapshot(model)
-  : action.type === "StartRecording"
-  ? startRecording(model)
-  : action.type === "StopRecording"
-  ? stopRecording(model)
-  : action.type === "ToggleRecording"
-  ? toggleRecording(model)
-  : action.type === "Printing"
-  ? printing(model)
-  : action.type === "Printed"
-  ? printed(model)
-  : action.type === "Publishing"
-  ? publishing(model)
-  : action.type === "Published"
-  ? published(model)
-  : action.type === "#Clip"
-  ? model.swap(clip, Clip.update, action.clip)
-  : action.type === "#Snapshot"
-  ? model.swap(snapshot, Snapshot.update, action.snapshot)
-  : action.type === "#Print"
-  ? model.swap(print, Print.update, action.print)
-  : action.type === "#Publish"
-  ? model.swap(publish, Publish.update, action.publish)
-  : panic(model, action)
-  )
+  )/*:Model*/ => {
+    switch (action.type) {
+      case "CaptureSnapshot":
+        return captureSnapshot(model)
+      case "CapturedSnapshot":
+        return capturedSnapshot(model)
+      case "StartRecording":
+        return startRecording(model)
+      case "StopRecording":
+        return stopRecording(model)
+      case "ToggleRecording":
+        return toggleRecording(model)
+      case "Printing":
+        return printing(model)
+      case "Printed":
+        return printed(model)
+      case "Publishing":
+        return publishing(model)
+      case "Published":
+        return published(model)
+      case "#Clip":
+        return model.swap(clip, Clip.update, action.clip)
+      case "#Snapshot":
+        return model.swap(snapshot, Snapshot.update, action.snapshot)
+      case "#Print":
+        return model.swap(print, Print.update, action.print)
+      case "#Publish":
+        return model.swap(publish, Publish.update, action.publish)
+      default:
+        return panic(model, action)
+    }
+  }
 
 export const panic = /*::<action>*/
   (model/*:Model*/, action/*:action*/)/*:Model*/ =>
@@ -232,7 +240,26 @@ export const toggleRecording =
 
 export const captureSnapshot =
   (model/*:Model*/)/*:Model*/ =>
-  model.swap(snapshot, Snapshot.press)
+  new Model
+  ( model.clip
+  , Snapshot.press(model.snapshot)
+  , model.print
+  , model.publish
+  , IO.perform
+    ( model.io
+    , Task.sleep(300).map(CapturedSnapshot)
+    )
+  )
+
+export const capturedSnapshot =
+  (model/*:Model*/)/*:Model*/ =>
+  new Model
+  ( model.clip
+  , Snapshot.release(model.snapshot)
+  , model.print
+  , model.publish
+  , model.io
+  )
 
 export const printing =
   (model/*:Model*/)/*:Model*/ =>
