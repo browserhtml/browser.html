@@ -871,12 +871,6 @@ export const view =
           , model.input
           , forward(address, InputAction)
           )
-        , thunk
-          ( 'devtools'
-          , Devtools.view
-          , model.devtools
-          , forward(address, DevtoolsAction)
-          )
         ]
       )
       , thunk
@@ -892,6 +886,13 @@ export const view =
       , Shell.view
       , model.shell
       , forward(address, ShellAction)
+      )
+
+    , thunk
+      ( 'devtools'
+      , Devtools.view
+      , model.devtools
+      , forward(address, DevtoolsAction)
       )
     ]
   );
