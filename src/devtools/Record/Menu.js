@@ -316,7 +316,7 @@ export const view =
 const styleSheet = Style.createSheet
   ( { base:
       { fontFamily: "FontAwesome"
-      , pointerEvents: "all"
+      , pointerEvents: "auto"
       , lineHeight: "initial"
       , listStyle: "none"
       , background: "rgba(0, 0, 0, 0.2)"
