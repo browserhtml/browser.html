@@ -3,7 +3,7 @@
 import {Effects, Task, html, thunk, forward} from "reflex"
 import {merge, always} from "../common/prelude"
 import {ok, error} from "../common/result"
-import {Lens, lens} from "../common/Lens"
+import {Lens, lens} from "../common/lens"
 import * as IO from "../common/IO"
 import * as Console from "../common/Console"
 import * as Runtime from "../common/runtime"

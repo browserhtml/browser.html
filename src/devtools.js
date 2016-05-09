@@ -9,7 +9,7 @@ import * as Unknown from "./common/unknown"
 import * as Replay from "./devtools/replay"
 import * as Record from "./devtools/Record"
 import * as Log from "./devtools/log"
-import * as Debug from "./devtools/debug"
+import * as Debug from "./devtools/Debug"
 import * as Console from "./common/Console"
 import * as IO from "./common/IO"
 
