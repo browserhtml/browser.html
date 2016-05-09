@@ -1,10 +1,11 @@
 /* @flow */
 
-import {Effects, Task, html, forward} from "reflex"
+import {Effects, Task, html, thunk, forward} from "reflex"
 import {merge} from "../common/prelude"
 import {ok, error} from "../common/result"
 import * as Runtime from "../common/runtime"
 import * as Unknown from "../common/unknown"
+import * as Style from "../common/style"
 
 /*::
 import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} from "reflex"
@@ -122,39 +123,63 @@ const fetchSnapshot = /*::<model>*/
   });
 
 
+export const render = /*::<model, action>*/
+  ( model/*:Model<model, action>*/
+  , address/*:Address<Action<model, action>>*/
+  )/*:DOM*/ =>
+  html.dialog
+  ( { id: "replay"
+    , style: Style.mix
+      ( styleSheet.base
+      , ( model.replayed === true
+        ? styleSheet.loaded
+        : styleSheet.loading
+        )
+      )
+    , open: true
+    }
+  , [ html.h1
+      ( null
+      , [ ( model.error != null
+          ? String(model.error)
+          : model.replayed
+          ? ""
+          : `Loading snapshot from ${model.snapshotURI}`
+          )
+        ]
+      )
+    ]
+  );
+
 export const view = /*::<model, action>*/
   ( model/*:Model<model, action>*/
   , address/*:Address<Action<model, action>>*/
   )/*:DOM*/ =>
-  ( model.error != null
-  ? viewError(model.error, address)
-  : model.replayed === false
-  ? viewFetching(model, address)
-  : html.noscript()
-  )
+  thunk
+  ( 'replay'
+  , render
+  , model
+  , address
+  );
 
-const viewError =
-  (error, address) =>
-  html.main
-  ( { className: 'root'
-    }
-  , [ html.h1
-      ( null
-      , [ String(error)
-        ]
-      )
-    ]
-  )
 
-const viewFetching =
-  (model, address) =>
-  html.main
-  ( { className: 'root'
+const styleSheet = Style.createSheet
+  ( { base:
+      { position: "absolute"
+      , pointerEvents: "none"
+      , background: "#fff"
+      , height: "100%"
+      , width: "100%"
+      , textAlign: "center"
+      , lineHeight: "100vh"
+      , textOverflow: "ellipsis"
+      , whiteSpace: "nowrap"
+      }
+    , loaded:
+      { opacity: 0
+      }
+    , loading:
+      { opaticy: 1
+      }
     }
-  , [ html.h1
-      ( null
-      , [ `Loading snapshot from ${model.snapshotURI}`
-        ]
-      )
-    ]
-  )
+  );

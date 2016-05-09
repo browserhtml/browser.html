@@ -139,94 +139,91 @@ const updateResponse = (model, result) =>
   );
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
-  ( action.type === "CanGoForwardChanged"
-  ? ( action.result.isOk
-    ? [ merge(model, {canGoForward: action.result.value})
-      , Effects.none
-      ]
-    : [ model, Effects.task(report(action.result.error)) ]
-    )
-  : action.type === "CanGoBackChanged"
-  ? ( action.result.isOk
-    ? [ merge(model, {canGoBack: action.result.value})
-      , Effects.none
-      ]
-    : [ model, Effects.task(report(action.result.error)) ]
-    )
-  : action.type === "LocationChanged"
-  // In the case where LocationChanged carries information about
-  // canGoBack and canGoForward, we update the model with the new info.
-  // This scenario will be hit in Servo.
-  ? ( action.canGoBack != null && action.canGoForward != null
-    ? [ merge
-        ( model
-        , { currentURI: action.uri
-          , canGoBack: action.canGoBack
-          , canGoForward: action.canGoForward
-          }
-        )
-      , Effects.none
-      ]
-    // Otherwise, update the currentURI and create a task to read
-    // canGoBack, canGoForward from the iframe.
-    // This scenario will be hit in Gecko.
-    : [ merge
-        ( model
-        , { currentURI: action.uri
-          }
-        )
-      , Effects.batch
-        ( [ Effects
-              .task(canGoBack(model.id))
-              .map(CanGoBackChanged)
-          , Effects
-              .task(canGoForward(model.id))
-              .map(CanGoForwardChanged)
-          ]
-        )
-      ]
-    )
-  : action.type === "Load"
-  ? [ merge
-      ( model
-      , { initiatedURI: action.uri
-        , currentURI: action.uri
+  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+    switch (action.type) {
+      case "CanGoForwardChanged":
+        return  ( action.result.isOk
+                ? [ merge(model, {canGoForward: action.result.value})
+                  , Effects.none
+                  ]
+                : [ model, Effects.task(report(action.result.error)) ]
+                );
+      case "CanGoBackChanged":
+        return  ( action.result.isOk
+                ? [ merge(model, {canGoBack: action.result.value})
+                  , Effects.none
+                  ]
+                : [ model, Effects.task(report(action.result.error)) ]
+                );
+      case "LocationChanged":
+        // In the case where LocationChanged carries information about
+        // canGoBack and canGoForward, we update the model with the new info.
+        // This scenario will be hit in Servo.
+        if (action.canGoBack != null && action.canGoForward != null) {
+          return  [ merge(model
+                        , { currentURI: action.uri
+                          , canGoBack: action.canGoBack
+                          , canGoForward: action.canGoForward
+                          }
+                        )
+                  , Effects.none
+                  ];
         }
-      ),
-      Effects.none
-    ]
-  : action.type === "Stop"
-  ? [ model
-    , Effects
-        .task(stop(model.id))
-        .map(Stopped)
-    ]
-  : action.type === "Reload"
-  ? [ model
-    , Effects
-        .task(reload(model.id))
-        .map(Reloaded)
-    ]
-  : action.type === "GoBack"
-  ? [ model
-    , Effects
-        .task(goBack(model.id))
-        .map(WentBack)
-    ]
-  : action.type === "GoForward"
-  ? [ model
-    , Effects
-        .task(goForward(model.id))
-        .map(WentForward)
-    ]
-  : action.type === "Stopped"
-  ? updateResponse(model, action.stopResult)
-  : action.type === "Reloaded"
-  ? updateResponse(model, action.reloadResult)
-  : action.type === "WentBack"
-  ? updateResponse(model, action.goBackResult)
-  : action.type === "WentForward"
-  ? updateResponse(model, action.goForwardResult)
-  : Unknown.update(model, action)
-  );
+      // Otherwise, update the currentURI and create a task to read
+      // canGoBack, canGoForward from the iframe.
+      // This scenario will be hit in Gecko.
+      return  [ merge(model
+                    , { currentURI: action.uri
+                      })
+              , Effects.batch([ Effects
+                                  .task(canGoBack(model.id))
+                                  .map(CanGoBackChanged)
+                              , Effects
+                                  .task(canGoForward(model.id))
+                                  .map(CanGoForwardChanged)
+                              ])
+              ];
+      case "Load":
+        return  [ merge(model
+                      , { initiatedURI: action.uri
+                        , currentURI: action.uri
+                        }
+                      ),
+                 Effects.none
+                ];
+      case "Stop":
+        return  [ model
+                , Effects
+                    .task(stop(model.id))
+                    .map(Stopped)
+                ];
+      case "Reload":
+        return  [ model
+                , Effects
+                    .task(reload(model.id))
+                    .map(Reloaded)
+                ];
+      case "GoBack":
+        return  [ model
+                , Effects
+                    .task(goBack(model.id))
+                    .map(WentBack)
+                ];
+      case "GoForward":
+        return  [ model
+                , Effects
+                    .task(goForward(model.id))
+                    .map(WentForward)
+                ];
+      case "Stopped":
+        return  updateResponse(model, action.stopResult);
+      case "Reloaded":
+        return  updateResponse(model, action.reloadResult);
+      case "WentBack":
+        return  updateResponse(model, action.goBackResult);
+      case "WentForward":
+        return  updateResponse(model, action.goForwardResult);
+      default:
+        return Unknown.update(model, action);
+    }
+  };

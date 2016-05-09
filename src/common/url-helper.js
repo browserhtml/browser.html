@@ -4,48 +4,16 @@
  * license, v. 2.0. if a copy of the mpl was not distributed with this
  * file, you can obtain one at http://mozilla.org/mpl/2.0/. */
 
+import {URL, blank} from "./url"
 /*::
-import type {URI} from "./url-helper"
-import {URL} from "./url-helper"
+import type {URI} from "../common/prelude"
 */
-
-// @TODO:
-// Properly define interface off all functions as some assume that
-// hostname and protocol and pathname are always strings while others
-// assume they cane be null.
-
-const nullURL =
-  { href: ''
-  , origin: ''
-  , protocol: ''
-  , username: ''
-  , password: ''
-  , host: ''
-  , hostname: ''
-  , port: ''
-  , pathname: ''
-  , search: ''
-  , hash: ''
-  , searchParams:
-    ( window.URLSearchParams != null
-    ? new window.URLSearchParams()
-    : { append() { throw Error('Not Implemented') }
-      , delete() { throw Error('Not Implemented') }
-      , get() { return void(0) }
-      , getAll() { return [] }
-      , has() { return false }
-      , set() { throw Error('Not Implemented') }
-      , ['@@iterator']() { return [].values() }
-      , [Symbol.iterator]() { return [].values() }
-      }
-    )
-  }
 
 export const parse = (input/*:string*/)/*:URL*/ => {
   try {
     return new URL(input);
   } catch(_) {
-    return nullURL;
+    return blank;
   }
 }
 
@@ -117,8 +85,8 @@ export const isNotURL = (input/*:string*/)/*:boolean*/ => {
     str = 'http://' + str;
   }
   try {
-    new URL(str);
-    return false;
+    // Electron does not throw on `new URL('foo bar')`.
+    return new URL(str).hostname.includes('%20');
   } catch (e) {
     return true;
   }

@@ -231,6 +231,14 @@ const style = Style.createSheet({
   fieldBlured: {
 
   },
+  fieldEmpty: {
+    // Temporary fix until Servo has a better placeholder style:
+    // https://github.com/servo/servo/issues/10561
+    color: '#A9A9A9',
+  },
+  fieldNotEmpty: {
+
+  },
   inactive: {
     opacity: 0,
     pointerEvents: 'none'
@@ -280,6 +288,10 @@ export const view =
         , ( model.isFocused
           ? style.fieldFocused
           : style.fieldBlured
+          )
+        , ( model.value.length == 0
+          ? style.fieldEmpty
+          : style.fieldNotEmpty
           )
         ),
       type: 'text',

@@ -1,10 +1,11 @@
 /* @flow */
 
-import {Effects, Task, html, forward} from "reflex"
+import {Effects, Task, html, thunk, forward} from "reflex"
 import {merge, always} from "../common/prelude"
 import {ok, error} from "../common/result"
 import * as Runtime from "../common/runtime"
 import * as Unknown from "../common/unknown"
+import * as Style from "../common/style"
 
 /*::
 import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} from "reflex"
@@ -34,12 +35,14 @@ export type Gist =
 
 export type Model <model, action> =
   { status: 'Idle' | 'Pending'
+  , description: string
   }
 
 export type Action <model, action> =
   | { type: "NoOp" }
   | { type: "Debuggee", debuggee: action }
   | { type: "PrintSnapshot" }
+  | { type: "PrintedSnapshot" }
   | { type: "PublishSnapshot" }
   | { type: "PublishedSnapshot", result: Result<Error, Gist> }
 
@@ -54,6 +57,7 @@ type Step <model, action> =
 const NoOp = always({ type: "NoOp" });
 const PrintSnapshot = { type: "PrintSnapshot" };
 const PublishSnapshot = { type: "PublishSnapshot" };
+const PrintedSnapshot = always({ type: "PrintedSnapshot" });
 const PublishedSnapshot = /*::<model, action>*/
   (result/*:Result<Error, Gist>*/)/*:Action<model, action>*/ =>
   ( { type: "PublishedSnapshot"
@@ -63,7 +67,9 @@ const PublishedSnapshot = /*::<model, action>*/
 
 export const init = /*::<model, action, flags>*/
   ()/*:Step<model, action>*/ =>
-  ( [ { status: "Idle"}
+  ( [ { status: "Idle"
+      , description: ""
+      }
     , Effects.none
     ]
   )
@@ -76,6 +82,8 @@ export const update = /*::<model, action>*/
   ? nofx(model)
   : action.type === "PrintSnapshot"
   ? printSnapshot(model)
+  : action.type === "PrintedSnapshot"
+  ? printedSnapshot(model)
   : action.type === "PublishSnapshot"
   ? publishSnapshot(model)
   : action.type === "PublishedSnapshot"
@@ -102,21 +110,34 @@ const createSnapshot = /*::<model, action>*/
     }
   })
 
+
 const printSnapshot = /*::<model, action>*/
   (model/*:Model<model, action>*/)/*:Step<model, action>*/ =>
-  [ model
-  , Effects.task
-    ( createSnapshot(model)
-      .chain(snapshot => Unknown.log(`\n\n${snapshot}\n\n`))
-      .map(ok)
-      .capture(reason => Task.succeed(error(reason)))
+  [ merge(model, { status: 'Pending', description: 'Printing...' })
+  , Effects.batch
+    ( [ Effects.task
+        ( createSnapshot(model)
+          .chain(snapshot => Unknown.log(`\n\n${snapshot}\n\n`))
+          .map(ok)
+          .capture(reason => Task.succeed(error(reason)))
+        )
+        .map(NoOp)
+      , Effects.task
+        ( Task.sleep(200) )
+        .map(PrintedSnapshot)
+      ]
     )
-    .map(NoOp)
-  ]
+  ];
+
+const printedSnapshot = /*::<model, action>*/
+  (model/*:Model<model, action>*/)/*:Step<model, action>*/ =>
+  [ merge(model, { status: 'Idle', description: '' })
+  , Effects.none
+  ];
 
 const publishSnapshot = /*::<model, action>*/
   (model/*:Model<model, action>*/)/*:Step<model, action>*/ =>
-  [ merge(model, {status: "Pending"})
+  [ merge(model, {status: "Pending", description: "Publishing..." })
   , Effects.task
     ( createSnapshot(model)
       .chain(uploadSnapshot)
@@ -130,7 +151,7 @@ const publishedSnapshot = /*::<model, action>*/
   ( model/*:Model<model, action>*/
   , result/*:Result<Error, Gist>*/
   )/*:Step<model, action>*/ =>
-  [ merge(model, {status: "Idle"})
+  [ merge(model, {status: "Idle", description: "" })
   , Effects.task
     ( result.isError
     ? Unknown.error(result.error)
@@ -164,8 +185,55 @@ const uploadSnapshot =
     )
   });
 
+export const render = /*::<model, action>*/
+  ( model/*:Model<model, action>*/
+  , address/*:Address<Action<model, action>>*/
+  )/*:DOM*/ =>
+  html.dialog
+  ( { id: "record"
+    , style: Style.mix
+      ( styleSheet.base
+      , ( model.status === 'Pending'
+        ? styleSheet.flash
+        : styleSheet.noflash
+        )
+      )
+    , open: true
+    }
+  , [ html.h1(null, [model.description])
+    ]
+  );
+
 export const view = /*::<model, action>*/
   ( model/*:Model<model, action>*/
   , address/*:Address<Action<model, action>>*/
   )/*:DOM*/ =>
-  html.noscript()
+  thunk
+  ( "record"
+  , render
+  , model
+  , address
+  );
+
+
+const styleSheet = Style.createSheet
+  ( { base:
+      { position: "absolute"
+      , pointerEvents: "none"
+      , background: "#fff"
+      , opacity: 0
+      , height: "100%"
+      , width: "100%"
+      , transitionDuration: "50ms"
+      // @TODO: Enable once this works properly on servo.
+      // , transitionProperty: "opacity"
+      , transitionTimingFunction: "ease"
+      , textAlign: "center"
+      , lineHeight: "100vh"
+      }
+    , flash:
+      { opacity: 0.9
+      }
+    , noflash: null
+    }
+  );

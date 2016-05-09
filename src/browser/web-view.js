@@ -22,7 +22,6 @@ import * as Stopwatch from '../common/stopwatch';
 import {Style, StyleSheet} from '../common/style';
 import {readTitle, isDark, canGoBack} from './web-view/util';
 import * as Driver from '@driver';
-import * as URL from '../common/url-helper';
 import * as Focusable from '../common/focusable';
 import * as Easing from 'eased';
 import * as MozBrowserFrame from './web-view/moz-browser-frame';
@@ -180,17 +179,21 @@ const OverflowChanged =
   , Page.OverflowChanged
   );
 
-const TabAction = action =>
-  ( action.type === "Close"
-  ? Close
-  : action.type === "Select"
-  ? Select
-  : action.type === "Activate"
-  ? Activate
-  : { type: "Tab"
-    , source: action
+const TabAction = action => {
+    switch (action.type) {
+      case "Close":
+        return Close;
+      case "Select":
+        return Select;
+      case "Activate":
+        return Activate;
+      default:
+        return {
+          type: "Tab"
+          , source: action
+        };
     }
-  );
+  };
 
 const ProgressAction =
   action =>
@@ -458,96 +461,88 @@ const close = model =>
   [ model, Effects.receive(Closed) ];
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
-  ( action.type === "NoOp"
-  ? [ model, Effects.none ]
-  : action.type === "Select"
-  ? select(model)
-  : action.type === "Selected"
-  ? [ model, Effects.none ]
-
-  : action.type === "Unselect"
-  ? unselect(model)
-  : action.type === "Unselected"
-  ? [ model, Effects.none ]
-
-  : action.type === "Activate"
-  ? activate(model)
-  : action.type === "Activated"
-  ? activated(model)
-  : action.type === "Deactivate"
-  ? deactivate(model)
-  : action.type === "Deactivated"
-  ? deactivated(model)
-  : action.type === "Focus"
-  ? focus(model)
-  : action.type === "Blur"
-  ? updateShell(model, action)
-
-  : action.type === 'Load'
-  ? load(model, action.uri)
+  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+    switch (action.type) {
+      case "NoOp":
+        return [ model, Effects.none ];
+      case "Select":
+        return select(model);
+      case "Selected":
+        return [ model, Effects.none ];
+      case "Unselect":
+        return unselect(model);
+      case "Unselected":
+        return [ model, Effects.none ];
+      case "Activate":
+        return activate(model);
+      case "Activated":
+        return activated(model);
+      case "Deactivate":
+        return deactivate(model);
+      case "Deactivated":
+        return deactivated(model);
+      case "Focus":
+        return focus(model);
+      case "Blur":
+        return updateShell(model, action);
+      case "Load":
+        return load(model, action.uri);
 
   // Dispatch
-
-  : action.type === "LoadStart"
-  ? startLoad(model, action.time)
-
-  : action.type === "LoadEnd"
-  ? endLoad(model, action.time)
-
-  : action.type === "Connect"
-  ? connect(model, action.time)
-
-  : action.type === "LocationChanged"
-  ? changeLocation(model, action.uri, action.canGoBack, action.canGoForward)
-
-  : action.type === "SecurityChanged"
-  ? updateSecurity(model, action)
-  : action.type === "TitleChanged"
-  ? updatePage(model, action)
-  : action.type === "IconChanged"
-  ? updatePage(model, action)
-  : action.type === "MetaChanged"
-  ? updatePage(model, action)
-  : action.type === "FirstPaint"
-  ? updatePage(model, action)
-  : action.type === "DocumentFirstPaint"
-  ? updatePage(model, action)
-  : action.type === "LoadFail"
-  ? [ model
-    , Effects.task(Unknown.warn(action))
-      .map(NoOp)
-    ]
-
-  : action.type === "Close"
-  ? close(model)
+      case "LoadStart":
+        return startLoad(model, action.time);
+      case "LoadEnd":
+        return endLoad(model, action.time);
+      case "Connect":
+        return connect(model, action.time);
+      case "LocationChanged":
+        return changeLocation(model, action.uri, action.canGoBack, action.canGoForward);
+      case "SecurityChanged":
+        return updateSecurity(model, action);
+      case "TitleChanged":
+        return updatePage(model, action);
+      case "IconChanged":
+        return updatePage(model, action);
+      case "MetaChanged":
+        return updatePage(model, action);
+      case "FirstPaint":
+        return updatePage(model, action);
+      case "DocumentFirstPaint":
+        return updatePage(model, action);
+      case "LoadFail":
+        return [ model
+          , Effects.task(Unknown.warn(action))
+            .map(NoOp)
+          ];
+      case "Close":
+        return close(model);
 
   // Force push actions.
   // We forward these up to WebViews.
-  : action.type === "PushDown"
-  ? [ model, Effects.receive(PushedDown) ]
+      case "PushDown":
+        return [ model, Effects.receive(PushedDown) ];
 
   // Animation
-  : action.type === "SelectAnimation"
-  ? updateSelectAnimation(model, action.action)
+      case "SelectAnimation":
+        return updateSelectAnimation(model, action.action);
 
   // Delegate
-
-  : action.type === "Progress"
-  ? updateProgress(model, action.progress)
-  : action.type === "Shell"
-  ? updateShell(model, action.shell)
-  : action.type === "Page"
-  ? updatePage(model, action.page)
-  : action.type === "Tab"
-  ? updateTab(model, action.source)
-  : action.type === "Security"
-  ? updateSecurity(model, action.security)
-  : action.type === "Navigation"
-  ? updateNavigation(model, action.navigation)
-
-  : Unknown.update(model, action)
-  );
+      case "Progress":
+        return updateProgress(model, action.progress);
+      case "Shell":
+        return updateShell(model, action.shell);
+      case "Page":
+        return updatePage(model, action.page);
+      case "Tab":
+        return updateTab(model, action.source);
+      case "Security":
+        return updateSecurity(model, action.security);
+      case "Navigation":
+        return updateNavigation(model, action.navigation);
+      default:
+        return Unknown.update(model, action);
+    }
+  };
 
 const topBarHeight = '27px';
 const comboboxHeight = '21px';

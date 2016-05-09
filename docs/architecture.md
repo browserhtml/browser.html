@@ -515,5 +515,5 @@ export const view = (model, address) => html.div({
 [counter list example]:https://jsbin.com/yiqiya/edit?js,output
 [removable counter list example]:https://jsbin.com/hicuni/edit?js,output
 [pure functions]:http://en.wikipedia.org/wiki/Pure_function
-[browser.html]:https://github.com/mozilla/browser.html
+[browser.html]:https://github.com/browserhtml/browserhtml
 [react]:http://facebook.github.io/react/

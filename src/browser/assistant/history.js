@@ -61,18 +61,14 @@ const pendingRequests = Object.create(null);
 
 const abort =
   (id/*:number*/)/*:Task<Never, number>*/ =>
-  Task.future(() => new Promise(resolve => {
-
-  }));
+  new Task(succeed => void(0))
 
 const search =
   ( id/*:number*/
   , input/*:string*/
   , limit/*:number*/
   )/*:Task<Never, Result<Error, Array<Match>>>*/ =>
-  Task.future(() => new Promise(resolve => {
-
-  }));
+  new Task(succeed => void(0))
 
 
 export const init =
@@ -205,7 +201,7 @@ const innerView =
 
 export const render =
   (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
-  html.embed
+  html.section
   ( null
   , model.items.map
     ( (uri, index) =>

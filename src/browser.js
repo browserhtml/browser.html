@@ -692,117 +692,119 @@ const updateResizeAnimation = (model, action) => {
 
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
-  ( action.type === 'SubmitInput'
-  ? submitInput(model)
-  : action.type === 'OpenWebView'
-  ? openWebView(model)
-  : action.type === 'OpenURL'
-  ? openURL(model, action.uri)
-  : action.type === 'ReceiveOpenURLNotification'
-  ? reciveOpenURLNotification(model)
-  : action.type === 'ExitInput'
-  ? exitInput(model)
-  : action.type === 'CreateWebView'
-  ? createWebView(model)
-  : action.type === 'EditWebView'
-  ? editWebView(model)
-  : action.type === 'ShowWebView'
-  ? showWebView(model)
-  : action.type === 'ShowTabs'
-  ? showTabs(model)
-  : action.type === 'SelectWebView'
-  ? selectWebView(model)
-  // @TODO Change this to toggle tabs instead.
-  : action.type === 'Escape'
-  ? showTabs(model)
-  : action.type === 'AttachSidebar'
-  ? attachSidebar(model)
-  : action.type === 'DetachSidebar'
-  ? detachSidebar(model)
-  : action.type === 'ReloadRuntime'
-  ? reloadRuntime(model)
+  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+    switch (action.type) {
+      case 'SubmitInput':
+        return submitInput(model);
+      case 'OpenWebView':
+        return openWebView(model);
+      case 'OpenURL':
+        return openURL(model, action.uri);
+      case 'ReceiveOpenURLNotification':
+        return reciveOpenURLNotification(model);
+      case 'ExitInput':
+        return exitInput(model);
+      case 'CreateWebView':
+        return createWebView(model);
+      case 'EditWebView':
+        return editWebView(model);
+      case 'ShowWebView':
+        return showWebView(model);
+      case 'ShowTabs':
+        return showTabs(model);
+      case 'SelectWebView':
+        return selectWebView(model);
+      // @TODO Change this to toggle tabs instead.
+      case 'Escape':
+        return showTabs(model);
+      case 'AttachSidebar':
+        return attachSidebar(model);
+      case 'DetachSidebar':
+        return detachSidebar(model);
+      case 'ReloadRuntime':
+        return reloadRuntime(model);
 
-  // Expand / Shrink animations
-  : action.type === "Expand"
-  ? expand(model)
-  : action.type === "Shrink"
-  ? shrink(model)
-  : action.type === "ResizeAnimation"
-  ? updateResizeAnimation(model, action.action)
-  : action.type === "Expanded"
-  ? expanded(model)
-  : action.type === "Shrinked"
-  ? shrinked(model)
+      // Expand / Shrink animations
+      case "Expand":
+        return expand(model);
+      case "Shrink":
+        return shrink(model);
+      case "ResizeAnimation":
+        return updateResizeAnimation(model, action.action);
+      case "Expanded":
+        return expanded(model);
+      case "Shrinked":
+        return shrinked(model);
 
-  // Delegate to the appropriate module
-  : action.type === 'Input'
-  ? updateInput(model, action.source)
-  : action.type === 'Suggest'
-  ? updateInput
-    ( model
-    , Input.Suggest
-      ( { query: model.assistant.query
-        , match: action.source.match
-        , hint: action.source.hint
-        }
-      )
-    )
+      // Delegate to the appropriate module
+      case 'Input':
+        return updateInput(model, action.source);
+      case 'Suggest':
+        return updateInput(
+          model
+          , Input.Suggest
+            ( { query: model.assistant.query
+              , match: action.source.match
+              , hint: action.source.hint
+              }
+            )
+          );
+      case 'BlurInput':
+        return updateInput(model, Input.Blur);
+      case 'WebViews':
+        return updateWebViews(model, action.source);
+      case 'SelectTab':
+        return updateWebViews(model, action.source);
+      case 'ActivateTabByID':
+        return updateWebViews(model, action.activateTabByID);
+      case 'ActivateTab':
+        return updateWebViews(model, action.activateTab);
 
-  : action.type === 'BlurInput'
-  ? updateInput(model, Input.Blur)
+      case 'Shell':
+        return updateShell(model, action.source);
+      case 'Focus':
+        return updateShell(model, Shell.Focus);
 
-  : action.type === 'WebViews'
-  ? updateWebViews(model, action.source)
-  : action.type === 'SelectTab'
-  ? updateWebViews(model, action.source)
-  : action.type === 'ActivateTabByID'
-  ? updateWebViews(model, action.activateTabByID)
-  : action.type === 'ActivateTab'
-  ? updateWebViews(model, action.activateTab)
+      // Assistant
+      case 'Assistant':
+        return updateAssistant(model, action.source);
+      case 'Query':
+        return updateQuery(model);
+      case 'SuggestNext':
+        return updateAssistant(model, Assistant.SuggestNext);
+      case 'SuggestPrevious':
+        return updateAssistant(model, Assistant.SuggestPrevious);
 
-  : action.type === 'Shell'
-  ? updateShell(model, action.source)
-  : action.type === 'Focus'
-  ? updateShell(model, Shell.Focus)
+      case 'Devtools':
+        return updateDevtools(model, action.action);
+      case 'Sidebar':
+        return updateSidebar(model, action.action);
+      case 'Overlay':
+        return updateOverlay(model, action.action);
 
-  // Assistant
-  : action.type === 'Assistant'
-  ? updateAssistant(model, action.source)
-  : action.type === 'Query'
-  ? updateQuery(model)
-  : action.type === 'SuggestNext'
-  ? updateAssistant(model, Assistant.SuggestNext)
-  : action.type === 'SuggestPrevious'
-  ? updateAssistant(model, Assistant.SuggestPrevious)
+      case 'Failure':
+        return [
+           model
+        , Effects
+          .task(Unknown.error(action.error))
+          .map(NoOp)
+        ];
 
-  : action.type === 'Devtools'
-  ? updateDevtools(model, action.action)
-  : action.type === 'Sidebar'
-  ? updateSidebar(model, action.action)
-  : action.type === 'Overlay'
-  ? updateOverlay(model, action.action)
+      // Ignore some actions.
+      case 'Reloaded':
+        return [ model, Effects.none ]
+      case 'PrintSnapshot':
+        return [model, Effects.none];
+      case 'UploadSnapshot':
+        return [model, Effects.none];
+      // TODO: Delegate to modules that need to do cleanup.
+      case 'LiveReload':
+        return [model, Effects.none];
 
-  : action.type === 'Failure'
-  ? [ model
-    , Effects
-      .task(Unknown.error(action.error))
-      .map(NoOp)
-    ]
-
-  // Ignore some actions.
-  : action.type === 'Reloaded'
-  ? [model, Effects.none]
-  : action.type === 'PrintSnapshot'
-  ? [model, Effects.none]
-  : action.type === 'UploadSnapshot'
-  ? [model, Effects.none]
-  // TODO: Delegate to modules that need to do cleanup.
-  : action.type === 'LiveReload'
-  ? [model, Effects.none]
-
-  : Unknown.update(model, action)
-  );
+      default:
+        return Unknown.update(model, action);
+    }
+  };
 
 const styleSheet = StyleSheet.create({
   root: {
@@ -869,12 +871,6 @@ export const view =
           , model.input
           , forward(address, InputAction)
           )
-        , thunk
-          ( 'devtools'
-          , Devtools.view
-          , model.devtools
-          , forward(address, DevtoolsAction)
-          )
         ]
       )
       , thunk
@@ -890,6 +886,13 @@ export const view =
       , Shell.view
       , model.shell
       , forward(address, ShellAction)
+      )
+
+    , thunk
+      ( 'devtools'
+      , Devtools.view
+      , model.devtools
+      , forward(address, DevtoolsAction)
       )
     ]
   );

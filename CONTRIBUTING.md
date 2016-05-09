@@ -4,8 +4,8 @@ We welcome contribution from everyone. Here are the guidelines if you are thinki
 
 Contributions to Browser.html or its dependencies should be made in the form of GitHub pull requests. Each pull request will be reviewed by a core contributor (someone with permission to land patches) and either landed in the main tree or given feedback for changes that would be required. All contributions should follow this format, even those from core contributors.
 
-- [Hacking Browser.html](https://github.com/mozilla/browser.html/wiki/Hacking-Browser.html) has some helpful tips for developers.
-- Looking for a [good first bug](https://github.com/mozilla/browser.html/labels/newcomers)?
+- [Hacking Browser.html](https://github.com/browserhtml/browserhtml/wiki/Hacking-Browser.html) has some helpful tips for developers.
+- Looking for a [good first bug](https://github.com/browserhtml/browserhtml/labels/newcomers)?
 
 
 ## Pull request checklist
@@ -24,8 +24,8 @@ The Browser.html has 2 major pieces:
 
 Development for the Browser.html UI happens in this repository. Work on Servo and Gecko happens in their respective repositories.
 
-* For issues tagged [graphene (servo)](https://github.com/mozilla/browser.html/labels/graphene%20%28servo%29). If the issue is with Servo, [file in Servo repository](https://github.com/servo/servo/issues/).
-* For issues tagged [graphene (gecko)](https://github.com/mozilla/browser.html/labels/graphene%20%gecko%29). Triage and file in [Bugzilla](http://bugzilla.mozilla.org/). When filed, post a link to issue and close.
+* For issues tagged [graphene (servo)](https://github.com/browserhtml/browserhtml/labels/graphene%20%28servo%29). If the issue is with Servo, [file in Servo repository](https://github.com/servo/servo/issues/).
+* For issues tagged [graphene (gecko)](https://github.com/browserhtml/browserhtml/labels/graphene%20%gecko%29). Triage and file in [Bugzilla](http://bugzilla.mozilla.org/). When filed, post a link to issue and close.
 
 
 ## Conduct
@@ -38,7 +38,7 @@ We follow the [Rust Code of Conduct](https://www.rust-lang.org/conduct.html).
 [![slack](https://browserhtml-slackin.herokuapp.com/badge.svg)](https://browserhtml-slackin.herokuapp.com/)
 
 - Browser.html contributors hang out in [browserhtml.slack.com](https://browserhtml.slack.com). Anyone can [get an invite](https://browserhtml-slackin.herokuapp.com/).
-- More information can be found on the [wiki](https://github.com/mozilla/browser.html/wiki)
+- More information can be found on the [wiki](https://github.com/browserhtml/browserhtml/wiki)
 
 
 ## Philosophy

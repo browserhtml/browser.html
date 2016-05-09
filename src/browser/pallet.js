@@ -64,11 +64,11 @@ export const create =
 
 export const requestCuratedColor =
   (uri/*:URI*/)/*:Task<Never, ?Theme>*/ =>
-  Task.future(() => {
+  new Task((succeed, fail) => {
     const hostname = getDomainName(uri);
-    return Promise.resolve
-      ( hostname == null
-      ? null
-      : curated[hostname]
-      );
+    Promise.resolve
+    ( hostname == null
+    ? null
+    : curated[hostname]
+    ).then(succeed, fail)
   });

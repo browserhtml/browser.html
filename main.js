@@ -11,6 +11,37 @@ const onQuit = function() {
   app.quit()
 };
 
+const encodeArgsAsQueryString =
+  args =>
+  args.reduce
+  ( ({flag, query}, arg) =>
+    ( /^--\w+$/.test(arg) // If new flag swap flag.
+    ? { flag: arg.substr(2)
+      , query:
+        ( query === ""
+        ? `${arg.substr(2)}`
+        : `${query}&${arg.substr(2)}`
+        )
+      }
+    : flag == null  // If there is no flag then skip.
+    ? { flag
+      , query
+      }
+    : { flag
+      , query:
+        ( ( query.endsWith(`&${flag}`) || query === flag )
+        ? `${query}=${encodeURIComponent(arg)}`
+        : `${query}&${flag}=${encodeURIComponent(arg)}`
+        )
+      }
+    )
+  , { flag: null
+    , query: ""
+    }
+  )
+  .query
+
+
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -21,12 +52,15 @@ var onReady = function() {
   ( { width: 800
     , height: 600
     , frame: false
+    , webPreferences:
+      { nodeIntegration: false
+      }
     }
   );
 
   // and load the index.html of the app.
   mainWindow.loadURL
-  (`file://${path.resolve(module.filename, '../dist/index.html')}`);
+  (`file://${path.resolve(module.filename, '../dist/index.html')}?${encodeArgsAsQueryString(process.argv.slice(2))}`);
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();

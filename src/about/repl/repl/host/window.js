@@ -70,7 +70,7 @@ const evalContext =
 
 export const evaluate =
   (id/*:ID*/, code/*:string*/)/*:Task<Never, EvaluationResult>*/ =>
-  Task.future(() => new Promise(resolve => {
+  new Task((succeed, fail) => void(new Promise((resolve, reject) => {
     try {
       const out = executeWith(evalContext, () => window.eval(code));
       evalContext.out[id] = out;
@@ -80,4 +80,4 @@ export const evaluate =
       evalContext.out[id] = exception;
       resolve(error(exception));
     }
-  }))
+  }).then(succeed, fail)))

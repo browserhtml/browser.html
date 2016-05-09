@@ -2,14 +2,14 @@
   "name": "browser.html",
   "description": "Experimental Servo browser built in HTML",
   "version": "0.1.5",
-  "homepage": "https://github.com/mozilla/browser.html",
+  "homepage": "https://github.com/browserhtml/browserhtml",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mozilla/browser.html.git",
-    "web": "https://github.com/mozilla/browser.html"
+    "url": "https://github.com/browserhtml/browserhtml.git",
+    "web": "https://github.com/browserhtml/browserhtml"
   },
   "bugs": {
-    "url": "http://github.com/mozilla/browser.html/issues/"
+    "url": "http://github.com/browserhtml/browserhtml/issues/"
   },
   "browser": {
     "@driver": "./src/driver/virtual-dom/index.js"
@@ -34,7 +34,7 @@
     "eased": "0.1.0",
     "pouchdb": "4.0.0",
     "querystring": "0.2.0",
-    "reflex": "0.2.0",
+    "reflex": "0.3.1",
     "reflex-virtual-dom-driver": "0.2.0",
     "tinycolor2": "1.1.2"
   },

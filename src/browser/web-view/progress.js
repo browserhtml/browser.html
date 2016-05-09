@@ -6,14 +6,41 @@
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {LoadProgress, Time, Model, Action} from "./progress"
+import type {Time, Float} from "../../common/prelude"
+
+// Implied to be 0.0 - 1.0 range
+export type LoadProgress = Float
+
+export type Display =
+  { opacity: number
+  , x: number
+  }
+
+export type Model =
+  { updateTime: Time
+  , loadStart: Time
+  , connectTime: Time
+  , loadEnd: Time
+  , display: Display
+  , ref: Ref.Model
+  }
+
+
+export type Action =
+  | { type: "Start", time: Time }
+  | { type: "LoadEnd", time: Time }
+  | { type: "Connect", time: Time }
+  | { type: "Tick", time: Time }
+  | { type: "NoOp" }
 */
 
-import {Effects, html} from 'reflex';
+import {Effects, Task, html} from 'reflex';
 import {ease, easeOutQuart, float} from 'eased';
 import {StyleSheet, Style} from '../../common/style';
 import {merge, always} from '../../common/prelude';
 import * as Unknown from '../../common/unknown';
+import * as Runtime from '../../common/runtime';
+import * as Ref from '../../common/ref';
 
 const second = 1000;
 
@@ -83,21 +110,20 @@ const progressLoaded = model => {
 
 export const progress =
   (model/*:Model*/)/*:LoadProgress*/ =>
-  ( model.status === 'Loaded'
+  ( model.loadEnd > 0
   ? progressLoaded(model)
-  : model.status === 'Loading'
+  : model.connectTime > 0
   ? progressLoading(model)
-  : model.status === 'Connecting'
+  : model.loadStart > 0
   ? progressConnecting(model)
-  : 0 // model.status === 'Idle'
+  : 0
   );
 
 // Start a new progress cycle.
 const start = (model, time) =>
   [ merge
     ( model
-    , { status: 'Connecting'
-      , loadStart: time
+    , { loadStart: time
       , loadEnd: null
       , updateTime: time
       , connectTime: null
@@ -107,17 +133,26 @@ const start = (model, time) =>
         }
       }
     )
-  , Effects.tick(Tick)
+  , ( Runtime.env.progressbar !== 'standalone'
+    ? Effects.tick(Tick)
+    : Effects.task(standalone.loadStart(model.ref, time))
+      .map(NoOp)
+    )
   ];
+
 
 const connect = (model, time) =>
   ( [ merge
       ( model
-      , { status: 'Loading'
-        , connectTime: time
+      , { connectTime: time
+        , updateTime: time
         }
       )
-    , Effects.none
+    , ( Runtime.env.progressbar !== 'standalone'
+      ? Effects.none
+      : Effects.task(standalone.connect(model.ref, time))
+        .map(NoOp)
+      )
     ]
   );
 
@@ -125,12 +160,15 @@ const connect = (model, time) =>
 const loadEnd = (model, time) =>
   ( [ merge
       ( model
-      , { status: 'Loaded'
-        , loadEnd: time
+      , { loadEnd: time
         , updateTime: time
         }
       )
-    , Effects.none
+    , ( Runtime.env.progressbar !== 'standalone'
+      ? Effects.none
+      : Effects.task(standalone.loadEnd(model.ref, time))
+        .map(NoOp)
+      )
     ]
   );
 
@@ -150,10 +188,14 @@ const animate = (model, time) =>
     ]
   );
 
+
 const end = (model, time) =>
   ( [ merge
       ( model
-      , { status: 'Idle'
+      , { loadStart: 0
+        , loadEnd: 0
+        , updateTime: 0
+        , connectTime: 0
         , display:
           { opacity: 0
           , x: 0
@@ -165,7 +207,7 @@ const end = (model, time) =>
   );
 
 const tick = (model, time) =>
-  ( model.status === 'Idle'
+  ( model.loadStart === 0
   ? [ model
     , Effects.task
       ( Unknown.warn(`Received Tick when progress was Idle: https://github.com/servo/servo/issues/10322`)
@@ -178,11 +220,11 @@ const tick = (model, time) =>
 
 export const init =
   ()/*:[Model, Effects<Action>]*/ =>
-  [ { status: 'Idle'
-    , loadStart: null
-    , loadEnd: null
-    , updateTime: null
-    , connectTime: null
+  [ { loadStart: 0
+    , loadEnd: 0
+    , updateTime: 0
+    , connectTime: 0
+    , ref: Ref.create()
     , display:
       { opacity: 0
       , x: 0
@@ -192,25 +234,101 @@ export const init =
   ];
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
-  ( action.type === 'Start'
-  ? start(model, action.time)
-  : action.type === 'LoadEnd'
-  ? loadEnd(model, action.time)
-  : action.type === 'Connect'
-  ? connect(model, action.time)
-  : action.type === 'Tick'
-  ? tick(model, action.time)
-  : action.type === 'NoOp'
-  ? nofx(model)
-  : Unknown.update(model, action)
-  );
+  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+    switch (action.type) {
+      case "Start":
+        return start(model, action.time);
+      case "LoadEnd":
+        return loadEnd(model, action.time);
+      case "Connect":
+        return connect(model, action.time);
+      case "Tick":
+        return tick(model, action.time);
+      case "NoOp":
+        return nofx(model);
+      default:
+        return Unknown.update(model, action);
+    }
+  };
 
 const nofx =
   model =>
   [ model
   , Effects.none
   ]
+
+
+//
+const standalone =
+  { loadStart:
+      (ref, time) =>
+      Ref
+      .deref(ref)
+      .chain(element => new Task((succeed, fail) => {
+        const onTick =
+          time => {
+            // @FlowIgnore
+            element.updateTime = time;
+            // @FlowIgnore
+            if (progress(element) < 1) {
+              window.requestAnimationFrame(onTick);
+              standalone.drawLoading(element, time);
+            }
+            else {
+              standalone.drawIdle(element, time)
+            }
+          };
+
+
+        // @FlowIgnore
+        element.loadStart = time;
+        // @FlowIgnore
+        element.updateTime = time;
+        // @FlowIgnore
+        element.connectTime = 0;
+        // @FlowIgnore
+        element.loadEnd = 0;
+
+        window.requestAnimationFrame(onTick);
+      }))
+  , connect:
+      (ref, time) =>
+      Ref
+      .deref(ref)
+      .chain(element => new Task((succeed, fail) => {
+        // @FlowIgnore
+        element.connectTime = time;
+      }))
+  , loadEnd:
+      (ref, time) =>
+      Ref
+      .deref(ref)
+      .chain(element => new Task((succeed, fail) => {
+        // @FlowIgnore
+        element.loadEnd = time;
+      }))
+  , drawLoading:
+      (element, time) => {
+        // @FlowIgnore
+        const x = progress(element);
+        element.style.transform = `translateX(${x * 100 - 100}%)`;
+        element.style.opacity = `1`;
+      }
+  , drawIdle:
+      (element, time) => {
+        // @FlowIgnore
+        element.loadStart = 0;
+        // @FlowIgnore
+        element.updateTime = 0;
+        // @FlowIgnore
+        element.connectTime = 0;
+        // @FlowIgnore
+        element.loadEnd = 0;
+
+        element.style.transform = `translateX(-100%)`;
+        element.style.opacity = `0`;
+      }
+  }
 
 const style = StyleSheet.create({
   bar: {
@@ -233,6 +351,7 @@ const style = StyleSheet.create({
 export const view =
   (model/*:Model*/)/*:DOM*/ =>
   html.div({
+    [model.ref.name]: model.ref.value,
     className: 'progressbar',
     style: Style(style.bar, {
       backgroundColor: '#4A90E2',

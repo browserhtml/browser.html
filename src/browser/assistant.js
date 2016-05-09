@@ -10,7 +10,6 @@ import * as History from "./assistant/history"
 import * as Search from "./assistant/search"
 import {StyleSheet, Style} from '../common/style';
 import {cursor} from '../common/cursor';
-import {prettify} from '../common/url-helper';
 import * as Unknown from '../common/unknown';
 
 /*::
