@@ -130,7 +130,7 @@ const search =
   , input/*:string*/
   , limit/*:number*/
   )/*:Task<Never, Result<Error, Array<Match>>>*/ =>
-  Task.future(() => new Promise(resolve => {
+  new Task((succeed, fail) => {
     const request = new XMLHttpRequest({ mozSystem: true });
     pendingRequests[id] = request;
     const uri = `http://ac.duckduckgo.com/ac/?q=${input}&type=list`
@@ -145,15 +145,15 @@ const search =
 
     request.onerror = event => {
       delete pendingRequests[id];
-      resolve(decodeFailure(event));
+      succeed(decodeFailure(event));
     };
     request.onload = event => {
       delete pendingRequests[id];
-      resolve(decodeResponse(event));
+      succeed(decodeResponse(event));
     };
 
     request.send();
-  }));
+  });
 
 
 export const init =

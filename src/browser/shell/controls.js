@@ -194,7 +194,7 @@ const styleSheet = StyleSheet.create({
   container: {
     height: '12px',
     position: 'absolute',
-    width: '50px',
+    width: '52px',
     top: '8px',
     left: '8px',
     zIndex: 200

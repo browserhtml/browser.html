@@ -119,68 +119,70 @@ export const init =
   ];
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
-  ( action.type === 'LoadStart'
-  ? [ merge
-      ( model
-      , { title: null
-        , icon: null
-        , faviconURI: null
+  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+    switch (action.type) {
+      case "LoadStart":
+        return  [merge( model
+                      , { title: null
+                        , icon: null
+                        , faviconURI: null
 
-        , themeColor: null
-        , curatedColor: null
+                        , themeColor: null
+                        , curatedColor: null
 
-        , pallet: Pallet.blank
-        }
-      )
-    , Effects
-        .task(Pallet.requestCuratedColor(model.uri))
-        .map(CuratedColorUpdate)
-    ]
-  : action.type === 'LoadEnd'
-  // If you go back / forward `DocumentFirstPaint` is not fired there for
-  // we schedule a `WebView.Page.DocumentFakePaint` action to be send back
-  // in asynchronously on `LoadEnd` that gives us an opportunity to
-  // re-generate pallet when going back / forward. Also we schedule async
-  // action because colors to generate pallet from are fetched async and
-  // LoadEnd seems to fire occasionaly sooner that colors are feteched.
-  ? [ model, Effects.receive(CreatePallet) ]
-  : action.type === 'TitleChanged'
-  ? [ merge(model, {title: action.title}), Effects.none ]
-  : action.type === 'IconChanged'
-  ? updateIcon(model, action)
-  : action.type === 'MetaChanged'
-  ? updateMeta(model, action)
-  : action.type === 'CuratedColorUpdate'
-  ? [ merge(model, {curatedColor: action.color}), Effects.none ]
-  : action.type === 'DocumentFirstPaint'
-  ? [ model, Effects.receive(CreatePallet) ]
-  : action.type === 'CreatePallet'
-  ? updatePallet(model)
-  : action.type === 'LocationChanged'
-  // Sometimes location change is triggered even though actual location
-  // remains same. In such case we want to keep extracted colors as we
-  // may not get those this time around.
-  ? ( action.uri !== model.uri
-    ? [ merge
-          ( model
-          , { uri: action.uri
-            , curatedColor: null
-            , themeColor: null
-            }
-          )
-      , Effects
-          .task(Pallet.requestCuratedColor(action.uri))
-          .map(CuratedColorUpdate)
-      ]
-    : [ model, Effects.none ]
-    )
+                        , pallet: Pallet.blank
+                        }
+                      )
+                , Effects
+                    .task(Pallet.requestCuratedColor(model.uri))
+                    .map(CuratedColorUpdate)
+                ];
+      case "LoadEnd":
+        // If you go back / forward `DocumentFirstPaint` is not fired there for
+        // we schedule a `WebView.Page.DocumentFakePaint` action to be send back
+        // in asynchronously on `LoadEnd` that gives us an opportunity to
+        // re-generate pallet when going back / forward. Also we schedule async
+        // action because colors to generate pallet from are fetched async and
+        // LoadEnd seems to fire occasionaly sooner that colors are feteched.
+        return [ model, Effects.receive(CreatePallet) ];
+      case "TitleChanged":
+        return  [ merge(model, {title: action.title}), Effects.none ];
+      case "IconChanged":
+        return  updateIcon(model, action);
+      case "MetaChanged":
+        return  updateMeta(model, action);
+      case "CuratedColorUpdate":
+        return  [ merge(model, {curatedColor: action.color}), Effects.none ];
+      case "DocumentFirstPaint":
+        return  [ model, Effects.receive(CreatePallet) ];
+      case "CreatePallet":
+        return  updatePallet(model);
+      case "LocationChanged":
+        // Sometimes location change is triggered even though actual location
+        // remains same. In such case we want to keep extracted colors as we
+        // may not get those this time around.
+        return  ( action.uri !== model.uri
+                ? [ merge
+                      ( model
+                      , { uri: action.uri
+                        , curatedColor: null
+                        , themeColor: null
+                        }
+                      )
+                  , Effects
+                      .task(Pallet.requestCuratedColor(action.uri))
+                      .map(CuratedColorUpdate)
+                  ]
+                : [ model, Effects.none ]
+                );
   // Ignore
-  : action.type === 'FirstPaint'
-  ? [ model, Effects.none ]
-  : action.type === 'OverflowChanged'
-  ? [ model, Effects.none ]
-  : action.type === 'Scrolled'
-  ? [ model, Effects.none ]
-  : Unknown.update(model, action)
-  );
+      case "FirstPaint":
+        return  [ model, Effects.none ];
+      case "OverflowChanged":
+        return  [ model, Effects.none ];
+      case "Scrolled":
+        return  [ model, Effects.none ];
+      default:
+      return Unknown.update(model, action);
+    }
+  };

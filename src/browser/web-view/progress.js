@@ -234,19 +234,22 @@ export const init =
   ];
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
-  ( action.type === 'Start'
-  ? start(model, action.time)
-  : action.type === 'LoadEnd'
-  ? loadEnd(model, action.time)
-  : action.type === 'Connect'
-  ? connect(model, action.time)
-  : action.type === 'Tick'
-  ? tick(model, action.time)
-  : action.type === 'NoOp'
-  ? nofx(model)
-  : Unknown.update(model, action)
-  );
+  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+    switch (action.type) {
+      case "Start":
+        return start(model, action.time);
+      case "LoadEnd":
+        return loadEnd(model, action.time);
+      case "Connect":
+        return connect(model, action.time);
+      case "Tick":
+        return tick(model, action.time);
+      case "NoOp":
+        return nofx(model);
+      default:
+        return Unknown.update(model, action);
+    }
+  };
 
 const nofx =
   model =>

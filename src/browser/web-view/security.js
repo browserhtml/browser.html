@@ -34,26 +34,28 @@ export const init =
   ]
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
-  ( action.type === "LoadStart"
-  ? [ merge
-      ( model
-      , { state: 'insecure'
-        , secure: false
-        , extendedValidation: false
-        }
-      )
-    , Effects.none
-    ]
-  : action.type === 'SecurityChanged'
-  ? [ merge
-      ( model
-      , { state: action.state
-        , secure: action.state === 'secure'
-        , extendedValidation: action.extendedValidation
-        }
-      )
-    , Effects.none
-    ]
-  : Unknown.update(model, action)
-  );
+  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+    switch (action.type) {
+      case "LoadStart":
+        return [
+                merge (model
+                      , { state: 'insecure'
+                        , secure: false
+                        , extendedValidation: false
+                        }
+                      )
+                , Effects.none
+               ];
+      case "SecurityChanged":
+        return [ merge(model
+                      , { state: action.state
+                        , secure: action.state === 'secure'
+                        , extendedValidation: action.extendedValidation
+                        }
+                      )
+                , Effects.none
+               ];
+      default:
+        return Unknown.update(model, action);
+    }
+  };
