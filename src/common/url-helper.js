@@ -13,7 +13,7 @@ export const parse = (input/*:string*/)/*:URL*/ => {
   try {
     return new URL(input);
   } catch(_) {
-    return (nullURL/*::, new URL(input)*/);
+    return nullURL;
   }
 }
 
