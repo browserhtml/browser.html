@@ -6,7 +6,7 @@
 
 export const URL = window.URL;
 export const URLSearchParams = window.URLSearchParams;
-export const blank =
+export const nullURL =
   { href: ''
   , origin: ''
   , protocol: ''

@@ -39,4 +39,4 @@ declare export class URLSearchParams {
   @@iterator(): Iterator<[USVString, USVString]>;
 };
 
-declare export var blank:URL;
+declare export var nullURL:URL;

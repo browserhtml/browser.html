@@ -36,7 +36,7 @@ export const init =
     ( [ fx.map(ControlsAction)
       , // Check if window is actually focused
         Effects
-        .task(fetchFocus)
+        .perform(fetchFocus)
         .map(isFocused => isFocused ? Focus : Blur)
       ]
     )
@@ -118,7 +118,7 @@ const blur = model =>
 const minimized = (model, result) =>
   ( result.isOk
   ? [ merge(model, {isMinimized: true}), Effects.none ]
-  : [ model, Effects.task(Unknown.error(result.error)) ]
+  : [ model, Effects.perform(Unknown.error(result.error)) ]
   );
 
 const fullscreenToggled = (model, result) =>
@@ -127,33 +127,33 @@ const fullscreenToggled = (model, result) =>
     ( merge(model, {isMaximized: !model.isMaximized})
     , Controls.FullscreenToggled
     )
-  : [ model, Effects.task(Unknown.error(result.error)) ]
+  : [ model, Effects.perform(Unknown.error(result.error)) ]
   );
 
 const closed = (model, result) =>
   ( result.isOk
   ? [ model, Effects.none ]
-  : [ model, Effects.task(Unknown.error(result.error)) ]
+  : [ model, Effects.perform(Unknown.error(result.error)) ]
   );
 
 const close = model =>
   [ model
   , Effects
-    .task(Runtime.quit)
+    .perform(Runtime.quit)
     .map(Closed)
   ];
 
 const minimize = model =>
   [ model
   , Effects
-    .task(Runtime.minimize)
+    .perform(Runtime.minimize)
     .map(Minimized)
   ];
 
 const toggleFullscreen = model =>
   [ model
   , Effects
-    .task(Runtime.toggleFullscreen)
+    .perform(Runtime.toggleFullscreen)
     .map(FullscreenToggled)
   ];
 

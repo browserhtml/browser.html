@@ -337,7 +337,7 @@ export const init =
         : Effects.receive(Activate)
         )
       , ( options.ref != null
-        ? Effects.task
+        ? Effects.perform
           ( Driver.forceReplace
             ( `#web-view-${id}`
             , options.ref
@@ -511,7 +511,7 @@ export const update =
         return updatePage(model, action);
       case "LoadFail":
         return [ model
-          , Effects.task(Unknown.warn(action))
+          , Effects.perform(Unknown.warn(action))
             .map(NoOp)
           ];
       case "Close":

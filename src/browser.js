@@ -75,7 +75,7 @@ export const init = ()/*:[Model, Effects<Action>]*/ => {
       , overlayFx.map(OverlayAction)
       , Effects.receive(CreateWebView)
       , Effects
-        .task(Runtime.receive('mozbrowseropenwindow'))
+        .perform(Runtime.receive('mozbrowseropenwindow'))
         .map(OpenURL)
       ]
     );
@@ -552,7 +552,7 @@ const openURL = (model, uri) =>
 const reciveOpenURLNotification = model =>
   [ model
   , Effects
-    .task(Runtime.receive('mozbrowseropenwindow'))
+    .perform(Runtime.receive('mozbrowseropenwindow'))
     .map(OpenURL)
   ];
 
@@ -595,7 +595,7 @@ const detachSidebar = model =>
 const reloadRuntime = model =>
   [ model
   , Effects
-    .task(Runtime.reload)
+    .perform(Runtime.reload)
     .map(always(Reloaded))
   ];
 
@@ -786,7 +786,7 @@ export const update =
         return [
            model
         , Effects
-          .task(Unknown.error(action.error))
+          .perform(Unknown.error(action.error))
           .map(NoOp)
         ];
 

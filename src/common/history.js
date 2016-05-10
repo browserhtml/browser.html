@@ -16,6 +16,6 @@ export const readTitle = /*::<value, model:{title?:string}>*/
 
 export const query = /*::<action>*/
   (input/*:string*/, limit/*:Integer*/)/*:Effects<action>*/ =>
-  Effects.task(new Task(deliver => {
+  Effects.perform(new Task(deliver => {
 
   }))

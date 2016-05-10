@@ -135,7 +135,7 @@ export const init =
 const updateResponse = (model, result) =>
   ( result.isOk
   ? [model, Effects.none]
-  : [model, Effects.task(report(result.error)).map(NoOp)]
+  : [model, Effects.perform(report(result.error)).map(NoOp)]
   );
 
 export const update =
@@ -146,14 +146,14 @@ export const update =
                 ? [ merge(model, {canGoForward: action.result.value})
                   , Effects.none
                   ]
-                : [ model, Effects.task(report(action.result.error)) ]
+                : [ model, Effects.perform(report(action.result.error)) ]
                 );
       case "CanGoBackChanged":
         return  ( action.result.isOk
                 ? [ merge(model, {canGoBack: action.result.value})
                   , Effects.none
                   ]
-                : [ model, Effects.task(report(action.result.error)) ]
+                : [ model, Effects.perform(report(action.result.error)) ]
                 );
       case "LocationChanged":
         // In the case where LocationChanged carries information about
@@ -176,10 +176,10 @@ export const update =
                     , { currentURI: action.uri
                       })
               , Effects.batch([ Effects
-                                  .task(canGoBack(model.id))
+                                  .perform(canGoBack(model.id))
                                   .map(CanGoBackChanged)
                               , Effects
-                                  .task(canGoForward(model.id))
+                                  .perform(canGoForward(model.id))
                                   .map(CanGoForwardChanged)
                               ])
               ];
@@ -194,25 +194,25 @@ export const update =
       case "Stop":
         return  [ model
                 , Effects
-                    .task(stop(model.id))
+                    .perform(stop(model.id))
                     .map(Stopped)
                 ];
       case "Reload":
         return  [ model
                 , Effects
-                    .task(reload(model.id))
+                    .perform(reload(model.id))
                     .map(Reloaded)
                 ];
       case "GoBack":
         return  [ model
                 , Effects
-                    .task(goBack(model.id))
+                    .perform(goBack(model.id))
                     .map(WentBack)
                 ];
       case "GoForward":
         return  [ model
                 , Effects
-                    .task(goForward(model.id))
+                    .perform(goForward(model.id))
                     .map(WentForward)
                 ];
       case "Stopped":

@@ -129,35 +129,35 @@ export const update =
         return [
           model
           , Effects
-              .task(zoomIn(model.id, model.zoom))
+              .perform(zoomIn(model.id, model.zoom))
               .map(ZoomChanged)
           ];
       case "ZoomOut":
         return [
           model
           , Effects
-              .task(zoomOut(model.id, model.zoom))
+              .perform(zoomOut(model.id, model.zoom))
               .map(ZoomChanged)
           ];
       case "ResetZoom":
         return [
           model
           , Effects
-              .task(resetZoom(model.id))
+              .perform(resetZoom(model.id))
               .map(ZoomChanged)
           ];
       case "MakeVisible":
         return [
           model
           , Effects
-              .task(setVisibility(model.id, true))
+              .perform(setVisibility(model.id, true))
               .map(VisibilityChanged)
           ];
       case "MakeNotVisible":
         return [
           model
           , Effects
-              .task(setVisibility(model.id, false))
+              .perform(setVisibility(model.id, false))
               .map(VisibilityChanged)
           ];
       case "VisibilityChanged":
@@ -167,7 +167,7 @@ export const update =
                   ]
                 : [ model
                   , Effects
-                    .task(report(action.visibilityResult.error))
+                    .perform(report(action.visibilityResult.error))
                     .map(NoOp)
                   ]
                 );
@@ -176,7 +176,7 @@ export const update =
                 ? [ merge(model, {zoom: action.zoomResult.value}), Effects.none ]
                 : [ model
                   , Effects
-                    .task(report(action.zoomResult.error))
+                    .perform(report(action.zoomResult.error))
                     .map(NoOp)
                   ]
                 );

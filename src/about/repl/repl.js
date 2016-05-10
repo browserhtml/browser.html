@@ -140,7 +140,7 @@ const evaluate =
   (model, {id, source}) =>
   [ model
   , Effects
-    .task(Host.evaluate(id, source.value))
+    .perform(Host.evaluate(id, source.value))
     .map(Print(id, source.version))
   ];
 

@@ -128,10 +128,10 @@ const updateQuery =
   ? [ model, Effects.none ]
   : [ merge(model, {query, queryID: model.queryID + 1 })
     , Effects.batch
-      ( [ Effects.task(abort(model.queryID))
+      ( [ Effects.perform(abort(model.queryID))
           .map(Abort)
 
-        , Effects.task
+        , Effects.perform
           (search(model.queryID + 1, query, model.limit))
           .map(UpdateMatches)
         ]
@@ -145,7 +145,7 @@ const updateMatches = (model, result) =>
   ? replaceMatches(model, result.value)
   : [ model
     , Effects
-      .task(Unknown.error(result.error))
+      .perform(Unknown.error(result.error))
       .map(NoOp)
     ]
   )

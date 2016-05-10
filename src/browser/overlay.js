@@ -166,7 +166,7 @@ const style = Style.createSheet({
     height: '100vh'
   },
   capturing: {
-    pointerEvents: 'all'
+    pointerEvents: 'auto'
   },
   passing: {
     pointerEvents: 'none'

@@ -115,14 +115,14 @@ const printSnapshot = /*::<model, action>*/
   (model/*:Model<model, action>*/)/*:Step<model, action>*/ =>
   [ merge(model, { status: 'Pending', description: 'Printing...' })
   , Effects.batch
-    ( [ Effects.task
+    ( [ Effects.perform
         ( createSnapshot(model)
           .chain(snapshot => Unknown.log(`\n\n${snapshot}\n\n`))
           .map(ok)
           .capture(reason => Task.succeed(error(reason)))
         )
         .map(NoOp)
-      , Effects.task
+      , Effects.perform
         ( Task.sleep(200) )
         .map(PrintedSnapshot)
       ]
@@ -138,7 +138,7 @@ const printedSnapshot = /*::<model, action>*/
 const publishSnapshot = /*::<model, action>*/
   (model/*:Model<model, action>*/)/*:Step<model, action>*/ =>
   [ merge(model, {status: "Pending", description: "Publishing..." })
-  , Effects.task
+  , Effects.perform
     ( createSnapshot(model)
       .chain(uploadSnapshot)
       .map(ok)
@@ -152,7 +152,7 @@ const publishedSnapshot = /*::<model, action>*/
   , result/*:Result<Error, Gist>*/
   )/*:Step<model, action>*/ =>
   [ merge(model, {status: "Idle", description: "" })
-  , Effects.task
+  , Effects.perform
     ( result.isError
     ? Unknown.error(result.error)
     : Unknown.log(`Snapshot published as gist #${result.value.id}: ${result.value.html_url}`)

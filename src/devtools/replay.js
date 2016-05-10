@@ -92,7 +92,7 @@ const receiveSnapshot = /*::<model, action>*/
 const loadSnapshot = /*::<model, action>*/
   (model/*:Model<model, action>*/)/*:Step<model, action>*/ =>
   [ model
-  , Effects.task(fetchSnapshot(model.snapshotURI))
+  , Effects.perform(fetchSnapshot(model.snapshotURI))
     .map(Snapshot)
   ]
 

@@ -231,17 +231,17 @@ const updateQuery =
         , items: []
         }
       )
-    , Effects.task
+    , Effects.perform
       (abort(model.queryID))
       .map(Abort)
     ]
   : [ merge(model, {query, queryID: model.queryID + 1 })
     , Effects.batch
-      ( [ Effects.task
+      ( [ Effects.perform
           (abort(model.queryID))
           .map(Abort)
 
-        , Effects.task
+        , Effects.perform
           (search(model.queryID + 1, query, model.limit))
           .map(UpdateMatches)
         ]
@@ -254,7 +254,7 @@ const updateMatches = (model, result) =>
   ( result.isOk
   ? replaceMatches(model, result.value)
   : [ model
-    , Effects.task(Unknown.error(result.error))
+    , Effects.perform(Unknown.error(result.error))
       .map(NoOp)
     ]
   );
