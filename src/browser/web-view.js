@@ -22,7 +22,6 @@ import * as Stopwatch from '../common/stopwatch';
 import {Style, StyleSheet} from '../common/style';
 import {readTitle, isDark, canGoBack} from './web-view/util';
 import * as Driver from '@driver';
-import * as URL from '../common/url-helper';
 import * as Focusable from '../common/focusable';
 import * as Easing from 'eased';
 import * as MozBrowserFrame from './web-view/moz-browser-frame';
@@ -338,7 +337,7 @@ export const init =
         : Effects.receive(Activate)
         )
       , ( options.ref != null
-        ? Effects.task
+        ? Effects.perform
           ( Driver.forceReplace
             ( `#web-view-${id}`
             , options.ref
@@ -512,7 +511,7 @@ export const update =
         return updatePage(model, action);
       case "LoadFail":
         return [ model
-          , Effects.task(Unknown.warn(action))
+          , Effects.perform(Unknown.warn(action))
             .map(NoOp)
           ];
       case "Close":
@@ -585,7 +584,6 @@ const styleSheet = StyleSheet.create({
     backgroundColor: 'white',
     MozWindowDragging: 'no-drag',
     WebkitAppRegion: 'no-drag',
-    display: 'block',
   },
 
   topbar: {

@@ -124,7 +124,7 @@ export const init =
   (names/*:Array<Name>*/)/*:[Model, Effects<Action>]*/ =>
   [ null
   , Effects
-    .task(fetch(names))
+    .perform(fetch(names))
     .map(Fetched)
   ];
 
@@ -137,7 +137,7 @@ const updateSettings = (model, settings) =>
   , Effects.batch
     ( Object
       .keys(settings)
-      .map(name => Effects.task(observe(name)).map(Updated))
+      .map(name => Effects.perform(observe(name)).map(Updated))
     )
   ];
 

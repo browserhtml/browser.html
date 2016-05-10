@@ -50,7 +50,7 @@ export const update =
     // @TODO: Retaining a focus is little tricky (see #803)
     // Prevent input lost focus in create-web-view mode set it back.
     // : action.type === 'BlurInput'
-    // ? [ model, Effects.tick(_ => Browser.FocusInput) ]
+    // ? [ model, Effects.perform(Task.requestAnimationFrame().map(_ => Browser.FocusInput)) ]
 
     // On ever other action just delegate.
     : Browser.update(model, action)

@@ -1,0 +1,42 @@
+/* @flow */
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+export type USVString = string
+
+declare export class URL {
+  static createObjectURL(blob: Blob): string;
+  static createObjectURL(mediaSource: MediaSource): string;
+  static createFor(blob: Blob): string;
+  static revokeObjectURL(url: string): void;
+
+  constructor(url:USVString, base?:USVString):void;
+
+  href: USVString;
+  origin: USVString;
+  protocol: USVString;
+  username: USVString;
+  password: USVString;
+  host: USVString;
+  hostname: USVString;
+  port: USVString;
+  pathname: USVString;
+  search: USVString;
+  searchParams: URLSearchParams;
+hash: USVString;
+}
+
+declare export class URLSearchParams {
+  constructor(init?:USVString|URLSearchParams):void;
+  append(name:USVString, value:USVString):void;
+  delete(name:USVString):void;
+  get(name:USVString):?USVString;
+  getAll(name:USVString):Array<USVString>;
+  has(name:USVString):boolean;
+  set(name:USVString, value:USVString):void;
+  @@iterator(): Iterator<[USVString, USVString]>;
+};
+
+declare export var nullURL:URL;

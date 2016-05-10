@@ -78,8 +78,8 @@ export const update =
   ( action.type === "Press"
   ? [ merge(model, {isChecked: !model.isChecked})
     , ( model.isChecked
-      ? Effects.task(Task.succeed(Uncheck))
-      : Effects.task(Task.succeed(Check))
+      ? Effects.perform(Task.succeed(Uncheck))
+      : Effects.perform(Task.succeed(Check))
       )
     ]
 

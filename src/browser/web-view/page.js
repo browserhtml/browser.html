@@ -134,7 +134,7 @@ export const update =
                         }
                       )
                 , Effects
-                    .task(Pallet.requestCuratedColor(model.uri))
+                    .perform(Pallet.requestCuratedColor(model.uri))
                     .map(CuratedColorUpdate)
                 ];
       case "LoadEnd":
@@ -170,7 +170,7 @@ export const update =
                         }
                       )
                   , Effects
-                      .task(Pallet.requestCuratedColor(action.uri))
+                      .perform(Pallet.requestCuratedColor(action.uri))
                       .map(CuratedColorUpdate)
                   ]
                 : [ model, Effects.none ]

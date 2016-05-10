@@ -134,8 +134,8 @@ const start = (model, time) =>
       }
     )
   , ( Runtime.env.progressbar !== 'standalone'
-    ? Effects.tick(Tick)
-    : Effects.task(standalone.loadStart(model.ref, time))
+    ? Effects.perform(Task.requestAnimationFrame().map(Tick))
+    : Effects.perform(standalone.loadStart(model.ref, time))
       .map(NoOp)
     )
   ];
@@ -150,7 +150,7 @@ const connect = (model, time) =>
       )
     , ( Runtime.env.progressbar !== 'standalone'
       ? Effects.none
-      : Effects.task(standalone.connect(model.ref, time))
+      : Effects.perform(standalone.connect(model.ref, time))
         .map(NoOp)
       )
     ]
@@ -166,7 +166,7 @@ const loadEnd = (model, time) =>
       )
     , ( Runtime.env.progressbar !== 'standalone'
       ? Effects.none
-      : Effects.task(standalone.loadEnd(model.ref, time))
+      : Effects.perform(standalone.loadEnd(model.ref, time))
         .map(NoOp)
       )
     ]
@@ -184,7 +184,7 @@ const animate = (model, time) =>
           }
         }
       )
-    , Effects.tick(Tick)
+    , Effects.perform(Task.requestAnimationFrame().map(Tick))
     ]
   );
 
@@ -209,7 +209,7 @@ const end = (model, time) =>
 const tick = (model, time) =>
   ( model.loadStart === 0
   ? [ model
-    , Effects.task
+    , Effects.perform
       ( Unknown.warn(`Received Tick when progress was Idle: https://github.com/servo/servo/issues/10322`)
       ).map(NoOp)
     ]

@@ -108,28 +108,28 @@ const toggle = model =>
 const restart = model =>
   [ model
   , Effects
-    .task(Runtime.restart)
+    .perform(Runtime.restart)
     .map(Report)
   ];
 
 const cleanRestart = model =>
   [ model
   , Effects
-    .task(Runtime.cleanRestart)
+    .perform(Runtime.cleanRestart)
     .map(Report)
   ];
 
 const cleanReload = model =>
   [ model
   , Effects
-    .task(Runtime.cleanReload)
+    .perform(Runtime.cleanReload)
     .map(Report)
   ];
 
 const changeSetting = (model, {name, value}) =>
   [ model
   , Effects
-    .task(Settings.change({[name]: value}))
+    .perform(Settings.change({[name]: value}))
     .map(Settings.Changed)
     .map(SettingsAction)
   ];
@@ -141,7 +141,7 @@ const report =
   , ( result.isOk
     ? Effects.none
     : Effects
-      .task(Unknown.error(result.error))
+      .perform(Unknown.error(result.error))
       .map(NoOP)
     )
   ];

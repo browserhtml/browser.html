@@ -4,7 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects} from 'reflex';
+import {Effects, Task} from 'reflex';
 import {merge, always} from "../common/prelude";
 import * as Unknown from "../common/unknown";
 
@@ -31,20 +31,20 @@ export const update =
   ( action.type === "End"
   ? [ null, Effects.none ]
   : action.type === "Start"
-  ? [ null, Effects.tick(Tick) ]
+  ? [ null, Effects.perform(Task.requestAnimationFrame().map(Tick)) ]
   : action.type === "Tick"
   ? ( model == null
     ? [ {
           time: action.time,
           elapsed: 0
         }
-      , Effects.tick(Tick)
+      , Effects.perform(Task.requestAnimationFrame().map(Tick))
       ]
     : [ merge(model, {
           time: action.time,
           elapsed: model.elapsed + (action.time - model.time)
         })
-      , Effects.tick(Tick)
+      , Effects.perform(Task.requestAnimationFrame().map(Tick))
       ]
     )
   : Unknown.update(model, action)

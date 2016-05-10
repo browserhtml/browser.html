@@ -89,10 +89,10 @@ export const init = ()/*:[Model, Effects<Action>]*/ => {
 
   const fx = Effects.batch
     ( [ Effects
-        .task(Settings.fetch(["*"]))
+        .perform(Settings.fetch(["*"]))
         .map(Fetched)
       , Effects
-        .task(Settings.observe("*"))
+        .perform(Settings.observe("*"))
         .map(Changed)
       ]
     );
@@ -104,7 +104,7 @@ const observe =
   model =>
   [ model
   , Effects
-    .task(Settings.observe("*"))
+    .perform(Settings.observe("*"))
     .map(Changed)
   ];
 
@@ -157,7 +157,7 @@ const change =
     } else {
       const output =
         [ model
-        , Effects.task
+        , Effects.perform
           (Unknown.error(result.error))
           .map(NoOp)
         ];
@@ -170,7 +170,7 @@ const save =
   (model, changes) =>
   [ model
   , Effects
-    .task(Settings.change(changes))
+    .perform(Settings.change(changes))
     .map(Saved)
   ];
 

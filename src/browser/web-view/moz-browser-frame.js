@@ -33,6 +33,7 @@ export const view =
     , 'data-features': model.features
     , style: Style.mix
       ( styleSheet.base
+      , frameStyleSheet.mozbrowser
       , ( model.page.pallet.background != null
         ? { backgroundColor: model.page.pallet.background }
         : null
@@ -226,5 +227,13 @@ const decodeAuthenticate =
     , host: detail.host
     , realm: detail.realm
     , isProxy: detail.isProxy
+    }
+  );
+
+
+const frameStyleSheet = Style.createSheet
+  ( { mozbrowser:
+      { display: "block"
+      }
     }
   );

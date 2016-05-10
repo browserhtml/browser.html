@@ -233,7 +233,7 @@ const updateByID = (model, id, action) => {
     return (
       [ model
       , Effects
-        .task(Unknown.error(`WebView with id: ${id} is not found`))
+        .perform(Unknown.error(`WebView with id: ${id} is not found`))
         .map(NoOp)
       ]
     );
@@ -257,7 +257,7 @@ const updateActive = (model, action) =>
   : model.selector == null
   ? [ model
     , Effects
-      .task(Unknown.error(`Can not update non-existing active WebView`))
+      .perform(Unknown.error(`Can not update non-existing active WebView`))
       .map(NoOp)
     ]
   : updateByID(model, model.selector.active, action)
@@ -330,7 +330,7 @@ const closeActive = model =>
   : model.selector == null
   ? [ model
     , Effects
-      .task(Unknown.error(`Unable to close active WebView if none is Active`))
+      .perform(Unknown.error(`Unable to close active WebView if none is Active`))
       .map(NoOp)
     ]
   : closeByID(model, model.selector.active)
@@ -340,7 +340,7 @@ const closeByID = (model, id) =>
   ( isEmpty(model)
   ? [ model
     , Effects
-      .task(Unknown.error(`Can not close by id: ${id} since there are 0 WebViews open`))
+      .perform(Unknown.error(`Can not close by id: ${id} since there are 0 WebViews open`))
       .map(NoOp)
     ]
   : model.selector == null
@@ -395,7 +395,7 @@ const activateSelected = model =>
   : model.selector == null
   ? [ model
     , Effects
-      .task(Unknown.error(`Unable to activate selected WebView if no WebView is selected`))
+      .perform(Unknown.error(`Unable to activate selected WebView if no WebView is selected`))
       .map(NoOp)
     ]
   : activateByID(model, model.selector.selected)
@@ -405,7 +405,7 @@ const activateByID = (model, id) =>
   ( isEmpty(model)
   ? [ model
     , Effects
-      .task(Unknown.warn(`Can not activate web-view by id: ${id} since there are 0 web-views`))
+      .perform(Unknown.warn(`Can not activate web-view by id: ${id} since there are 0 web-views`))
       .map(NoOp)
     ]
   // If there was no selection we create new one and just delegate to an
@@ -456,7 +456,7 @@ const selectByOffset = (model, offset) =>
   : model.selector == null
   ? [ model
     , Effects
-      .task(Unknown.error(`Unable to change selected WebView if no WebView is seleted`))
+      .perform(Unknown.error(`Unable to change selected WebView if no WebView is seleted`))
       .map(NoOp)
     ]
   : selectByID
