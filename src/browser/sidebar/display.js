@@ -1,5 +1,7 @@
 /* @flow */
 
+import * as Easing from "eased";
+
 /*::
 import type {Integer, Float} from "../../common/prelude"
 */
@@ -56,4 +58,18 @@ export const open = new Model
   , 1
   , 1
   , 288
+  )
+
+export const interpolate =
+  ( from/*:Model*/
+  , to/*:Model*/
+  , progress/*:Float*/
+  )/*:Model*/ =>
+  new Model
+  ( Easing.float(from.x, to.x, progress)
+  , Easing.float(from.shadow, to.shadow, progress)
+  , Easing.float(from.spacing, to.spacing, progress)
+  , Easing.float(from.toolbarOpacity, to.toolbarOpacity, progress)
+  , Easing.float(from.titleOpacity, to.titleOpacity, progress)
+  , Easing.float(from.tabWidth, to.tabWidth, progress)
   )

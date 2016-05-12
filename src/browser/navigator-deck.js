@@ -24,6 +24,8 @@ export type Action =
 
 export const ZoomOut = { type: "ZoomOut" }
 export const ZoomIn = { type: "ZoomIn" }
+export const Expand = { type: "Expand" }
+export const Shrink = { type: "Shrink" }
 
 
 export class Model {
@@ -173,7 +175,10 @@ const zoomOut =
     , model.deck
     , Animation.transition
       ( model.animation
-      , Display.expose
+      , ( model.shrink
+        ? Display.exposeShrinked
+        : Display.expose
+        )
       , 500
       , now
       )
@@ -185,9 +190,8 @@ const shrink =
   ( model, now ) =>
   ( model.shrink
   ? nofx(model)
-  : model.zoom
-  ? startAnimation
-    ( model.zoom
+  : startAnimation
+    ( true
     , true
     , model.deck
     , Animation.transition
@@ -195,14 +199,6 @@ const shrink =
       , Display.shrinked
       , 200
       , now
-      )
-    )
-  : nofx
-    ( new Model
-      ( model.zoom
-      , true
-      , model.deck
-      , model.animation
       )
     )
   )
@@ -256,11 +252,11 @@ export const render =
   , address/*:Address<Action>*/
   )/*:DOM*/ =>
   html.div
-  ( { className: 'navigator-stack'
+  ( { className: 'navigator-deck'
     , style:
         Style.mix
         ( styleSheet.base
-        , { width: `calc(100vw - ${model.animation.state.rightOffset}px)`
+        , { borderRight: `solid transparent ${model.animation.state.rightOffset}px`
           , transform: `translate3d(0, 0, ${model.animation.state.depth}px)`
           }
         )
@@ -285,9 +281,14 @@ export const view =
 const styleSheet = Style.createSheet
   ( { base:
       { position: 'absolute'
-      , perspective: '1000px'
-      , height: '100vh'
-      , width: '100vw'
+      , height: '100%'
+      , width: '100%'
+      , willChange: 'transform, padding-right'
+      , top: 0
+      , left: 0
+      , overflow: 'hidden'
+      , transformOrigin: 'left center'
+      , boxSizing: 'border-box'
       }
     }
   )

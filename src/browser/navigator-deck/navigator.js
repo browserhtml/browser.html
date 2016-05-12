@@ -7,6 +7,7 @@
 import {Effects, html, forward, thunk} from "reflex"
 import {merge, always, batch} from "../../common/prelude";
 import {cursor} from "../../common/cursor";
+import * as Style from "../../common/style";
 
 import * as Assistant from "./navigator/assistant";
 import * as Overlay from './navigator/overlay';
@@ -349,7 +350,9 @@ const updateAssistant = cursor
 export const render =
   (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
   html.div
-  ( { className: `navigator-${model.id}` }
+  ( { className: `navigator-${model.id}`
+    , style: styleSheet.base
+    }
   , [ Input.view(model.input, forward(address, TagInput))
     , Assistant.view(model.assistant, forward(address, TagAssistant))
     , Output.view(model.output, forward(address, TagOutput))
@@ -364,3 +367,15 @@ export const view =
   , model
   , address
   )
+
+const styleSheet = Style.createSheet
+  ( { base:
+      { width: '100%'
+      , height: '100%'
+      , position: 'absolute'
+      , top: 0
+      , left: 0
+      , overflow: 'hidden'
+      }
+    }
+  );

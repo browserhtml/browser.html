@@ -13,9 +13,12 @@ export class Model {
   }
 }
 
+
+
 export const normal = new Model(0, 0)
 export const shrinked = new Model(0, 50)
 export const expose = new Model(-200, 0)
+export const exposeShrinked = new Model(-200, 50)
 
 export const interpolate =
   ( from/*:Model*/

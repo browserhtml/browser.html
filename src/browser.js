@@ -211,7 +211,7 @@ const SidebarAction = action =>
   : action.type === "CloseTab"
   ? Close(action.id)
   : action.type === "Tabs"
-  ? Modify(action.source.id, action.source)
+  ? Modify(action.tabs.id, action.tabs)
   : action.type === "Attach"
   ? AttachSidebar
   : action.type === "Detach"
@@ -470,10 +470,10 @@ export const BlurInput/*:Action*/ =
 // export const SuggestNext/*:Action*/ = { type: "SuggestNext" };
 // export const SuggestPrevious/*:Action*/ = { type: "SuggestPrevious" };
 // export const Suggest = tag('Suggest');
-export const Expand/*:Action*/ = {type: "Expand"};
-export const Expanded/*:Action*/ = {type: "Expanded"};
-export const Shrink/*:Action*/ = {type: "Shrink"};
-export const Shrinked/*:Action*/ = {type: "Shrinked"};
+// export const Expand/*:Action*/ = {type: "Expand"};
+// export const Expanded/*:Action*/ = {type: "Expanded"};
+// export const Shrink/*:Action*/ = {type: "Shrink"};
+// export const Shrinked/*:Action*/ = {type: "Shrinked"};
 
 
 // Following Browser actions directly delegate to a `WebViews` module, there for
@@ -539,6 +539,8 @@ const CloseSidebar = SidebarAction(Sidebar.Close);
 
 const ZoomOutNavigators = NavigatorsAction(Navigators.ZoomOut);
 const ZoomInNavigators = NavigatorsAction(Navigators.ZoomIn);
+const ShrinkNavigators = NavigatorsAction(Navigators.Shrink);
+const ExpandNavigators = NavigatorsAction(Navigators.Expand);
 
 const DockSidebar =
   { type: "Sidebar"
@@ -733,8 +735,7 @@ const attachSidebar = model =>
   ( update
   , merge(model, {mode: 'show-web-view'})
   , [ DockSidebar
-    , Shrink
-    , CloseSidebar
+    , ShrinkNavigators
     // , HideOverlay
     // , FoldWebViews
     // , FocusWebView
@@ -746,7 +747,7 @@ const detachSidebar = model =>
   ( update
   , model
   , [ UndockSidebar
-    , Expand
+    , ExpandNavigators
     ]
   );
 

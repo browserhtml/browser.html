@@ -14,6 +14,7 @@ import * as Unknown from "../common/unknown";
 import * as Stopwatch from "../common/stopwatch";
 import * as Easing from "eased";
 import * as Display from "./sidebar/display";
+import * as Animation from "../common/animation";
 
 
 /*::
@@ -21,6 +22,7 @@ import type {Integer, Float} from "../common/prelude"
 import type {Address, DOM} from "reflex"
 import type {ID} from "./sidebar/tabs"
 import * as Navigators from "./navigator-deck/deck"
+import {performance} from "../common/performance"
 
 export type Action =
   | { type: "CreateWebView" }
@@ -29,22 +31,11 @@ export type Action =
   | { type: "Open" }
   | { type: "Close" }
   | { type: "Activate" }
-  | { type: "Animation"
-    , action: Stopwatch.Action
-    }
-  | { type: "AnimationEnd" }
-  | { type: "CloseTab"
-    , id: Tabs.ID
-    }
-  | { type: "ActivateTab"
-    , id: Tabs.ID
-    }
-  | { type: "Tabs"
-    , source: Tabs.Action
-    }
-  | { type: "Toolbar"
-    , source: Toolbar.Action
-    }
+  | { type: "Animation", animation: Animation.Action }
+  | { type: "CloseTab", id: Tabs.ID }
+  | { type: "ActivateTab", id: Tabs.ID }
+  | { type: "Tabs", tabs: Tabs.Action }
+  | { type: "Toolbar", toolbar: Toolbar.Action }
 */
 
 
@@ -55,21 +46,18 @@ export class Model {
   /*::
   isAttached: boolean;
   isOpen: boolean;
-  animation: Stopwatch.Model;
-  display: Display.Model;
+  animation: Animation.Model<Display.Model>;
   toolbar: Toolbar.Model;
   */
   constructor(
     isAttached/*: boolean*/
   , isOpen/*: boolean*/
-  , animation/*: Stopwatch.Model*/
-  , display/*: Display.Model*/
   , toolbar/*: Toolbar.Model*/
+  , animation/*: Animation.Model<Display.Model>*/
   ) {
     this.isAttached = isAttached
     this.isOpen = isOpen
     this.animation = animation
-    this.display = display
     this.toolbar = toolbar
   }
 }
@@ -85,23 +73,41 @@ const styleSheet = Style.createSheet({
   , width: '320px'
   , boxSizing: 'border-box'
   , zIndex: 2 // @TODO This is a hack to avoid resizing new tab / edit tab views.
+  , overflow: 'hidden'
   }
 });
 
 
-export const init = ()/*:[Model, Effects<Action>]*/ => {
-  const [toolbar, fx] = Toolbar.init();
-  const display = Display.closed;
-  const model = new Model
-  ( false
-  , false
-  , null
-  , display
-  , toolbar
-  );
+export const init =
+  ( isAttached/*:boolean*/ = false
+  , isOpen/*:boolean*/ = false
+  )/*:[Model, Effects<Action>]*/ => {
+    const display =
+      ( isOpen
+      ? Display.open
+      : isAttached
+      ? Display.attached
+      : Display.closed
+      );
 
-  return [model, fx.map(ToolbarAction)]
-}
+    const [toolbar, $toolbar] = Toolbar.init();
+    const [animation, $animation] = Animation.init(display, null);
+
+    const model = new Model
+    ( isAttached
+    , isOpen
+    , toolbar
+    , animation
+    );
+
+    const fx = Effects.batch
+    ( [ $toolbar.map(tagToolbar)
+      , $animation.map(tagAnimation)
+      ]
+    )
+
+    return [model, fx]
+  }
 
 export const CreateWebView/*:Action*/ =
   { type: 'CreateWebView'
@@ -126,166 +132,224 @@ export const ActivateTab/*:(id:ID) => Action*/ =
   id =>
   ({type: "ActivateTab", id});
 
-const TabsAction = action =>
-  (  action.type === "Close"
-  ? CloseTab(action.id)
-  : action.type === "Activate"
-  ? ActivateTab(action.id)
-  : { type: "Tabs"
-    , source: action
+const tagTabs =
+  action => {
+    switch (action.type) {
+      case "Close":
+        return CloseTab(action.id);
+      case "Activate":
+        return ActivateTab(action.id);
+      default:
+        return {
+          type: "Tabs"
+        , tabs: action
+        }
+    }
+  };
+
+
+const tagToolbar =
+  action => {
+    switch (action.type) {
+      case "Attach":
+        return Attach;
+      case "Detach":
+        return Detach;
+      case "CreateWebView":
+        return CreateWebView;
+      default:
+        return {
+          type: "Toolbar"
+        , toolbar: action
+        , action
+        }
+    }
+  };
+
+const tagAnimation =
+  action =>
+  ( { type: "Animation"
+    , animation: action
     }
   );
 
-
-const AnimationAction = action => ({type: "Animation", action});
-const AnimationEnd = always({type: "AnimationEnd"});
-
-const ToolbarAction = action =>
-  ( action.type === "Attach"
-  ? Attach
-  : action.type === "Detach"
-  ? Detach
-  : action.type === "CreateWebView"
-  ? CreateWebView
-  : { type: "Toolbar"
-    , source: action
-    , action
-    }
-  );
-
-
-
-const updateToolbar = cursor({
-  get: model => model.toolbar,
-  set: (model, toolbar) => merge(model, {toolbar}),
-  tag: ToolbarAction,
-  update: Toolbar.update
-});
-
-const updateStopwatch = cursor({
-  tag: AnimationAction,
-  get: model => model.animation,
-  set: (model, animation) => merge(model, {animation}),
-  update: Stopwatch.update
-});
-
-const interpolate = (from, to, progress) =>
-  new Display.Model
-  ( Easing.float(from.x, to.x, progress)
-  , Easing.float(from.shadow, to.shadow, progress)
-  , Easing.float(from.spacing, to.spacing, progress)
-  , Easing.float(from.toolbarOpacity, to.toolbarOpacity, progress)
-  , Easing.float(from.titleOpacity, to.titleOpacity, progress)
-  , Easing.float(from.tabWidth, to.tabWidth, progress)
+const animate =
+  (animation, action) =>
+  Animation.updateWith
+  ( Easing.easeOutCubic
+  , Display.interpolate
+  , animation
+  , action
   )
 
 
-const animationProjection = model =>
-  ( model.isOpen
-  ? Display.open
-  : model.isAttached
-  ? Display.attached
-  : Display.closed
+const updateToolbar = cursor
+  ( { get: model => model.toolbar
+    , set:
+      (model, toolbar) => new Model
+      ( model.isAttached
+      , model.isOpen
+      , toolbar
+      , model.animation
+      )
+    , tag: tagToolbar
+    , update: Toolbar.update
+    }
   );
 
-const animationDuration = model =>
+const updateAnimation = cursor
+  ( { get: model => model.animation
+    , set:
+      (model, animation) =>
+      new Model
+      ( model.isAttached
+      , model.isOpen
+      , model.toolbar
+      , animation
+      )
+    , tag: tagAnimation
+    , update: animate
+    }
+  )
+
+const nofx = /*::<model, action>*/
+  (model/*:model*/)/*:[model, Effects<action>]*/ =>
+  [ model
+  , Effects.none
+  ]
+
+const startAnimation =
+  (isAttached, isOpen, toolbar, [animation, fx]) =>
+  [ new Model
+    ( isAttached
+    , isOpen
+    , toolbar
+    , animation
+    )
+  , fx.map(tagAnimation)
+  ]
+
+
+const open =
+  (model, now) =>
   ( model.isOpen
-  ? 550
-  : 200
+  ? nofx(model)
+  : startAnimation
+    ( model.isAttached
+    , true
+    , model.toolbar
+    , Animation.transition
+      ( model.animation
+      , Display.open
+      , 550
+      , now
+      )
+    )
   );
 
+const close =
+  (model, now) =>
+  ( !model.isOpen
+  ? nofx(model)
+  : startAnimation
+    ( model.isAttached
+    , false
+    , model.toolbar
+    , Animation.transition
+      ( model.animation
+      , ( model.isAtttached
+        ? Display.attached
+        : Display.closed
+        )
+      , 200
+      , now
+      )
+    )
+  );
 
-const updateAnimation = (model, action) => {
-  const [{animation}, fx] = updateStopwatch(model, action.action)
-  const duration = animationDuration(model)
+const attach =
+  (model, now) =>
+  ( model.isAttached
+  ? nofx(model)
+  : assemble
+    ( true
+    , false
+    , Toolbar.update(model.toolbar, Toolbar.Attach)
+    , Animation.transition
+      ( model.animation
+      , Display.attached
+      , ( model.isOpen
+        ? 200
+        : 100
+        )
+      , now
+      )
+    )
+  )
 
-  // @TODO: We should not be guessing what is the starnig point
-  // that makes no sense & is likely to be incorrect at a times.
-  // To fix it we need to ditch this easing library in favor of
-  // something that will give us more like spring physics.
-  const begin
-    = !model.isOpen
-    ? Display.open
-    : model.isAttached
-    ? Display.attached
-    : Display.closed;
-
-  const projection = animationProjection(model)
-
-
-  return (animation && duration > animation.elapsed)
-    ? [ new Model
-        ( model.isAttached
-        , model.isOpen
-        , animation
-        , Easing.ease
-          ( Easing.easeOutCubic
-          , interpolate
-          , begin
-          , projection
-          , duration
-          , animation.elapsed
+const detach =
+  ( model, now ) =>
+  ( !model.isAttached
+  ? nofx(model)
+  : assemble
+    ( false
+    , model.isOpen
+    , Toolbar.update(model.toolbar, Toolbar.Detach)
+    , ( model.isOpen
+      ? nofx(model.animation)
+      : Animation.transition
+        ( model.animation
+        , Display.closed
+        , ( model.isOpen
+          ? 200
+          : 100
           )
-        , model.toolbar
+        , now
         )
-      , fx
+      )
+    )
+  );
+
+const assemble =
+  ( isAttached
+  , isOpen
+  , [toolbar, $toolbar]
+  , [animation, $animation]
+  ) =>
+  [ new Model
+    ( isAttached
+    , isOpen
+    , toolbar
+    , animation
+    )
+  , Effects.batch
+    ( [ $toolbar.map(tagToolbar)
+      , $animation.map(tagAnimation)
       ]
-    : [ new Model
-        ( model.isAttached
-        , model.isOpen
-        , animation
-        , projection
-        , model.toolbar
-        )
-      , fx.map(AnimationEnd)
-      ]
-}
-
-const open = model =>
-  ( model.isOpen
-  ? [ model, Effects.none ]
-  : updateStopwatch(merge(model, {isOpen: true}), Stopwatch.Start)
-  );
-
-const close = model =>
-  ( model.isOpen
-  ? updateStopwatch(merge(model, {isOpen: false}), Stopwatch.Start)
-  : [ model, Effects.none ]
-  );
-
-const attach = model =>
-  ( model.isAttached
-  ? [ model, Effects.none ]
-  : updateToolbar(merge(model, {isAttached: true}), Toolbar.Attach)
-  );
-
-const detach = model =>
-  ( model.isAttached
-  ? updateToolbar(merge(model, {isAttached: false}), Toolbar.Detach)
-  : [ model, Effects.none ]
-  );
+    )
+  ]
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
-  ( action.type === "Open"
-  ? open(model)
-  : action.type === "Close"
-  ? close(model)
-  : action.type === "Attach"
-  ? attach(model)
-  : action.type === "Detach"
-  ? detach(model)
+  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+    switch (action.type) {
+      case "Open":
+        return open(model, performance.now());
+      case "Close":
+        return close(model, performance.now());
+      case "Attach":
+        return attach(model, performance.now());
+      case "Detach":
+        return detach(model, performance.now());
 
-  : action.type === "Animation"
-  ? updateAnimation(model, action)
-  : action.type === "AnimationEnd"
-  ? updateStopwatch(model, Stopwatch.End)
+      case "Animation":
+        return updateAnimation(model, action.animation);
+      case "Toolbar":
+        return updateToolbar(model, action.toolbar);
 
-  : action.type === "Toolbar"
-  ? updateToolbar(model, action.source)
-
-  : Unknown.update(model, action)
-  );
+      default:
+        return Unknown.update(model, action);
+    }
+  };
 
 
 export const render =
@@ -298,26 +362,27 @@ export const render =
     , className: 'sidebar'
     , style: Style.mix
       ( styleSheet.base
-      , { transform: `translateX(${model.display.x}px)`
-        , boxShadow: `rgba(0, 0, 0, ${model.display.shadow}) -50px 0 80px`
-        , paddingLeft: `${model.display.spacing}px`
-        , paddingRight: `${model.display.spacing}px`
+      , { transform: `translateX(${model.animation.state.x}px)`
+        , boxShadow: `rgba(0, 0, 0, ${model.animation.state.shadow}) -50px 0 80px`
+        , paddingLeft: `${model.animation.state.spacing}px`
+        , paddingRight: `${model.animation.state.spacing}px`
         }
       )
-  }, [
-    Tabs.view
-    ( navigators
-    , forward(address, TabsAction, model.display)
-    , model.display
-    )
-  , thunk
-    ( 'sidebar-toolbar'
-    , Toolbar.view
-    , model.toolbar
-    , forward(address, ToolbarAction)
-    , model.display
-    )
-  ]);
+    }
+  , [ Tabs.view
+      ( navigators
+      , forward(address, tagTabs, model.animation.state)
+      , model.animation.state
+      )
+    , thunk
+      ( 'sidebar-toolbar'
+      , Toolbar.view
+      , model.toolbar
+      , forward(address, tagToolbar)
+      , model.animation.state
+      )
+    ]
+  );
 
 export const view =
   ( model/*:Model*/
