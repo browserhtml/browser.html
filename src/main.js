@@ -24,17 +24,11 @@ console.timeStamp =
 // If hotswap change address so it points to a new mailbox &r
 // re-render.
 if (isReload) {
-  window.application.address(UI.LiveReload);
+  window.application.address(Devtools.Persist);
 }
 
 document.body.classList.toggle('use-native-titlebar',
                                Runtime.useNativeTitlebar());
-
-const restore =
-  () =>
-  [ window.application.model.value
-  , Effects.none
-  ]
 
 const application = start
   ( { flags:
@@ -43,7 +37,7 @@ const application = start
       }
     , init:
       ( isReload
-      ? restore
+      ? Devtools.restore
       : Devtools.init
       )
 
@@ -55,8 +49,8 @@ const application = start
   );
 
 
-
 const renderer = new Renderer({target: document.body});
+
 application.view.subscribe(renderer.address);
 application.task.subscribe(Effects.driver(application.address));
 

@@ -29,6 +29,7 @@ export type Action <model, action> =
   | { type: "Replay", replay: Replay.Action<model, action> }
   | { type: "Log", log: Log.Action<model, action> }
   | { type: "ReplayDebuggee", model: model }
+  | { type: "Persist" }
 
 
 
@@ -88,6 +89,22 @@ const TagDebuggee = /*::<model, action>*/
     , debuggee: action
     }
   )
+
+export const Persist = { type: "Persist" }
+
+export const persist = /*::<model, action, flags>*/
+  ( model/*:Model<model, action>*/
+  )/*:Step<model, action>*/ =>
+  [ model
+  , Effects.none
+  ];
+
+export const restore = /*::<model, action, flags>*/
+  ({Debuggee, flags}/*:Flags<model, action, flags>*/
+  )/*:Step<model, action>*/ =>
+  [ merge(window.application.model.value, {Debuggee, flags})
+  , Effects.none
+  ];
 
 export const init = /*::<model, action, flags>*/
   ({Debuggee, flags}/*:Flags<model, action, flags>*/)/*:Step<model, action>*/ => {
@@ -159,6 +176,10 @@ export const update = /*::<model, action, flags>*/
     )
   : action.type === "ReplayDebuggee"
   ? replayDebuggee(model, action.model)
+
+  : action.type === "Persist"
+  ? persist(model)
+  
   : Unknown.update(model, action)
   )
 
