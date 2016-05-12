@@ -11,15 +11,41 @@ import * as Target from "../../common/target";
 import * as Unknown from "../../common/unknown";
 
 import {always, merge} from '../../common/prelude';
-import {readTitle, readFaviconURI} from '../web-view/util';
+import {readTitle, readFaviconURI} from '../navigator-deck/navigator/web-view/util';
 import {cursor} from '../../common/cursor';
 
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {Context, Model, Action} from "./tab"
-import * as WebView from "../web-view"
+import * as WebView from "../navigator-deck/navigator/web-view"
+import type {ID} from "../../common/prelude"
+import * as Target from "../../common/target"
+
+export type Context =
+  { tabWidth: number
+  , titleOpacity: number
+  }
+
+export type Action =
+  | { type: "Close" }
+  | { type: "Select" }
+  | { type: "Activate" }
+  | { type: "Target", source: Target.Action }
 */
+
+export class Model {
+  /*::
+  isPointerOver: boolean;
+  */
+  constructor(isPointerOver/*:boolean*/) {
+    this.isPointerOver = isPointerOver
+  }
+}
+
+const over = new Model(true)
+const out = new Model(false)
+const transactOver = [over, Effects.none];
+const transactOut = [out, Effects.none];
 
 export const Close = {type: "Close"};
 export const Select = {type: "Select"};
@@ -32,21 +58,18 @@ const TargetAction = action =>
   );
 
 const updateTarget =
-  cursor
-  ( { update: Target.update
-    , tag: TargetAction
-    }
-  );
+  (model, action) =>
+  ( action.type === "Over"
+  ? transactOver
+  : transactOut
+  )
 
 const Out = TargetAction(Target.Out);
 const Over = TargetAction(Target.Over);
 
 export const init =
   ()/*:[Model, Effects<Action>]*/ =>
-  [ { isPointerOver: false
-    }
-  , Effects.none
-  ];
+  transactOut;
 
 export const update =
   (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
@@ -183,7 +206,7 @@ const viewClose = ({isSelected, tab}, address) =>
         }, [''])
   ]);
 
-export const view =
+export const render =
   ( model/*:WebView.Model*/
   , address/*:Address<Action>*/
   , {tabWidth, titleOpacity}/*:Context*/
@@ -227,3 +250,17 @@ export const view =
       )
     ]
   );
+
+
+export const view =
+  ( model/*:WebView.Model*/
+  , address/*:Address<Action>*/
+  , context/*:Context*/
+  )/*:DOM*/ =>
+  thunk
+  ( `${model.id}`
+  , render
+  , model
+  , address
+  , context
+  )

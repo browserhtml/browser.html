@@ -14,7 +14,17 @@ import * as Unknown from '../../common/unknown';
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {ID, Context, Model, Action} from "./tabs"
+import * as Tab from "./tab"
+import * as Navigators from "../navigator-deck/deck"
+
+export type ID = string
+export type Context = Tab.Context
+export type Model = Navigators.Model
+
+export type Action =
+  | { type: "Close", id: ID }
+  | { type: "Activate", id: ID }
+  | { type: "Tab", id: ID, source: Tab.Action }
 */
 
 const styleSheet = Style.createSheet({
@@ -58,22 +68,33 @@ const ByID =
   );
 
 
-export const view =
+const settings =
+  { className: 'sidebar-tabs-scrollbox'
+  , style: styleSheet.base
+  }
+
+export const render =
   (model/*:Model*/, address/*:Address<Action>*/, context/*:Context*/)/*:DOM*/ =>
   html.div
-  ( { className: 'sidebar-tabs-scrollbox'
-    , style: styleSheet.base
-    }
+  ( settings
   , model
-      .order
-      .map
-      ( id =>
-          thunk
-          ( id
-          , Tab.view
-          , model.entries[id]
-          , forward(address, ByID(id))
-          , context
-          )
+    .index
+    .map
+    ( id =>
+      Tab.view
+      ( model.cards[id].output
+      , forward(address, ByID(id))
+      , context
       )
+    )
   );
+
+export const view =
+  (model/*:Model*/, address/*:Address<Action>*/, context/*:Context*/)/*:DOM*/ =>
+  thunk
+  ( 'Browser/Sidebar/Tabs'
+  , render
+  , model
+  , address
+  , context
+  )

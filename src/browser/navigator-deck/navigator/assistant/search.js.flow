@@ -1,0 +1,102 @@
+/* @flow */
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+import {Effects, Task} from "reflex"
+import type {Address, DOM, Never} from "reflex"
+import type {Result} from "../../../../common/result"
+import * as Title from "./title";
+
+type URI = string
+
+export type Match =
+  { uri: URI
+  , title: string
+  }
+
+export type Completion =
+  { match: string
+  , hint: string
+  }
+
+export type Model =
+  { size: number
+  , limit: number
+  , queryID: number
+  , query: ?string
+  , selected: number
+  , matches: {[key:URI]: Match}
+  , items: Array<URI>
+  }
+
+
+export type Action =
+  | { type: "NoOp" }
+  | { type: "Query"
+    , source: string
+    }
+  | { type: "Suggest"
+    , source: Completion
+    }
+  | { type: "Activate"
+    }
+  | { type: "Load"
+    , uri: URI
+    }
+  | { type: "SelectNext" }
+  | { type: "SelectPrevious" }
+  | { type: "Unselect" }
+  | { type: "UpdateMatches"
+    , source: Result<Error, Array<Match>>
+    }
+  | { type: "ByURI"
+    , source:
+      { uri: URI
+        // @TODO: Figure out what do we want to do with this. ByURI supposed
+        // tag actions comming from suggestion itself, but in our case they are
+        // don't produce / receive any actions.
+      , action: any
+      }
+    }
+  | { type: "Abort"
+    , source: number
+    }
+
+declare export var SelectNext:Action
+declare export var SelectPrevious:Action
+
+declare export function Suggest
+  (suggestion:Completion):
+  Action
+
+
+declare export function Query
+  (input:string):
+  Action
+
+declare export function Activate
+  ():
+  Action
+
+
+declare export function init
+  (query:string, limit:number):
+  [Model, Effects<Action>]
+
+declare export function update
+  (model:Model, action:Action):
+  [Model, Effects<Action>]
+
+declare export function render
+  (model:Model, address:Address<Action>):
+  DOM
+
+declare export function view
+  (model:Model, address:Address<Action>):
+  DOM
+
+declare export function search
+  (id:number, input:string, limit:number):
+  Task<Never, Result<Error, Array<Model>>>

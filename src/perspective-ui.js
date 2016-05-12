@@ -22,14 +22,15 @@ export const init = Browser.init
 export const update =
   (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
   ( model.mode === 'create-web-view'
-  ? ( action.type === 'ExitInput'
+  ? ( // TODO: This login no longer belongs here.
+    /*action.type === 'ExitInput'
     ? ( model.webViews.order.length > 0
       ? Browser.update(model, Browser.ShowWebView)
       : [ model, Effects.none ]
       )
     // If uri is submitted in create-web-view mode then
     // opne new web-view.
-    : action.type === 'SubmitInput'
+    : */action.type === 'SubmitInput'
     ? batch
       ( Browser.update
       , model
@@ -37,7 +38,11 @@ export const update =
         , Browser.ShowWebView
         ]
       )
+
+    // TODO: This logic no longer belongs here. Browser should delegate
+    // to an active child etc..
     // Focus input when window regains focuse in create mode.
+    /*
     : action.type === 'Focus'
     ? batch
       ( Browser.update
@@ -45,7 +50,7 @@ export const update =
       , [ action
         , Browser.FocusInput
         ]
-      )
+      )*/
 
     // @TODO: Retaining a focus is little tricky (see #803)
     // Prevent input lost focus in create-web-view mode set it back.
@@ -70,7 +75,10 @@ export const update =
         , Browser.ShowWebView
         ]
       )
+
+    // TODO: This logic is absolete
     // Focus input when window regains focus in edit mode.
+    /*
     : action.type === 'Focus'
     ? batch
       ( Browser.update
@@ -78,7 +86,7 @@ export const update =
       , [ action
         , Browser.FocusInput
         ]
-      )
+      )*/
     // One every other action just delegate.
     : Browser.update(model, action)
     )
@@ -96,6 +104,10 @@ export const update =
         , Browser.SelectWebView
         ]
       )
+    // TODO: Browser should delegate focus to active navigator, navigator
+    // then should delegate to an input field or web-view depending
+    // on its't own state.
+    /*
     : action.type === 'Focus'
     ? batch
       ( Browser.update
@@ -103,7 +115,7 @@ export const update =
       , [ action
         , Browser.FocusWebView
         ]
-      )
+      )*/
     // On anything else just delegate.
     : Browser.update(model, action)
     )

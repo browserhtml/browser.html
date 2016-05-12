@@ -1,4 +1,4 @@
-/* @flow */
+/* @noflow */
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,7 @@ import * as Driver from "@driver";
 import {merge, setIn, remove, always, batch} from "../common/prelude";
 import {cursor} from "../common/cursor";
 import {indexOfOffset} from "../common/selector";
-import * as WebView from "../browser/web-view";
+import * as WebView from "../navigator-deck/navigator/web-view";
 import * as Unknown from "../common/unknown";
 import * as Stopwatch from "../common/stopwatch";
 import * as Easing from "eased";

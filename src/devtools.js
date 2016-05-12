@@ -1,6 +1,6 @@
 /* @flow */
 
-import {Effects, Task, html, forward} from "reflex"
+import {Effects, Task, thunk, html, forward} from "reflex"
 import {merge} from "./common/prelude"
 import {cursor} from "./common/cursor"
 import {ok, error} from "./common/result"
@@ -266,7 +266,7 @@ const replayDebuggee = /*::<model, action>*/
   (model/*:Model<model, action>*/, debuggee/*:model*/)/*:Step<model, action>*/ =>
   nofx(merge(model, {debuggee}))
 
-export const view = /*::<model, action>*/
+export const render = /*::<model, action>*/
   ( model/*:Model<model, action>*/
   , address/*:Address<Action<model, action>>*/
   )/*:DOM*/ =>
@@ -290,4 +290,15 @@ export const view = /*::<model, action>*/
       : Log.view(model.log, forward(address, TagLog))
       )
     ]
+  )
+
+export const view = /*::<model, action>*/
+  ( model/*:Model<model, action>*/
+  , address/*:Address<Action<model, action>>*/
+  )/*:DOM*/ =>
+  thunk
+  ( 'Devtools'
+  , render
+  , model
+  , address
   )

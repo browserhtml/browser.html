@@ -5,16 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {version} from "../package.json";
+import * as Package from "../package.json";
 import * as Config from "../browserhtml.json";
 import {Effects, html, forward, thunk} from "reflex";
 
 import * as Shell from "./browser/shell";
-import * as Input from "./browser/input";
-import * as Assistant from "./browser/assistant";
 import * as Sidebar from './browser/sidebar';
-import * as WebViews from "./browser/web-views";
-import * as Overlay from './browser/overlay';
 
 import * as Devtools from "./common/devtools";
 import * as Runtime from "./common/runtime";
@@ -32,48 +28,170 @@ import {Style, StyleSheet} from './common/style';
 import {identity, compose} from "./lang/functional";
 
 import {onWindow} from "@driver";
+import * as Navigators from "./browser/navigator-deck";
+
 
 /*::
+
+import type {ID} from "./common/prelude"
+
+export type Version = string
+export type Mode =
+  | 'create-web-view'
+  | 'show-web-view'
+  | 'edit-web-view'
+  | 'show-tabs'
+  | 'select-web-view'
+  | 'show-web-view'
+
+export type Action =
+  | { type: "NoOp" }
+  | { type: "Focus" }
+  | { type: "Blur" }
+  | { type: "CreateWebView" }
+  | { type: "EditWebView" }
+  | { type: "ShowWebView" }
+  | { type: "ShowTabs" }
+  | { type: "SelectWebView" }
+  | { type: "OpenWebView" }
+  | { type: "AttachSidebar" }
+  | { type: "DetachSidebar" }
+  | { type: "OverlayClicked" }
+  | { type: "SubmitInput" }
+  | { type: "BlurInput" }
+  | { type: "ExitInput" }
+  | { type: "Escape" }
+  | { type: "Unload" }
+  | { type: "ReloadRuntime" }
+  | { type: "PrintSnapshot" }
+  | { type: "PublishSnapshot" }
+  // | { type: "WebViews", source: WebViews.Action }
+  // | { type: "Input", source: Input.Action }
+  | { type: "Sidebar", action: Sidebar.Action }
+  | { type: "Navigators", navigators: Navigators.Action }
+  // | { type: "Overlay", action: Overlay.Action }
+  | { type: "Shell", source: Shell.Action }
+  | { type: "Devtools", action: Devtools.Action }
+  // | { type: "Assistant", source: Assistant.Action }
+  // | { type: "SuggestNext" }
+  // | { type: "SuggestPrevious" }
+  // | { type: "Query" }
+  // | { type: "Suggest", source: Assistant.Suggestion }
+  | { type: "Expand" }
+  | { type: "Expanded" }
+  | { type: "Shrink" }
+  | { type: "Shrinked" }
+  | { type: "ReceiveOpenURLNotification" }
+  | { type: "LiveReload" }
+  | { type: "Reloaded" }
+  // | { type: "ResizeAnimation", action: Stopwatch.Action }
+  | { type: "OpenURL", uri: URI }
+  // | { type: "SelectTab", source: WebViews.Action }
+  // | { type: "ActivateTab", activateTab: WebViews.Action }
+  // | { type: "ActivateTabByID", activateTabByID: WebViews.Action }
+  | { type: "Activate", activate: ID }
+  | { type: "Close", close: ID }
+  // @TODO: Do not use any here.
+  | { type: "Modify", modify: ID, action: any }
+  | { type: "Open" }
+
+
 import type {Address, DOM} from "reflex"
 import type {URI} from "./common/prelude"
-import type {Model, Action} from "./browser"
 */
+
+export class Display {
+  /*::
+  rightOffset: number;
+  */
+  consturctor(rightOffset/*:number*/=0) {
+    this.rightOffset = rightOffset
+  }
+}
+
+export class Model {
+  /*::
+  version: Version;
+  mode: Mode;
+  display: Display;
+  isExpanded: boolean;
+
+  shell: Shell.Model;
+  navigators: Navigators.Model;
+  sidebar: Sidebar.Model;
+  devtools: Devtools.Model;
+  */
+  constructor(
+    version/*:Version*/=Package.version
+  , mode/*:Mode*/='create-web-view'
+  , display/*:Display*/
+  , isExpanded/*:boolean*/
+  , shell/*:Shell.Model*/
+  , navigators/*:Navigators.Model*/
+  , sidebar/*:Sidebar.Model*/
+  , devtools/*:Devtools.Model*/
+  ) {
+    this.version = version
+    this.mode = mode
+    this.display = display
+    this.isExpanded = isExpanded
+    this.shell = shell
+    this.navigators = navigators
+    this.sidebar = sidebar
+    this.devtools = devtools
+  }
+}
+
+
+const Activate =
+  id =>
+  ( { type: "Activate"
+    , activate: id
+    }
+  );
+
+const Close =
+  id =>
+  ( { type: "Close"
+    , close: id
+    }
+  );
+
+const Modify =
+  (id, action) =>
+  ( { type: "Modify"
+    , modify: id
+    , action
+    }
+  )
 
 export const init = ()/*:[Model, Effects<Action>]*/ => {
   const [devtools, devtoolsFx] = Devtools.init({isActive: Config.devtools});
-  const [input, inputFx] = Input.init(false, false, "");
+  // const [input, inputFx] = Input.init(false, false, "");
   const [shell, shellFx] = Shell.init();
-  const [webViews, webViewsFx] = WebViews.init();
+  // const [webViews, webViewsFx] = WebViews.init();
   const [sidebar, sidebarFx] = Sidebar.init();
-  const [assistant, assistantFx] = Assistant.init();
-  const [overlay, overlayFx] = Overlay.init(false, false);
+  // const [assistant, assistantFx] = Assistant.init();
+  // const [overlay, overlayFx] = Overlay.init(false, false);
+  const [navigators, navigatorsFx] = Navigators.init();
 
-  const model =
-    { version
-    , mode: 'create-web-view'
+  const model = new Model
+    ( Package.version
+    , 'create-web-view'
+    , new Display(0)
+    , true
     , shell
-    , input
-    , assistant
-    , webViews
+    , navigators
     , sidebar
-    , overlay
     , devtools
-    , resizeAnimation: null
-
-    , display: { rightOffset: 0 }
-    , isExpanded: true
-    };
+    );
 
   const fx =
     Effects.batch
     ( [ devtoolsFx.map(DevtoolsAction)
-      , inputFx.map(InputAction)
       , shellFx.map(ShellAction)
-      , webViewsFx.map(WebViewsAction)
       , sidebarFx.map(SidebarAction)
-      , assistantFx.map(AssistantAction)
-      , overlayFx.map(OverlayAction)
-      , Effects.receive(CreateWebView)
+      , navigatorsFx.map(NavigatorsAction)
       , Effects
         .perform(Runtime.receive('mozbrowseropenwindow'))
         .map(OpenURL)
@@ -89,11 +207,11 @@ const SidebarAction = action =>
   ( action.type === "CreateWebView"
   ? CreateWebView
   : action.type === "ActivateTab"
-  ? ActivateWebViewByID(action.id)
+  ? Activate(action.id)
   : action.type === "CloseTab"
-  ? CloseWebViewByID(action.id)
+  ? Close(action.id)
   : action.type === "Tabs"
-  ? WebViewActionByID(action.source.id, action.source)
+  ? Modify(action.source.id, action.source)
   : action.type === "Attach"
   ? AttachSidebar
   : action.type === "Detach"
@@ -103,60 +221,89 @@ const SidebarAction = action =>
     }
   );
 
-const OverlayAction = action =>
-  ( action.type === "Click"
-  ? OverlayClicked
-  : { type: "Overlay"
-    , action
-    }
-  );
+// const OverlayAction = action =>
+//   ( action.type === "Click"
+//   ? OverlayClicked
+//   : { type: "Overlay"
+//     , action
+//     }
+//   );
+//
 
+// const InputAction = action =>
+//   ( action.type === 'Submit'
+//   ? SubmitInput
+//   : action.type === 'Abort'
+//   ? ExitInput
+//   : action.type === 'Blur'
+//   ? BlurInput
+//   : action.type === 'Query'
+//   ? Query
+//   : action.type === 'SuggestNext'
+//   ? SuggestNext
+//   : action.type === 'SuggestPrevious'
+//   ? SuggestPrevious
+//   : { type: 'Input'
+//     , source: action
+//     }
+//   );
 
-const InputAction = action =>
-  ( action.type === 'Submit'
-  ? SubmitInput
-  : action.type === 'Abort'
-  ? ExitInput
-  : action.type === 'Blur'
-  ? BlurInput
-  : action.type === 'Query'
-  ? Query
-  : action.type === 'SuggestNext'
-  ? SuggestNext
-  : action.type === 'SuggestPrevious'
-  ? SuggestPrevious
-  : { type: 'Input'
-    , source: action
-    }
-  );
-
-const WebViewsAction = (action/*:WebViews.Action*/)/*:Action*/ =>
+const NavigatorsAction =
+  (action/*:Navigators.Action*/)/*:Action*/ =>
   ( action.type === "ShowTabs"
   ? ShowTabs
   : action.type === "Create"
   ? CreateWebView
   : action.type === "Edit"
   ? EditWebView
-  : action.type === "SelectRelative"
-  ? { type: "SelectTab"
-    , source: action
-    }
+  // : action.type === "SelectRelative"
+  // ? { type: "SelectTab"
+  //   , source: action
+  //   }
     // Note: Flow type checker has some bug releated to union types where
     // use of the same properties across union types seem to confuse it.
     // avoiding same shapes (and calling source differently on each type)
     // seems to resolve the problem.
-  : action.type === "ActivateSelected"
-  ? { type: "ActivateTab"
-    , activateTab: action
-    }
-  : action.type === "ActivateByID"
-  ? { type: "ActivateTabByID"
-    , activateTabByID: action
-    }
-  : { type: 'WebViews'
-    , source: action
+  // : action.type === "ActivateSelected"
+  // ? { type: "ActivateTab"
+  //   , activateTab: action
+  //   }
+  // : action.type === "ActivateByID"
+  // ? { type: "ActivateTabByID"
+  //   , activateTabByID: action
+  //   }
+  : { type: 'Navigators'
+    , navigators: action
     }
   );
+
+// const WebViewsAction = (action/*:WebViews.Action*/)/*:Action*/ =>
+//   ( action.type === "ShowTabs"
+//   ? ShowTabs
+//   : action.type === "Create"
+//   ? CreateWebView
+//   : action.type === "Edit"
+//   ? EditWebView
+//   : action.type === "SelectRelative"
+//   ? { type: "SelectTab"
+//     , source: action
+//     }
+//     // Note: Flow type checker has some bug releated to union types where
+//     // use of the same properties across union types seem to confuse it.
+//     // avoiding same shapes (and calling source differently on each type)
+//     // seems to resolve the problem.
+//   : action.type === "ActivateSelected"
+//   ? { type: "ActivateTab"
+//     , activateTab: action
+//     }
+//   : action.type === "ActivateByID"
+//   ? { type: "ActivateTabByID"
+//     , activateTabByID: action
+//     }
+//   : { type: 'WebViews'
+//     , source: action
+//     }
+//   );
 
 const ShellAction = action =>
   ( action.type === 'Focus'
@@ -174,27 +321,33 @@ const DevtoolsAction = action =>
     }
   );
 
-const AssistantAction =
-  action =>
-  ( action.type === 'Suggest'
-  ? Suggest(action.source)
-  : { type: 'Assistant'
-    , source: action
-    }
-  );
-
-const updateInput = cursor({
-  get: model => model.input,
-  set: (model, input) => merge(model, {input}),
-  update: Input.update,
-  tag: InputAction
-});
-
-const updateWebViews = cursor({
-  get: model => model.webViews,
-  set: (model, webViews) => merge(model, {webViews}),
-  update: WebViews.update,
-  tag: WebViewsAction
+// const AssistantAction =
+//   action =>
+//   ( action.type === 'Suggest'
+//   ? Suggest(action.source)
+//   : { type: 'Assistant'
+//     , source: action
+//     }
+//   );
+//
+// const updateInput = cursor({
+//   get: model => model.input,
+//   set: (model, input) => merge(model, {input}),
+//   update: Input.update,
+//   tag: InputAction
+// });
+//
+// const updateWebViews = cursor({
+//   get: model => model.webViews,
+//   set: (model, webViews) => merge(model, {webViews}),
+//   update: WebViews.update,
+//   tag: WebViewsAction
+// });
+const updateNavigators = cursor({
+  get: model => model.navigators,
+  set: (model, navigators) => merge(model, {navigators}),
+  update: Navigators.update,
+  tag: NavigatorsAction
 });
 
 const updateShell = cursor({
@@ -211,12 +364,12 @@ const updateDevtools = cursor({
   tag: DevtoolsAction
 });
 
-const updateAssistant = cursor({
-  get: model => model.assistant,
-  set: (model, assistant) => merge(model, {assistant}),
-  update: Assistant.update,
-  tag: AssistantAction
-});
+// const updateAssistant = cursor({
+//   get: model => model.assistant,
+//   set: (model, assistant) => merge(model, {assistant}),
+//   update: Assistant.update,
+//   tag: AssistantAction
+// });
 
 const updateSidebar = cursor({
   get: model => model.sidebar,
@@ -225,12 +378,12 @@ const updateSidebar = cursor({
   update: Sidebar.update
 });
 
-const updateOverlay = cursor({
-  get: model => model.overlay,
-  set: (model, overlay) => merge(model, {overlay}),
-  tag: OverlayAction,
-  update: Overlay.update
-});
+// const updateOverlay = cursor({
+//   get: model => model.overlay,
+//   set: (model, overlay) => merge(model, {overlay}),
+//   tag: OverlayAction,
+//   update: Overlay.update
+// });
 
 const Reloaded/*:Action*/ =
   { type: "Reloaded"
@@ -282,18 +435,18 @@ export const DetachSidebar/*:Action*/ =
   , source: Sidebar.Detach
   };
 
-export const OverlayClicked/*:Action*/ =
-  { type: "OverlayClicked"
-  };
+// export const OverlayClicked/*:Action*/ =
+//   { type: "OverlayClicked"
+//   };
 
-export const SubmitInput/*:Action*/ =
-  { type: 'SubmitInput'
-  };
+// export const SubmitInput/*:Action*/ =
+//   { type: 'SubmitInput'
+//   };
 
-export const ExitInput/*:Action*/ =
-  { type: 'ExitInput'
-  , source: Input.Abort
-  };
+// export const ExitInput/*:Action*/ =
+//   { type: 'ExitInput'
+//   , source: Input.Abort
+//   };
 
 export const Escape/*:Action*/ =
   { type: 'Escape'
@@ -314,9 +467,9 @@ export const BlurInput/*:Action*/ =
 
 // ## Resize actions
 
-export const SuggestNext/*:Action*/ = { type: "SuggestNext" };
-export const SuggestPrevious/*:Action*/ = { type: "SuggestPrevious" };
-export const Suggest = tag('Suggest');
+// export const SuggestNext/*:Action*/ = { type: "SuggestNext" };
+// export const SuggestPrevious/*:Action*/ = { type: "SuggestPrevious" };
+// export const Suggest = tag('Suggest');
 export const Expand/*:Action*/ = {type: "Expand"};
 export const Expanded/*:Action*/ = {type: "Expanded"};
 export const Shrink/*:Action*/ = {type: "Shrink"};
@@ -326,21 +479,21 @@ export const Shrinked/*:Action*/ = {type: "Shrinked"};
 // Following Browser actions directly delegate to a `WebViews` module, there for
 // they are just tagged versions of `WebViews` actions, but that is Just an
 // implementation detail.
-export const ZoomIn = WebViewsAction(WebViews.ZoomIn);
-export const ZoomOut = WebViewsAction(WebViews.ZoomOut);
-export const ResetZoom = WebViewsAction(WebViews.ResetZoom);
-export const Reload = WebViewsAction(WebViews.Reload);
-export const CloseWebView = WebViewsAction(WebViews.CloseActive);
-export const GoBack = WebViewsAction(WebViews.GoBack);
-export const GoForward = WebViewsAction(WebViews.GoForward);
-export const SelectNext = WebViewsAction(WebViews.SelectNext);
-export const SelectPrevious = WebViewsAction(WebViews.SelectPrevious);
-export const ActivateSeleted = WebViewsAction(WebViews.ActivateSelected);
-export const FocusWebView = WebViewsAction(WebViews.Focus);
-export const NavigateTo = compose(WebViewsAction, WebViews.NavigateTo);
-const UnfoldWebViews = WebViewsAction(WebViews.Unfold);
-const FoldWebViews = WebViewsAction(WebViews.Fold);
-const Open = compose(WebViewsAction, WebViews.Open);
+// export const ZoomIn = WebViewsAction(WebViews.ZoomIn);
+// export const ZoomOut = WebViewsAction(WebViews.ZoomOut);
+// export const ResetZoom = WebViewsAction(WebViews.ResetZoom);
+// export const Reload = WebViewsAction(WebViews.Reload);
+// export const CloseWebView = WebViewsAction(WebViews.CloseActive);
+// export const GoBack = WebViewsAction(WebViews.GoBack);
+// export const GoForward = WebViewsAction(WebViews.GoForward);
+// export const SelectNext = WebViewsAction(WebViews.SelectNext);
+// export const SelectPrevious = WebViewsAction(WebViews.SelectPrevious);
+// export const ActivateSeleted = WebViewsAction(WebViews.ActivateSelected);
+// export const FocusWebView = WebViewsAction(WebViews.Focus);
+// export const NavigateTo = compose(WebViewsAction, WebViews.NavigateTo);
+// const UnfoldWebViews = WebViewsAction(WebViews.Unfold);
+// const FoldWebViews = WebViewsAction(WebViews.Fold);
+// const Open = compose(WebViewsAction, WebViews.Open);
 const ReceiveOpenURLNotification =
   { type: "ReceiveOpenURLNotification"
   };
@@ -350,15 +503,15 @@ const OpenURL = ({url}) =>
     , uri: url
     }
   );
-const Query/*:Action*/ = { type: 'Query' };
+// const Query/*:Action*/ = { type: 'Query' };
 
-export const ActivateWebViewByID =
-  compose(WebViewsAction, WebViews.ActivateByID);
-const WebViewActionByID =
-  compose(WebViewsAction, WebViews.ActionByID);
-
-const CloseWebViewByID =
-  compose(WebViewsAction, WebViews.CloseByID);
+// export const ActivateWebViewByID =
+//   compose(WebViewsAction, WebViews.ActivateByID);
+// const WebViewActionByID =
+//   compose(WebViewsAction, WebViews.ActionByID);
+//
+// const CloseWebViewByID =
+//   compose(WebViewsAction, WebViews.CloseByID);
 
 // Following browser actions directly delegate to one of the existing modules
 // there for we define them by just wrapping actions from that module to avoid
@@ -370,19 +523,22 @@ export const Blur = ShellAction(Shell.Blur);
 export const Focus = ShellAction(Shell.Focus);
 
 
-const ShowInput = InputAction(Input.Show);
-const HideInput = InputAction(Input.Hide);
-const EnterInput = InputAction(Input.Enter);
-const EnterInputSelection = compose(InputAction, Input.EnterSelection);
-export const FocusInput = InputAction(Input.Focus);
+// const ShowInput = InputAction(Input.Show);
+// const HideInput = InputAction(Input.Hide);
+// const EnterInput = InputAction(Input.Enter);
+// const EnterInputSelection = compose(InputAction, Input.EnterSelection);
+// export const FocusInput = InputAction(Input.Focus);
 
-const OpenAssistant = AssistantAction(Assistant.Open);
-const CloseAssistant = AssistantAction(Assistant.Close);
-const ExpandAssistant = AssistantAction(Assistant.Expand);
-const QueryAssistant = compose(AssistantAction, Assistant.Query);
+// const OpenAssistant = AssistantAction(Assistant.Open);
+// const CloseAssistant = AssistantAction(Assistant.Close);
+// const ExpandAssistant = AssistantAction(Assistant.Expand);
+// const QueryAssistant = compose(AssistantAction, Assistant.Query);
 
 const OpenSidebar = SidebarAction(Sidebar.Open);
 const CloseSidebar = SidebarAction(Sidebar.Close);
+
+const ZoomOutNavigators = NavigatorsAction(Navigators.ZoomOut);
+const ZoomInNavigators = NavigatorsAction(Navigators.ZoomIn);
 
 const DockSidebar =
   { type: "Sidebar"
@@ -394,9 +550,9 @@ const UndockSidebar =
   , action: Sidebar.Detach
   };
 
-const HideOverlay = OverlayAction(Overlay.Hide);
-const ShowOverlay = OverlayAction(Overlay.Show);
-const FadeOverlay = OverlayAction(Overlay.Fade);
+// const HideOverlay = OverlayAction(Overlay.Hide);
+// const ShowOverlay = OverlayAction(Overlay.Show);
+// const FadeOverlay = OverlayAction(Overlay.Fade);
 
 export const LiveReload =
   { type: 'LiveReload'
@@ -404,11 +560,11 @@ export const LiveReload =
 
 // Animation
 
-const ResizeAnimationAction = action =>
-  ( { type: "ResizeAnimation"
-    , action
-    }
-  );
+// const ResizeAnimationAction = action =>
+//   ( { type: "ResizeAnimation"
+//     , action
+//     }
+//   );
 
 
 
@@ -417,21 +573,21 @@ const modifier = OS.platform() == 'linux' ? 'alt' : 'accel';
 const decodeKeyDown = Keyboard.bindings({
   'accel l': always(EditWebView),
   'accel t': always(CreateWebView),
-  'accel 0': always(ResetZoom),
-  'accel -': always(ZoomOut),
-  'accel =': always(ZoomIn),
-  'accel shift =': always(ZoomIn),
-  'accel w': always(CloseWebView),
-  'accel shift ]': always(SelectNext),
-  'accel shift [': always(SelectPrevious),
-  'control tab': always(SelectNext),
-  'control shift tab': always(SelectPrevious),
+  // 'accel 0': always(ResetZoom),
+  // 'accel -': always(ZoomOut),
+  // 'accel =': always(ZoomIn),
+  // 'accel shift =': always(ZoomIn),
+  // 'accel w': always(CloseWebView),
+  // 'accel shift ]': always(SelectNext),
+  // 'accel shift [': always(SelectPrevious),
+  // 'control tab': always(SelectNext),
+  // 'control shift tab': always(SelectPrevious),
   // 'accel shift backspace':  always(ResetBrowserSession),
   // 'accel shift s': always(SaveBrowserSession),
-  'accel r': always(Reload),
+  // 'accel r': always(Reload),
   'escape': always(Escape),
-  [`${modifier} left`]: always(GoBack),
-  [`${modifier} right`]: always(GoForward),
+  // [`${modifier} left`]: always(GoBack),
+  // [`${modifier} right`]: always(GoForward),
 
   // TODO: `meta alt i` generates `accel alt i` on OSX we need to look
   // more closely into this but so declaring both shortcuts should do it.
@@ -445,20 +601,21 @@ const decodeKeyDown = Keyboard.bindings({
 });
 
 const decodeKeyUp = Keyboard.bindings({
-  'control': always(ActivateSeleted),
-  'accel': always(ActivateSeleted)
+  // 'control': always(ActivateSeleted),
+  // 'accel': always(ActivateSeleted)
 });
 
 const showWebView = model =>
   batch
   ( update
   , merge(model, {mode: 'show-web-view'})
-  , [ HideInput
+  , [ /*HideInput
     , CloseAssistant
-    , CloseSidebar
-    , HideOverlay
-    , FoldWebViews
-    , FocusWebView
+    , */CloseSidebar
+    // , HideOverlay
+    // , FoldWebViews
+    // , FocusWebView
+    , ZoomInNavigators
     ]
   );
 
@@ -466,12 +623,12 @@ const createWebView = model =>
   batch
   ( update
   , merge(model, {mode: 'create-web-view'})
-  , [ ShowInput
+  , [ /*ShowInput
     , ExpandAssistant
-    , CloseSidebar
-    , HideOverlay
-    , FoldWebViews
-    , EnterInput
+    ,*/ CloseSidebar
+    // , HideOverlay
+    // , FoldWebViews
+    /*, EnterInput*/
     ]
   );
 
@@ -479,12 +636,12 @@ const editWebView = model =>
   batch
   ( update
   , merge(model, {mode: 'edit-web-view'})
-  , [ ShowInput
+  , [ /*ShowInput
     , OpenAssistant
-    , CloseSidebar
-    , ShowOverlay
-    , FoldWebViews
-    , EnterInputSelection(WebViews.getActiveURI(model.webViews, ''))
+    , */CloseSidebar
+    // , ShowOverlay
+    // , FoldWebViews
+    /*, EnterInputSelection(WebViews.getActiveURI(model.webViews, ''))*/
     ]
   );
 
@@ -492,11 +649,12 @@ const showTabs = model =>
   batch
   ( update
   , merge(model, {mode: 'show-tabs'})
-  , [ HideInput
+  , [/* HideInput
     , CloseAssistant
-    , OpenSidebar
-    , ShowOverlay
-    , UnfoldWebViews
+    , */OpenSidebar
+    // , ShowOverlay
+    // , UnfoldWebViews
+    , ZoomOutNavigators
     ]
   );
 
@@ -505,50 +663,50 @@ const selectWebView = (model, action) =>
   batch
   ( update
   , merge(model, {mode: 'select-web-view'})
-  , [ HideInput
+  , [/* HideInput
     , CloseAssistant
-    , OpenSidebar
-    , UnfoldWebViews
-    , FadeOverlay
+    , */OpenSidebar
+    // , UnfoldWebViews
+    // , FadeOverlay
     ]
   );
 
 
-const submitInput = model =>
-  update(model, NavigateTo(URL.read(model.input.value)));
+// const submitInput = model =>
+//   update(model, NavigateTo(URL.read(model.input.value)));
+//
+// const openWebView = model =>
+//   update
+//   ( model
+//   , Open
+//     ( { uri: URL.read(model.input.value)
+//       , disposition: 'default'
+//       , name: ''
+//       , features: ''
+//       , ref: null
+//       , guestInstanceId: null
+//       }
+//     )
+//   );
 
-const openWebView = model =>
-  update
-  ( model
-  , Open
-    ( { uri: URL.read(model.input.value)
-      , disposition: 'default'
-      , name: ''
-      , features: ''
-      , ref: null
-      , guestInstanceId: null
-      }
-    )
-  );
-
-const openURL = (model, uri) =>
-  batch
-  ( update
-  , model
-  , [ Open
-      ( { uri
-        , disposition: 'default'
-        , name: ''
-        , features: ''
-        , ref: null
-        , guestInstanceId: null
-        }
-      )
-    , ShowWebView
-    , ReceiveOpenURLNotification
-    ]
-  );
-
+// const openURL = (model, uri) =>
+//   batch
+//   ( update
+//   , model
+//   , [ Open
+//       ( { uri
+//         , disposition: 'default'
+//         , name: ''
+//         , features: ''
+//         , ref: null
+//         , guestInstanceId: null
+//         }
+//       )
+//     // , ShowWebView
+//     , ReceiveOpenURLNotification
+//     ]
+//   );
+//
 const reciveOpenURLNotification = model =>
   [ model
   , Effects
@@ -557,17 +715,17 @@ const reciveOpenURLNotification = model =>
   ];
 
 
-const focusWebView = model =>
-  update(model, FocusWebView)
+// const focusWebView = model =>
+//   update(model, FocusWebView)
 
-const exitInput = model =>
-  batch
-  ( update
-  , model
-  , [ CloseAssistant
-    , FocusWebView
-    ]
-  );
+// const exitInput = model =>
+//   batch
+//   ( update
+//   , model
+//   , [/* CloseAssistant
+//     , */FocusWebView
+//     ]
+//   );
 
 
 const attachSidebar = model =>
@@ -577,9 +735,9 @@ const attachSidebar = model =>
   , [ DockSidebar
     , Shrink
     , CloseSidebar
-    , HideOverlay
-    , FoldWebViews
-    , FocusWebView
+    // , HideOverlay
+    // , FoldWebViews
+    // , FocusWebView
     ]
   );
 
@@ -600,110 +758,111 @@ const reloadRuntime = model =>
   ];
 
 
-const updateQuery =
-  (model, action) =>
-  updateAssistant
-  ( model
-  , Assistant.Query(model.input.value)
-  );
+// const updateQuery =
+//   (model, action) =>
+//   updateAssistant
+//   ( model
+//   , Assistant.Query(model.input.value)
+//   );
 
 // Animations
 
-const expand = model =>
-  ( model.isExpanded
-  ? [ model, Effects.none ]
-  : startResizeAnimation(merge(model, {isExpanded: true}))
-  );
+// const expand = model =>
+//   ( model.isExpanded
+//   ? [ model, Effects.none ]
+//   : startResizeAnimation(merge(model, {isExpanded: true}))
+//   );
+//
+// const shrink = model =>
+//   ( model.isExpanded
+//   ? startResizeAnimation(merge(model, {isExpanded: false}))
+//   : [ model, Effects.none ]
+//   );
+//
+//
+// const startResizeAnimation = model => {
+//   const [resizeAnimation, fx] =
+//     Stopwatch.update(model.resizeAnimation, Stopwatch.Start);
+//   return [ merge(model, {resizeAnimation}), fx.map(ResizeAnimationAction) ];
+// }
 
-const shrink = model =>
-  ( model.isExpanded
-  ? startResizeAnimation(merge(model, {isExpanded: false}))
-  : [ model, Effects.none ]
-  );
+// const endResizeAnimation = model => {
+//   const [resizeAnimation, fx] =
+//     Stopwatch.update(model.resizeAnimation, Stopwatch.End);
+//
+//   return [ merge(model, {resizeAnimation}), Effects.none ];
+// }
+//
+// const shrinked = endResizeAnimation;
+// const expanded = endResizeAnimation;
 
-
-const startResizeAnimation = model => {
-  const [resizeAnimation, fx] =
-    Stopwatch.update(model.resizeAnimation, Stopwatch.Start);
-  return [ merge(model, {resizeAnimation}), fx.map(ResizeAnimationAction) ];
-}
-
-const endResizeAnimation = model => {
-  const [resizeAnimation, fx] =
-    Stopwatch.update(model.resizeAnimation, Stopwatch.End);
-
-  return [ merge(model, {resizeAnimation}), Effects.none ];
-}
-
-const shrinked = endResizeAnimation;
-const expanded = endResizeAnimation;
-
-const updateResizeAnimation = (model, action) => {
-  const [resizeAnimation, fx] =
-    Stopwatch.update(model.resizeAnimation, action);
-  const duration = 200;
-
-  const [begin, end] =
-    ( model.isExpanded
-    ? [50, 0]
-    : [0, 50]
-    );
-
-  const result =
-    ( (resizeAnimation && duration > resizeAnimation.elapsed)
-    ? [ merge
-        ( model
-        , { resizeAnimation
-          , display:
-              merge
-              ( model.display
-              , { rightOffset
-                  : Easing.ease
-                    ( Easing.easeOutCubic
-                    , Easing.float
-                    , begin
-                    , end
-                    , duration
-                    , resizeAnimation.elapsed
-                    )
-                }
-              )
-          }
-        )
-      , fx.map(ResizeAnimationAction)
-      ]
-    : [ merge
-        ( model
-        , { resizeAnimation
-          , display: merge(model.display, { rightOffset: end })
-          }
-        )
-      , Effects.receive
-        ( model.isExpanded
-        ? Expanded
-        : Shrinked
-        )
-      ]
-    );
-
-  return result;
-}
+// const updateResizeAnimation = (model, action) => {
+//   const [resizeAnimation, fx] =
+//     Stopwatch.update(model.resizeAnimation, action);
+//   const duration = 200;
+//
+//   const [begin, end] =
+//     ( model.isExpanded
+//     ? [50, 0]
+//     : [0, 50]
+//     );
+//
+//   const result =
+//     ( (resizeAnimation && duration > resizeAnimation.elapsed)
+//     ? [ merge
+//         ( model
+//         , { resizeAnimation
+//           , display:
+//               merge
+//               ( model.display
+//               , { rightOffset
+//                   : Easing.ease
+//                     ( Easing.easeOutCubic
+//                     , Easing.float
+//                     , begin
+//                     , end
+//                     , duration
+//                     , resizeAnimation.elapsed
+//                     )
+//                 }
+//               )
+//           }
+//         )
+//       , fx.map(ResizeAnimationAction)
+//       ]
+//     : [ merge
+//         ( model
+//         , { resizeAnimation
+//           , display: merge(model.display, { rightOffset: end })
+//           }
+//         )
+//       , Effects.receive
+//         ( model.isExpanded
+//         ? Expanded
+//         : Shrinked
+//         )
+//       ]
+//     );
+//
+//   return result;
+// }
 
 
 
 export const update =
   (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+    console.log(action)
     switch (action.type) {
-      case 'SubmitInput':
-        return submitInput(model);
-      case 'OpenWebView':
-        return openWebView(model);
-      case 'OpenURL':
-        return openURL(model, action.uri);
-      case 'ReceiveOpenURLNotification':
-        return reciveOpenURLNotification(model);
-      case 'ExitInput':
-        return exitInput(model);
+      // case 'SubmitInput':
+      //   return submitInput(model);
+      // case 'OpenWebView':
+      //   return openWebView(model);
+      // case 'OpenURL':
+      //   return openURL(model, action.uri);
+      // case 'ReceiveOpenURLNotification':
+      //   return reciveOpenURLNotification(model);
+      // case 'ExitInput':
+      //   return exitInput(model);
       case 'CreateWebView':
         return createWebView(model);
       case 'EditWebView':
@@ -725,40 +884,40 @@ export const update =
         return reloadRuntime(model);
 
       // Expand / Shrink animations
-      case "Expand":
-        return expand(model);
-      case "Shrink":
-        return shrink(model);
-      case "ResizeAnimation":
-        return updateResizeAnimation(model, action.action);
-      case "Expanded":
-        return expanded(model);
-      case "Shrinked":
-        return shrinked(model);
+      // case "Expand":
+      //   return expand(model);
+      // case "Shrink":
+      //   return shrink(model);
+      // case "ResizeAnimation":
+      //   return updateResizeAnimation(model, action.action);
+      // case "Expanded":
+      //   return expanded(model);
+      // case "Shrinked":
+      //   return shrinked(model);
 
       // Delegate to the appropriate module
-      case 'Input':
-        return updateInput(model, action.source);
-      case 'Suggest':
-        return updateInput(
-          model
-          , Input.Suggest
-            ( { query: model.assistant.query
-              , match: action.source.match
-              , hint: action.source.hint
-              }
-            )
-          );
-      case 'BlurInput':
-        return updateInput(model, Input.Blur);
-      case 'WebViews':
-        return updateWebViews(model, action.source);
-      case 'SelectTab':
-        return updateWebViews(model, action.source);
-      case 'ActivateTabByID':
-        return updateWebViews(model, action.activateTabByID);
-      case 'ActivateTab':
-        return updateWebViews(model, action.activateTab);
+      // case 'Input':
+      //   return updateInput(model, action.source);
+      // case 'Suggest':
+      //   return updateInput(
+      //     model
+      //     , Input.Suggest
+      //       ( { query: model.assistant.query
+      //         , match: action.source.match
+      //         , hint: action.source.hint
+      //         }
+      //       )
+      //     );
+      // case 'BlurInput':
+      //   return updateInput(model, Input.Blur);
+      // case 'WebViews':
+      //   return updateWebViews(model, action.source);
+      // case 'SelectTab':
+      //   return updateWebViews(model, action.source);
+      // case 'ActivateTabByID':
+      //   return updateWebViews(model, action.activateTabByID);
+      // case 'ActivateTab':
+      //   return updateWebViews(model, action.activateTab);
 
       case 'Shell':
         return updateShell(model, action.source);
@@ -766,21 +925,23 @@ export const update =
         return updateShell(model, Shell.Focus);
 
       // Assistant
-      case 'Assistant':
-        return updateAssistant(model, action.source);
-      case 'Query':
-        return updateQuery(model);
-      case 'SuggestNext':
-        return updateAssistant(model, Assistant.SuggestNext);
-      case 'SuggestPrevious':
-        return updateAssistant(model, Assistant.SuggestPrevious);
+      // case 'Assistant':
+      //   return updateAssistant(model, action.source);
+      // case 'Query':
+      //   return updateQuery(model);
+      // case 'SuggestNext':
+      //   return updateAssistant(model, Assistant.SuggestNext);
+      // case 'SuggestPrevious':
+      //   return updateAssistant(model, Assistant.SuggestPrevious);
 
       case 'Devtools':
         return updateDevtools(model, action.action);
       case 'Sidebar':
         return updateSidebar(model, action.action);
-      case 'Overlay':
-        return updateOverlay(model, action.action);
+      case 'Navigators':
+        return updateNavigators(model, action.navigators);
+      // case 'Overlay':
+      //   return updateOverlay(model, action.action);
 
       case 'Failure':
         return [
@@ -839,7 +1000,12 @@ export const view =
     , onFocus: onWindow(address, always(Focus))
     , onUnload: onWindow(address, always(Unload))
     }
-  , [ html.div
+  , [ Navigators.view
+      ( model.navigators
+      , forward(address, NavigatorsAction)
+      )
+
+      /*html.div
       ( { className: 'browser-content'
         , style:
           Style
@@ -872,26 +1038,20 @@ export const view =
           , forward(address, InputAction)
           )
         ]
-      )
-      , thunk
-      ( 'sidebar'
+      )*/
       , Sidebar.view
-      , model.sidebar
-      , model.webViews
+      ( model.sidebar
+      , model.navigators.deck
       , forward(address, SidebarAction)
       )
 
-    , thunk
-      ( 'shell'
-      , Shell.view
-      , model.shell
+    , Shell.view
+      ( model.shell
       , forward(address, ShellAction)
       )
 
-    , thunk
-      ( 'devtools'
-      , Devtools.view
-      , model.devtools
+    , Devtools.view
+      ( model.devtools
       , forward(address, DevtoolsAction)
       )
     ]
