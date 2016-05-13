@@ -121,44 +121,46 @@ const suggest = (model, {query, match, hint}) =>
   )
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
-  ( action.type === 'Abort'
-  ? updateFocusable(model, Focusable.Blur)
-  // We don't really do anything on submit action for now
-  // although in a future we may clear the value or do blur
-  // the input.
-  : action.type === 'Submit'
-  ? [model, Effects.none]
-  : action.type === 'Enter'
-  ? enter(merge(model, {isVisible: true}))
-  : action.type === 'Focus'
-  ? updateFocusable
-    ( merge(model, {isFocused: true, isVisible: true})
-    , action.source
-    )
-  : action.type === 'Blur'
-  ? updateFocusable(model, action.source)
-
-  : action.type === 'EnterSelection'
-  ? enterSelection(merge(model, {isVisible: true}), action.value)
-  : action.type === 'Focusable'
-  ? updateFocusable(model, action.source)
-  : action.type === 'Editable'
-  ? updateEditable(model, action.source)
-  : action.type === 'Change'
-  ? updateEditable(model, Editable.Change(action.value, action.selection))
-  : action.type === 'Show'
-  ? [merge(model, {isVisible: true}), Effects.none]
-  : action.type === 'Hide'
-  ? [merge(model, {isVisible: false}), Effects.none]
-  : action.type === 'SuggestNext'
-  ? [model, Effects.none]
-  : action.type === 'SuggestPrevious'
-  ? [model, Effects.none]
-  : action.type === 'Suggest'
-  ? suggest(model, action.source)
-  : Unknown.update(model, action)
-  );
+  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+    switch (action.type) {
+      case 'Abort':
+        return updateFocusable(model, Focusable.Blur);
+      // We don't really do anything on submit action for now
+      // although in a future we may clear the value or do blur
+      // the input.
+      case 'Submit':
+        return [model, Effects.none];
+      case 'Enter':
+        return enter(merge(model, {isVisible: true}));
+      case 'Focus':
+        return updateFocusable
+        ( merge(model, {isFocused: true, isVisible: true})
+        , action.source
+        );
+      case 'Blur':
+        return updateFocusable(model, action.source);
+      case 'EnterSelection':
+        return enterSelection(merge(model, {isVisible: true}), action.value);
+      case 'Focusable':
+        return updateFocusable(model, action.source);
+      case 'Editable':
+        return updateEditable(model, action.source);
+      case 'Change':
+        return updateEditable(model, Editable.Change(action.value, action.selection));
+      case 'Show':
+        return [merge(model, {isVisible: true}), Effects.none];
+      case 'Hide':
+        return [merge(model, {isVisible: false}), Effects.none];
+      case 'SuggestNext':
+        return [model, Effects.none];
+      case 'SuggestPrevious':
+        return [model, Effects.none];
+      case 'Suggest':
+        return suggest(model, action.source);
+      default:
+        return Unknown.update(model, action)
+    }
+  };
 
 
 const decodeKeyDown = Keyboard.bindings({
@@ -207,7 +209,8 @@ const style = Style.createSheet({
     marginLeft: `${-1 * (inputWidth / 2)}px`,
     position: 'absolute',
     top: '40px',
-    width: `${inputWidth}px`
+    width: `${inputWidth}px`,
+    zIndex: 12
   },
   field: {
     backgroundColor: '#EBEEF2',

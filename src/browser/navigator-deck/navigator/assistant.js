@@ -208,6 +208,7 @@ const styleSheet = StyleSheet.create
       , position: 'absolute'
       , top: '0px'
       , width: '100%'
+      , zIndex: 11
       }
     , expanded:
       { height: '100%'
