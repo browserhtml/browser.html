@@ -1,4 +1,4 @@
-/* @noflow */
+/* @flow */
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,29 +15,32 @@ import * as Input from "./navigator/input";
 import * as Output from "./navigator/web-view";
 import * as Unknown from "../../common/unknown";
 import * as URL from '../../common/url-helper';
+import * as Header from './navigator/Header';
+
+import {readTitle, isSecure, isDark, canGoBack} from './navigator/web-view/util';
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {ID, URI} from "./web-view"
+import type {ID, URI} from "./navigator/web-view"
 
-export type Options =
+export type Flags =
   { id: ID
-  , output: Output.Options
-  , input: Input.Flags;
-  , overlay: Overlay.Flags;
-  , assistant: Assistant.Flags;
-  }
-
-export type Model  =
-  { id: ID
-  , input: Input.Model
-  , output: Output.Model
-  , overlay: Overlay.Model
-  , assistant: Assistant.Model
+  , output: Output.Flags
+  , input: Input.Flags
+  , overlay: Overlay.Flags
+  , assistant: Assistant.Flags
   }
 
 export type Action =
   | { type: "NoOp" }
+
+  // Card
+  | { type: "Deactivate" }
+  | { type: "Activate" }
+  | { type: "Deselect" }
+  | { type: "Select" }
+  | { type: "Close" }
+
 
   // Input
   | { type: "CommitInput" }
@@ -50,83 +53,109 @@ export type Action =
 
   // Output
   | { type: "FocusOutput" }
-  | { type: "ShowTabs" }
-  | { type: "CreateTab" }
-  | { type: "EditInput" }
-  | { type: "PushedDown" }
+  | { type: "OpenNewTab" }
+  // | { type: "PushedDown" }
   | { type: "Output", output: Output.Action }
 
   // Assistant
-  | { type: "Suggest", suggestion: Assistant.Suggestion }
+  | { type: "Suggest", suggest: Assistant.Suggestion }
   | { type: "Assistant", assistant: Assistant.Action }
+
+  // Overlay
+  | { type: "Overlay", overlay: Overlay.Action }
+
+  // Header
+  | { type: "ShowTabs" }
+  | { type: "EditInput" }
+  | { type: "Header", header: Header.Action }
 
   // Internal
   | { type: "ActivateAssistant"}
   | { type: "DeactivateAssistant" }
   | { type: "SetSelectedInputValue", value: string }
 
-  // Embedder
+  // // Embedder
   | { type: "Navigate", uri: URI }
-  | { type: "Close" }
   | { type: "Open", options: Output.Options }
 */
 
-const TagInput = action =>
-  ( action.type === "Submit"
-  ? SubmitInput
-  : action.type === 'Abort'
-  ? EscapeInput
-  : action.type === 'Focus'
-  ? FocusInput
-  : action.type === 'Query'
-  ? CommitInput
-  : action.type === 'SuggestNext'
-  ? SuggestNext
-  : action.type === 'SuggestPrevious'
-  ? SuggestPrevious
-  : { type: 'Input'
-    , input: action
+const SubmitInput = { type: "SubmitInput" }
+const EscapeInput = { type: "EscapeInput" }
+const FocusInput = { type: "FocusInput" }
+const CommitInput = { type: "CommitInput" }
+const SuggestNext = { type: "SuggestNext" }
+const SuggestPrevious = { type: "SuggestPrevious" }
+
+const tagInput =
+  action => {
+    switch (action.type) {
+      case "Submit":
+        return SubmitInput
+      case "Abort":
+        return EscapeInput
+      case "Focus":
+        return FocusInput
+      case "Query":
+        return CommitInput
+      case "SuggestNext":
+        return SuggestNext
+      case "SuggestPrevious":
+        return SuggestPrevious
+      default:
+        return { type: 'Input', input: action }
     }
-  );
+  }
 
-const SubmitInput = { type: "SubmitInput" };
-const EscapeInput = { type: "EscapeInput" };
-const FocusInput = { type: "FocusInput" };
-const CommitInput = { type: "CommitInput" };
-const SuggestNext = { type: "SuggestNext" };
-const SuggestPrevious = { type: "SuggestPrevious" };
-
-
-const TagAssistant =
-  action =>
-  ( action.type === 'Suggest'
-  ? { type: "Suggest"
-    , suggestion: action.source
+const tagAssistant =
+  action => {
+    switch (action.type) {
+      case "Suggest":
+        return { type: "Suggest", suggest: action.suggest }
+      default:
+        return { type: "Assistant", assistant: action }
     }
-  : { type: "Assistant"
-    , assistant: action
-    }
-  );
+  }
 
-const TagOutput =
-  action =>
-  ( action.type === 'ShowTabs'
-  ? ShowTabs
-  : action.type === "Create"
-  ? CreateTab
-  : action.type === "Edit"
-  ? EditInput
-  : action.type === "Focus"
-  ? FocusOutput
-  : action.type === "Close"
-  ? Close
-  : action.type === "Open"
-  ? { type: "Open", options: action.options }
-  : { type: "Output", output: action }
-  );
+const tagOverlay =
+  action => {
+    switch (action.type) {
+      default:
+        return { type: "Overlay", overlay: action }
+    }
+  }
+
+
+const tagOutput =
+  action => {
+    switch (action.type) {
+      case "Create":
+        return OpenNewTab
+      case "Focus":
+        return FocusOutput
+      case "Close":
+        return Close;
+      case "Open":
+        return { type: "Open", options: action.options }
+      default:
+        return { type: "Output", output: action }
+    }
+  };
+
+const tagHeader =
+  action => {
+    switch (action.type) {
+      case "EditInput":
+        return EditInput
+      case "ShowTabs":
+        return ShowTabs
+      default:
+        return { type: "Header", header: action }
+    }
+  }
+
 
 const ShowTabs = { type: "ShowTabs" };
-const CreateTab = { type: "CreateTab"};
+const OpenNewTab = { type: "OpenNewTab"};
 const EditInput = { type: "EditInput" };
 const FocusOutput = { type: "FocusOutput" };
 const BlurOutput = { type: "BlurOutput" };
@@ -149,36 +178,70 @@ const SetSelectedInputValue =
     }
   )
 
+export class Model {
+  /*::
+  id: ID;
+  output: Output.Model;
+  input: Input.Model;
+  overlay: Overlay.Model;
+  assistant: Assistant.Model;
+  */
+  constructor(
+    id/*:ID*/
+  , input/*:Input.Model*/
+  , output/*:Output.Model*/
+  , assistant/*:Assistant.Model*/
+  , overlay/*:Overlay.Model*/
+  ) {
+    this.id = id
+    this.input = input
+    this.output = output
+    this.assistant = assistant
+    this.overlay = overlay
+  }
+}
 
-export const init =
-  (options/*:Options*/)/*:[Model, Effects<Action>]*/ => {
-    const id = options.id;
-    const [input, $input] = Input.init(false, false, options.input);
-    const [output, $output] = Output.init(id, options.output);
-    const [assistant, $assistant ] = Assistant.init(options.assistant);
-    const [overlay, $overlay ] = Overlay.init(options.overlay);
-    const model =
-      { id
+const assemble =
+  ( id
+  , [input, $input]
+  , [output, $output]
+  , [assistant, $assistant]
+  , [overlay, $overlay]
+  ) => {
+    const model = new Model
+      ( id
       , input
       , output
-      , overlay
       , assistant
-      }
+      , overlay
+      )
 
     const fx = Effects.batch
-      ( [ $input.map(TagInput)
-        , $output.map(TagOutput)
-        , $assistant.map(TagAssistant)
+      ( [ $input.map(tagInput)
+        , $output.map(tagOutput)
+        , $overlay.map(tagOverlay)
+        , $assistant.map(tagAssistant)
         ]
       )
 
     return [model, fx]
   }
 
+export const init =
+  (options/*:Flags*/)/*:[Model, Effects<Action>]*/ =>
+  assemble
+  ( options.id
+  , Input.init(options.input)
+  , Output.init(options.id, options.output)
+  , Assistant.init(options.assistant)
+  , Overlay.init(options.overlay)
+  )
+
 export const update =
   ( model/*:Model*/
   , action/*:Action*/
   )/*:[Model, Effects<Action>]*/ => {
+    console.log(action)
     switch (action.type) {
       case 'NoOp':
         return nofx(model);
@@ -209,7 +272,7 @@ export const update =
 
       // Assistant
       case 'Suggest':
-        return suggest(model, action.suggestion);
+        return suggest(model, action.suggest);
       case 'Assistant':
         return updateAssistant(model, action.assistant);
 
@@ -324,38 +387,89 @@ const setSelectedInputValue =
 
 const updateInput = cursor
   ( { get: model => model.input
-    , set: (model, input) => merge(model, {input})
+    , set:
+      (model, input) =>
+      new Model
+      ( model.id
+      , input
+      , model.output
+      , model.assistant
+      , model.overlay
+      )
     , update: Input.update
-    , tag: TagInput
+    , tag: tagInput
     }
   );
 
 const updateOutput = cursor
   ( { get: model => model.output
-    , set: (model, output) => merge(model, {output})
+    , set:
+      (model, output) =>
+      new Model
+      ( model.id
+      , model.input
+      , output
+      , model.assistant
+      , model.overlay
+      )
     , update: Output.update
-    , tag: TagOutput
+    , tag: tagOutput
     }
   );
 
 const updateAssistant = cursor
   ( { get: model => model.assistant
-    , set: (model, assistant) => merge(model, {assistant})
+    , set:
+      (model, assistant) =>
+      new Model
+      ( model.id
+      , model.input
+      , model.output
+      , assistant
+      , model.overlay
+      )
     , update: Assistant.update
-    , tag: TagAssistant
+    , tag: tagAssistant
     }
   );
 
+const updateOverlay = cursor
+  ( { get: model => model.overlay
+    , set:
+      (model, overlay) =>
+      new Model
+      ( model.id
+      , model.input
+      , model.output
+      , model.assistant
+      , overlay
+      )
+    , update: Overlay.update
+    , tag: tagOverlay
+    }
+  );
 
 export const render =
   (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
   html.div
-  ( { className: `navigator-${model.id}`
-    , style: styleSheet.base
+  ( { className: `navigator id-${model.id} ${mode(model.output)}`
+    , style: Style.mix
+      ( styleSheet.base
+      , ( isDark(model.output)
+        ? styleSheet.dark
+        : styleSheet.bright
+        )
+      , styleBackground(model.output)
+      )
     }
-  , [ Input.view(model.input, forward(address, TagInput))
-    , Assistant.view(model.assistant, forward(address, TagAssistant))
-    , Output.view(model.output, forward(address, TagOutput))
+  , [ Header.view
+      ( readTitle(model.output, 'Untitled')
+      , isSecure(model.output)
+      , forward(address, tagHeader)
+      )
+    , Input.view(model.input, forward(address, tagInput))
+    , Assistant.view(model.assistant, forward(address, tagAssistant))
+    , Output.view(model.output, forward(address, tagOutput))
     ]
   )
 
@@ -376,6 +490,28 @@ const styleSheet = Style.createSheet
       , top: 0
       , left: 0
       , overflow: 'hidden'
+      , background: 'white'
+      }
+    , dark:
+      { color: 'rgba(255, 255, 255, 0.8)'
+      }
+    , bright:
+      { color: 'rgba(0, 0, 0, 0.8)'
       }
     }
   );
+
+const styleBackground =
+  model =>
+  ( model.page.pallet.background
+  ? { backgroundColor: model.page.pallet.background
+    }
+  : null
+  )
+
+const mode =
+  model =>
+  ( isDark(model)
+  ? 'dark'
+  : 'bright'
+  )

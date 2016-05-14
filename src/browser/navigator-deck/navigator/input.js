@@ -19,7 +19,45 @@ import * as Style from '../../../common/style';
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {Suggestion, Model, Action} from "./input"
+
+export type Flags =
+  { isVisible?: boolean
+  , isFocused?: boolean
+  , value: string
+  }
+
+export type Model =
+  { isVisible: boolean
+  , isFocused: boolean
+  , value: string
+  , selection: ?Editable.Selection
+  }
+
+export type Suggestion =
+  { query: string
+  , match: string
+  , hint: string
+  }
+
+export type Action =
+  | { type: 'Submit' }
+  | { type: 'Query' }
+  | { type: 'Abort' }
+  | { type: 'Enter' }
+  | { type: 'EnterSelection', value: string }
+  | { type: 'Show' }
+  | { type: 'Hide' }
+  | { type: 'SuggestNext' }
+  | { type: 'SuggestPrevious'}
+  | { type: 'Suggest', suggest: Suggestion }
+  | { type: 'Focus' }
+  | { type: 'Blur' }
+  | { type: "Change"
+    , value: string
+    , selection: Editable.Selection
+    }
+  | { type: 'Editable', editable: Editable.Action }
+  | { type: 'Focusable', focusable: Focusable.Action }
 */
 
 // Create a new input submit action.
@@ -27,7 +65,7 @@ export const Query/*:()=>Action*/ = always({ type: 'Query' });
 export const Suggest =
   (suggestion/*:Suggestion*/)/*:Action*/ =>
   ( { type: "Suggest"
-    , source: suggestion
+    , suggest: suggestion
     }
   );
 
@@ -53,14 +91,14 @@ const FocusableAction = action =>
   : action.type === 'Blur'
   ? Blur
   : { type: 'Focusable'
-    , source: action
+    , focusable: action
     }
   );
 
 const EditableAction =
   (action) =>
   ( { type: 'Editable'
-    , source: action
+    , editable: action
     }
   );
 
@@ -95,14 +133,25 @@ const enterSelectionRange = (model, value, start, end) => {
   return [result, Effects.batch([focusFx, editFx])];
 }
 
+const defaultFlags =
+  { isFocused: false
+  , isVisible: false
+  , value: ""
+  }
+
 export const init =
-  ( isVisible/*:boolean*/=false
-  , isFocused/*:boolean*/=false
-  , value/*:string*/=''
-  )/*:[Model, Effects<Action>]*/ =>
-  [ ( { value
-      , isFocused
-      , isVisible
+  (flags/*:Flags*/=defaultFlags)/*:[Model, Effects<Action>]*/ =>
+  [ ( { value: flags.value
+      , isFocused:
+        ( flags.isFocused == null
+        ? false
+        : flags.isFocused
+        )
+      , isVisible:
+        ( flags.isVisible == null
+        ? false
+        : flags.isVisible
+        )
       , selection: null
       }
     )
@@ -135,16 +184,16 @@ export const update =
       case 'Focus':
         return updateFocusable
         ( merge(model, {isFocused: true, isVisible: true})
-        , action.source
+        , Focusable.Focus
         );
       case 'Blur':
-        return updateFocusable(model, action.source);
+        return updateFocusable(model, Focusable.Blur);
       case 'EnterSelection':
         return enterSelection(merge(model, {isVisible: true}), action.value);
       case 'Focusable':
-        return updateFocusable(model, action.source);
+        return updateFocusable(model, action.focusable);
       case 'Editable':
-        return updateEditable(model, action.source);
+        return updateEditable(model, action.editable);
       case 'Change':
         return updateEditable(model, Editable.Change(action.value, action.selection));
       case 'Show':
@@ -156,7 +205,7 @@ export const update =
       case 'SuggestPrevious':
         return [model, Effects.none];
       case 'Suggest':
-        return suggest(model, action.source);
+        return suggest(model, action.suggest);
       default:
         return Unknown.update(model, action)
     }
@@ -267,7 +316,7 @@ const style = Style.createSheet({
 
 export const view =
   (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
-  html.div({
+  html.form({
     className: 'input-combobox',
     style: Style.mix
     ( style.combobox
@@ -279,7 +328,7 @@ export const view =
     // Note we submit new query only on `onInput` that's when we expect
     onInput: forward(address, Query)
   }, [
-    html.span({
+    html.figure({
       className: 'input-search-icon',
       style: style.searchIcon
     }, ['']),

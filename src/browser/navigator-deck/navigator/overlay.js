@@ -16,6 +16,7 @@ import * as Unknown from "../../../common/unknown";
 import type {Address, DOM} from "reflex"
 import type {Time} from "../../../common/prelude"
 
+export type Flags = boolean
 type Visible = 0.1
 type Invisible = 0
 type Display =

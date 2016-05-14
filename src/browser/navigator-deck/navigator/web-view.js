@@ -745,71 +745,71 @@ export const view =
     , onServoMouseForceDown: on(address, always(PushDown))
     }
   , [ Frame.view(styleSheet, model, address)
-    , html.div
-      ( { className: 'webview-topbar'
-        , style: Style
-          ( styleSheet.topbar
-          , ( model.page.pallet.background != null
-            ? { backgroundColor: model.page.pallet.background }
-            : null
-            )
-          )
-        }
-      , [ html.div
-          ( { className: 'webview-combobox'
-            , style: Style
-              ( styleSheet.combobox
-              , ( isModelDark
-                ? styleSheet.darkText
-                : styleSheet.lightText
-                )
-              )
-            , onClick: forward(address, always(Edit))
-            }
-          , [ html.span
-              ( { className: 'webview-search-icon'
-                , style: styleSheet.iconSearch
-                }
-              , ['']
-              )
-            , html.div
-              ( { className: 'webview-title-container'
-                , style: styleSheet.titleContainer
-                }
-              , [ html.span
-                  ( { className: 'webview-security-icon'
-                    , style:
-                      ( model.security.secure
-                      ? styleSheet.iconSecure
-                      : styleSheet.iconInsecure
-                      )
-                    }
-                  , ['']
-                  )
-                , html.span
-                  ( { className: 'webview-title' }
-                  // @TODO localize this string
-                  , [ readTitle(model, 'Untitled') ]
-                  )
-                ]
-              )
-            ]
-          )
-        , html.div
-          ( { className: 'webview-show-tabs-icon'
-            , style:
-                Style
-                ( styleSheet.iconShowTabs
-                , ( isModelDark
-                  ? styleSheet.iconShowTabsDark
-                  : styleSheet.iconShowTabsBright
-                  )
-                )
-            , onClick: forward(address, always(ShowTabs))
-            }
-          )
-        ]
-      )
+    // , html.div
+    //   ( { className: 'webview-topbar'
+    //     , style: Style
+    //       ( styleSheet.topbar
+    //       , ( model.page.pallet.background != null
+    //         ? { backgroundColor: model.page.pallet.background }
+    //         : null
+    //         )
+    //       )
+    //     }
+    //   , [ html.div
+    //       ( { className: 'webview-combobox'
+    //         , style: Style
+    //           ( styleSheet.combobox
+    //           , ( isModelDark
+    //             ? styleSheet.darkText
+    //             : styleSheet.lightText
+    //             )
+    //           )
+    //         , onClick: forward(address, always(Edit))
+    //         }
+    //       , [ html.span
+    //           ( { className: 'webview-search-icon'
+    //             , style: styleSheet.iconSearch
+    //             }
+    //           , ['']
+    //           )
+    //         , html.div
+    //           ( { className: 'webview-title-container'
+    //             , style: styleSheet.titleContainer
+    //             }
+    //           , [ html.span
+    //               ( { className: 'webview-security-icon'
+    //                 , style:
+    //                   ( model.security.secure
+    //                   ? styleSheet.iconSecure
+    //                   : styleSheet.iconInsecure
+    //                   )
+    //                 }
+    //               , ['']
+    //               )
+    //             , html.span
+    //               ( { className: 'webview-title' }
+    //               // @TODO localize this string
+    //               , [ readTitle(model, 'Untitled') ]
+    //               )
+    //             ]
+    //           )
+    //         ]
+    //       )
+    //     , html.div
+    //       ( { className: 'webview-show-tabs-icon'
+    //         , style:
+    //             Style
+    //             ( styleSheet.iconShowTabs
+    //             , ( isModelDark
+    //               ? styleSheet.iconShowTabsDark
+    //               : styleSheet.iconShowTabsBright
+    //               )
+    //             )
+    //         , onClick: forward(address, always(ShowTabs))
+    //         }
+    //       )
+    //     ]
+    //   )
     , Progress.view(model.progress, address)
     , html.div
       ( { className: 'webview-tab-icon'

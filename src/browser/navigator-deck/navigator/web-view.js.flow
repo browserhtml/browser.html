@@ -42,6 +42,8 @@ export type Options =
   , guestInstanceId: ?string
   }
 
+export type Flags = Options
+
 export type Model =
   { id: ID
   , guestInstanceId: ?string

@@ -40,3 +40,7 @@ export const isDark =
 export const canGoBack =
   (model/*:WebView.Model*/)/*:boolean*/ =>
   model.navigation.canGoBack === true;
+
+export const isSecure =
+  (model/*:WebView.Model*/)/*:boolean*/ =>
+  model.security.secure;
