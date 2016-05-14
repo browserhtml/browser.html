@@ -852,7 +852,6 @@ const reloadRuntime = model =>
 
 export const update =
   (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
-    console.log(action)
     switch (action.type) {
       // case 'SubmitInput':
       //   return submitInput(model);

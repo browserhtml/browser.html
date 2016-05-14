@@ -18,6 +18,7 @@ export type Action =
   | { type: "ZoomIn" }
   | { type: "Shrink" }
   | { type: "Expand" }
+  | { type: "ShowTabs" }
   | { type: "Animation", animation: Animation.Action }
   | { type: "Deck", deck: Deck.Action }
 */
@@ -26,6 +27,7 @@ export const ZoomOut = { type: "ZoomOut" }
 export const ZoomIn = { type: "ZoomIn" }
 export const Expand = { type: "Expand" }
 export const Shrink = { type: "Shrink" }
+export const ShowTabs = { type: "ShowTabs" }
 
 
 export class Model {
@@ -49,11 +51,14 @@ export class Model {
 }
 
 const tagDeck =
-  (action) =>
-  ( { type: "Deck"
-    , deck: action
+  action => {
+    switch (action.type) {
+      case "ShowTabs":
+        return ShowTabs;
+      default:
+        return { type: "Deck", deck: action };
     }
-  )
+  }
 
 const tagAnimation =
   action =>
@@ -93,6 +98,8 @@ export const update =
         return updateAnimation(model, action.animation);
       case "Deck":
         return updateDeck(model, action.deck);
+      case "ShowTabs":
+        return updateDeck(model, Deck.ShowTabs);
       case "ZoomIn":
         return zoomIn(model, performance.now());
       case "ZoomOut":

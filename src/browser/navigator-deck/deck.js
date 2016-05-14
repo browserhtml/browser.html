@@ -9,8 +9,16 @@ import * as URI from "../../common/url-helper";
 /*::
 import type {Address, DOM} from "reflex"
 export type Model = Deck.Model<Navigator.Model>;
-export type Action = Deck.Action<Navigator.Action, Navigator.Flags>;
+
+export type Command =
+  | { type: "ShowTabs" }
+
+export type Action =
+  | Deck.Action<Navigator.Action, Navigator.Flags>
+  | Command
 */
+
+export const ShowTabs = { type: "ShowTabs" }
 
 const open =
   (model, options) =>
@@ -21,7 +29,33 @@ const open =
   , model
   )
 
-export const init = ()/*:[Model, Effects<Action>]*/ =>
+const toCommand =
+  action => {
+    switch (action.type) {
+      case "ShowTabs":
+        return ShowTabs;
+      default:
+        return null;
+    }
+  }
+
+const tag =
+  (action/*:Deck.Action<Navigator.Action, Navigator.Flags>*/)/*:Action*/ => {
+    switch(action.type) {
+      case "Modify":
+        const command = toCommand(action.modify)
+        return (
+            command == null
+          ? action
+          : command
+          )
+      default:
+        return action
+    }
+  }
+
+export const init =
+  ()/*:[Model, Effects<Action>]*/ =>
   Deck.init();
 
 export const initWithNewTab =
@@ -30,28 +64,46 @@ export const initWithNewTab =
     const [model2, fx2] = open
       ( model1
       , { id: `${model1.nextID + 1}`
-        , input: ''
-        , output:
+        , input:
+          { value: ''
+          , isVisible: true
+          , isFocused: true
+          }
+
+          , output:
           { uri: URI.read('about:newtab')
           , disposition: 'default'
           , name: 'about:newtab'
+          , features: ''
           , ref: null
           , guestInstanceId: null
           }
+        , assistant: false
+        , overlay: false
         }
       );
-    return [model2, Effects.batch([fx1, fx2])];
+    const fx = Effects.batch([fx1, fx2])
+    const model = model2;
+
+    return [ model, fx.map(tag) ]
   }
 
+const nofx = model => [model, Effects.none]
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
-  Deck.update
-  ( Navigator.init
-  , Navigator.update
-  , model
-  , action
-  );
+  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+    switch (action.type) {
+      case "ShowTabs":
+        return nofx(model);
+      default:
+        return Deck.update(
+          Navigator.init
+        , Navigator.update
+        , model
+        , action
+        );
+    }
+  }
 
 export const renderCards =
   ( model/*:Model*/
@@ -60,5 +112,5 @@ export const renderCards =
   Deck.renderCards
   ( Navigator.render
   , model
-  , address
+  , forward(address, tag)
   )
