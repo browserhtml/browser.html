@@ -1,4 +1,4 @@
-/* @flow */
+/* @noflow */
 
 import {Effects, html, forward, thunk} from "reflex"
 import {merge} from "../common/prelude"
@@ -28,7 +28,7 @@ export type Action <action, flags> =
   | { type: "Remove", id: ID }
   | { type: "Select", id: ID, select: action, deselect: action }
   | { type: "Activate", id: ID, activate: action, deactivate: action, deselect: action }
-  | { type: "Modify", id: ID, modify: Card.Action<action> }
+  | { type: "Modify", id: ID, modify: action }
 
 export type Transaction <action, model> =
   [model, Effects<action>]
@@ -79,8 +79,8 @@ export const init = /*::<action, model, flags>*/
   ];
 
 export const update = /*::<action, model, flags>*/
-  ( initCard/*:Init<Card.Action<action>, model, flags>*/
-  , updateCard/*:Update<Card.Action<action>, model>*/
+  ( initCard/*:Init<action, model, flags>*/
+  , updateCard/*:Update<action, model>*/
   , model/*:Model<model>*/
   , action/*:Action<action, flags>*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
@@ -112,10 +112,10 @@ const nofx = /*::<model, action>*/
 
 
 const modify = /*::<model, action, flags>*/
-  ( initCard/*:Init<Card.Action<action>, model, flags>*/
-  , updateCard/*:Update<Card.Action<action>, model>*/
+  ( initCard/*:Init<action, model, flags>*/
+  , updateCard/*:Update<action, model>*/
   , id/*:ID*/
-  , action/*:Card.Action<action>*/
+  , action/*:action*/
   , model/*:Model<model>*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
     if (id in model.cards) {
@@ -138,8 +138,8 @@ const modify = /*::<model, action, flags>*/
   }
 
 export const open = /*::<action, model, flags>*/
-  ( initCard/*:Init<Card.Action<action>, model, flags>*/
-  , updateCard/*:Update<Card.Action<action>, model>*/
+  ( initCard/*:Init<action, model, flags>*/
+  , updateCard/*:Update<action, model>*/
   , flags/*:flags*/
   , model/*:Model<model>*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
@@ -169,8 +169,8 @@ export const open = /*::<action, model, flags>*/
   }
 
 const close = /*::<action, model, flags>*/
-  ( initCard/*:Init<Card.Action<action>, model, flags>*/
-  , updateCard/*:Update<Card.Action<action>, model>*/
+  ( initCard/*:Init<action, model, flags>*/
+  , updateCard/*:Update<action, model>*/
   , id/*:ID*/
   , model/*:Model<model>*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
@@ -221,8 +221,8 @@ const asDeselected = /*::<model>*/
   );
 
 export const remove = /*::<action, model, flags>*/
-  ( initCard/*:Init<Card.Action<action>, model, flags>*/
-  , updateCard/*:Update<Card.Action<action>, model>*/
+  ( initCard/*:Init<action, model, flags>*/
+  , updateCard/*:Update<action, model>*/
   , id/*:ID*/
   , model/*:Model<model>*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
@@ -256,8 +256,8 @@ const cardNotFound = /*::<model, action>*/
 
 
 export const select = /*::<action, model, flags>*/
-  ( initCard/*:Init<Card.Action<action>, model, flags>*/
-  , updateCard/*:Update<Card.Action<action>, model>*/
+  ( initCard/*:Init<action, model, flags>*/
+  , updateCard/*:Update<action, model>*/
   , id/*:ID*/
   , model/*:Model<model>*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
@@ -299,8 +299,8 @@ export const select = /*::<action, model, flags>*/
   }
 
 export const deselect = /*::<action, model, flags>*/
-  ( initCard/*:Init<Card.Action<action>, model, flags>*/
-  , updateCard/*:Update<Card.Action<action>, model>*/
+  ( initCard/*:Init<action, model, flags>*/
+  , updateCard/*:Update<action, model>*/
   , id/*:ID*/
   , model/*:Model<model>*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
@@ -332,8 +332,8 @@ export const deselect = /*::<action, model, flags>*/
   }
 
 export const activate = /*::<action, model, flags>*/
-  ( initCard/*:Init<Card.Action<action>, model, flags>*/
-  , updateCard/*:Update<Card.Action<action>, model>*/
+  ( initCard/*:Init<action, model, flags>*/
+  , updateCard/*:Update<action, model>*/
   , id/*:ID*/
   , model/*:Model<model>*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
@@ -376,8 +376,8 @@ export const activate = /*::<action, model, flags>*/
   }
 
 export const deactivate = /*::<action, model, flags>*/
-  ( initCard/*:Init<Card.Action<action>, model, flags>*/
-  , updateCard/*:Update<Card.Action<action>, model>*/
+  ( initCard/*:Init<action, model, flags>*/
+  , updateCard/*:Update<action, model>*/
   , id/*:ID*/
   , model/*:Model<model>*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
@@ -410,8 +410,8 @@ export const deactivate = /*::<action, model, flags>*/
   }
 
 const clear = /*::<action, model, flags>*/
-  ( initCard/*:Init<Card.Action<action>, model, flags>*/
-  , updateCard/*:Update<Card.Action<action>, model>*/
+  ( initCard/*:Init<action, model, flags>*/
+  , updateCard/*:Update<action, model>*/
   , id/*:ID*/
   , model/*:Model<model>*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
@@ -464,7 +464,7 @@ const beneficiaryOf =
 
 const Tag = {
   modify: /*::<action, flags>*/
-    ( id/*:ID*/ )/*:(action:Card.Action<action>) => Action<action, flags>*/ =>
+    ( id/*:ID*/ )/*:(action:action) => Action<action, flags>*/ =>
     ( action ) =>
     ( { type: "Modify"
       , id
@@ -474,9 +474,9 @@ const Tag = {
 }
 
 export const renderCards = /*::<action, model, flags>*/
-  ( renderCard/*:(model:model, address:Address<Card.Action<action>>) => DOM*/
+  ( renderCard/*:(model:model, address:Address<action>) => DOM*/
   , model/*:Model<model>*/
-  , address/*:Address<Action<Card.Action<action>, flags>>*/
+  , address/*:Address<Action<action, flags>>*/
   )/*:Array<DOM>*/ =>
   model
   .index
