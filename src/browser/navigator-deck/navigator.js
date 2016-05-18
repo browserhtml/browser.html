@@ -494,9 +494,11 @@ const styleSheet = Style.createSheet
       }
     , dark:
       { color: 'rgba(255, 255, 255, 0.8)'
+      , borderColor: 'rgba(255, 255, 255, 0.2)'
       }
     , bright:
       { color: 'rgba(0, 0, 0, 0.8)'
+      , borderColor: 'rgba(0, 0, 0, 0.2)'
       }
     }
   );

@@ -341,7 +341,7 @@ const innerView =
 export const render =
   (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
   html.section
-  ( null
+  ( { style: {borderColor: 'inherit' } }
   , model
     .items
     .slice(0, model.limit)

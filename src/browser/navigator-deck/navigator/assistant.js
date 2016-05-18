@@ -236,7 +236,8 @@ export const update =
 
 const styleSheet = StyleSheet.create
   ( { base:
-      { background: '#fff'
+      { background: 'inherit'
+      , borderColor: 'inherit'
       , left: '0px'
       , position: 'absolute'
       , top: '0px'
@@ -260,6 +261,7 @@ const styleSheet = StyleSheet.create
 
     , results:
       { listStyle: 'none'
+      , borderColor: 'inherit'
       , margin: '90px auto 40px'
       , padding: '0px'
       , width: '480px'

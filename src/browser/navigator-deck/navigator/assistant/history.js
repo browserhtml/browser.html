@@ -202,7 +202,7 @@ const innerView =
 export const render =
   (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
   html.section
-  ( null
+  ( { style: {borderColor: 'inherit' } }
   , model.items.map
     ( (uri, index) =>
       Suggestion.view

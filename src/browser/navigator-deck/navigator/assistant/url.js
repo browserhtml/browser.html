@@ -18,11 +18,10 @@ import type {URI} from "./url";
 
 const styleSheet = StyleSheet.create
   ( { base:
-      { color: '#4A90E2'
-      , fontSize: '14px'
+      { fontSize: '14px'
       }
     , selected:
-      { color: 'rgba(255,255,255,0.7)'
+      { color: 'rgba(255,255,255)'
       }
     , unselected:
       {
