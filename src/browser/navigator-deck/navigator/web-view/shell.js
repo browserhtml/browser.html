@@ -103,6 +103,43 @@ export const setVisibility =
     Promise.resolve(result).then(succeed, fail);
   });
 
+export const focus =
+  (id/*:ID*/)/*:Task<Error, void>*/ =>
+  new Task((succeed, fail) => {
+    const target = document.getElementById(`web-view-${id}`);
+    if (target == null) {
+      fail(Error(`WebView with id web-view-${id} not found`))
+    }
+    else {
+      try {
+        target.focus()
+        succeed()
+      }
+      catch (error) {
+        fail(error)
+      }
+    }
+  });
+
+export const blur =
+  (id/*:ID*/)/*:Task<Error, void>*/ =>
+  new Task((succeed, fail) => {
+    const target = document.getElementById(`web-view-${id}`);
+    if (target == null) {
+      fail(Error(`WebView with id web-view-${id} not found`))
+    }
+    else {
+      try {
+        target.blur()
+        succeed()
+      }
+      catch (error) {
+        fail(error)
+      }
+    }
+  });
+
+
 // Reports error as a warning in a console.
 const report =
   error =>
