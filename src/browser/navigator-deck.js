@@ -6,8 +6,10 @@ import * as Unknown from "../common/unknown"
 import * as Display from "./navigator-deck/display"
 import {Effects, html, forward, thunk} from "reflex"
 import {cursor} from "../common/cursor"
+import {always} from "../common/prelude"
 import * as Style from "../common/style"
 import * as Easing from "eased"
+import * as Overlay from "./navigator-deck/overlay"
 
 /*::
 import {performance} from "../common/performance"
@@ -19,6 +21,7 @@ export type Action =
   | { type: "Shrink" }
   | { type: "Expand" }
   | { type: "ShowTabs" }
+  | { type: "ShowWebView" }
   | { type: "Animation", animation: Animation.Action }
   | { type: "Deck", deck: Deck.Action }
 */
@@ -28,6 +31,7 @@ export const ZoomIn = { type: "ZoomIn" }
 export const Expand = { type: "Expand" }
 export const Shrink = { type: "Shrink" }
 export const ShowTabs = { type: "ShowTabs" }
+export const ShowWebView = { type: "ShowWebView" }
 
 
 export class Model {
@@ -66,6 +70,8 @@ const tagAnimation =
     , animation: action
     }
   );
+
+const tagOverlay = always(ShowWebView);
 
 
 export const init =
@@ -268,9 +274,15 @@ export const render =
           }
         )
     }
-  , Deck.renderCards
-    ( model.deck
-    , forward(address, tagDeck)
+  , [ Overlay.view
+      ( model.zoom === false
+      , forward(address, tagOverlay)
+      )
+    ].concat
+    ( Deck.renderCards
+      ( model.deck
+      , forward(address, tagDeck)
+      )
     )
   )
 

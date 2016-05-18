@@ -631,6 +631,7 @@ const createWebView = model =>
     // , HideOverlay
     // , FoldWebViews
     /*, EnterInput*/
+    , ZoomInNavigators
     ]
   );
 
@@ -644,6 +645,7 @@ const editWebView = model =>
     // , ShowOverlay
     // , FoldWebViews
     /*, EnterInputSelection(WebViews.getActiveURI(model.webViews, ''))*/
+    , ZoomOutNavigators
     ]
   );
 
