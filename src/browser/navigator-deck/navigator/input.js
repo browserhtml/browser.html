@@ -254,8 +254,8 @@ const inputXPadding = 32;
 const style = Style.createSheet({
   combobox: {
     height: inputHeight,
-    left: '50%',
-    marginLeft: `${-1 * (inputWidth / 2)}px`,
+    right: '50%',
+    marginRight: `${-1 * (inputWidth / 2)}px`,
     position: 'absolute',
     top: '40px',
     width: `${inputWidth}px`,
