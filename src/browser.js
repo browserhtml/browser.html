@@ -249,13 +249,14 @@ const SidebarAction = action =>
 //   );
 
 const NavigatorsAction =
-  (action/*:Navigators.Action*/)/*:Action*/ =>
-  ( action.type === "ShowTabs"
-  ? ShowTabs
-  : action.type === "Create"
-  ? CreateWebView
-  : action.type === "Edit"
-  ? EditWebView
+  (action/*:Navigators.Action*/)/*:Action*/ => {
+    switch (action.type) {
+      case "ShowTabs":
+        return ShowTabs
+      case "ShowWebView":
+        return ShowWebView
+      case "OpenNewTab":
+        return CreateWebView
   // : action.type === "SelectRelative"
   // ? { type: "SelectTab"
   //   , source: action
@@ -272,10 +273,10 @@ const NavigatorsAction =
   // ? { type: "ActivateTabByID"
   //   , activateTabByID: action
   //   }
-  : { type: 'Navigators'
-    , navigators: action
+      default:
+        return { type: 'Navigators', navigators: action }
     }
-  );
+  };
 
 // const WebViewsAction = (action/*:WebViews.Action*/)/*:Action*/ =>
 //   ( action.type === "ShowTabs"
@@ -662,6 +663,12 @@ const showTabs = model =>
     ]
   );
 
+const toggleTabs =
+  model =>
+  ( model.sidebar.isOpen
+  ? showWebView(model)
+  : showTabs(model)
+  );
 
 const selectWebView = (model, action) =>
   batch
@@ -877,7 +884,7 @@ export const update =
         return selectWebView(model);
       // @TODO Change this to toggle tabs instead.
       case 'Escape':
-        return showTabs(model);
+        return toggleTabs(model);
       case 'AttachSidebar':
         return attachSidebar(model);
       case 'DetachSidebar':

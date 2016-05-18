@@ -7,7 +7,7 @@
 import "babel-polyfill";
 import "./common/request-animation-frame";
 import {start, Effects} from "reflex";
-import * as UI from "./perspective-ui";
+import * as UI from "./browser";
 import {version} from "../package.json";
 import * as Config from "../browserhtml.json";
 import * as Runtime from "./common/runtime";
