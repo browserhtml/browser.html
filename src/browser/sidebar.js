@@ -248,7 +248,7 @@ const open =
   );
 
 const close =
-  (model, now) =>
+  (model:Model, now) =>
   ( !model.isOpen
   ? nofx(model)
   : startAnimation
@@ -257,7 +257,7 @@ const close =
     , model.toolbar
     , Animation.transition
       ( model.animation
-      , ( model.isAtttached
+      , ( model.isAttached
         ? Display.attached
         : Display.closed
         )
