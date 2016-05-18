@@ -302,7 +302,7 @@ const styleSheet = Style.createSheet
       { position: 'absolute'
       , height: '100%'
       , width: '100%'
-      , willChange: 'transform, padding-right'
+      , willChange: 'transform, border-right'
       , top: 0
       , left: 0
       , overflow: 'hidden'
