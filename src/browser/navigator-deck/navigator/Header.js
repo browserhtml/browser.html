@@ -6,6 +6,7 @@ import {always} from '../../../common/prelude';
 import * as Title from './Header/Title';
 import * as ShowTabsButton from './Header/ShowTabsButton';
 import * as NewTabButton from './Header/NewTabButton';
+import * as BackButton from './Header/BackButton';
 
 /*::
 import type {Address, DOM} from "reflex"
@@ -15,24 +16,31 @@ export type Action =
   | { type: "EditInput" }
   | { type: "ShowTabs" }
   | { type: "OpenNewTab" }
+  | { type: "GoBack" }
 */
 
 const tagTitle = always({ type: "EditInput" });
 const tagShowTabs = always({ type: "ShowTabs" });
 const tagNewTab = always({ type: "OpenNewTab" });
+const tagGoBack = always({ type: "GoBack" });
 
 export const height = Title.outerHeight;
 
 export const render =
   ( title/*:string*/
   , secure/*:boolean*/
+  , canGoBack/*:boolean*/
   , address/*:Address<Action>*/
   )/*:DOM*/ =>
   html.header
   ( { className: 'topbar'
     , style: styleSheet.base
     }
-  , [ Title.view
+  , [ BackButton.view
+      ( canGoBack
+      , forward(address, tagGoBack)
+      )
+    , Title.view
       ( title
       , secure
       , forward(address, tagTitle)
@@ -49,6 +57,7 @@ export const render =
 export const view =
   ( title/*:string*/
   , secure/*:boolean*/
+  , canGoBack/*:boolean*/
   , address/*:Address<Action>*/
   )/*:DOM*/ =>
   thunk
@@ -56,6 +65,7 @@ export const view =
   , render
   , title
   , secure
+  , canGoBack
   , address
   )
 

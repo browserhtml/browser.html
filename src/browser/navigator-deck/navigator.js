@@ -52,6 +52,7 @@ export type Action =
   | { type: "Input", input: Input.Action }
 
   // Output
+  | { type: "GoBack" }
   | { type: "FocusOutput" }
   // | { type: "PushedDown" }
   | { type: "Output", output: Output.Action }
@@ -85,6 +86,7 @@ const FocusInput = { type: "FocusInput" }
 const CommitInput = { type: "CommitInput" }
 const SuggestNext = { type: "SuggestNext" }
 const SuggestPrevious = { type: "SuggestPrevious" }
+const GoBack = { type: "GoBack" }
 const OpenNewTab = { type: "OpenNewTab"};
 
 const tagInput =
@@ -151,6 +153,8 @@ const tagHeader =
         return ShowTabs
       case "OpenNewTab":
         return OpenNewTab
+      case "GoBack":
+        return GoBack
       default:
         return { type: "Header", header: action }
     }
@@ -266,6 +270,8 @@ export const update =
         return updateInput(model, action.input);
 
       // Output
+      case 'GoBack':
+        return goBack(model);
       case 'FocusOutput':
         return focusOutput(model);
       case 'EditInput':
@@ -341,6 +347,9 @@ const focusOutput =
   model =>
   updateOutput(model, Output.Focus);
 
+const goBack =
+  model =>
+  updateOutput(model, Output.GoBack);
 
 const editInput =
   model =>
@@ -469,6 +478,7 @@ export const render =
   , [ Header.view
       ( readTitle(model.output, 'Untitled')
       , isSecure(model.output)
+      , canGoBack(model.output)
       , forward(address, tagHeader)
       )
     , Input.view(model.input, forward(address, tagInput))
