@@ -24,10 +24,10 @@ export type Flags <flags> =
 
 export type Action <action, flags> =
   | { type: "Open", open: flags }
-  | { type: "Close", id: ID, close: action }
+  | { type: "Close", id: ID }
   | { type: "Remove", id: ID }
-  | { type: "Select", id: ID, select: action, deselect: action }
-  | { type: "Activate", id: ID, activate: action, deactivate: action, deselect: action }
+  | { type: "Select", id: ID }
+  | { type: "Activate", id: ID }
   | { type: "Modify", id: ID, modify: action }
 
 export type Transaction <action, model> =

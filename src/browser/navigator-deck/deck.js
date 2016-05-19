@@ -19,7 +19,7 @@ export type Action =
   | Command
 */
 
-export const ShowTabs = { type: "ShowTabs" }
+export const ShowTabs = { type: "ShowTabs" };
 export const OpenNewTab = { type: "OpenNewTab" };
 export const ActivateNewTab = { type: "Activate", id: "about:newtab" };
 

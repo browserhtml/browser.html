@@ -88,8 +88,12 @@ const CommitInput = { type: "CommitInput" }
 const SuggestNext = { type: "SuggestNext" }
 const SuggestPrevious = { type: "SuggestPrevious" }
 const GoBack = { type: "GoBack" }
+const ShowTabs = { type: "ShowTabs" };
 const OpenNewTab = { type: "OpenNewTab"};
+const EditInput = { type: "EditInput" };
+const FocusOutput = { type: "FocusOutput" };
 const AbortInput = { type: "AbortInput" };
+const Close = { type: "Close" };
 
 const tagInput =
   action => {
@@ -161,14 +165,6 @@ const tagHeader =
         return { type: "Header", header: action }
     }
   }
-
-
-const ShowTabs = { type: "ShowTabs" };
-const OpenNewTab = { type: "OpenNewTab"};
-const EditInput = { type: "EditInput" };
-const FocusOutput = { type: "FocusOutput" };
-const BlurOutput = { type: "BlurOutput" };
-const Close = { type: "Close" };
 
 export const Navigate =
   ( destination/*:string*/)/*:Action*/ =>

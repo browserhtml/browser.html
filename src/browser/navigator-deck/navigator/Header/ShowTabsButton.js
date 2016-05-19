@@ -12,7 +12,7 @@ export type Action =
 
 const Click = always({ type: "Click" })
 
-export const view =
+export const render =
   (address:Address<Action>) =>
   html.button
   ( { className: 'webview-show-tabs-button'
@@ -20,6 +20,15 @@ export const view =
     , onClick: forward(address, Click)
     }
   , ["\uf0c9"]
+  )
+
+export const view =
+  ( address:Address<Action>
+  ) =>
+  thunk
+  ( 'Browser/NavigatorDeck/Navigator/Header/ShowTabsButton'
+  , render
+  , address
   )
 
 const styleSheet = Style.createSheet
