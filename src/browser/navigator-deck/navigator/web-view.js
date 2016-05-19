@@ -26,7 +26,7 @@ import * as Focusable from '../../../common/focusable';
 import * as Easing from 'eased';
 import * as MozBrowserFrame from './web-view/moz-browser-frame';
 import * as ElectronFrame from './web-view/electron-frame';
-
+import * as Layer from './Layer';
 
 /*::
 import type {Address, DOM} from "reflex"
@@ -557,7 +557,7 @@ const styleSheet = StyleSheet.create({
     height: '100%',
     mozUserSelect: 'none',
     cursor: 'default',
-    zIndex: 2
+    zIndex: Layer.output
   },
 
   webviewActive: {
@@ -565,12 +565,12 @@ const styleSheet = StyleSheet.create({
   },
 
   webviewSelected: {
-    zIndex: 3
+    // zIndex: 3
   },
 
   webviewInactive: {
     pointerEvents: 'none',
-    zIndex: 1
+    // zIndex: 1
   },
 
   base: {

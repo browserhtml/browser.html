@@ -45,6 +45,7 @@ const styleSheet = Style.createSheet
       , width: '14px'
       , color: 'inherit'
       , background: 'transparent'
+      , cursor: 'pointer'
       }
     }
   )

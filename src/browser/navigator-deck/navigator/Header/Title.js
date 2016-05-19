@@ -104,10 +104,12 @@ const styleSheet = Style.createSheet
       , fontSize: '14px'
       , left: '5px'
       , position: 'absolute'
+      , display: 'inline'
       }
     , secureIcon:
       { fontFamily: 'FontAwesome'
       , marginRight: '6px'
+      , display: 'inline'
       }
     , insecureIcon:
       { fontFamily: 'FontAwesome'
