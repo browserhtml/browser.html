@@ -165,7 +165,7 @@ const style = Style.createSheet({
     position: 'absolute',
     width: '100vw',
     height: '100vh',
-    zIndex: 10
+    zIndex: 12
   },
   capturing: {
     pointerEvents: 'auto'

@@ -11,6 +11,7 @@ import * as Search from "./assistant/search"
 import {StyleSheet, Style} from '../../../common/style';
 import {cursor} from '../../../common/cursor';
 import * as Unknown from '../../../common/unknown';
+import * as Layer from './Layer';
 
 /*::
 import type {Address, DOM} from "reflex";
@@ -242,7 +243,7 @@ const styleSheet = StyleSheet.create
       , position: 'absolute'
       , top: '0px'
       , width: '100%'
-      , zIndex: 11
+      , zIndex: Layer.assistant
       }
     , expanded:
       { height: '100%'
