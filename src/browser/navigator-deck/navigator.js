@@ -47,6 +47,7 @@ export type Action =
   | { type: "SubmitInput" }
   | { type: "EscapeInput" }
   | { type: "FocusInput" }
+  | { type: "AbortInput" }
   | { type: "SuggestNext" }
   | { type: "SuggestPrevious" }
   | { type: "Input", input: Input.Action }
@@ -88,6 +89,7 @@ const SuggestNext = { type: "SuggestNext" }
 const SuggestPrevious = { type: "SuggestPrevious" }
 const GoBack = { type: "GoBack" }
 const OpenNewTab = { type: "OpenNewTab"};
+const AbortInput = { type: "AbortInput" };
 
 const tagInput =
   action => {
@@ -262,6 +264,8 @@ export const update =
         return escapeInput(model);
       case 'FocusInput':
         return focusInput(model);
+      case 'AbortInput':
+        return abortInput(model);
       case 'SuggestNext':
         return suggestNext(model);
       case 'SuggestPrevious':
@@ -327,6 +331,7 @@ const escapeInput =
   ( update
   , model
   , [ DeactivateAssistant
+    , AbortInput
     , FocusOutput
     ]
   );
@@ -334,6 +339,11 @@ const escapeInput =
 const focusInput =
   model =>
   updateInput(model, Input.Focus);
+
+const abortInput =
+  model =>
+  updateInput(model, Input.Abort);
+
 
 const suggestNext =
   model =>

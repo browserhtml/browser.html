@@ -83,7 +83,7 @@ export const initWithNewTab =
           , ref: null
           , guestInstanceId: null
           }
-        , assistant: false
+        , assistant: true
         , overlay: false
         }
       );
