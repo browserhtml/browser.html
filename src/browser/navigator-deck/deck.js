@@ -12,6 +12,7 @@ export type Model = Deck.Model<Navigator.Model>;
 
 export type Command =
   | { type: "ShowTabs" }
+  | { type: "OpenNewTab" }
 
 export type Action =
   | Deck.Action<Navigator.Action, Navigator.Flags>
@@ -19,6 +20,8 @@ export type Action =
 */
 
 export const ShowTabs = { type: "ShowTabs" }
+export const OpenNewTab = { type: "OpenNewTab" };
+export const ActivateNewTab = { type: "Activate", id: "about:newtab" };
 
 const open =
   (model, options) =>
@@ -34,6 +37,8 @@ const toCommand =
     switch (action.type) {
       case "ShowTabs":
         return ShowTabs;
+      case "OpenNewTab":
+        return OpenNewTab;
       default:
         return null;
     }
@@ -63,7 +68,7 @@ export const initWithNewTab =
     const [model1, fx1] = Deck.init();
     const [model2, fx2] = open
       ( model1
-      , { id: `${model1.nextID + 1}`
+      , { id: `about:newtab`
         , input:
           { value: ''
           , isVisible: true
@@ -95,6 +100,8 @@ export const update =
     switch (action.type) {
       case "ShowTabs":
         return nofx(model);
+      case "OpenNewTab":
+        return openNewTab(model);
       default:
         return Deck.update(
           Navigator.init
@@ -104,6 +111,15 @@ export const update =
         );
     }
   }
+
+const openNewTab =
+  model =>
+  Deck.update
+  ( Navigator.init
+  , Navigator.update
+  , model
+  , ActivateNewTab
+  );
 
 export const renderCards =
   ( model/*:Model*/

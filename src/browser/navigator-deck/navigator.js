@@ -53,7 +53,6 @@ export type Action =
 
   // Output
   | { type: "FocusOutput" }
-  | { type: "OpenNewTab" }
   // | { type: "PushedDown" }
   | { type: "Output", output: Output.Action }
 
@@ -66,6 +65,7 @@ export type Action =
 
   // Header
   | { type: "ShowTabs" }
+  | { type: "OpenNewTab" }
   | { type: "EditInput" }
   | { type: "Header", header: Header.Action }
 
@@ -85,6 +85,7 @@ const FocusInput = { type: "FocusInput" }
 const CommitInput = { type: "CommitInput" }
 const SuggestNext = { type: "SuggestNext" }
 const SuggestPrevious = { type: "SuggestPrevious" }
+const OpenNewTab = { type: "OpenNewTab"};
 
 const tagInput =
   action => {
@@ -148,6 +149,8 @@ const tagHeader =
         return EditInput
       case "ShowTabs":
         return ShowTabs
+      case "OpenNewTab":
+        return OpenNewTab
       default:
         return { type: "Header", header: action }
     }

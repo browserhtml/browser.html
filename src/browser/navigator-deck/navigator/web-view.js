@@ -812,20 +812,6 @@ export const view =
     //   )
     , Progress.view(model.progress, address)
     , html.div
-      ( { className: 'webview-tab-icon'
-        , style:
-            Style
-            ( styleSheet.iconCreateTab
-            , ( isModelDark
-              ? styleSheet.iconCreateTabDark
-              : styleSheet.iconCreateTabBright
-              )
-            )
-        , onClick: forward(address, always(Create))
-        }
-      , ['']
-      )
-    , html.div
       ( { className: 'webview-back-icon'
         , style:
             Style
@@ -843,6 +829,20 @@ export const view =
         }
       , ['']
       )
+    // , html.div
+    //   ( { className: 'webview-tab-icon'
+    //     , style:
+    //         Style
+    //         ( styleSheet.iconCreateTab
+    //         , ( isModelDark
+    //           ? styleSheet.iconCreateTabDark
+    //           : styleSheet.iconCreateTabBright
+    //           )
+    //         )
+    //     , onClick: forward(address, always(Create))
+    //     }
+    //   , ['']
+    //   )
     ]
   );
 };
