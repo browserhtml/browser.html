@@ -173,7 +173,7 @@ export const update =
   (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
     switch (action.type) {
       case 'Abort':
-        return updateFocusable(model, Focusable.Blur);
+        return [merge(model, {isVisible: false}), Effects.none];
       // We don't really do anything on submit action for now
       // although in a future we may clear the value or do blur
       // the input.
