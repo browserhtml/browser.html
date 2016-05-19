@@ -451,8 +451,9 @@ const updateOverlay = cursor
 
 export const render =
   (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
-  html.div
+  html.dialog
   ( { className: `navigator id-${model.id} ${mode(model.output)}`
+    , open: true
     , style: Style.mix
       ( styleSheet.base
       , ( isDark(model.output)
@@ -491,6 +492,7 @@ const styleSheet = Style.createSheet
       , left: 0
       , overflow: 'hidden'
       , background: 'white'
+      , display: 'block'
       }
     , dark:
       { color: 'rgba(255, 255, 255, 0.8)'
