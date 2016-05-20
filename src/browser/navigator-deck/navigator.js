@@ -593,8 +593,9 @@ const styleSheet = Style.createSheet
       , top: 0
       , left: 0
       , overflow: 'hidden'
-      , background: 'white'
+      , backgroundColor: 'white'
       , display: 'block'
+      , borderRadius: '4px'
       }
     , dark:
       { color: 'rgba(255, 255, 255, 0.8)'
