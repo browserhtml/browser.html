@@ -9,7 +9,7 @@ import {cursor} from "../common/cursor"
 import {always} from "../common/prelude"
 import * as Style from "../common/style"
 import * as Easing from "eased"
-import * as Overlay from "./navigator-deck/overlay"
+import * as Overlay from "./navigator-deck/Overlay"
 
 /*::
 import {performance} from "../common/performance"
