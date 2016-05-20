@@ -606,6 +606,9 @@ const styleSheet = Style.createSheet
       , backgroundColor: 'white'
       , display: 'block'
       , borderRadius: '4px'
+      , transitionProperty: 'background-color, color, border-color'
+      , transitionTimingFunction: 'ease-in, ease-out, ease'
+      , transitionDuration: '300ms'
       }
     , dark:
       { color: 'rgba(255, 255, 255, 0.8)'
