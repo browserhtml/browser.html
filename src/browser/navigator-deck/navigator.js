@@ -55,6 +55,11 @@ export type Action =
 
   // Output
   | { type: "GoBack" }
+  | { type: "GoForward" }
+  | { type: "Reload" }
+  | { type: "ZoomIn" }
+  | { type: "ZoomOut" }
+  | { type: "ResetZoom" }
   | { type: "FocusOutput" }
   // | { type: "PushedDown" }
   | { type: "LoadStart", time: Time }
@@ -95,7 +100,13 @@ const FocusInput = { type: "FocusInput" }
 const CommitInput = { type: "CommitInput" }
 const SuggestNext = { type: "SuggestNext" }
 const SuggestPrevious = { type: "SuggestPrevious" }
-const GoBack = { type: "GoBack" }
+export const GoBack = { type: "GoBack" }
+export const GoForward = { type: "GoForward" }
+export const Reload = { type: "Reload" }
+export const ZoomOut = { type: "ZoomOut" }
+export const ZoomIn = { type: "ZoomIn" }
+export const ResetZoom = { type: "ResetZoom" }
+
 const ShowTabs = { type: "ShowTabs" };
 const OpenNewTab = { type: "OpenNewTab"};
 const EditInput = { type: "EditInput" };
@@ -275,7 +286,7 @@ export const update =
   ( model/*:Model*/
   , action/*:Action*/
   )/*:[Model, Effects<Action>]*/ => {
-    console.log(action)
+    // console.log(action)
     switch (action.type) {
       case 'NoOp':
         return nofx(model);
@@ -302,8 +313,19 @@ export const update =
         return updateInput(model, action.input);
 
       // Output
-      case 'GoBack':
-        return goBack(model);
+      case "GoBack":
+        return updateOutput(model, Output.GoBack);
+      case "GoForward":
+        return updateOutput(model, Output.GoForward);
+      case "Reload":
+        return updateOutput(model, Output.Reload);
+      case "ZoomIn":
+        return updateOutput(model, Output.ZoomIn);
+      case "ZoomOut":
+        return updateOutput(model, Output.ZoomOut);
+      case "ResetZoom":
+        return updateOutput(model, Output.ResetZoom);
+
       case 'FocusOutput':
         return focusOutput(model);
       case 'EditInput':

@@ -16,22 +16,34 @@ import {performance} from "../common/performance"
 import type {Address, DOM} from "reflex"
 
 export type Action =
-  | { type: "ZoomOut" }
-  | { type: "ZoomIn" }
+  | { type: "Expose" }
+  | { type: "Focus" }
   | { type: "Shrink" }
   | { type: "Expand" }
   | { type: "ShowTabs" }
   | { type: "ShowWebView" }
+  | { type: "GoBack" }
+  | { type: "GoForward" }
+  | { type: "Reload" }
+  | { type: "ZoomIn" }
+  | { type: "ZoomOut" }
+  | { type: "ResetZoom" }
   | { type: "Animation", animation: Animation.Action }
   | { type: "Deck", deck: Deck.Action }
 */
 
-export const ZoomOut = { type: "ZoomOut" }
-export const ZoomIn = { type: "ZoomIn" }
+export const Expose = { type: "Expose" }
+export const Focus = { type: "Focus" }
 export const Expand = { type: "Expand" }
 export const Shrink = { type: "Shrink" }
 export const ShowTabs = { type: "ShowTabs" }
 export const ShowWebView = { type: "ShowWebView" }
+export const GoBack = { type: "GoBack" }
+export const GoForward = { type: "GoForward" }
+export const Reload = { type: "Reload" }
+export const ZoomOut = { type: "ZoomOut" }
+export const ZoomIn = { type: "ZoomIn" }
+export const ResetZoom = { type: "ResetZoom" }
 
 
 export class Model {
@@ -106,10 +118,22 @@ export const update =
         return updateDeck(model, action.deck);
       case "ShowTabs":
         return updateDeck(model, Deck.ShowTabs);
+      case "GoBack":
+        return updateDeck(model, Deck.GoBack);
+      case "GoForward":
+        return updateDeck(model, Deck.GoForward);
+      case "Reload":
+        return updateDeck(model, Deck.Reload);
       case "ZoomIn":
-        return zoomIn(model, performance.now());
+        return updateDeck(model, Deck.ZoomIn);
       case "ZoomOut":
-        return zoomOut(model, performance.now());
+        return updateDeck(model, Deck.ZoomOut);
+      case "ResetZoom":
+        return updateDeck(model, Deck.ResetZoom);
+      case "Focus":
+        return focus(model, performance.now());
+      case "Expose":
+        return expose(model, performance.now());
       case "Shrink":
         return shrink(model, performance.now());
       case "Expand":
@@ -159,7 +183,7 @@ const updateDeck = cursor
     }
   )
 
-const zoomIn =
+const focus =
   ( model, now ) =>
   ( model.zoom
   ? nofx(model)
@@ -179,7 +203,7 @@ const zoomIn =
     )
   )
 
-const zoomOut =
+const expose =
   ( model, now ) =>
   ( model.zoom
   ? startAnimation

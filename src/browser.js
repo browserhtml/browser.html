@@ -46,6 +46,12 @@ export type Mode =
 
 export type Action =
   | { type: "NoOp" }
+  | { type: "GoBack" }
+  | { type: "GoForward" }
+  | { type: "Reload" }
+  | { type: "ZoomIn" }
+  | { type: "ZoomOut" }
+  | { type: "ResetZoom" }
   | { type: "Focus" }
   | { type: "Blur" }
   | { type: "CreateWebView" }
@@ -480,13 +486,13 @@ export const BlurInput/*:Action*/ =
 // Following Browser actions directly delegate to a `WebViews` module, there for
 // they are just tagged versions of `WebViews` actions, but that is Just an
 // implementation detail.
-// export const ZoomIn = WebViewsAction(WebViews.ZoomIn);
-// export const ZoomOut = WebViewsAction(WebViews.ZoomOut);
-// export const ResetZoom = WebViewsAction(WebViews.ResetZoom);
-// export const Reload = WebViewsAction(WebViews.Reload);
+export const ZoomIn = { type: "ZoomIn" }
+export const ZoomOut = { type: "ZoomOut" }
+export const ResetZoom = { type: "ResetZoom" }
+export const Reload = { type: "Reload" }
 // export const CloseWebView = WebViewsAction(WebViews.CloseActive);
-// export const GoBack = WebViewsAction(WebViews.GoBack);
-// export const GoForward = WebViewsAction(WebViews.GoForward);
+export const GoBack = { type: "GoBack" };
+export const GoForward = { type: "GoForward" };
 // export const SelectNext = WebViewsAction(WebViews.SelectNext);
 // export const SelectPrevious = WebViewsAction(WebViews.SelectPrevious);
 // export const ActivateSeleted = WebViewsAction(WebViews.ActivateSelected);
@@ -538,8 +544,8 @@ export const Focus = ShellAction(Shell.Focus);
 const OpenSidebar = SidebarAction(Sidebar.Open);
 const CloseSidebar = SidebarAction(Sidebar.Close);
 
-const ZoomOutNavigators = NavigatorsAction(Navigators.ZoomOut);
-const ZoomInNavigators = NavigatorsAction(Navigators.ZoomIn);
+const ExposeNavigators = NavigatorsAction(Navigators.Expose);
+const FocusNavigators = NavigatorsAction(Navigators.Focus);
 const ShrinkNavigators = NavigatorsAction(Navigators.Shrink);
 const ExpandNavigators = NavigatorsAction(Navigators.Expand);
 
@@ -576,10 +582,10 @@ const modifier = OS.platform() == 'linux' ? 'alt' : 'accel';
 const decodeKeyDown = Keyboard.bindings({
   'accel l': always(EditWebView),
   'accel t': always(CreateWebView),
-  // 'accel 0': always(ResetZoom),
-  // 'accel -': always(ZoomOut),
-  // 'accel =': always(ZoomIn),
-  // 'accel shift =': always(ZoomIn),
+  'accel 0': always(ResetZoom),
+  'accel -': always(ZoomOut),
+  'accel =': always(ZoomIn),
+  'accel shift =': always(ZoomIn),
   // 'accel w': always(CloseWebView),
   // 'accel shift ]': always(SelectNext),
   // 'accel shift [': always(SelectPrevious),
@@ -587,10 +593,10 @@ const decodeKeyDown = Keyboard.bindings({
   // 'control shift tab': always(SelectPrevious),
   // 'accel shift backspace':  always(ResetBrowserSession),
   // 'accel shift s': always(SaveBrowserSession),
-  // 'accel r': always(Reload),
+  'accel r': always(Reload),
   'escape': always(Escape),
-  // [`${modifier} left`]: always(GoBack),
-  // [`${modifier} right`]: always(GoForward),
+  [`${modifier} left`]: always(GoBack),
+  [`${modifier} right`]: always(GoForward),
 
   // TODO: `meta alt i` generates `accel alt i` on OSX we need to look
   // more closely into this but so declaring both shortcuts should do it.
@@ -618,7 +624,7 @@ const showWebView = model =>
     // , HideOverlay
     // , FoldWebViews
     // , FocusWebView
-    , ZoomInNavigators
+    , FocusNavigators
     ]
   );
 
@@ -632,7 +638,7 @@ const createWebView = model =>
     // , HideOverlay
     // , FoldWebViews
     /*, EnterInput*/
-    , ZoomInNavigators
+    , FocusNavigators
     ]
   );
 
@@ -646,7 +652,7 @@ const editWebView = model =>
     // , ShowOverlay
     // , FoldWebViews
     /*, EnterInputSelection(WebViews.getActiveURI(model.webViews, ''))*/
-    , ZoomOutNavigators
+    , ExposeNavigators
     ]
   );
 
@@ -659,7 +665,7 @@ const showTabs = model =>
     , */OpenSidebar
     // , ShowOverlay
     // , UnfoldWebViews
-    , ZoomOutNavigators
+    , ExposeNavigators
     ]
   );
 
@@ -681,6 +687,50 @@ const selectWebView = (model, action) =>
     // , FadeOverlay
     ]
   );
+
+const goBack =
+  model =>
+  updateNavigators
+  ( model
+  , Navigators.GoBack
+  )
+
+const goForward =
+  model =>
+  updateNavigators
+  ( model
+  , Navigators.GoForward
+  )
+
+
+const reload =
+  model =>
+  updateNavigators
+  ( model
+  , Navigators.Reload
+  )
+
+const zoomIn =
+  model =>
+  updateNavigators
+  ( model
+  , Navigators.ZoomIn
+  )
+
+const zoomOut =
+  model =>
+  updateNavigators
+  ( model
+  , Navigators.ZoomOut
+  )
+
+
+const resetZoom =
+  model =>
+  updateNavigators
+  ( model
+  , Navigators.ResetZoom
+  )
 
 
 // const submitInput = model =>
@@ -872,6 +922,18 @@ export const update =
       //   return reciveOpenURLNotification(model);
       // case 'ExitInput':
       //   return exitInput(model);
+      case 'GoBack':
+        return goBack(model);
+      case 'GoForward':
+        return goForward(model);
+      case 'Reload':
+        return reload(model);
+      case 'ZoomIn':
+        return zoomIn(model);
+      case 'ZoomOut':
+        return zoomOut(model);
+      case 'ResetZoom':
+        return resetZoom(model);
       case 'CreateWebView':
         return createWebView(model);
       case 'EditWebView':

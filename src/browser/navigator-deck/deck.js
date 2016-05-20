@@ -13,6 +13,12 @@ export type Model = Deck.Model<Navigator.Model>;
 export type Command =
   | { type: "ShowTabs" }
   | { type: "OpenNewTab" }
+  | { type: "GoBack" }
+  | { type: "GoForward" }
+  | { type: "Reload" }
+  | { type: "ZoomIn" }
+  | { type: "ZoomOut" }
+  | { type: "ResetZoom" }
 
 export type Action =
   | Deck.Action<Navigator.Action, Navigator.Flags>
@@ -22,6 +28,13 @@ export type Action =
 export const ShowTabs = { type: "ShowTabs" };
 export const OpenNewTab = { type: "OpenNewTab" };
 export const ActivateNewTab = { type: "Activate", id: "about:newtab" };
+export const GoBack = { type: "GoBack" }
+export const GoForward = { type: "GoForward" }
+export const Reload = { type: "Reload" }
+export const ZoomOut = { type: "ZoomOut" }
+export const ZoomIn = { type: "ZoomIn" }
+export const ResetZoom = { type: "ResetZoom" }
+
 
 const open =
   (model, options) =>
@@ -102,6 +115,18 @@ export const update =
         return nofx(model);
       case "OpenNewTab":
         return openNewTab(model);
+      case "GoBack":
+        return updateActive(model, Navigator.GoBack);
+      case "GoForward":
+        return updateActive(model, Navigator.GoForward);
+      case "Reload":
+        return updateActive(model, Navigator.Reload);
+      case "ZoomIn":
+        return updateActive(model, Navigator.ZoomIn);
+      case "ZoomOut":
+        return updateActive(model, Navigator.ZoomOut);
+      case "ResetZoom":
+        return updateActive(model, Navigator.ResetZoom);
       default:
         return Deck.update(
           Navigator.init
@@ -129,4 +154,16 @@ export const renderCards =
   ( Navigator.render
   , model
   , forward(address, tag)
+  )
+
+const updateActive =
+  ( model, action ) =>
+  Deck.update
+  ( Navigator.init
+  , Navigator.update
+  , model
+  , { type: "Modify"
+    , id: model.active
+    , modify: action
+    }
   )

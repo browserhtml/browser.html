@@ -143,7 +143,7 @@ export const open = /*::<action, model, flags>*/
   , flags/*:flags*/
   , model/*:Model<model>*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
-    const id = `${model.nextID}`;
+    const id = `${flags.id}`;
     const [model2, fx2] =
       ( model.active == null
       ? nofx(model)
