@@ -45,6 +45,7 @@ const styleSheet = Style.createSheet
       , boxShadow: "none"
       , color: "#4A90E2"
       , overflow: "hidden"
+      , backgroundColor: "inherit"
       , backgroundImage: "linear-gradient(135deg, #4A90E2 calc(100% - 4px), transparent calc(100% - 4px))"
       , backgroundSize: 0
 
