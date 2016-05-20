@@ -280,6 +280,9 @@ export const update =
       case 'NoOp':
         return nofx(model);
 
+      case 'Navigate':
+        return navigate(model, action.uri);
+
       // Input
       case 'CommitInput':
         return commitInput(model);
@@ -342,6 +345,13 @@ const nofx =
   [ model
   , Effects.none
   ];
+
+const navigate =
+  (model, uri) =>
+  updateOutput
+  ( model
+  , Output.Load(uri)
+  )
 
 const commitInput =
   model =>
