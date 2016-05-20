@@ -12,7 +12,7 @@ import {compose} from '../../../lang/functional';
 import {on} from '@driver';
 import {isElectron} from "../../../common/runtime";
 import * as Shell from './web-view/shell';
-import * as Progress from './web-view/progress';
+// import * as Progress from './web-view/progress';
 import * as Navigation from './web-view/navigation';
 import * as Security from './web-view/security';
 import * as Page from './web-view/page';
@@ -195,12 +195,12 @@ const TabAction = action => {
     }
   };
 
-const ProgressAction =
-  action =>
-  ( { type: "Progress"
-    , progress: action
-    }
-  );
+// const ProgressAction =
+//   action =>
+//   ( { type: "Progress"
+//     , progress: action
+//     }
+//   );
 
 const SelectAnimationAction = action =>
   ( action.type === "End"
@@ -210,13 +210,13 @@ const SelectAnimationAction = action =>
     }
   );
 
-const updateProgress = cursor
-  ( { get: model => model.progress
-    , set: (model, progress) => merge(model, {progress})
-    , tag: ProgressAction
-    , update: Progress.update
-    }
-  );
+// const updateProgress = cursor
+//   ( { get: model => model.progress
+//     , set: (model, progress) => merge(model, {progress})
+//     , tag: ProgressAction
+//     , update: Progress.update
+//     }
+//   );
 
 
 const updatePage = cursor
@@ -298,7 +298,7 @@ export const init =
   const [navigation, navigationFx] = Navigation.init(id, options.uri);
   const [page, pageFx] = Page.init(options.uri);
   const [security, securityFx] = Security.init();
-  const [progress, progressFx] = Progress.init();
+  // const [progress, progressFx] = Progress.init();
   const [animation, animationFx] = Stopwatch.init();
   const [tab, tabFx] = Tab.init();
 
@@ -321,7 +321,7 @@ export const init =
     , navigation
     , page
     , tab
-    , progress
+    // , progress
     , animation
     }
   , Effects.batch
@@ -330,7 +330,7 @@ export const init =
       , tabFx.map(TabAction)
       , securityFx.map(SecurityAction)
       , navigationFx.map(NavigationAction)
-      , progressFx.map(ProgressAction)
+      // , progressFx.map(ProgressAction)
       , animationFx.map(SelectAnimationAction)
       , ( options.disposition === "background-tab"
         ? Effects.none
@@ -425,8 +425,8 @@ const startLoad = (model, time) =>
   batch
   ( update
   , model
-  , [ ProgressAction(Progress.Start(time))
-    , PageAction(Page.LoadStart)
+  , [ /*ProgressAction(Progress.Start(time))
+    , */PageAction(Page.LoadStart)
     , SecurityAction(Security.LoadStart)
     ]
   );
@@ -435,8 +435,8 @@ const endLoad = (model, time) =>
   batch
   ( update
   , model
-  , [ ProgressAction(Progress.LoadEnd(time))
-    , PageAction(Page.LoadEnd)
+  , [ /*ProgressAction(Progress.LoadEnd(time))
+    , */PageAction(Page.LoadEnd)
     ]
   );
 
@@ -444,7 +444,7 @@ const connect = (model, time) =>
   batch
   ( update
   , model
-  , [ ProgressAction(Progress.Connect(time))
+  , [ /*ProgressAction(Progress.Connect(time))*/
     ]
   );
 
@@ -527,8 +527,8 @@ export const update =
         return updateSelectAnimation(model, action.action);
 
   // Delegate
-      case "Progress":
-        return updateProgress(model, action.progress);
+      // case "Progress":
+      //   return updateProgress(model, action.progress);
       case "Shell":
         return updateShell(model, action.shell);
       case "Page":
@@ -810,7 +810,7 @@ export const view =
     //       )
     //     ]
     //   )
-    , Progress.view(model.progress, address)
+    // , Progress.view(model.progress, address)
     // , html.div
     //   ( { className: 'webview-tab-icon'
     //     , style:

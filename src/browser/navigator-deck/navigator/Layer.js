@@ -7,7 +7,8 @@
 
 export const output = 0
 export const header = 1
-export const shadow = 2
-export const assistant = 3
-export const input = 4
-export const overlay = 5
+export const progress = 2
+export const shadow = 3
+export const assistant = 4
+export const input = 5
+export const overlay = 6

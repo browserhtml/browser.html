@@ -16,12 +16,13 @@ import * as Output from "./navigator/web-view";
 import * as Unknown from "../../common/unknown";
 import * as URL from '../../common/url-helper';
 import * as Header from './navigator/Header';
+import * as Progress from './navigator/Progress';
 
 import {readTitle, isSecure, isDark, canGoBack} from './navigator/web-view/util';
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {ID, URI} from "./navigator/web-view"
+import type {ID, URI, Time} from "./navigator/web-view"
 
 export type Flags =
   { id: ID
@@ -56,6 +57,10 @@ export type Action =
   | { type: "GoBack" }
   | { type: "FocusOutput" }
   // | { type: "PushedDown" }
+  | { type: "LoadStart", time: Time }
+  | { type: "Connect", time: Time }
+  | { type: "LoadEnd", time: Time }
+
   | { type: "Output", output: Output.Action }
 
   // Assistant
@@ -64,6 +69,9 @@ export type Action =
 
   // Overlay
   | { type: "Overlay", overlay: Overlay.Action }
+
+  // Progress
+  | { type: "Progress", progress: Progress.Action }
 
   // Header
   | { type: "ShowTabs" }
@@ -144,7 +152,13 @@ const tagOutput =
       case "Close":
         return Close;
       case "Open":
-        return { type: "Open", options: action.options }
+        return action
+      case "LoadStart":
+        return action
+      case "Connect":
+        return action
+      case "LoadEnd":
+        return action
       default:
         return { type: "Output", output: action }
     }
@@ -163,6 +177,14 @@ const tagHeader =
         return GoBack
       default:
         return { type: "Header", header: action }
+    }
+  }
+
+const tagProgress =
+  action => {
+    switch (action.type) {
+      default:
+        return { type: "Progress", progress: action }
     }
   }
 
@@ -190,6 +212,7 @@ export class Model {
   input: Input.Model;
   overlay: Overlay.Model;
   assistant: Assistant.Model;
+  progress: Progress.Model;
   */
   constructor(
     id/*:ID*/
@@ -197,12 +220,14 @@ export class Model {
   , output/*:Output.Model*/
   , assistant/*:Assistant.Model*/
   , overlay/*:Overlay.Model*/
+  , progress/*:Progress.Model*/
   ) {
     this.id = id
     this.input = input
     this.output = output
     this.assistant = assistant
     this.overlay = overlay
+    this.progress = progress
   }
 }
 
@@ -212,6 +237,7 @@ const assemble =
   , [output, $output]
   , [assistant, $assistant]
   , [overlay, $overlay]
+  , [progress, $progress]
   ) => {
     const model = new Model
       ( id
@@ -219,6 +245,7 @@ const assemble =
       , output
       , assistant
       , overlay
+      , progress
       )
 
     const fx = Effects.batch
@@ -226,6 +253,7 @@ const assemble =
         , $output.map(tagOutput)
         , $overlay.map(tagOverlay)
         , $assistant.map(tagAssistant)
+        , $progress.map(tagProgress)
         ]
       )
 
@@ -240,6 +268,7 @@ export const init =
   , Output.init(options.id, options.output)
   , Assistant.init(options.assistant)
   , Overlay.init(options.overlay)
+  , Progress.init()
   )
 
 export const update =
@@ -276,8 +305,18 @@ export const update =
         return focusOutput(model);
       case 'EditInput':
         return editInput(model);
+      case "LoadStart":
+        return updateLoadProgress(model, action);
+      case "Connect":
+        return updateLoadProgress(model, action);
+      case "LoadEnd":
+        return updateLoadProgress(model, action);
       case 'Output':
         return updateOutput(model, action.output);
+
+      // Progress
+      case 'Progress':
+        return updateProgress(model, action.progress);
 
       // Assistant
       case 'Suggest':
@@ -357,6 +396,28 @@ const goBack =
   model =>
   updateOutput(model, Output.GoBack);
 
+const updateLoadProgress =
+  (source, action) => {
+    const [output, output$] = Output.update(source.output, action)
+    const [progress, progress$] = Progress.update(source.progress, action)
+    const model = new Model
+    ( source.id
+    , source.input
+    , output
+    , source.assistant
+    , source.overlay
+    , progress
+    )
+    const fx = Effects.batch
+    ( [ output$.map(tagOutput)
+      , progress$.map(tagProgress)
+      ]
+    )
+
+    return [model, fx]
+  }
+
+
 const editInput =
   model =>
   batch
@@ -413,6 +474,7 @@ const updateInput = cursor
       , model.output
       , model.assistant
       , model.overlay
+      , model.progress
       )
     , update: Input.update
     , tag: tagInput
@@ -429,9 +491,27 @@ const updateOutput = cursor
       , output
       , model.assistant
       , model.overlay
+      , model.progress
       )
     , update: Output.update
     , tag: tagOutput
+    }
+  );
+
+const updateProgress = cursor
+  ( { get: model => model.progress
+    , set:
+      (model, progress) =>
+      new Model
+      ( model.id
+      , model.input
+      , model.output
+      , model.assistant
+      , model.overlay
+      , progress
+      )
+    , update: Progress.update
+    , tag: tagProgress
     }
   );
 
@@ -445,6 +525,7 @@ const updateAssistant = cursor
       , model.output
       , assistant
       , model.overlay
+      , model.progress
       )
     , update: Assistant.update
     , tag: tagAssistant
@@ -461,6 +542,7 @@ const updateOverlay = cursor
       , model.output
       , model.assistant
       , overlay
+      , model.progress
       )
     , update: Overlay.update
     , tag: tagOverlay
@@ -487,6 +569,7 @@ export const render =
       , canGoBack(model.output)
       , forward(address, tagHeader)
       )
+    , Progress.view(model.progress, forward(address, tagProgress))
     , Input.view(model.input, forward(address, tagInput))
     , Assistant.view(model.assistant, forward(address, tagAssistant))
     , Output.view(model.output, forward(address, tagOutput))

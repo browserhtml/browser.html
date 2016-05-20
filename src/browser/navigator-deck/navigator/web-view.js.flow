@@ -10,7 +10,7 @@ import type {ID, URI, Time, Integer, Float} from "../../../common/prelude"
 import type {Icon} from "../../../common/favicon"
 
 import * as Shell from "./web-view/shell"
-import * as Progress from "./web-view/progress"
+// import * as Progress from "./web-view/progress"
 import * as Navigation from "./web-view/navigation"
 import * as Security from "./web-view/security"
 import * as Page from "./web-view/page"
@@ -58,7 +58,7 @@ export type Model =
   , navigation: Navigation.Model
   , security: Security.Model
   , page: Page.Model
-  , progress: Progress.Model
+  // , progress: Progress.Model
   , animation: Stopwatch.Model
   }
 
@@ -113,9 +113,9 @@ export type Action =
   | { type: "SelectAnimation"
     , action: Stopwatch.Action
     }
-  | { type: "Progress"
-    , progress: Progress.Action
-    }
+  // | { type: "Progress"
+  //   , progress: Progress.Action
+  //   }
   | { type: "Shell"
     , shell: Shell.Action
     }

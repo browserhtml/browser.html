@@ -6,7 +6,7 @@
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {Time, Float} from "../../../../common/prelude"
+import type {Time, Float} from "../../../common/prelude"
 
 // Implied to be 0.0 - 1.0 range
 export type LoadProgress = Float
@@ -27,7 +27,7 @@ export type Model =
 
 
 export type Action =
-  | { type: "Start", time: Time }
+  | { type: "LoadStart", time: Time }
   | { type: "LoadEnd", time: Time }
   | { type: "Connect", time: Time }
   | { type: "Tick", time: Time }
@@ -36,19 +36,20 @@ export type Action =
 
 import {Effects, Task, html} from 'reflex';
 import {ease, easeOutQuart, float} from 'eased';
-import {StyleSheet, Style} from '../../../../common/style';
-import {merge, always} from '../../../../common/prelude';
-import * as Unknown from '../../../../common/unknown';
-import * as Runtime from '../../../../common/runtime';
-import * as Ref from '../../../../common/ref';
+import * as Style from '../../../common/style';
+import {merge, always} from '../../../common/prelude';
+import * as Unknown from '../../../common/unknown';
+import * as Runtime from '../../../common/runtime';
+import * as Ref from '../../../common/ref';
+import * as Layer from './Layer'
 
 const second = 1000;
 
 const NoOp = always({ type: "NoOp" })
 
-export const Start =
+export const LoadStart =
   (time/*:Time*/)/*:Action*/ =>
-  ( { type: "Start"
+  ( { type: "LoadStart"
     , time
     }
   );
@@ -236,7 +237,7 @@ export const init =
 export const update =
   (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
     switch (action.type) {
-      case "Start":
+      case "LoadStart":
         return start(model, action.time);
       case "LoadEnd":
         return loadEnd(model, action.time);
@@ -330,9 +331,10 @@ const standalone =
       }
   }
 
-const style = StyleSheet.create({
+const style = Style.createSheet({
   bar: {
     position: 'absolute',
+    zIndex: Layer.progress,
     top: '27px',
     height: '4px',
     width: '100%',
@@ -353,14 +355,14 @@ export const view =
   html.div({
     [model.ref.name]: model.ref.value,
     className: 'progressbar',
-    style: Style(style.bar, {
+    style: Style.mix(style.bar, {
       backgroundColor: '#4A90E2',
       transform: `translateX(${(model.display.x) - 100}%)`,
       opacity: model.display.opacity
     }),
   }, [html.div({
     className: 'progressbar-arrow',
-    style: Style(style.arrow, {
+    style: Style.mix(style.arrow, {
       backgroundImage: 'linear-gradient(135deg, #4A90E2 50%, transparent 50%)',
     })
   })]);
