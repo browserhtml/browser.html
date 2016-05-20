@@ -155,8 +155,14 @@ export const open = /*::<action, model, flags>*/
       ( model.nextID + 1
       , (model2.index.unshift(id), model2.index)
       , (model2.cards[id] = card, model2.cards)
-      , model2.selected
-      , model2.active
+      , ( model2.selected == null
+        ? id
+        : model2.selected
+        )
+      , ( model2.active == null
+        ? id
+        : model2.active
+        )
       );
 
     const fx3 = Effects.batch
