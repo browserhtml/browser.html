@@ -6,9 +6,8 @@
 // conflicts or regressions
 
 export const output = 0
-export const header = 1
-export const progress = 2
-export const shadow = 3
+export const overlay = 1
+export const header = 2
+export const progress = 3
 export const assistant = 4
 export const input = 5
-export const overlay = 6

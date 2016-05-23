@@ -4,189 +4,205 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, html, forward} from "reflex";
+import {Effects, html, thunk, forward} from "reflex";
 import {merge, always} from "../../../common/prelude";
 import {cursor} from "../../../common/cursor";
 import * as Style from "../../../common/style";
 import * as Easing from "eased";
-import * as Stopwatch from "../../../common/stopwatch";
+import * as Animation from "../../../common/animation"
 import * as Unknown from "../../../common/unknown";
+import * as Layer from "./Layer";
+import * as Display from "./Overlay/Display"
 
 /*::
 import type {Address, DOM} from "reflex"
 import type {Time} from "../../../common/prelude"
+import {performance} from "../../../common/performance"
 
 export type Flags = boolean
-type Visible = 0.1
-type Invisible = 0
-type Display =
-  { opacity: Visible | Invisible
-  }
-
-export type Model =
-  { display: Display
-  , isCapturing: boolean
-  , isVisible: boolean
-  , animation: Stopwatch.Model
-  }
 
 export type Action =
   | { type: "Click" }
   | { type: "Show" }
   | { type: "Hide" }
-  | { type: "Fade" }
-  | { type: "Shown" }
-  | { type: "Hidden" }
-  | { type: "Faded" }
-  | { type: "Animation", animation: Stopwatch.Action }
+  | { type: "Animation", animation: Animation.Action }
 */
 
-const visible = 0.1;
-const invisible = 0;
-const duration = 300;
+export class Model {
+  /*::
+  animation: Animation.Model<Display.Model>;
+  isVisible: boolean;
+  */
+  constructor(
+    isVisible/*:boolean*/
+  , animation/*:Animation.Model<Display.Model>*/
+  ) {
+    this.isVisible = isVisible;
+    this.animation = animation;
+  }
+}
 
-export const Click/*:() => Action*/ = always({type: "Click"});
-export const Show/*:Action*/ = {type: "Show"};
-export const Hide/*:Action*/ = {type: "Hide"};
-export const Fade/*:Action*/ = {type: "Fade"};
+const Click = always({type: "Click"})
+export const Show = {type: "Show"}
+export const Hide = {type: "Hide"}
 
-const AnimationAction =
+const tagAnimation =
   action =>
-  ( { type: "Animation", animation: action
+  ( { type: "Animation"
+    , animation: action
     }
   );
-
-const Shown = always({type: "Shown"});
-const Hidden = always({type: "Hidden"});
-const Faded = always({type: "Faded"});
-
 
 export const init =
   ( isVisible/*:boolean*/=false
-  , isCapturing/*:boolean*/=false
-  )/*:[Model, Effects<Action>]*/ =>
-  [ { isCapturing
-    , isVisible
-    , animation: null
-    , display
-        : isVisible
-        ? {opacity: visible}
-        : {opacity: invisible}
-    }
-  , Effects.none
-  ];
+  )/*:[Model, Effects<Action>]*/ => {
+    const display =
+      ( isVisible
+      ? Display.visible
+      : Display.invisible
+      )
+    const [animation, $animation] =
+      Animation.init(display)
 
+    const model = new Model
+      ( isVisible
+      , animation
+      )
 
-const updateStopwatch = cursor({
-  tag: AnimationAction,
-  get: model => model.animation,
-  set: (model, animation) => merge(model, {animation}),
-  update: Stopwatch.update
-});
+    const fx =
+      $animation
+      .map(tagAnimation)
 
-
-const animationUpdate = (model, action) => {
-  const [{animation}, fx] = updateStopwatch(model, action);
-
-  // @TODO: We should not be guessing what is the starnig point
-  // that makes no sense & is likely to be incorrect at a times.
-  // To fix it we need to ditch this easing library in favor of
-  // something that will give us more like spring physics.
-  const [begin, end]
-    = model.isVisible
-    ? [invisible, visible]
-    : [visible, invisible];
-
-  return (animation && duration > animation.elapsed)
-    ? [ merge(model, {
-          animation,
-          display: {
-            opacity:
-              Easing.ease
-              ( Easing.easeOutQuad
-              , Easing.float
-              , begin
-              , end
-              , duration
-              , animation.elapsed
-              )
-          }
-        })
-      , fx
-      ]
-    : [ merge(model, {animation, display: {opacity: end}})
-      , fx.map
-          ( model.isVisible
-          ? Shown
-          : model.isCapturing
-          ? Faded
-          : Hidden
-          )
-      ]
-}
+    return [model, fx]
+  }
 
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
-  ( action.type === "Animation"
-  ? animationUpdate(model, action.animation)
-  : action.type === "Shown"
-  ? updateStopwatch(model, Stopwatch.End)
-  : action.type === "Hidden"
-  ? updateStopwatch(model, Stopwatch.End)
-  : action.type === "Faded"
-  ? updateStopwatch(model, Stopwatch.End)
-  : action.type === "Show"
-  ? ( model.isVisible
-    ? [merge(model, {isCapturing: true}), Effects.none]
-    : updateStopwatch(merge(model, {isVisible: true, isCapturing: true}),
-                Stopwatch.Start)
+  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+    switch (action.type) {
+      case "Animation":
+        return updateAnimation(model, action.animation)
+      case "Show":
+        return show(model, performance.now())
+      case "Hide":
+        return hide(model, performance.now())
+      case "Click":
+        return nofx(model)
+      default:
+        return Unknown.update(model, action)
+    }
+  };
+
+const show =
+  ( model, now) =>
+  ( model.isVisible
+  ? nofx(model)
+  : startAnimation
+    ( true
+    , Animation.transition
+      ( model.animation
+      , Display.visible
+      , 300
+      , now
+      )
     )
-  : action.type === "Hide"
-  ? ( model.isVisible
-    ? updateStopwatch(merge(model, {isVisible: false, isCapturing: false}),
-                Stopwatch.Start)
-    : [merge(model, {isCapturing: false}), Effects.none]
+  )
+
+const hide =
+  ( model, now) =>
+  ( !model.isVisible
+  ? nofx(model)
+  : startAnimation
+    ( false
+    , Animation.transition
+      ( model.animation
+      , Display.invisible
+      , 300
+      , now
+      )
     )
-  : action.type === "Fade"
-  ? ( model.isVisible
-    ? updateStopwatch(merge(model, {isVisible: false, isCapturing: true}),
-                Stopwatch.Start)
-    : [merge(model, {isCapturing: true}), Effects.none]
+  )
+
+const animate =
+  (animation, action) =>
+  Animation.updateWith
+  ( Easing.easeOutQuad
+  , Display.interpolate
+  , animation
+  , action
+  )
+
+
+const updateAnimation = cursor
+  ( { get: model => model.animation
+    , set:
+      (model, animation) =>
+      new Model
+      ( model.isVisible
+      , animation
+      )
+    , tag: tagAnimation
+    , update: animate
+    }
+  )
+
+const startAnimation =
+  (isVisible, [animation, fx]) =>
+  [ new Model
+    ( isVisible
+    , animation
     )
-  : action.type === "Click"
-  ? [model, Effects.none]
-  : Unknown.update(model, action)
+  , fx.map(tagAnimation)
+  ]
+
+const nofx =
+  model =>
+  [ model
+  , Effects.none
+  ]
+
+export const render =
+  ( model/*:Model*/
+  , address/*:Address<Action>*/
+  )/*:DOM*/ =>
+  html.div
+  ( { className: 'overlay'
+    , style: Style.mix
+      ( styleSheet.base
+      , ( model.isVisible
+        ? styleSheet.visible
+        : styleSheet.invisible
+        )
+      , { opacity: model.animation.state.opacity
+        }
+      )
+    , onClick: forward(address, Click)
+    }
   );
 
-const style = Style.createSheet({
-  overlay: {
-    background: 'rgb(0, 0, 0)',
-    position: 'absolute',
-    width: '100vw',
-    height: '100vh',
-    zIndex: 12
-  },
-  capturing: {
-    pointerEvents: 'auto'
-  },
-  passing: {
-    pointerEvents: 'none'
-  }
-});
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
-  html.div({
-    className: 'overlay',
-    style: Style.mix
-      ( style.overlay
-      , ( model.isCapturing
-        ? style.capturing
-        : style.passing
-        )
-      , { opacity: model.display.opacity
-        }
-      ),
-    onClick: forward(address, Click)
-  });
+  ( model/*:Model*/
+  , address/*:Address<Action>*/
+  )/*:DOM*/ =>
+  thunk
+  ( 'Browser/NavigatorDeck/Navigator/Overaly'
+  , render
+  , model
+  , address
+  );
+
+const styleSheet = Style.createSheet
+  ( { base:
+      { background: 'rgb(0, 0, 0)'
+      , position: 'absolute'
+      , width: '100vw'
+      , height: '100vh'
+      , zIndex: Layer.overlay
+      }
+    , visible: null
+    , invisible:
+      { zIndex: -1
+      }
+    }
+  )

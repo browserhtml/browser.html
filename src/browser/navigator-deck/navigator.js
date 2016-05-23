@@ -74,6 +74,8 @@ export type Action =
 
   // Overlay
   | { type: "Overlay", overlay: Overlay.Action }
+  | { type: "HideOverlay" }
+  | { type: "ShowOverlay" }
 
   // Progress
   | { type: "Progress", progress: Progress.Action }
@@ -112,6 +114,8 @@ const OpenNewTab = { type: "OpenNewTab"};
 const EditInput = { type: "EditInput" };
 const FocusOutput = { type: "FocusOutput" };
 const AbortInput = { type: "AbortInput" };
+const HideOverlay = { type: "HideOverlay" };
+const ShowOverlay = { type: "ShowOverlay" };
 const Close = { type: "Close" };
 
 const tagInput =
@@ -147,6 +151,8 @@ const tagAssistant =
 const tagOverlay =
   action => {
     switch (action.type) {
+      case "Click":
+        return EscapeInput
       default:
         return { type: "Overlay", overlay: action }
     }
@@ -349,6 +355,13 @@ export const update =
       case 'Assistant':
         return updateAssistant(model, action.assistant);
 
+      case 'Overlay':
+        return updateOverlay(model, action.overlay);
+      case 'HideOverlay':
+        return updateOverlay(model, Overlay.Hide);
+      case 'ShowOverlay':
+        return updateOverlay(model, Overlay.Show);
+
       // Internal
       case 'ActivateAssistant':
         return activateAssistant(model);
@@ -400,6 +413,7 @@ const escapeInput =
   , [ DeactivateAssistant
     , AbortInput
     , FocusOutput
+    , HideOverlay
     ]
   );
 
@@ -457,6 +471,7 @@ const editInput =
   , model
   , [ FocusInput
     , ActivateAssistant
+    , ShowOverlay
       // @TODO: Do not use `model.output.navigation.currentURI` as it ties it
       // to webView API too much.
     , SetSelectedInputValue(model.output.navigation.currentURI)
@@ -605,6 +620,7 @@ export const render =
     , Input.view(model.input, forward(address, tagInput))
     , Assistant.view(model.assistant, forward(address, tagAssistant))
     , Output.view(model.output, forward(address, tagOutput))
+    , Overlay.view(model.overlay, forward(address, tagOverlay))
     ]
   )
 

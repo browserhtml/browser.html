@@ -78,6 +78,7 @@ const styleSheet = Style.createSheet
       , width: '100%'
       , height: `${height}px`
       , color: 'inherit'
+      , background: 'inherit'
       , zIndex: Layer.header
       }
     }

@@ -97,7 +97,7 @@ export const initWithNewTab =
           , guestInstanceId: null
           }
         , assistant: true
-        , overlay: false
+        , overlay: true
         }
       );
     const fx = Effects.batch([fx1, fx2])
