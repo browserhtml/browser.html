@@ -10,7 +10,7 @@ import {always} from '../../../../common/prelude';
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {ID, URI, Time, Display, Options, Model, Action} from "../web-view"
+import type {Model, Action} from "../web-view"
 import {performance} from "../../../../common/performance"
 */
 
@@ -29,7 +29,7 @@ export const view =
   )/*:DOM*/ =>
   node
   ( 'webview'
-  , { id: `web-view-${model.id}`
+  , { [model.ref.name]: model.ref.value
     , src: model.navigation.initiatedURI
     , 'data-current-uri': model.navigation.currentURI
     , 'data-name': model.name
@@ -79,7 +79,13 @@ const decodeOpenWindow =
       , name: event.frameName
       , disposition: event.disposition
       , features: ''
-      , guestInstanceId: event.options.webPreferences.guestInstanceId
+      , guestInstanceId:
+        ( ( event.options != null &&
+            event.options.webPreferences != null
+          )
+        ? event.options.webPreferences.guestInstanceId
+        : null
+        )
       , ref: null
       , options: event.options
       }

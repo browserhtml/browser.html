@@ -1,13 +1,12 @@
-/* @noflow */
+/* @flow */
 
-import {Effects, html, forward, thunk} from "reflex"
+import {Effects, Task, html, forward, thunk} from "reflex"
 import {merge} from "../common/prelude"
-
-import * as Card from "./deck/card"
 import * as Unknown from "../common/unknown"
+import {indexOfOffset} from "../common/selector"
 
 /*::
-import type {Address, DOM} from "reflex"
+import type {Address, DOM, Never} from "reflex"
 export type Integer = number
 export type ID = string
 
@@ -27,8 +26,9 @@ export type Action <action, flags> =
   | { type: "Close", id: ID }
   | { type: "Remove", id: ID }
   | { type: "Select", id: ID }
-  | { type: "Activate", id: ID }
   | { type: "Modify", id: ID, modify: action }
+  | { type: "SelectNext" }
+  | { type: "SelectPrevious" }
 
 export type Transaction <action, model> =
   [model, Effects<action>]
@@ -40,6 +40,14 @@ export type Init <action, model, flags> =
 export type Update <action, model> =
   (model:model, action:action) =>
   Transaction<action, model>
+
+export type Card <action, model, flags> =
+  { init: (flags:flags) => [model, Effects<action>]
+  , update: (model:model, action:action) => [model, Effects<action>]
+  , close: (model:model) => [model, Effects<action>]
+  , select: (model:model) => [model, Effects<action>]
+  , deselect: (model:model) => [model, Effects<action>]
+  }
 */
 
 export class Model /*::<model>*/ {
@@ -48,20 +56,17 @@ export class Model /*::<model>*/ {
   index: Array<ID>;
   cards: Dictionary<ID, model>;
   selected: Maybe<ID>;
-  active: Maybe<ID>;
   */
   constructor(
     nextID/*:Integer*/
   , index/*:Array<ID>*/
   , cards/*:Dictionary<ID, model>*/
   , selected/*:Maybe<ID>*/
-  , active/*:Maybe<ID>*/
   ) {
     this.nextID = nextID
     this.index = index
     this.cards = cards
     this.selected = selected
-    this.active = active
   }
 }
 
@@ -72,15 +77,13 @@ export const init = /*::<action, model, flags>*/
   , index/*:Array<ID>*/=[]
   , cards/*:Dictionary<ID, model>*/={}
   , selected/*:Maybe<ID>*/=null
-  , active/*:Maybe<ID>*/=null
   )/*:Transaction<Action<action, flags>, Model<model>>*/ =>
-  [ new Model(nextID, index, cards, selected, active)
+  [ new Model(nextID, index, cards, selected)
   , Effects.none
   ];
 
 export const update = /*::<action, model, flags>*/
-  ( initCard/*:Init<action, model, flags>*/
-  , updateCard/*:Update<action, model>*/
+  ( card/*:Card<action, model, flags>*/
   , model/*:Model<model>*/
   , action/*:Action<action, flags>*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
@@ -88,17 +91,19 @@ export const update = /*::<action, model, flags>*/
       case "NoOp":
         return nofx(model);
       case "Open":
-        return open(initCard, updateCard, action.open, model);
+        return open(card, model, action.open);
       case "Close":
-        return close(initCard, updateCard, action.id, model);
+        return closeByID(card, model, action.id);
       case "Select":
-        return select(initCard, updateCard, action.id, model);
-      case "Activate":
-        return activate(initCard, updateCard, action.id, model);
+        return selectByID(card, model, action.id);
+      case "SelectNext":
+        return selectNext(card, model);
+      case "SelectPrevious":
+        return selectPrevious(card, model);
       case "Remove":
-        return remove(initCard, updateCard, action.id, model);
+        return removeByID(card, model, action.id);
       case "Modify":
-        return modify(initCard, updateCard, action.id, action.modify, model)
+        return updateByID(card, model, action.id, action.modify)
       default:
         return Unknown.update(model, action);
     }
@@ -111,15 +116,14 @@ const nofx = /*::<model, action>*/
   ]
 
 
-const modify = /*::<model, action, flags>*/
-  ( initCard/*:Init<action, model, flags>*/
-  , updateCard/*:Update<action, model>*/
+const updateByID = /*::<model, action, flags>*/
+  ( api/*:Card<action, model, flags>*/
+  , model/*:Model<model>*/
   , id/*:ID*/
   , action/*:action*/
-  , model/*:Model<model>*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
     if (id in model.cards) {
-      const [card, $card] = updateCard(model.cards[id], action);
+      const [card, $card] = api.update(model.cards[id], action);
       const cards = merge(model.cards, {[id]: card});
       return [
         new Model
@@ -127,7 +131,6 @@ const modify = /*::<model, action, flags>*/
         , model.index
         , cards
         , model.selected
-        , model.active
         )
       , $card.map(Tag.modify(id))
       ]
@@ -138,30 +141,33 @@ const modify = /*::<model, action, flags>*/
   }
 
 export const open = /*::<action, model, flags>*/
-  ( initCard/*:Init<action, model, flags>*/
-  , updateCard/*:Update<action, model>*/
-  , flags/*:flags*/
+  ( api/*:Card<action, model, flags>*/
   , model/*:Model<model>*/
+  , flags/*:flags*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
-    const id = `${flags.id}`;
+    const id = `${model.nextID}`;
+    const [card, $card] = api.init(flags);
+
     const [model2, fx2] =
-      ( model.active == null
+      ( model.selected == null
       ? nofx(model)
-      : deactivate(initCard, updateCard, model.active, model)
+      : card.isSelected
+      ? deselectByID(api, model, model.selected)
+      : nofx(model)
       );
 
-    const [card, $card] = initCard(flags);
+
     const model3 = new Model
       ( model.nextID + 1
-      , (model2.index.unshift(id), model2.index)
-      , (model2.cards[id] = card, model2.cards)
-      , ( model2.selected == null
+      , model2
+        .index
+        .slice(0, 1)
+        .concat([id])
+        .concat(model2.index.slice(1))
+      , merge(model2.cards, {[id]: card})
+      , ( card.isSelected
         ? id
         : model2.selected
-        )
-      , ( model2.active == null
-        ? id
-        : model2.active
         )
       );
 
@@ -174,18 +180,17 @@ export const open = /*::<action, model, flags>*/
     return [model3, fx3]
   }
 
-const close = /*::<action, model, flags>*/
-  ( initCard/*:Init<action, model, flags>*/
-  , updateCard/*:Update<action, model>*/
-  , id/*:ID*/
+const closeByID = /*::<action, model, flags>*/
+  ( api/*:Card<action, model, flags>*/
   , model/*:Model<model>*/
+  , id/*:ID*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
     const [available, $available] =
-      clear(initCard, updateCard, id, model);
+      clearByID(api, model, id);
 
     if (id in available.cards) {
       const [card, $card] =
-        updateCard(available.cards[id], Card.Close);
+        api.close(available.cards[id]);
 
       const transaction =
         [ merge
@@ -210,30 +215,13 @@ const close = /*::<action, model, flags>*/
     }
   }
 
-const asInactive = /*::<model>*/
-  (model/*:Model<model>*/)/*:Model<model>*/ =>
-  merge
-  ( model
-  , { active: null
-    , selected: null
-    }
-  );
-
-const asDeselected = /*::<model>*/
-  (model/*:Model<model>*/)/*:Model<model>*/ =>
-  merge
-  ( model
-  , { selected: null }
-  );
-
-export const remove = /*::<action, model, flags>*/
-  ( initCard/*:Init<action, model, flags>*/
-  , updateCard/*:Update<action, model>*/
-  , id/*:ID*/
+export const removeByID = /*::<action, model, flags>*/
+  ( card/*:Card<action, model, flags>*/
   , model/*:Model<model>*/
+  , id/*:ID*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
     const [available, $available] =
-      clear(initCard, updateCard, id, model);
+      clearByID(card, model, id);
 
     if (id in available.cards) {
       const transaction =
@@ -261,11 +249,10 @@ const cardNotFound = /*::<model, action>*/
   nofx(model)
 
 
-export const select = /*::<action, model, flags>*/
-  ( initCard/*:Init<action, model, flags>*/
-  , updateCard/*:Update<action, model>*/
-  , id/*:ID*/
+export const selectByID = /*::<action, model, flags>*/
+  ( api/*:Card<action, model, flags>*/
   , model/*:Model<model>*/
+  , id/*:ID*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
     if (id === model.selected) {
       return nofx(model)
@@ -273,12 +260,11 @@ export const select = /*::<action, model, flags>*/
     else if (id in model.cards) {
       const [deselected, $deselected] =
         ( model.selected != null
-        ? deselect(initCard, updateCard, model.selected, model)
+        ? deselectByID(api, model, model.selected)
         : nofx(model)
         )
 
-      const [card, $card] =
-        updateCard(model.cards[id], Card.Select);
+      const [card, $card] = api.select(model.cards[id]);
 
       const transaction =
         [ merge
@@ -304,23 +290,22 @@ export const select = /*::<action, model, flags>*/
     }
   }
 
-export const deselect = /*::<action, model, flags>*/
-  ( initCard/*:Init<action, model, flags>*/
-  , updateCard/*:Update<action, model>*/
-  , id/*:ID*/
+export const deselectByID = /*::<action, model, flags>*/
+  ( api/*:Card<action, model, flags>*/
   , model/*:Model<model>*/
+  , id/*:ID*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
     if (model.selected !== id) {
       return nofx(model)
     }
     else if (id in model.cards) {
       const [card, $card] =
-        updateCard(model.cards[id], Card.Deselect);
+        api.deselect(model.cards[id]);
 
       const transaction =
         [ merge
           ( model
-          , { selected: id
+          , { selected: null
             , cards: merge
               ( model.cards
               , { [id]: card }
@@ -337,103 +322,15 @@ export const deselect = /*::<action, model, flags>*/
     }
   }
 
-export const activate = /*::<action, model, flags>*/
-  ( initCard/*:Init<action, model, flags>*/
-  , updateCard/*:Update<action, model>*/
-  , id/*:ID*/
+const clearByID = /*::<action, model, flags>*/
+  ( api/*:Card<action, model, flags>*/
   , model/*:Model<model>*/
-  )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
-    if (model.active === id) {
-      return nofx(model)
-    }
-    else if (id in model.cards) {
-      const [deactivated, $deactivated] =
-        ( model.active != null
-        ? deactivate(initCard, updateCard, model.active, model)
-        : nofx(model)
-        )
-
-      const [card, $card] =
-        updateCard(model.cards[id], Card.Activate);
-
-      const transaction =
-        [ merge
-          ( deactivated
-          , { selected: null
-            , active: id
-            , cards: merge
-              ( deactivated.cards
-              , { [id]: card }
-              )
-            }
-          )
-        , Effects.batch
-          ( [ $deactivated
-            , $card.map(Tag.modify(id))
-            ]
-          )
-        ]
-
-      return transaction
-    }
-    else {
-      return cardNotFound(model, id)
-    }
-  }
-
-export const deactivate = /*::<action, model, flags>*/
-  ( initCard/*:Init<action, model, flags>*/
-  , updateCard/*:Update<action, model>*/
   , id/*:ID*/
-  , model/*:Model<model>*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
-    if (model.active !== id) {
-      return nofx(model)
-    }
-    else if (id in model.cards) {
-      const [card, $card] =
-        updateCard(model.cards[id], Card.Deactivate);
-
-      const transaction =
-        [ merge
-          ( model
-          , { selected: null
-            , active: null
-            , cards: merge
-              ( model.cards
-              , { [id]: card }
-              )
-            }
-          )
-        , $card.map(Tag.modify(id))
-        ]
-
-      return transaction
-    }
-    else {
-      return cardNotFound(model, id)
-    }
-  }
-
-const clear = /*::<action, model, flags>*/
-  ( initCard/*:Init<action, model, flags>*/
-  , updateCard/*:Update<action, model>*/
-  , id/*:ID*/
-  , model/*:Model<model>*/
-  )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
-    if (model.active === id) {
-      const active = beneficiaryOf(id, model.index);
-      if (active != null) {
-        return activate(initCard, updateCard, active, model)
-      }
-      else {
-        return nofx(model)
-      }
-    }
-    else if (model.selected === id) {
+    if (model.selected === id) {
       const selected = beneficiaryOf(id, model.index);
       if (selected != null) {
-        return select(initCard, updateCard, selected, model)
+        return selectByID(api, model, selected)
       }
       else {
         return nofx(model)
@@ -443,6 +340,49 @@ const clear = /*::<action, model, flags>*/
       return nofx(model);
     }
   }
+
+export const selectByOffset = /*::<action, model, flags>*/
+  ( api/*:Card<action, model, flags>*/
+  , model/*:Model<model>*/
+  , offset/*:Integer*/
+  )/*:Transaction<Action<action, flags>, Model<model>>*/ =>
+  ( model.index.length === 0
+  ? nofx(model)
+  : model.selected == null
+  ? [ model
+    , Effects.perform
+      ( warn(Error(`Unable to change selected WebView if no WebView is seleted`))
+      )
+    ]
+  : selectByID
+    ( api
+    , model
+    , relativeOf(offset, model.selected, model.index)
+    )
+  );
+
+export const selectNext =/*::<action, model, flags>*/
+  ( api/*:Card<action, model, flags>*/
+  , model/*:Model<model>*/
+  )/*:Transaction<Action<action, flags>, Model<model>>*/ =>
+  selectByOffset(api, model, 1)
+
+export const selectPrevious = /*::<action, model, flags>*/
+  ( api/*:Card<action, model, flags>*/
+  , model/*:Model<model>*/
+  )/*:Transaction<Action<action, flags>, Model<model>>*/ =>
+  selectByOffset(api, model, -1)
+
+const relativeOf =
+  (offset, id, index) =>
+  index
+  [ indexOfOffset
+    ( index.indexOf(id)
+    , offset
+    , index.length
+    , true
+    )
+  ]
 
 // Takes element and an array thas supposed to contain it and returns
 // neigboring element which:
@@ -495,3 +435,10 @@ export const renderCards = /*::<action, model, flags>*/
     , forward(address, Tag.modify(id))
     )
   )
+
+const warn = /*::<message>*/
+  (message/*:message*/)/*:Task<Never, any>*/ =>
+  new Task
+  ((succeed, fail) => {
+    console.warn(message)
+  })

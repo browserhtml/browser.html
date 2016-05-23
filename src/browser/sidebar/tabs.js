@@ -15,16 +15,17 @@ import * as Unknown from '../../common/unknown';
 /*::
 import type {Address, DOM} from "reflex"
 import * as Tab from "./tab"
-import * as Navigators from "../navigator-deck/deck"
+import * as Navigator from "../navigator-deck/navigator"
+import * as Deck from "../deck"
 
 export type ID = string
 export type Context = Tab.Context
-export type Model = Navigators.Model
+export type Model = Deck.Model<Navigator.Model>
 
 export type Action =
   | { type: "Close", id: ID }
   | { type: "Activate", id: ID }
-  | { type: "Tab", id: ID, source: Tab.Action }
+  | { type: "Modify", id: ID, modify: Tab.Action }
 */
 
 const styleSheet = Style.createSheet({
@@ -61,9 +62,9 @@ const ByID =
   ? Close(id)
   : action.type === "Activate"
   ? Activate(id)
-  : { type: "Tab"
+  : { type: "Modify"
     , id
-    , source: action
+    , modify: action
     }
   );
 
@@ -82,7 +83,7 @@ export const render =
     .map
     ( id =>
       Tab.view
-      ( model.cards[id].output
+      ( model.cards[id]
       , forward(address, ByID(id))
       , context
       )

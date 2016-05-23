@@ -18,6 +18,7 @@ const baseStyleSheet/*:StyleSheet*/ = Style.createSheet
       , backgroundPosition: 'center center'
       , backgroundRepeat: 'no-repeat'
       , border: 'none'
+      , textIndent: '1px'
       }
     }
   );
@@ -28,7 +29,7 @@ export const view =
   , address/*:Address<Action>*/
   , contextStyle/*?:ContextStyle*/
   )/*:DOM*/ =>
-  html.img
+  html.figure
   ( { style: Style.mix
         ( baseStyleSheet.base
         , styleSheet.base

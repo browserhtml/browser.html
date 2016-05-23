@@ -9,14 +9,49 @@ import {merge, always} from "../../../../common/prelude";
 import {cursor} from "../../../../common/cursor";
 import {ok, error} from "../../../../common/result";
 import * as Focusable from "../../../../common/focusable";
-
+import * as Ref from '../../../../common/ref';
 
 /*::
 import type {Result} from "../../../../common/result"
 import type {Never} from "reflex"
-import type {ID, Float, Model, Action} from "./shell"
+import type {Float} from "../../../../common/prelude"
+
+export type Action =
+  | { type: "NoOp" }
+  | { type: "ZoomIn" }
+  | { type: "ZoomOut" }
+  | { type: "ResetZoom" }
+  | { type: "MakeVisible" }
+  | { type: "MakeNotVisible" }
+  | { type: "ZoomChanged"
+    , zoomChanged: Result<Error, number>
+    }
+  | { type: "VisibilityChanged"
+    , visibilityChanged: Result<Error, boolean>
+    }
+  | { type: "Focus" }
+  | { type: "Blur" }
 */
 
+export class Model {
+  /*::
+  ref: Ref.Model;
+  zoom: Float;
+  isVisible: boolean;
+  isFocused: boolean;
+  */
+  constructor(
+    ref/*:Ref.Model*/
+  , zoom/*:Float*/
+  , isVisible/*:boolean*/
+  , isFocused/*:boolean*/
+  ) {
+    this.ref = ref
+    this.zoom = zoom
+    this.isVisible = isVisible
+    this.isFocused = isFocused
+  }
+}
 
 export const MakeVisible/*:Action*/ =
   ({type: "MakeVisible"});
@@ -44,100 +79,105 @@ const NoOp = always({type: "NoOp"});
 
 const VisibilityChanged =
   result =>
-  ({type: "VisibilityChanged", visibilityResult: result});
+  ( { type: "VisibilityChanged"
+    , visibilityChanged: result
+    }
+  );
 
 const ZoomChanged =
   result =>
-  ({type: "ZoomChanged", zoomResult: result});
-
-const setZoom = (id, level) =>
-  new Task((succeed, fail) => {
-    const target = document.getElementById(`web-view-${id}`);
-    const result
-      = target == null
-      ? error(Error(`WebView with id web-view-${id} not found`))
-      : typeof(target.zoom) !== 'function'
-      ? error(Error(`.zoom is not supported by runtime`))
-      : ok(level);
-
-    if (result.isOk) {
-      // @FlowIssue: Flow can't infer enough to tell it's function here.
-      target.zoom(level)
+  ( { type: "ZoomChanged"
+    , zoomChanged: result
     }
+  );
 
-    Promise.resolve(result).then(succeed, fail);
-  });
+const setZoom =
+  (ref/*:Ref.Model*/, level/*:Float*/)/*:Task<Error, Float>*/ =>
+  Ref
+  .deref(ref)
+  .chain(element => setElementZoom(element, level))
+
+const setElementZoom =
+  ( target, level ) =>
+  new Task((succeed, fail) => {
+    if (typeof(target.zoom) !== 'function') {
+      fail(Error(`.zoom is not supported by runtime`))
+    }
+    else {
+      target.zoom(level);
+      succeed(level);
+    }
+  })
 
 const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 2;
 const ZOOM_STEP = 0.1;
 
 export const zoomIn =
-  (id/*:ID*/, zoom/*:number*/)/*:Task<Never, Result<Error, Float>>*/ =>
-  setZoom(id, Math.min(ZOOM_MAX, zoom + ZOOM_STEP));
+  (ref/*:Ref.Model*/, zoom/*:number*/)/*:Task<Error, number>*/ =>
+  setZoom(ref, Math.min(ZOOM_MAX, zoom + ZOOM_STEP));
 
 export const zoomOut =
-  (id/*:ID*/, zoom/*:number*/)/*:Task<Never, Result<Error, Float>>*/ =>
-  setZoom(id, Math.max(ZOOM_MIN, zoom - ZOOM_STEP));
+  (ref/*:Ref.Model*/, zoom/*:number*/)/*:Task<Error, number>*/ =>
+  setZoom(ref, Math.max(ZOOM_MIN, zoom - ZOOM_STEP));
 
 export const resetZoom =
-  (id/*:ID*/)/*:Task<Never, Result<Error, Float>>*/ =>
-  setZoom(id, 1);
+  (ref/*:Ref.Model*/)/*:Task<Error, number>*/ =>
+  setZoom(ref, 1);
 
 export const setVisibility =
-  (id/*:ID*/, isVisible/*:boolean*/)/*:Task<Never, Result<Error, boolean>>*/ =>
+  (ref/*:Ref.Model*/, isVisible/*:boolean*/)/*:Task<Error, boolean>*/ =>
+  Ref
+  .deref(ref)
+  .chain(target => setElementVisibility(target, isVisible));
+
+const setElementVisibility =
+  (element, isVisible) =>
   new Task((succeed, fail) => {
-    const target = document.getElementById(`web-view-${id}`);
-    const result
-      = target == null
-      ? error(Error(`WebView with id web-view-${id} not found`))
-      : typeof(target.setVisible) !== 'function'
-      ? error(Error(`.setVisible is not supported by runtime`))
-      : ok(isVisible);
-
-    if (result.isOk) {
-      // @FlowIssue: Flow can't infer enough to tell it's function here.
-      target.setVisible(isVisible);
+    if (typeof(element.setVisible) !== 'function') {
+      fail(Error(`.setVisible is not supported by runtime`))
     }
-
-    Promise.resolve(result).then(succeed, fail);
-  });
+    else {
+      element.setVisible(isVisible);
+      succeed(isVisible);
+    }
+  })
 
 export const focus =
-  (id/*:ID*/)/*:Task<Error, void>*/ =>
+  (ref/*:Ref.Model*/)/*:Task<Error, *>*/ =>
+  Ref
+  .deref(ref)
+  .chain(focusElement);
+
+const focusElement =
+  element =>
   new Task((succeed, fail) => {
-    const target = document.getElementById(`web-view-${id}`);
-    if (target == null) {
-      fail(Error(`WebView with id web-view-${id} not found`))
+    try {
+      element.focus()
     }
-    else {
-      try {
-        target.focus()
-        succeed()
-      }
-      catch (error) {
-        fail(error)
-      }
+    catch (error) {
+      fail(error)
     }
   });
 
+
 export const blur =
-  (id/*:ID*/)/*:Task<Error, void>*/ =>
+  (ref/*:Ref.Model*/)/*:Task<Error, *>*/ =>
+  Ref
+  .deref(ref)
+  .chain(blurElement);
+
+const blurElement =
+  element =>
   new Task((succeed, fail) => {
-    const target = document.getElementById(`web-view-${id}`);
-    if (target == null) {
-      fail(Error(`WebView with id web-view-${id} not found`))
+    try {
+      element.blur()
     }
-    else {
-      try {
-        target.blur()
-        succeed()
-      }
-      catch (error) {
-        fail(error)
-      }
+    catch (error) {
+      fail(error)
     }
   });
+
 
 
 // Reports error as a warning in a console.
@@ -148,16 +188,55 @@ const report =
   });
 
 
-const updateFocus = Focusable.update;
 
 export const init =
-  (id/*:ID*/, isFocused/*:boolean*/)/*:[Model, Effects<Action>]*/ =>
-  [ {id, isFocused: isFocused, isVisible: false, zoom: 1}
-  , ( isFocused
-    ? Effects.receive(Focus)
-    : Effects.none
+  ( ref/*:Ref.Model*/
+  , isFocused/*:boolean*/)/*:[Model, Effects<Action>]*/ =>
+  [ new Model
+    ( ref
+    , 1
+    , true
+    , isFocused
     )
-  ];
+  , Effects.none
+  ]
+
+const updateVisibility =
+  ( model, isVisible ) =>
+  [ new Model
+    ( model.ref
+    , model.zoom
+    , isVisible
+    , model.isFocused
+    )
+  , Effects.none
+  ]
+
+
+const updateZoom =
+  ( model, zoom ) =>
+  [ new Model
+    ( model.ref
+    , zoom
+    , model.isVisible
+    , model.isFocused
+    )
+  , Effects.none
+  ]
+
+
+
+const updateFocus =
+  ( model, isFocused ) =>
+  [ new Model
+    ( model.ref
+    , model.zoom
+    , model.isVisible
+    , isFocused
+    )
+  , Effects.none
+  ]
+
 
 export const update =
   (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
@@ -166,63 +245,83 @@ export const update =
         return [
           model
           , Effects
-              .perform(zoomIn(model.id, model.zoom))
-              .map(ZoomChanged)
+            .perform
+              ( zoomIn(model.ref, model.zoom)
+                .map(ok)
+                .capture(reason => Task.succeed(error(reason)))
+              )
+            .map(ZoomChanged)
           ];
       case "ZoomOut":
         return [
           model
           , Effects
-              .perform(zoomOut(model.id, model.zoom))
+              .perform
+              ( zoomOut(model.ref, model.zoom)
+                .map(ok)
+                .capture(reason => Task.succeed(error(reason)))
+              )
               .map(ZoomChanged)
           ];
       case "ResetZoom":
         return [
           model
           , Effects
-              .perform(resetZoom(model.id))
+              .perform
+              ( resetZoom(model.ref)
+                .map(ok)
+                .capture(reason => Task.succeed(error(reason)))
+              )
               .map(ZoomChanged)
           ];
       case "MakeVisible":
         return [
           model
           , Effects
-              .perform(setVisibility(model.id, true))
+              .perform
+              ( setVisibility(model.ref, true)
+                .map(ok)
+                .capture(reason => Task.succeed(error(reason)))
+              )
               .map(VisibilityChanged)
           ];
       case "MakeNotVisible":
         return [
           model
           , Effects
-              .perform(setVisibility(model.id, false))
-              .map(VisibilityChanged)
+            .perform
+            ( setVisibility(model.ref, false)
+              .map(ok)
+              .capture(reason => Task.succeed(error(reason)))
+            )
+            .map(VisibilityChanged)
           ];
       case "VisibilityChanged":
-        return ( action.visibilityResult.isOk
-                ? [ merge(model, {isVisible: action.visibilityResult.value})
-                  , Effects.none
-                  ]
-                : [ model
-                  , Effects
-                    .perform(report(action.visibilityResult.error))
-                    .map(NoOp)
-                  ]
-                );
+        return (
+          action.visibilityChanged.isOk
+        ? updateVisibility(model, action.visibilityChanged.value)
+        : [ model
+          , Effects
+            .perform(report(action.visibilityChanged.error))
+            .map(NoOp)
+          ]
+        );
       case "ZoomChanged":
-        return ( action.zoomResult.isOk
-                ? [ merge(model, {zoom: action.zoomResult.value}), Effects.none ]
-                : [ model
-                  , Effects
-                    .perform(report(action.zoomResult.error))
-                    .map(NoOp)
-                  ]
-                );
+        return (
+          action.zoomChanged.isOk
+        ? updateZoom(model, action.zoomChanged.value)
+        : [ model
+          , Effects
+            .perform(report(action.zoomChanged.error))
+            .map(NoOp)
+          ]
+        );
 
   // Delegate
       case "Focus":
-        return updateFocus(model, action);
+        return updateFocus(model, true);
       case "Blur":
-        return updateFocus(model, action);
+        return updateFocus(model, false);
       default:
         return [model, Effects.none];
     }

@@ -17,7 +17,7 @@ import {cursor} from '../../common/cursor';
 
 /*::
 import type {Address, DOM} from "reflex"
-import * as WebView from "../navigator-deck/navigator/web-view"
+import * as Navigator from "../navigator-deck/navigator"
 import type {ID} from "../../common/prelude"
 import * as Target from "../../common/target"
 
@@ -177,13 +177,13 @@ const viewIcon = Image.view('favicon', Style.createSheet({
 }));
 
 // TODO: Use button widget instead.
-const viewClose = ({isSelected, tab}, address) =>
+const viewClose = (tab, address) =>
   html.div
   ( { className: 'tab-close-mask'
     , style:
         Style.mix
         ( styleSheet.closeMask
-        , ( isSelected
+        , ( false // isSelected
           ? styleSheet.closeMaskSelected
           : styleSheet.closeMaskUnselected
           )
@@ -207,7 +207,7 @@ const viewClose = ({isSelected, tab}, address) =>
   ]);
 
 export const render =
-  ( model/*:WebView.Model*/
+  ( model/*:Navigator.Model*/
   , address/*:Address<Action>*/
   , {tabWidth, titleOpacity}/*:Context*/
   )/*:DOM*/ =>
@@ -230,7 +230,7 @@ export const render =
         , style: styleSheet.container
         }
       , [ viewIcon
-          ( { uri: readFaviconURI(model) }
+          ( { uri: readFaviconURI(model.output) }
           , address
           )
         , html.div
@@ -242,10 +242,10 @@ export const render =
               )
             }
             // @TODO localize this string
-          , [ readTitle(model, 'Untitled')
+          , [ readTitle(model.output, 'Untitled')
             ]
           )
-        , thunk('close', viewClose, model, address)
+        , thunk('close', viewClose, model.output.tab, address)
         ]
       )
     ]
@@ -253,12 +253,12 @@ export const render =
 
 
 export const view =
-  ( model/*:WebView.Model*/
+  ( model/*:Navigator.Model*/
   , address/*:Address<Action>*/
   , context/*:Context*/
   )/*:DOM*/ =>
   thunk
-  ( `${model.id}`
+  ( `${model.output.ref.value}`
   , render
   , model
   , address

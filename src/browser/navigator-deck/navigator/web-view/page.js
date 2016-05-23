@@ -9,10 +9,74 @@ import {merge} from '../../../../common/prelude';
 import * as Favicon from '../../../../common/favicon';
 import * as Pallet from '../../../../browser/pallet';
 import * as Unknown from '../../../../common/unknown';
+import * as Ref from '../../../../common/ref';
 
 /*::
-import type {URI, Icon, Model, Action} from "./page"
+import type {URI} from "../../../../common/prelude"
+import type {Icon} from "../../../../common/favicon"
+
+export type Action =
+  | { type: "LoadStart" }
+  | { type: "LoadEnd" }
+  | { type: "TitleChanged"
+    , title: string
+    }
+  | { type: "IconChanged"
+    , icon: Icon
+    }
+  | { type: "MetaChanged"
+    , name: string
+    , content: string
+    }
+  | { type: "CuratedColorUpdate"
+    , color: ?Pallet.Theme
+    }
+  | { type: "DocumentFirstPaint" }
+  | { type: "FirstPaint" }
+  | { type: "CreatePallet" }
+  | { type: "OverflowChanged"
+    , isOverflown: boolean
+    }
+  | { type: "Scrolled"
+    , detail: any
+    }
+  | { type: "LocationChanged"
+    , uri: URI
+    }
 */
+
+export class Model {
+  /*::
+  uri: URI;
+  title: ?string;
+  faviconURI: ?URI;
+  icon: ?Icon;
+
+  themeColor: ?string;
+  curatedColor: ?Pallet.Theme;
+
+  pallet: Pallet.Model;
+  */
+  constructor(
+    uri/*: URI*/
+  , title/*: ?string*/
+  , faviconURI/*: ?URI*/
+  , icon/*: ?Icon*/
+
+  , themeColor/*: ?string*/
+  , curatedColor/*: ?Pallet.Theme*/
+
+  , pallet/*: Pallet.Model*/
+  ) {
+    this.uri = uri
+    this.title = title
+    this.faviconURI = faviconURI
+    this.icon = icon
+    this.themeColor = themeColor
+    this.curatedColor = curatedColor
+    this.pallet = pallet
+  }
+}
 
 export const DocumentFirstPaint/*:Action*/ =
   {type: "DocumentFirstPaint"};
@@ -67,76 +131,146 @@ const updateIcon = (model, {icon}) => {
     );
 
   return [
-    merge
-    ( model
-    , { icon: bestIcon
-      , faviconURI: faviconURI
-      }
+    new Model
+    ( model.uri
+    , model.title
+    , faviconURI
+    , bestIcon
+    , model.themeColor
+    , model.curatedColor
+    , model.pallet
     )
   , Effects.none
   ];
 };
 
-const updateMeta = (model, {name, content}) =>
+const updateMeta =
+  (model, {name, content}) =>
   [ ( name === 'theme-color'
-    ? merge(model, {themeColor: content})
+    ? new Model
+      ( model.uri
+      , model.title
+      , model.faviconURI
+      , model.icon
+      , content
+      , model.curatedColor
+      , model.pallet
+      )
     : model
     )
   , Effects.none
   ];
 
 const updatePallet = (model, _) =>
-  [ merge
-    ( model
-    , { pallet:
-          ( model.curatedColor != null
-          ? Pallet.create
-            ( model.curatedColor.background
-            , model.curatedColor.foreground
-            )
-          : model.themeColor != null
-          ? Pallet.create(...`${model.themeColor}|'`.split('|'))
-          : Pallet.blank
-          )
-      }
+  [ new Model
+    ( model.uri
+    , model.title
+    , model.faviconURI
+    , model.icon
+    , model.themeColor
+    , model.curatedColor
+    , ( model.curatedColor != null
+      ? Pallet.create
+        ( model.curatedColor.background
+        , model.curatedColor.foreground
+        )
+      : model.themeColor != null
+      ? Pallet.create(...`${model.themeColor}|'`.split('|'))
+      : Pallet.blank
+      )
     )
   , Effects.none
   ];
 
 export const init =
   (uri/*:URI*/)/*:[Model, Effects<Action>]*/ =>
-  [ { uri
-    , title: null
-    , icon: null
-    , faviconURI: null
+  [ new Model
+    ( uri
+    , null
+    , null
+    , null
 
-    , themeColor: null
-    , curatedColor: null
+    , null
+    , null
 
-    , pallet: Pallet.blank
-    }
+    , Pallet.blank
+    )
   , Effects.none
   ];
+
+const loadStart =
+  model =>
+  [ new Model
+    ( model.uri
+    , null
+    , null
+    , null
+
+    , null
+    , null
+
+    , Pallet.blank
+    )
+  , Effects
+    .perform(Pallet.requestCuratedColor(model.uri))
+    .map(CuratedColorUpdate)
+  ];
+
+const updateTitle =
+  (model, title) =>
+  [ new Model
+    ( model.uri
+    , title
+    , model.faviconURI
+    , model.icon
+    , model.themeColor
+    , model.curatedColor
+    , model.pallet
+    )
+  , Effects.none
+  ];
+
+const updateCuratedColor =
+  (model, color) =>
+  [ new Model
+    ( model.uri
+    , model.title
+    , model.faviconURI
+    , model.icon
+    , model.themeColor
+    , color
+    , model.pallet
+    )
+  , Effects.none
+  ];
+
+const updateURI =
+  ( model, uri ) =>
+  // Sometimes location change is triggered even though actual location
+  // remains same. In such case we want to keep extracted colors as we
+  // may not get those this time around.
+  ( model.uri === uri
+  ? [ model, Effects.none ]
+  : [ new Model
+      ( uri
+      , model.title
+      , model.faviconURI
+      , model.icon
+      , null
+      , null
+      , model.pallet
+      )
+    , Effects
+      .perform(Pallet.requestCuratedColor(uri))
+      .map(CuratedColorUpdate)
+    ]
+  );
 
 export const update =
   (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
     switch (action.type) {
       case "LoadStart":
-        return  [merge( model
-                      , { title: null
-                        , icon: null
-                        , faviconURI: null
-
-                        , themeColor: null
-                        , curatedColor: null
-
-                        , pallet: Pallet.blank
-                        }
-                      )
-                , Effects
-                    .perform(Pallet.requestCuratedColor(model.uri))
-                    .map(CuratedColorUpdate)
-                ];
+        return  loadStart(model);
       case "LoadEnd":
         // If you go back / forward `DocumentFirstPaint` is not fired there for
         // we schedule a `WebView.Page.DocumentFakePaint` action to be send back
@@ -146,35 +280,19 @@ export const update =
         // LoadEnd seems to fire occasionaly sooner that colors are feteched.
         return [ model, Effects.receive(CreatePallet) ];
       case "TitleChanged":
-        return  [ merge(model, {title: action.title}), Effects.none ];
+        return updateTitle(model, action.title);
       case "IconChanged":
         return  updateIcon(model, action);
       case "MetaChanged":
         return  updateMeta(model, action);
       case "CuratedColorUpdate":
-        return  [ merge(model, {curatedColor: action.color}), Effects.none ];
+        return updateCuratedColor(model, action.color);
       case "DocumentFirstPaint":
         return  [ model, Effects.receive(CreatePallet) ];
       case "CreatePallet":
         return  updatePallet(model);
       case "LocationChanged":
-        // Sometimes location change is triggered even though actual location
-        // remains same. In such case we want to keep extracted colors as we
-        // may not get those this time around.
-        return  ( action.uri !== model.uri
-                ? [ merge
-                      ( model
-                      , { uri: action.uri
-                        , curatedColor: null
-                        , themeColor: null
-                        }
-                      )
-                  , Effects
-                      .perform(Pallet.requestCuratedColor(action.uri))
-                      .map(CuratedColorUpdate)
-                  ]
-                : [ model, Effects.none ]
-                );
+        return updateURI(model, action.uri);
   // Ignore
       case "FirstPaint":
         return  [ model, Effects.none ];

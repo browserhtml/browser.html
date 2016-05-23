@@ -12,7 +12,6 @@ import {compose} from '../../../lang/functional';
 import {on} from '@driver';
 import {isElectron} from "../../../common/runtime";
 import * as Shell from './web-view/shell';
-// import * as Progress from './web-view/progress';
 import * as Navigation from './web-view/navigation';
 import * as Security from './web-view/security';
 import * as Page from './web-view/page';
@@ -27,12 +26,167 @@ import * as Easing from 'eased';
 import * as MozBrowserFrame from './web-view/moz-browser-frame';
 import * as ElectronFrame from './web-view/electron-frame';
 import * as Layer from './Layer';
+import * as Ref from '../../../common/ref';
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {ID, URI, Time, Display, Options, Model, Action} from "./web-view"
+import type {URI, Time, Integer, Float} from "../../../common/prelude"
+import type {Icon} from "../../../common/favicon"
 import {performance} from "../../../common/performance"
+
+export type {URI, Time}
+
+export type Display =
+  { opacity: Float
+  }
+
+export type Disposition =
+  | 'default'
+  | 'foreground-tab'
+  | 'background-tab'
+  | 'new-window'
+  | 'new-popup'
+
+export type Flags =
+  { uri: URI
+  , disposition: Disposition
+  , name: string
+  , features: string
+  , options?: {}
+  , ref: any
+  , guestInstanceId: ?string
+  }
+
+export type Action =
+  | { type: "NoOp" }
+  | { type: "Select" }
+  | { type: "Selected" }
+  | { type: "Unselect" }
+  | { type: "Unselected" }
+  | { type: "Activate" }
+  | { type: "Activated" }
+  | { type: "Deactivate" }
+  | { type: "Deactivated" }
+  | { type: "Focus" }
+  | { type: "Blur" }
+  | { type: "Load"
+    , uri: URI
+    }
+  | { type: "LoadStart"
+    , time: Time
+    }
+  | { type: "LoadEnd"
+    , time: Time
+    }
+  | { type: "Connect"
+    , time: Time
+    }
+  | { type: "LocationChanged"
+    , uri: URI
+    , canGoBack: ?boolean
+    , canGoForward: ?boolean
+    , time: Time
+    }
+  | { type: "FirstPaint" }
+  | { type: "DocumentFirstPaint" }
+  | { type: "MetaChanged", name: string, content: string }
+  | { type: "IconChanged", icon: Icon }
+  | { type: "TitleChanged", title: string }
+  | { type: "SecurityChanged"
+    , state: "broken" | "secure" | "insecure"
+    , extendedValidation: boolean
+    , trackingContent: boolean
+    , mixedContent: boolean
+    }
+  | { type: "Close" }
+  | { type: "Closed" }
+  | { type: "Edit" }
+  | { type: "ShowTabs" }
+  | { type: "Create" }
+  | { type: "PushDown" }
+  | { type: "PushedDown" }
+  | { type: "SelectAnimation"
+    , action: Stopwatch.Action
+    }
+  // | { type: "Progress"
+  //   , progress: Progress.Action
+  //   }
+  | { type: "Shell"
+    , shell: Shell.Action
+    }
+  | { type: "Page"
+    , page: Page.Action
+    }
+  | { type: "Tab"
+    , source: Tab.Action
+    }
+  | { type: "Security"
+    , security: Security.Action
+    }
+  | { type: "Navigation"
+    , navigation: Navigation.Action
+    }
+  | { type: "Open"
+    , options: Flags
+    }
+  | { type: "ContextMenu"
+    , clientX: Float
+    , clientY: Float
+    , systemTargets: any
+    , contextMenu: any
+    }
+  | { type: "Authentificate"
+    , host: string
+    , realm: string
+    , isProxy: boolean
+    }
+  | { type: "LoadFail"
+    , time: Time
+    , reason: string
+    , code: Integer
+    }
+  | { type: "ModalPrompt"
+    , kind: "alert" | "confirm" | "prompt"
+    , title: string
+    , message: string
+    }
+
 */
+
+export class Model {
+  /*::
+  ref: Ref.Model;
+  guestInstanceId: ?string;
+  name: string;
+  features: string;
+  tab: Tab.Model;
+  shell: Shell.Model;
+  navigation: Navigation.Model;
+  security: Security.Model;
+  page: Page.Model;
+  */
+  constructor(
+    ref/*: Ref.Model*/
+  , guestInstanceId/*: ?string*/
+  , name/*: string*/
+  , features/*: string*/
+  , tab/*: Tab.Model*/
+  , shell/*: Shell.Model*/
+  , navigation/*: Navigation.Model*/
+  , security/*: Security.Model*/
+  , page/*: Page.Model*/
+  ) {
+    this.ref = ref
+    this.guestInstanceId = guestInstanceId
+    this.name = name
+    this.features = features
+    this.tab = tab
+    this.shell = shell
+    this.navigation = navigation
+    this.security = security
+    this.page = page
+  }
+}
 
 const NoOp = always({ type: "NoOp" });
 export const Select/*:Action*/ =
@@ -195,13 +349,6 @@ const TabAction = action => {
     }
   };
 
-// const ProgressAction =
-//   action =>
-//   ( { type: "Progress"
-//     , progress: action
-//     }
-//   );
-
 const SelectAnimationAction = action =>
   ( action.type === "End"
   ? Selected
@@ -209,15 +356,6 @@ const SelectAnimationAction = action =>
     , action
     }
   );
-
-// const updateProgress = cursor
-//   ( { get: model => model.progress
-//     , set: (model, progress) => merge(model, {progress})
-//     , tag: ProgressAction
-//     , update: Progress.update
-//     }
-//   );
-
 
 const updatePage = cursor
   ( { get: model => model.page
@@ -293,129 +431,123 @@ const updateSelectAnimation = (model, action) => {
 };
 
 export const init =
-  (id/*:ID*/, options/*:Options*/)/*:[Model, Effects<Action>]*/ => {
-  const [shell, shellFx] = Shell.init(id, options.disposition !== 'background-tab');
-  const [navigation, navigationFx] = Navigation.init(id, options.uri);
-  const [page, pageFx] = Page.init(options.uri);
-  const [security, securityFx] = Security.init();
-  // const [progress, progressFx] = Progress.init();
-  const [animation, animationFx] = Stopwatch.init();
-  const [tab, tabFx] = Tab.init();
-
-  return [
-    { id
-    , guestInstanceId: options.guestInstanceId
-    , name: options.name
-    , features: options.name
-    , isSelected: false
-    , isActive: false
-    , display:
-      { opacity:
-          ( options.disposition === "background-tab"
-          ? 0
-          : 1
-          )
-      }
-    , shell
-    , security
-    , navigation
-    , page
-    , tab
-    // , progress
-    , animation
-    }
-  , Effects.batch
-    ( [ shellFx.map(ShellAction)
-      , pageFx.map(PageAction)
-      , tabFx.map(TabAction)
-      , securityFx.map(SecurityAction)
-      , navigationFx.map(NavigationAction)
-      // , progressFx.map(ProgressAction)
-      , animationFx.map(SelectAnimationAction)
-      , ( options.disposition === "background-tab"
-        ? Effects.none
-        : Effects.receive(Activate)
-        )
-      , ( options.ref != null
-        ? Effects.perform
-          ( Driver.forceReplace
-            ( `#web-view-${id}`
-            , options.ref
-            )
-          )
-          .map(NoOp)
-        : Effects.none
-        )
-      ]
-    )
-  ]
-};
-
-const startSelectAnimation = model => {
-  const [animation, fx] = Stopwatch.update(model.animation, Stopwatch.Start);
-  return (
-    [ merge(model, {animation})
-    , fx.map(SelectAnimationAction)
-    ]
-  );
-}
-
-const select = model =>
-  ( model.isSelected
-  ? [ model, Effects.none ]
-  : startSelectAnimation(merge(model, {isSelected: true}))
-  );
-
-const selected = model =>
-  [ model
-  , Effects.receive(Selected)
-  ];
-
-const unselect = model =>
-  ( model.isSelected
-  ? [ merge
-      ( model
-      , { isSelected: false
-        , display: {opacity: 1}
-        }
+  (options/*:Flags*/)/*:[Model, Effects<Action>]*/ => {
+    const ref = Ref.create()
+    return assemble(
+        ref
+      , options.guestInstanceId
+      , options.name
+      , options.features
+      , Tab.init()
+      , Shell.init(ref, options.disposition !== 'background-tab')
+      , Navigation.init(ref, options.uri)
+      , Security.init()
+      , Page.init(options.uri)
       )
-    , Effects.none
-    ]
-  : [ model, Effects.none ]
-  );
+  };
 
-const unselected = model =>
-  [ model
-  , Effects.receive(Unselected)
-  ];
+const assemble =
+  ( ref/*:Ref.Model*/
+  , guestInstanceId/*:?string*/
+  , name/*:string*/
+  , features/*:string*/
+  , [tab, $tab]/*:[Tab.Model, Effects<Tab.Action>]*/
+  , [shell, $shell]/*:[Shell.Model, Effects<Shell.Action>]*/
+  , [navigation, $navigation]/*:[Navigation.Model, Effects<Navigation.Action>]*/
+  , [security, $security]/*:[Security.Model, Effects<Security.Action>]*/
+  , [page, $page]/*:[Page.Model, Effects<Page.Action>]*/
+  ) => {
+    const model = new Model
+      ( ref
+      , guestInstanceId
+      , name
+      , features
+      , tab
+      , shell
+      , navigation
+      , security
+      , page
+      )
 
-const activate = model =>
-  ( model.isActive
-  ? [ model, Effects.none ]
-  : [ merge(model, {isActive: true, isSelected: true})
-    , Effects.receive(Activated)
-    ]
-  );
+    const fx = Effects.batch
+      ( [ $shell.map(ShellAction)
+        , $page.map(PageAction)
+        , $tab.map(TabAction)
+        , $security.map(SecurityAction)
+        , $navigation.map(NavigationAction)
+        ]
+      )
 
-const activated = model =>
-  updateShell(model, Shell.Focus);
+    return [model, fx]
+  }
 
-const deactivate = model =>
-  ( model.isActive
-  ? [ merge(model, {isActive: false})
-    , Effects.receive(Deactivated)
-    ]
-  : [ model, Effects.none ]
-  );
+// const startSelectAnimation = model => {
+//   const [animation, fx] = Stopwatch.update(model.animation, Stopwatch.Start);
+//   return (
+//     [ merge(model, {animation})
+//     , fx.map(SelectAnimationAction)
+//     ]
+//   );
+// }
+//
+// const select = model =>
+//   ( model.isSelected
+//   ? [ model, Effects.none ]
+//   : startSelectAnimation(merge(model, {isSelected: true}))
+//   );
+//
+// const selected = model =>
+//   [ model
+//   , Effects.receive(Selected)
+//   ];
+//
+// const unselect = model =>
+//   ( model.isSelected
+//   ? [ merge
+//       ( model
+//       , { isSelected: false
+//         , display: {opacity: 1}
+//         }
+//       )
+//     , Effects.none
+//     ]
+//   : [ model, Effects.none ]
+//   );
+//
+// const unselected = model =>
+//   [ model
+//   , Effects.receive(Unselected)
+//   ];
+//
+// const activate = model =>
+//   ( model.isActive
+//   ? [ model, Effects.none ]
+//   : [ merge(model, {isActive: true, isSelected: true})
+//     , Effects.receive(Activated)
+//     ]
+//   );
+//
+// const activated = model =>
+//   updateShell(model, Shell.Focus);
+//
+// const deactivate = model =>
+//   ( model.isActive
+//   ? [ merge(model, {isActive: false})
+//     , Effects.receive(Deactivated)
+//     ]
+//   : [ model, Effects.none ]
+//   );
+//
+// const deactivated = model =>
+//   [ model, Effects.none ];
 
-const deactivated = model =>
-  [ model, Effects.none ];
-
-const focus = model =>
-  ( model.isActive
-  ? updateShell(model, Shell.Focus)
-  : activate(model)
-  );
+const focus =
+  model =>
+  // ( model.isActive
+  // ?
+  updateShell(model, Shell.Focus)
+  // : activate(model)
+  // );
 
 const load = (model, uri) =>
   updateNavigation(model, Navigation.Load(uri));
@@ -465,22 +597,22 @@ export const update =
     switch (action.type) {
       case "NoOp":
         return [ model, Effects.none ];
-      case "Select":
-        return select(model);
-      case "Selected":
-        return [ model, Effects.none ];
-      case "Unselect":
-        return unselect(model);
-      case "Unselected":
-        return [ model, Effects.none ];
-      case "Activate":
-        return activate(model);
-      case "Activated":
-        return activated(model);
-      case "Deactivate":
-        return deactivate(model);
-      case "Deactivated":
-        return deactivated(model);
+      // case "Select":
+      //   return select(model);
+      // case "Selected":
+      //   return [ model, Effects.none ];
+      // case "Unselect":
+      //   return unselect(model);
+      // case "Unselected":
+      //   return [ model, Effects.none ];
+      // case "Activate":
+      //   return activate(model);
+      // case "Activated":
+      //   return activated(model);
+      // case "Deactivate":
+      //   return deactivate(model);
+      // case "Deactivated":
+      //   return deactivated(model);
       case "Focus":
         return focus(model);
       case "Blur":
@@ -523,8 +655,8 @@ export const update =
         return [ model, Effects.receive(PushedDown) ];
 
   // Animation
-      case "SelectAnimation":
-        return updateSelectAnimation(model, action.action);
+      // case "SelectAnimation":
+      //   return updateSelectAnimation(model, action.action);
 
   // Delegate
       // case "Progress":
@@ -545,21 +677,8 @@ export const update =
   };
 
 const topBarHeight = '27px';
-const comboboxHeight = '21px';
-const comboboxWidth = '250px';
 
 const styleSheet = StyleSheet.create({
-  webview: {
-    position: 'absolute', // to stack webview on top of each other
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    mozUserSelect: 'none',
-    cursor: 'default',
-    zIndex: Layer.output
-  },
-
   webviewActive: {
 
   },
@@ -576,6 +695,7 @@ const styleSheet = StyleSheet.create({
   base: {
     position: 'absolute',
     top: topBarHeight,
+    zIndex: Layer.output,
     left: 0,
     width: '100%',
     height: `calc(100% - ${topBarHeight})`,

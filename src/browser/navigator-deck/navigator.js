@@ -17,19 +17,23 @@ import * as Unknown from "../../common/unknown";
 import * as URL from '../../common/url-helper';
 import * as Header from './navigator/Header';
 import * as Progress from './navigator/Progress';
+import * as Display from './navigator/Display';
+import * as Animation from "../../common/animation";
+import * as Tab from "../../sidabar/tab";
+import * as Easing from "eased";
 
 import {readTitle, isSecure, isDark, canGoBack} from './navigator/web-view/util';
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {ID, URI, Time} from "./navigator/web-view"
+import type {URI, Time} from "./navigator/web-view"
+import {performance} from "../../common/performance"
 
 export type Flags =
-  { id: ID
-  , output: Output.Flags
-  , input: Input.Flags
-  , overlay: Overlay.Flags
-  , assistant: Assistant.Flags
+  { output: Output.Flags
+  , input?: Input.Flags
+  , overlay?: Overlay.Flags
+  , assistant?: Assistant.Flags
   }
 
 export type Action =
@@ -91,9 +95,19 @@ export type Action =
   | { type: "DeactivateAssistant" }
   | { type: "SetSelectedInputValue", value: string }
 
-  // // Embedder
+  // Embedder
   | { type: "Navigate", uri: URI }
-  | { type: "Open", options: Output.Options }
+  | { type: "Open"
+    , open:
+      { output: Output.Flags
+      , input?: Input.Flags
+      , assistant?: Assistant.Flags
+      , overlay?: Overlay.Flags
+      }
+    }
+
+  // Animation
+  | { type: "Animation", animation: Animation.Action }
 */
 
 const SubmitInput = { type: "SubmitInput" }
@@ -111,12 +125,17 @@ export const ResetZoom = { type: "ResetZoom" }
 
 const ShowTabs = { type: "ShowTabs" };
 const OpenNewTab = { type: "OpenNewTab"};
-const EditInput = { type: "EditInput" };
+export const EditInput = { type: "EditInput" };
 const FocusOutput = { type: "FocusOutput" };
 const AbortInput = { type: "AbortInput" };
 const HideOverlay = { type: "HideOverlay" };
 const ShowOverlay = { type: "ShowOverlay" };
-const Close = { type: "Close" };
+
+export const Close = { type: "Close" };
+export const Deactivate = { type: "Deactivate" }
+export const Activate = { type: "Activate" }
+export const Deselect = { type: "Deselect" }
+export const Select = { type: "Select" }
 
 const tagInput =
   action => {
@@ -169,7 +188,12 @@ const tagOutput =
       case "Close":
         return Close;
       case "Open":
-        return action
+        return {
+          type: "Open"
+        , open:
+          { output: action.options
+          }
+        }
       case "LoadStart":
         return action
       case "Connect":
@@ -205,6 +229,13 @@ const tagProgress =
     }
   }
 
+const tagAnimation =
+  action =>
+  ( { type: "Animation"
+    , animation: action
+    }
+  );
+
 export const Navigate =
   ( destination/*:string*/)/*:Action*/ =>
   ( { type: "Navigate"
@@ -224,45 +255,50 @@ const SetSelectedInputValue =
 
 export class Model {
   /*::
-  id: ID;
+  isSelected: boolean;
   output: Output.Model;
   input: Input.Model;
   overlay: Overlay.Model;
   assistant: Assistant.Model;
   progress: Progress.Model;
+  animation: Animation.Model<Display.Model>;
   */
   constructor(
-    id/*:ID*/
+    isSelected/*:boolean*/
   , input/*:Input.Model*/
   , output/*:Output.Model*/
   , assistant/*:Assistant.Model*/
   , overlay/*:Overlay.Model*/
   , progress/*:Progress.Model*/
+  , animation/*:Animation.Model<Display.Model>*/
   ) {
-    this.id = id
+    this.isSelected = isSelected
     this.input = input
     this.output = output
     this.assistant = assistant
     this.overlay = overlay
     this.progress = progress
+    this.animation = animation
   }
 }
 
 const assemble =
-  ( id
+  ( isSelected
   , [input, $input]
   , [output, $output]
   , [assistant, $assistant]
   , [overlay, $overlay]
   , [progress, $progress]
+  , [animation, $animation]
   ) => {
     const model = new Model
-      ( id
+      ( isSelected
       , input
       , output
       , assistant
       , overlay
       , progress
+      , animation
       )
 
     const fx = Effects.batch
@@ -271,6 +307,7 @@ const assemble =
         , $overlay.map(tagOverlay)
         , $assistant.map(tagAssistant)
         , $progress.map(tagProgress)
+        , $animation.map(tagAnimation)
         ]
       )
 
@@ -280,12 +317,17 @@ const assemble =
 export const init =
   (options/*:Flags*/)/*:[Model, Effects<Action>]*/ =>
   assemble
-  ( options.id
+  ( options.output.disposition != 'background-tab'
   , Input.init(options.input)
-  , Output.init(options.id, options.output)
+  , Output.init(options.output)
   , Assistant.init(options.assistant)
   , Overlay.init(options.overlay)
   , Progress.init()
+  , Animation.init
+    ( options.output.disposition != 'background-tab'
+    ? Display.selected
+    : Display.deselected
+    )
   )
 
 export const update =
@@ -299,6 +341,13 @@ export const update =
 
       case 'Navigate':
         return navigate(model, action.uri);
+
+      case 'Select':
+        return select(model);
+      case 'Deselect':
+        return deselect(model);
+      case 'Close':
+        return close(model);
 
       // Input
       case 'CommitInput':
@@ -370,16 +419,55 @@ export const update =
       case 'SetSelectedInputValue':
         return setSelectedInputValue(model, action.value);
 
+      case 'Animation':
+        return updateAnimation(model, action.animation);
+
       default:
         return Unknown.update(model, action);
     }
   };
 
 const nofx =
-  model =>
+  (model/*:Model*/)/*:[Model, Effects<Action>]*/ =>
   [ model
   , Effects.none
   ];
+
+export const select =
+  ( model/*:Model*/
+  )/*:[Model, Effects<Action>]*/ =>
+  ( model.isSelected
+  ? nofx(model)
+  : startAnimation
+    ( model
+    , true
+    , Animation.transition
+      ( model.animation
+      , Display.selected
+      , 200
+      , performance.now()
+      )
+    )
+  )
+
+export const deselect =
+  ( model/*:Model*/
+  )/*:[Model, Effects<Action>]*/ =>
+  ( model.isSelected
+  ? startAnimation
+    ( model
+    , false
+    , Animation.transition
+      ( model.animation
+      , Display.deselected
+      , 200
+      , performance.now()
+      )
+    )
+  : nofx(model)
+  )
+
+export const close = deselect
 
 const navigate =
   (model, uri) =>
@@ -447,12 +535,13 @@ const updateLoadProgress =
     const [output, output$] = Output.update(source.output, action)
     const [progress, progress$] = Progress.update(source.progress, action)
     const model = new Model
-    ( source.id
+    ( source.isSelected
     , source.input
     , output
     , source.assistant
     , source.overlay
     , progress
+    , source.animation
     )
     const fx = Effects.batch
     ( [ output$.map(tagOutput)
@@ -516,12 +605,13 @@ const updateInput = cursor
     , set:
       (model, input) =>
       new Model
-      ( model.id
+      ( model.isSelected
       , input
       , model.output
       , model.assistant
       , model.overlay
       , model.progress
+      , model.animation
       )
     , update: Input.update
     , tag: tagInput
@@ -533,12 +623,13 @@ const updateOutput = cursor
     , set:
       (model, output) =>
       new Model
-      ( model.id
+      ( model.isSelected
       , model.input
       , output
       , model.assistant
       , model.overlay
       , model.progress
+      , model.animation
       )
     , update: Output.update
     , tag: tagOutput
@@ -550,12 +641,13 @@ const updateProgress = cursor
     , set:
       (model, progress) =>
       new Model
-      ( model.id
+      ( model.isSelected
       , model.input
       , model.output
       , model.assistant
       , model.overlay
       , progress
+      , model.animation
       )
     , update: Progress.update
     , tag: tagProgress
@@ -567,12 +659,13 @@ const updateAssistant = cursor
     , set:
       (model, assistant) =>
       new Model
-      ( model.id
+      ( model.isSelected
       , model.input
       , model.output
       , assistant
       , model.overlay
       , model.progress
+      , model.animation
       )
     , update: Assistant.update
     , tag: tagAssistant
@@ -584,22 +677,64 @@ const updateOverlay = cursor
     , set:
       (model, overlay) =>
       new Model
-      ( model.id
+      ( model.isSelected
       , model.input
       , model.output
       , model.assistant
       , overlay
       , model.progress
+      , model.animation
       )
     , update: Overlay.update
     , tag: tagOverlay
     }
   );
 
+const animate =
+  (animation, action) =>
+  Animation.updateWith
+  ( Easing.easeOutCubic
+  , Display.interpolate
+  , animation
+  , action
+  )
+
+const updateAnimation = cursor
+  ( { get: model => model.animation
+    , set:
+      (model, animation) =>
+        new Model
+        ( model.isSelected
+        , model.input
+        , model.output
+        , model.assistant
+        , model.overlay
+        , model.progress
+        , animation
+        )
+    , tag: tagAnimation
+    , update: animate
+    }
+  )
+
+const startAnimation =
+  (model, isSelected, [animation, fx]) =>
+  [ new Model
+    ( isSelected
+    , model.input
+    , model.output
+    , model.assistant
+    , model.overlay
+    , model.progress
+    , animation
+    )
+  , fx.map(tagAnimation)
+  ]
+
 export const render =
   (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
   html.dialog
-  ( { className: `navigator id-${model.id} ${mode(model.output)}`
+  ( { className: `navigator ${mode(model.output)}`
     , open: true
     , style: Style.mix
       ( styleSheet.base
@@ -607,6 +742,11 @@ export const render =
         ? styleSheet.dark
         : styleSheet.bright
         )
+      , ( model.isSelected
+        ? styleSheet.selected
+        : styleSheet.unselected
+        )
+      , model.animation.state
       , styleBackground(model.output)
       )
     }
@@ -627,7 +767,7 @@ export const render =
 export const view =
   (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
   thunk
-  ( model.id
+  ( model.output.ref.value
   , render
   , model
   , address
@@ -648,6 +788,10 @@ const styleSheet = Style.createSheet
       , transitionTimingFunction: 'ease-in, ease-out, ease'
       , transitionDuration: '300ms'
       }
+    , selected:
+      { zIndex: 2 }
+    , unselected:
+      { zIndex: 1 }
     , dark:
       { color: 'rgba(255, 255, 255, 0.8)'
       , borderColor: 'rgba(255, 255, 255, 0.2)'

@@ -1,6 +1,6 @@
 /* @flow */
 
-import * as Deck from "./navigator-deck/deck"
+import * as Deck from "./deck"
 import * as Animation from "../common/animation"
 import * as Unknown from "../common/unknown"
 import * as Display from "./navigator-deck/display"
@@ -10,6 +10,8 @@ import {always} from "../common/prelude"
 import * as Style from "../common/style"
 import * as Easing from "eased"
 import * as Overlay from "./navigator-deck/Overlay"
+import * as Navigator from "./navigator-deck/navigator"
+import * as URI from "../common/url-helper";
 
 /*::
 import {performance} from "../common/performance"
@@ -28,8 +30,13 @@ export type Action =
   | { type: "ZoomIn" }
   | { type: "ZoomOut" }
   | { type: "ResetZoom" }
+  | { type: "Close" }
+  | { type: "EditInput" }
+  | { type: "OpenNewTab" }
+  | { type: "SelectNext" }
+  | { type: "SelectPrevious" }
   | { type: "Animation", animation: Animation.Action }
-  | { type: "Deck", deck: Deck.Action }
+  | { type: "Deck", deck: Deck.Action<Navigator.Action, Navigator.Flags> }
 */
 
 export const Expose = { type: "Expose" }
@@ -38,13 +45,18 @@ export const Expand = { type: "Expand" }
 export const Shrink = { type: "Shrink" }
 export const ShowTabs = { type: "ShowTabs" }
 export const ShowWebView = { type: "ShowWebView" }
+export const OpenNewTab = { type: "OpenNewTab" };
 export const GoBack = { type: "GoBack" }
 export const GoForward = { type: "GoForward" }
 export const Reload = { type: "Reload" }
 export const ZoomOut = { type: "ZoomOut" }
 export const ZoomIn = { type: "ZoomIn" }
 export const ResetZoom = { type: "ResetZoom" }
-
+export const EditInput = { type: "EditInput" }
+export const SelectNewTab = { type: "Select", id: "0" };
+export const SelectNext = { type: "SelectNext" }
+export const SelectPrevious = { type: "SelectPrevious" }
+export const Close = { type: "Close" }
 
 export class Model {
   /*::
@@ -66,13 +78,41 @@ export class Model {
   }
 }
 
+const nofx =
+  model =>
+  [ model
+  , Effects.none
+  ]
+
+const Card =
+  { init: Navigator.init
+  , update: Navigator.update
+  , close: Navigator.close
+  , select: Navigator.select
+  , deselect: Navigator.deselect
+  }
+
+
 const tagDeck =
-  action => {
+  (action/*:Deck.Action<Navigator.Action, Navigator.Flags>*/)/*:Action*/ => {
     switch (action.type) {
-      case "ShowTabs":
-        return ShowTabs;
+      case "Modify":
+        switch (action.modify.type) {
+          case "ShowTabs":
+            return ShowTabs;
+          case "OpenNewTab":
+            return OpenNewTab;
+          case "Open":
+            return {
+              type: "Deck"
+            , deck: action.modify
+            }
+        }
       default:
-        return { type: "Deck", deck: action };
+        return {
+          type: "Deck"
+        , deck: action
+        };
     }
   }
 
@@ -90,7 +130,32 @@ export const init =
   ( zoom/*:boolean*/=true
   , shrink/*:boolean*/=false
   )/*:[Model, Effects<Action>]*/ => {
-    const [deck, $deck] = Deck.initWithNewTab();
+    const flags =
+      { input:
+        { value: ''
+        , isVisible: true
+        , isFocused: true
+        }
+
+        , output:
+        { uri: URI.read('about:newtab')
+        , disposition: 'default'
+        , name: 'about:newtab'
+        , features: ''
+        , ref: null
+        , guestInstanceId: null
+        }
+      , assistant: true
+      , overlay: true
+      }
+
+    const [deck, $deck] = Deck.init();
+    const [deck2, $deck2] = Deck.open
+      ( Card
+      , deck
+      , flags
+      )
+
     const display =
       ( shrink
       ? Display.shrinked
@@ -100,9 +165,10 @@ export const init =
       )
 
     const [animation, $animation] = Animation.init(display);
-    const model = new Model(zoom, shrink, deck, animation);
+    const model = new Model(zoom, shrink, deck2, animation);
     const fx = Effects.batch
       ( [ $deck.map(tagDeck)
+        , $deck2.map(tagDeck)
         , $animation.map(tagAnimation)
         ]
       )
@@ -116,20 +182,30 @@ export const update =
         return updateAnimation(model, action.animation);
       case "Deck":
         return updateDeck(model, action.deck);
+      case "SelectNext":
+        return selectNext(model);
+      case "SelectPrevious":
+        return selectPrevious(model);
+      case "Close":
+        return closeSelected(model);
       case "ShowTabs":
-        return updateDeck(model, Deck.ShowTabs);
+        return nofx(model);
+      case "OpenNewTab":
+        return openNewTab(model);
       case "GoBack":
-        return updateDeck(model, Deck.GoBack);
+        return updateSelected(model, Navigator.GoBack);
       case "GoForward":
-        return updateDeck(model, Deck.GoForward);
+        return updateSelected(model, Navigator.GoForward);
       case "Reload":
-        return updateDeck(model, Deck.Reload);
+        return updateSelected(model, Navigator.Reload);
       case "ZoomIn":
-        return updateDeck(model, Deck.ZoomIn);
+        return updateSelected(model, Navigator.ZoomIn);
       case "ZoomOut":
-        return updateDeck(model, Deck.ZoomOut);
+        return updateSelected(model, Navigator.ZoomOut);
       case "ResetZoom":
-        return updateDeck(model, Deck.ResetZoom);
+        return updateSelected(model, Navigator.ResetZoom);
+      case "EditInput":
+        return updateSelected(model, Navigator.EditInput);
       case "Focus":
         return focus(model, performance.now());
       case "Expose":
@@ -167,6 +243,12 @@ const updateAnimation = cursor
     }
   )
 
+const openNewTab =
+  model =>
+  updateDeck
+  ( model
+  , SelectNewTab
+  )
 
 const updateDeck = cursor
   ( { get: model => model.deck
@@ -179,8 +261,43 @@ const updateDeck = cursor
       , model.animation
       )
     , tag: tagDeck
-    , update: Deck.update
+    , update:
+        (model, action) =>
+        Deck.update(Card, model, action)
     }
+  )
+
+const selectNext =
+  model =>
+  updateDeck(model, SelectNext)
+
+const selectPrevious =
+  model =>
+  updateDeck(model, SelectPrevious)
+
+const updateSelected =
+  (model, action) =>
+  ( model.deck.selected == null
+  ? nofx(model)
+  : updateDeck
+    ( model
+    , { type: "Modify"
+      , id: model.deck.selected
+      , modify: action
+      }
+    )
+  )
+
+const closeSelected =
+  (model, action) =>
+  ( model.deck.selected == null
+  ? nofx(model)
+  : updateDeck
+    ( model
+    , { type: "Close"
+      , id: model.deck.selected
+      }
+    )
   )
 
 const focus =
@@ -277,12 +394,6 @@ const startAnimation =
   , fx.map(tagAnimation)
   ]
 
-const nofx =
-  model =>
-  [ model
-  , Effects.none
-  ]
-
 
 export const render =
   ( model/*:Model*/
@@ -304,7 +415,8 @@ export const render =
       )
     ].concat
     ( Deck.renderCards
-      ( model.deck
+      ( Navigator.render
+      , model.deck
       , forward(address, tagDeck)
       )
     )

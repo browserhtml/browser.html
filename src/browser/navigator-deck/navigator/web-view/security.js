@@ -4,13 +4,46 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/*::
-import type {Model, Action, State} from './security'
-*/
-
 import {Effects} from 'reflex';
 import * as Unknown from '../../../../common/unknown';
-import {merge} from '../../../../common/prelude';
+
+
+/*::
+export type State =
+  | "broken"
+  | "secure"
+  | "insecure"
+
+export type Action =
+  | { type: "LoadStart" }
+  | { type: "SecurityChanged"
+    , state: State
+    , extendedValidation: boolean
+    }
+*/
+
+export class Model {
+  /*::
+  state: State;
+  secure: boolean
+  extendedValidation: boolean;
+  */
+  constructor(
+    state/*:State*/
+  , secure/*:boolean*/
+  , extendedValidation/*:boolean*/
+  ) {
+    this.state = state
+    this.secure = secure
+    this.extendedValidation = extendedValidation
+  }
+}
+
+const insecure = new Model
+  ( 'insecure'
+  , false
+  , false
+  )
 
 export const LoadStart/*:Action*/ =
   { type: "LoadStart"
@@ -26,10 +59,21 @@ export const Changed =
 
 export const init =
   ()/*:[Model, Effects<Action>]*/ =>
-  [ { state: 'insecure'
-    , secure: false
-    , extendedValidation: false
-    }
+  [ insecure
+  , Effects.none
+  ]
+
+const loadStart =
+  model =>
+  init()
+
+const updateSecurity =
+  (model, state, extendedValidation) =>
+  [ new Model
+    ( state
+    , state === 'secure'
+    , extendedValidation
+    )
   , Effects.none
   ]
 
@@ -37,24 +81,9 @@ export const update =
   (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
     switch (action.type) {
       case "LoadStart":
-        return [
-                merge (model
-                      , { state: 'insecure'
-                        , secure: false
-                        , extendedValidation: false
-                        }
-                      )
-                , Effects.none
-               ];
+        return loadStart(model);
       case "SecurityChanged":
-        return [ merge(model
-                      , { state: action.state
-                        , secure: action.state === 'secure'
-                        , extendedValidation: action.extendedValidation
-                        }
-                      )
-                , Effects.none
-               ];
+        return updateSecurity(model, action.state, action.extendedValidation)
       default:
         return Unknown.update(model, action);
     }

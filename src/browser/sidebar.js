@@ -21,7 +21,8 @@ import * as Animation from "../common/animation";
 import type {Integer, Float} from "../common/prelude"
 import type {Address, DOM} from "reflex"
 import type {ID} from "./sidebar/tabs"
-import * as Navigators from "./navigator-deck/deck"
+import * as Navigator from "./navigator-deck/navigator"
+import * as Deck from "./deck"
 import {performance} from "../common/performance"
 
 export type Action =
@@ -354,7 +355,7 @@ export const update =
 
 export const render =
   ( model/*:Model*/
-  , navigators/*:Navigators.Model*/
+  , navigators/*:Deck.Model<Navigator.Model>*/
   , address/*:Address<Action>*/
   )/*:DOM*/ =>
   html.menu
@@ -371,7 +372,7 @@ export const render =
     }
   , [ Tabs.view
       ( navigators
-      , forward(address, tagTabs, model.animation.state)
+      , forward(address, tagTabs)
       , model.animation.state
       )
     , thunk
@@ -386,7 +387,7 @@ export const render =
 
 export const view =
   ( model/*:Model*/
-  , navigators/*:Navigators.Model*/
+  , navigators/*:Deck.Model<Navigator.Model>*/
   , address/*:Address<Action>*/
   )/*:DOM*/ =>
   thunk

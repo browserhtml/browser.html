@@ -10,7 +10,7 @@ import {always} from '../../../../common/prelude';
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {ID, URI, Time, Display, Options, Model, Action} from "../web-view"
+import type {Model, Action} from "../web-view"
 import {performance} from "../../../../common/performance"
 */
 
@@ -26,7 +26,7 @@ export const view =
   , address/*:Address<Action>*/
   )/*:DOM*/ =>
   html.iframe
-  ( { id: `web-view-${model.id}`
+  ( { [model.ref.name]: model.ref.value
     , src: model.navigation.initiatedURI
     , 'data-current-uri': model.navigation.currentURI
     , 'data-name': model.name

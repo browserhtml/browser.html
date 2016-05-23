@@ -4,16 +4,88 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {merge, always} from '../../../../common/prelude';
+import {always} from '../../../../common/prelude';
 import {ok, error} from '../../../../common/result';
 import {Effects, Task} from 'reflex';
 import * as Unknown from '../../../../common/unknown'
+import * as Ref from '../../../../common/ref';
 
 /*::
 import type {Never} from "reflex";
 import type {Result} from '../../../../common/result';
-import type {ID, URI, Time, Model, Action} from "./navigation";
+import type {ID, URI, Time} from "../../../../common/prelude"
+
+export type Action =
+  | { type: "NoOp" }
+  // Action is triggered whenever web-view start loading a new URI. Passed URI
+  // directly corresponds `currentURI` in the model.
+  | { type: "LocationChanged"
+    , uri: URI
+    , canGoBack: ?boolean
+    , canGoForward: ?boolean
+    }
+  // Editing uri in the location bar causes `ChangeLocation` action. It's
+  // `uri` field directly corresponds to `initiatedURI` field on the model,
+  // althoug this action also updates `currentURI`.
+  | { type: "Load"
+    , uri: URI
+    }
+  | { type: "Stop" }
+  | { type: "Reload" }
+  | { type: "GoBack" }
+  | { type: "GoForward" }
+  // When model is updated with above action Effects with following Response
+  // actions are triggered.
+  | { type: "CanGoBackChanged"
+    , canGoBackChanged: Result<Error, boolean>
+    }
+  | { type: "CanGoForwardChanged"
+    , canGoForwardChanged: Result<Error, boolean>
+    }
+  | { type: "Stopped"
+    , stopped: Result<Error, void>
+    }
+  | { type: "Reloaded"
+    , reloaded: Result<Error, void>
+    }
+  | { type: "WentBack"
+    , wentBack: Result<Error, void>
+    }
+  | { type: "WentForward"
+    , wentForward: Result<Error, void>
+    }
 */
+
+export class Model {
+  /*::
+  ref: Ref.Model;
+  canGoBack: boolean
+  canGoForward: boolean;
+  // URI of the page displayed by a web-view (although web view maybe still
+  // loading & technically it won't be displayed). This uri updates during any
+  // redirects or when user navigates away by going back / forward or by
+  // navigating to a new uri.
+  currentURI: URI;
+  // URI that was entered in a location bar by a user. Note this may not be an
+  // uri of currently loaded page as uri could have being redirect or user could
+  // have navigated away by clicking a link or pressing go back / go forward
+  // buttons. This pretty much represents `src` attribute of the iframe.
+  initiatedURI: URI;
+  */
+  constructor(
+    ref/*: Ref.Model*/
+  , canGoBack/*: boolean*/
+  , canGoForward/*: boolean*/
+  , currentURI/*: URI*/
+  , initiatedURI/*: URI*/
+  ) {
+    this.ref = ref
+    this.canGoBack = canGoBack
+    this.canGoForward = canGoForward
+    this.currentURI = currentURI
+    this.initiatedURI = initiatedURI
+  }
+}
 
 
 // User interaction interaction may also triggered following actions:
@@ -33,35 +105,54 @@ export const LocationChanged =
 
 const CanGoBackChanged =
   result =>
-  ({type: "CanGoBackChanged", result});
+  ( { type: "CanGoBackChanged"
+    , canGoBackChanged: result
+    }
+  );
 
 const CanGoForwardChanged =
   result =>
-  ({type: "CanGoForwardChanged", result});
+  ( { type: "CanGoForwardChanged"
+    , canGoForwardChanged: result
+    }
+  );
 
 const Stopped =
   result =>
-  ({type: "Stopped", stopResult: result});
+  ( { type: "Stopped"
+    , stopped: result
+    }
+  );
 
 const Reloaded =
   result =>
-  ({type: "Reloaded", reloadResult: result});
+  ( { type: "Reloaded"
+    , reloaded: result
+    }
+  );
 
 const WentBack = result =>
-  ({type: "WentBack", goBackResult: result});
+  ( { type: "WentBack"
+    , wentBack: result
+    }
+  );
 
 const WentForward = result =>
-  ({type: "WentForward", goForwardResult: result});
+  ( { type: "WentForward"
+    , wentForward: result
+    }
+  );
 
 export const canGoBack =
-  (id/*:ID*/)/*:Task<Never, Result<Error, boolean>>*/ =>
-  new Task((succeed, fail) => {
-    const target = document.getElementById(`web-view-${id}`);
-    if (target == null) {
-      succeed(error(Error(`WebView with id web-view-${id} not found`)));
-    }
+  (ref/*:Ref.Model*/)/*:Task<Never, Result<Error, boolean>>*/ =>
+  Ref
+  .deref(ref)
+  .chain(elementCanGoBack);
 
-    else if (target.getCanGoBack == null) {
+const elementCanGoBack =
+  target =>
+  new Task((succeed, fail) => {
+    if (typeof(target.getCanGoBack) !== "function") {
       succeed(error(Error(`.getCanGoBack is not supported by runtime`)));
     }
 
@@ -73,14 +164,15 @@ export const canGoBack =
   });
 
 export const canGoForward =
-  (id/*:ID*/)/*:Task<Never, Result<Error, boolean>>*/ =>
-  new Task((succeed, fail) => {
-    const target = document.getElementById(`web-view-${id}`);
-    if (target == null) {
-      succeed(error(Error(`WebView with id web-view-${id} not found`)));
-    }
+  (ref/*:Ref.Model*/)/*:Task<Never, Result<Error, boolean>>*/ =>
+  Ref
+  .deref(ref)
+  .chain(elementCanGoForward);
 
-    else if (target.getCanGoForward == null) {
+const elementCanGoForward =
+  target =>
+  new Task((succeed, fail) => {
+    if (typeof(target.getCanGoForward) !== "function") {
       succeed(error(Error(`.getCanGoForward is not supported by runtime`)))
     }
 
@@ -92,23 +184,27 @@ export const canGoForward =
   });
 
 
-const invoke = name =>
-  (id/*:ID*/)/*:Task<Never, Result<Error, void>>*/ =>
-  new Task((succeed, fail) => {
-    const target = document.getElementById(`web-view-${id}`);
-    if (target == null) {
-      succeed(error(Error(`WebView with id web-view-${id} not found`)))
-    }
-    else {
-      try {
-        // @FlowIgnore: We know that method may not exist.
-        target[name]();
-        succeed(ok());
-      } catch (exception) {
-        succeed(error(exception))
-      }
-    }
-  })
+const invoke =
+  name => {
+    const elementInvoke =
+      element =>
+      new Task((succeed, fail) => {
+        try {
+          // @FlowIgnore: We know that method may not exist.
+          element[name]();
+        } catch (exception) {
+          succeed(error(exception))
+        }
+      })
+
+    const task =
+      (ref/*:Ref.Model*/)/*:Task<Never, Result<Error, *>>*/ =>
+      Ref
+      .deref(ref)
+      .chain(elementInvoke)
+
+    return task
+  }
 
 export const stop = invoke('stop');
 export const reload = invoke('reload');
@@ -122,107 +218,159 @@ const report =
   });
 
 export const init =
-  (id/*:ID*/, uri/*:URI*/)/*:[Model, Effects<Action>]*/ =>
-  [ { id
-    , canGoBack: false
-    , canGoForward: false
-    , initiatedURI: uri
-    , currentURI: uri
-    }
+  ( ref/*:Ref.Model*/=Ref.create()
+  , uri/*:URI*/='about:blank'
+  , canGoBack/*: boolean*/ = false
+  , canGoForward/*: boolean*/ = false
+  )/*:[Model, Effects<Action>]*/ =>
+  [ new Model
+    ( ref
+    , canGoBack
+    , canGoForward
+    , uri
+    , uri
+    )
   , Effects.none
   ]
 
-const updateResponse = (model, result) =>
+const updateCanGoBack =
+  ( model, canGoBack ) =>
+  [ new Model
+    ( model.ref
+    , canGoBack
+    , model.canGoForward
+    , model.currentURI
+    , model.initiatedURI
+    )
+  , Effects.none
+  ]
+
+const updateCanGoForward =
+  ( model, canGoForward ) =>
+  [ new Model
+    ( model.ref
+    , model.canGoBack
+    , canGoForward
+    , model.currentURI
+    , model.initiatedURI
+    )
+  , Effects.none
+  ]
+
+const updateResponse =
+  (model, result) =>
   ( result.isOk
   ? [model, Effects.none]
   : [model, Effects.perform(report(result.error)).map(NoOp)]
   );
 
+const updateLocation =
+  (model, uri, canGoBackValue, canGoForwardValue) =>
+  // In the case where LocationChanged carries information about
+  // canGoBack and canGoForward, we update the model with the new info.
+  // This scenario will be hit in Servo.
+  ( ( canGoBackValue != null && canGoForwardValue != null )
+  ? [ new Model
+      ( model.ref
+      , canGoBackValue
+      , canGoForwardValue
+      , uri
+      , model.initiatedURI
+      )
+    , Effects.none
+    ]
+  // Otherwise, update the currentURI and create a task to read
+  // canGoBack, canGoForward from the iframe.
+  // This scenario will be hit in Gecko.
+  : [ new Model
+      ( model.ref
+      , model.canGoBack
+      , model.canGoForward
+      , uri
+      , model.initiatedURI
+      )
+    , Effects.batch
+      ( [ Effects
+          .perform(canGoBack(model.ref))
+          .map(CanGoBackChanged)
+        , Effects
+          .perform(canGoForward(model.ref))
+          .map(CanGoForwardChanged)
+        ]
+      )
+    ]
+  );
+
+export const load =
+  ( model/*:Model*/
+  , uri/*:URI*/='about:blank'
+  )/*:[Model, Effects<Action>]*/ =>
+  [ new Model
+    ( model.ref
+    , false
+    , false
+    , uri
+    , uri
+    )
+  , Effects.none
+  ]
+
 export const update =
   (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+    console.log(action)
     switch (action.type) {
       case "CanGoForwardChanged":
-        return  ( action.result.isOk
-                ? [ merge(model, {canGoForward: action.result.value})
-                  , Effects.none
-                  ]
-                : [ model, Effects.perform(report(action.result.error)) ]
-                );
+        return  (
+          action.canGoForwardChanged.isOk
+        ? updateCanGoForward(model, action.canGoForwardChanged.value)
+        : [ model
+          , Effects.perform(report(action.canGoForwardChanged.error))
+          ]
+        );
       case "CanGoBackChanged":
-        return  ( action.result.isOk
-                ? [ merge(model, {canGoBack: action.result.value})
-                  , Effects.none
-                  ]
-                : [ model, Effects.perform(report(action.result.error)) ]
-                );
+        return (
+          action.canGoBackChanged.isOk
+        ? updateCanGoBack(model, action.canGoBackChanged.value)
+        : [ model
+          , Effects.perform(report(action.canGoBackChanged.error))
+          ]
+        );
       case "LocationChanged":
-        // In the case where LocationChanged carries information about
-        // canGoBack and canGoForward, we update the model with the new info.
-        // This scenario will be hit in Servo.
-        if (action.canGoBack != null && action.canGoForward != null) {
-          return  [ merge(model
-                        , { currentURI: action.uri
-                          , canGoBack: action.canGoBack
-                          , canGoForward: action.canGoForward
-                          }
-                        )
-                  , Effects.none
-                  ];
-        }
-      // Otherwise, update the currentURI and create a task to read
-      // canGoBack, canGoForward from the iframe.
-      // This scenario will be hit in Gecko.
-      return  [ merge(model
-                    , { currentURI: action.uri
-                      })
-              , Effects.batch([ Effects
-                                  .perform(canGoBack(model.id))
-                                  .map(CanGoBackChanged)
-                              , Effects
-                                  .perform(canGoForward(model.id))
-                                  .map(CanGoForwardChanged)
-                              ])
-              ];
+        return updateLocation(model, action.uri, action.canGoBack, action.canGoForward)
       case "Load":
-        return  [ merge(model
-                      , { initiatedURI: action.uri
-                        , currentURI: action.uri
-                        }
-                      ),
-                 Effects.none
-                ];
+        return load(model, action.uri)
       case "Stop":
         return  [ model
                 , Effects
-                    .perform(stop(model.id))
+                    .perform(stop(model.ref))
                     .map(Stopped)
                 ];
       case "Reload":
         return  [ model
                 , Effects
-                    .perform(reload(model.id))
+                    .perform(reload(model.ref))
                     .map(Reloaded)
                 ];
       case "GoBack":
         return  [ model
                 , Effects
-                    .perform(goBack(model.id))
+                    .perform(goBack(model.ref))
                     .map(WentBack)
                 ];
       case "GoForward":
         return  [ model
                 , Effects
-                    .perform(goForward(model.id))
+                    .perform(goForward(model.ref))
                     .map(WentForward)
                 ];
       case "Stopped":
-        return  updateResponse(model, action.stopResult);
+        return  updateResponse(model, action.stopped);
       case "Reloaded":
-        return  updateResponse(model, action.reloadResult);
+        return  updateResponse(model, action.reloaded);
       case "WentBack":
-        return  updateResponse(model, action.goBackResult);
+        return  updateResponse(model, action.wentBack);
       case "WentForward":
-        return  updateResponse(model, action.goForwardResult);
+        return  updateResponse(model, action.wentForward);
       default:
         return Unknown.update(model, action);
     }
