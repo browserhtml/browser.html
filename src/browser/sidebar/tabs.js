@@ -24,8 +24,14 @@ export type Model = Deck.Model<Navigator.Model>
 
 export type Action =
   | { type: "Close", id: ID }
-  | { type: "Activate", id: ID }
-  | { type: "Modify", id: ID, modify: Tab.Action }
+  | { type: "Select", id: ID }
+  | { type: "Modify"
+    , id: ID
+    , modify:
+      { type: "Tab"
+      , tab: Tab.Action
+      }
+    }
 */
 
 const styleSheet = Style.createSheet({
@@ -47,9 +53,9 @@ export const Close =
   );
 
 
-export const Activate =
+export const Select =
   (id/*:ID*/)/*:Action*/ =>
-  ( { type: "Activate"
+  ( { type: "Select"
     , id
     }
   );
@@ -60,11 +66,14 @@ const ByID =
   action =>
   ( action.type === "Close"
   ? Close(id)
-  : action.type === "Activate"
-  ? Activate(id)
+  : action.type === "Select"
+  ? Select(id)
   : { type: "Modify"
     , id
-    , modify: action
+    , modify:
+      { type: "Tab"
+      , tab: action
+      }
     }
   );
 

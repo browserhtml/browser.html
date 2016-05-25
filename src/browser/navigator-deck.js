@@ -12,6 +12,7 @@ import * as Easing from "eased"
 import * as Overlay from "./navigator-deck/Overlay"
 import * as Navigator from "./navigator-deck/navigator"
 import * as URI from "../common/url-helper";
+import * as Tabs from "./sidebar/tabs";
 
 /*::
 import {performance} from "../common/performance"
@@ -36,6 +37,7 @@ export type Action =
   | { type: "SelectNext" }
   | { type: "SelectPrevious" }
   | { type: "Animation", animation: Animation.Action }
+  | { type: "Tabs", tabs: Tabs.Action }
   | { type: "Deck", deck: Deck.Action<Navigator.Action, Navigator.Flags> }
 */
 
@@ -187,7 +189,7 @@ export const update =
       case "SelectPrevious":
         return selectPrevious(model);
       case "Close":
-        return closeSelected(model);
+        return close(model);
       case "ShowTabs":
         return nofx(model);
       case "OpenNewTab":
@@ -214,6 +216,8 @@ export const update =
         return shrink(model, performance.now());
       case "Expand":
         return expand(model, performance.now());
+      case "Tabs":
+        return updateTabs(model, action.tabs);
       default:
         return Unknown.update(model, action);
     }
@@ -267,6 +271,25 @@ const updateDeck = cursor
     }
   )
 
+const updateTabs =
+  (model, action) =>
+  // Flow inference seems to fail here, so we just make it believe
+  // that we restructured action so it will suceed inferring.
+  (/*::
+    action.type === "Modify"
+  ? updateDeck
+    ( model
+    , { type: "Modify"
+      , id: action.id
+      , modify:
+        { type: "Tab"
+        , tab: action.modify.tab
+        }
+      }
+    )
+  :*/updateDeck(model, action)
+  )
+
 const selectNext =
   model =>
   updateDeck(model, SelectNext)
@@ -288,7 +311,7 @@ const updateSelected =
     )
   )
 
-const closeSelected =
+const close =
   (model, action) =>
   ( model.deck.selected == null
   ? nofx(model)

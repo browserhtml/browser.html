@@ -19,8 +19,8 @@ import * as Header from './navigator/Header';
 import * as Progress from './navigator/Progress';
 import * as Display from './navigator/Display';
 import * as Animation from "../../common/animation";
-import * as Tab from "../../sidabar/tab";
 import * as Easing from "eased";
+import * as Tab from "../sidebar/tab";
 
 import {readTitle, isSecure, isDark, canGoBack} from './navigator/web-view/util';
 
@@ -40,8 +40,6 @@ export type Action =
   | { type: "NoOp" }
 
   // Card
-  | { type: "Deactivate" }
-  | { type: "Activate" }
   | { type: "Deselect" }
   | { type: "Select" }
   | { type: "Close" }
@@ -105,6 +103,8 @@ export type Action =
       , overlay?: Overlay.Flags
       }
     }
+
+  | { type: "Tab", tab: Tab.Action }
 
   // Animation
   | { type: "Animation", animation: Animation.Action }
@@ -366,6 +366,8 @@ export const update =
         return suggestPrevious(model);
       case 'Input':
         return updateInput(model, action.input);
+      case 'Tab':
+        return updateOutput(model, action);
 
       // Output
       case "GoBack":

@@ -29,12 +29,10 @@ export type Action =
   | { type: "CreateWebView" }
   | { type: "Attach" }
   | { type: "Detach" }
-  | { type: "Open" }
-  | { type: "Close" }
+  | { type: "Expand" }
+  | { type: "Collapse" }
   | { type: "Activate" }
   | { type: "Animation", animation: Animation.Action }
-  | { type: "CloseTab", id: Tabs.ID }
-  | { type: "ActivateTab", id: Tabs.ID }
   | { type: "Tabs", tabs: Tabs.Action }
   | { type: "Toolbar", toolbar: Toolbar.Action }
 */
@@ -46,18 +44,18 @@ export type Action =
 export class Model {
   /*::
   isAttached: boolean;
-  isOpen: boolean;
+  isExpanded: boolean;
   animation: Animation.Model<Display.Model>;
   toolbar: Toolbar.Model;
   */
   constructor(
     isAttached/*: boolean*/
-  , isOpen/*: boolean*/
+  , isExpanded/*: boolean*/
   , toolbar/*: Toolbar.Model*/
   , animation/*: Animation.Model<Display.Model>*/
   ) {
     this.isAttached = isAttached
-    this.isOpen = isOpen
+    this.isExpanded = isExpanded
     this.animation = animation
     this.toolbar = toolbar
   }
@@ -81,14 +79,14 @@ const styleSheet = Style.createSheet({
 
 export const init =
   ( isAttached/*:boolean*/ = false
-  , isOpen/*:boolean*/ = false
+  , isExpanded/*:boolean*/ = false
   )/*:[Model, Effects<Action>]*/ => {
     const display =
-      ( isOpen
-      ? Display.open
+      ( isExpanded
+      ? Display.expanded
       : isAttached
       ? Display.attached
-      : Display.closed
+      : Display.collapsed
       );
 
     const [toolbar, $toolbar] = Toolbar.init();
@@ -96,7 +94,7 @@ export const init =
 
     const model = new Model
     ( isAttached
-    , isOpen
+    , isExpanded
     , toolbar
     , animation
     );
@@ -123,23 +121,12 @@ export const Detach/*:Action*/ =
   { type: "Detach"
   };
 
-export const Open/*:Action*/ = {type: "Open"};
-export const Close/*:Action*/ = {type: "Close"};
-export const Activate/*:Action*/ = {type: "Activate"};
-export const CloseTab/*:(id:ID) => Action*/ =
-  id =>
-  ({type: "CloseTab", id});
-export const ActivateTab/*:(id:ID) => Action*/ =
-  id =>
-  ({type: "ActivateTab", id});
+export const Expand/*:Action*/ = {type: "Expand"};
+export const Collapse/*:Action*/ = {type: "Collapse"};
 
 const tagTabs =
   action => {
     switch (action.type) {
-      case "Close":
-        return CloseTab(action.id);
-      case "Activate":
-        return ActivateTab(action.id);
       default:
         return {
           type: "Tabs"
@@ -189,7 +176,7 @@ const updateToolbar = cursor
     , set:
       (model, toolbar) => new Model
       ( model.isAttached
-      , model.isOpen
+      , model.isExpanded
       , toolbar
       , model.animation
       )
@@ -204,7 +191,7 @@ const updateAnimation = cursor
       (model, animation) =>
       new Model
       ( model.isAttached
-      , model.isOpen
+      , model.isExpanded
       , model.toolbar
       , animation
       )
@@ -220,10 +207,10 @@ const nofx = /*::<model, action>*/
   ]
 
 const startAnimation =
-  (isAttached, isOpen, toolbar, [animation, fx]) =>
+  (isAttached, isExpanded, toolbar, [animation, fx]) =>
   [ new Model
     ( isAttached
-    , isOpen
+    , isExpanded
     , toolbar
     , animation
     )
@@ -231,9 +218,9 @@ const startAnimation =
   ]
 
 
-const open =
+const expand =
   (model, now) =>
-  ( model.isOpen
+  ( model.isExpanded
   ? nofx(model)
   : startAnimation
     ( model.isAttached
@@ -241,16 +228,16 @@ const open =
     , model.toolbar
     , Animation.transition
       ( model.animation
-      , Display.open
+      , Display.expanded
       , 550
       , now
       )
     )
   );
 
-const close =
+const collapse =
   (model:Model, now) =>
-  ( !model.isOpen
+  ( !model.isExpanded
   ? nofx(model)
   : startAnimation
     ( model.isAttached
@@ -260,7 +247,7 @@ const close =
       ( model.animation
       , ( model.isAttached
         ? Display.attached
-        : Display.closed
+        : Display.collapsed
         )
       , 200
       , now
@@ -279,7 +266,7 @@ const attach =
     , Animation.transition
       ( model.animation
       , Display.attached
-      , ( model.isOpen
+      , ( model.isExpanded
         ? 200
         : 100
         )
@@ -294,14 +281,14 @@ const detach =
   ? nofx(model)
   : assemble
     ( false
-    , model.isOpen
+    , model.isExpanded
     , Toolbar.update(model.toolbar, Toolbar.Detach)
-    , ( model.isOpen
+    , ( model.isExpanded
       ? nofx(model.animation)
       : Animation.transition
         ( model.animation
-        , Display.closed
-        , ( model.isOpen
+        , Display.collapsed
+        , ( model.isExpanded
           ? 200
           : 100
           )
@@ -313,13 +300,13 @@ const detach =
 
 const assemble =
   ( isAttached
-  , isOpen
+  , isExpanded
   , [toolbar, $toolbar]
   , [animation, $animation]
   ) =>
   [ new Model
     ( isAttached
-    , isOpen
+    , isExpanded
     , toolbar
     , animation
     )
@@ -333,10 +320,10 @@ const assemble =
 export const update =
   (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
     switch (action.type) {
-      case "Open":
-        return open(model, performance.now());
-      case "Close":
-        return close(model, performance.now());
+      case "Expand":
+        return expand(model, performance.now());
+      case "Collapse":
+        return collapse(model, performance.now());
       case "Attach":
         return attach(model, performance.now());
       case "Detach":

@@ -33,7 +33,7 @@ export class Model {
 }
 
 
-export const closed = new Model
+export const collapsed = new Model
   ( 550
   , 0.5
   , 16
@@ -51,7 +51,7 @@ export const attached = new Model
   , 32
   )
 
-export const open = new Model
+export const expanded = new Model
   ( 0
   , 0.5
   , 16

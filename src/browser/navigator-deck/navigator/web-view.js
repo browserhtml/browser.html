@@ -15,7 +15,6 @@ import * as Shell from './web-view/shell';
 import * as Navigation from './web-view/navigation';
 import * as Security from './web-view/security';
 import * as Page from './web-view/page';
-import * as Tab from '../../sidebar/tab';
 import * as Unknown from '../../../common/unknown';
 import * as Stopwatch from '../../../common/stopwatch';
 import {Style, StyleSheet} from '../../../common/style';
@@ -27,6 +26,7 @@ import * as MozBrowserFrame from './web-view/moz-browser-frame';
 import * as ElectronFrame from './web-view/electron-frame';
 import * as Layer from './Layer';
 import * as Ref from '../../../common/ref';
+import * as Tab from '../../sidebar/tab';
 
 /*::
 import type {Address, DOM} from "reflex"
@@ -118,7 +118,7 @@ export type Action =
     , page: Page.Action
     }
   | { type: "Tab"
-    , source: Tab.Action
+    , tab: Tab.Action
     }
   | { type: "Security"
     , security: Security.Action
@@ -339,12 +339,10 @@ const TabAction = action => {
         return Close;
       case "Select":
         return Select;
-      case "Activate":
-        return Activate;
       default:
         return {
           type: "Tab"
-          , source: action
+        , tab: action
         };
     }
   };
@@ -666,7 +664,7 @@ export const update =
       case "Page":
         return updatePage(model, action.page);
       case "Tab":
-        return updateTab(model, action.source);
+        return updateTab(model, action.tab);
       case "Security":
         return updateSecurity(model, action.security);
       case "Navigation":
