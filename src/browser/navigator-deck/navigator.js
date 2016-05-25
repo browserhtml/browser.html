@@ -43,6 +43,7 @@ export type Action =
   | { type: "Deselect" }
   | { type: "Select" }
   | { type: "Close" }
+  | { type: "Closed" }
 
 
   // Input
@@ -132,6 +133,7 @@ const HideOverlay = { type: "HideOverlay" };
 const ShowOverlay = { type: "ShowOverlay" };
 
 export const Close = { type: "Close" };
+export const Closed = { type: "Closed" };
 export const Deactivate = { type: "Deactivate" }
 export const Activate = { type: "Activate" }
 export const Deselect = { type: "Deselect" }
@@ -469,7 +471,24 @@ export const deselect =
   : nofx(model)
   )
 
-export const close = deselect
+export const close =
+  ( model/*:Model*/
+  )/*:[Model, Effects<Action>]*/ =>
+  ( model.isSelected
+  ? startAnimation
+    ( model
+    , false
+    , Animation.transition
+      ( model.animation
+      , Display.deselected
+      , 80
+      , performance.now()
+      )
+    )
+  : [ model
+    , Effects.receive(Closed)
+    ]
+  )
 
 const navigate =
   (model, uri) =>

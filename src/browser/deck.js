@@ -95,7 +95,7 @@ export const update = /*::<action, model, flags>*/
       case "Close":
         return closeByID(card, model, action.id);
       case "Select":
-        return selectByID(card, model, action.id);
+        return selectByID(card, model, action.id, true);
       case "SelectNext":
         return selectNext(card, model);
       case "SelectPrevious":
@@ -186,7 +186,10 @@ const closeByID = /*::<action, model, flags>*/
   , id/*:ID*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
     const [available, $available] =
-      clearByID(api, model, id);
+      ( model.selected === id
+      ? selectBeneficiaryByID(api, model, id)
+      : [ model, Effects.none ]
+      )
 
     if (id in available.cards) {
       const [card, $card] =
@@ -221,7 +224,10 @@ export const removeByID = /*::<action, model, flags>*/
   , id/*:ID*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
     const [available, $available] =
-      clearByID(card, model, id);
+      ( model.selected === id
+      ? selectBeneficiaryByID(card, model, id)
+      : [model, Effects.none]
+      )
 
     if (id in available.cards) {
       const transaction =
@@ -248,18 +254,18 @@ const cardNotFound = /*::<model, action>*/
   ( model/*:model*/, id/*:ID*/)/*:[model, Effects<action>]*/ =>
   nofx(model)
 
-
 export const selectByID = /*::<action, model, flags>*/
   ( api/*:Card<action, model, flags>*/
   , model/*:Model<model>*/
   , id/*:ID*/
+  , isSelectionChange/*:boolean*/=true
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
     if (id === model.selected) {
       return nofx(model)
     }
     else if (id in model.cards) {
       const [deselected, $deselected] =
-        ( model.selected != null
+        ( ( isSelectionChange && model.selected != null )
         ? deselectByID(api, model, model.selected)
         : nofx(model)
         )
@@ -322,22 +328,17 @@ export const deselectByID = /*::<action, model, flags>*/
     }
   }
 
-const clearByID = /*::<action, model, flags>*/
+const selectBeneficiaryByID = /*::<action, model, flags>*/
   ( api/*:Card<action, model, flags>*/
   , model/*:Model<model>*/
   , id/*:ID*/
   )/*:Transaction<Action<action, flags>, Model<model>>*/ => {
-    if (model.selected === id) {
-      const selected = beneficiaryOf(id, model.index);
-      if (selected != null) {
-        return selectByID(api, model, selected)
-      }
-      else {
-        return nofx(model)
-      }
+    const selected = beneficiaryOf(id, model.index);
+    if (selected != null) {
+      return selectByID(api, model, selected, false)
     }
     else {
-      return nofx(model);
+      return nofx(model)
     }
   }
 

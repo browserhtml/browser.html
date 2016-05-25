@@ -109,6 +109,14 @@ const tagDeck =
               type: "Deck"
             , deck: action.modify
             }
+          case "Closed":
+            return {
+              type: "Deck"
+            , deck:
+              { type: "Remove"
+              , id: action.id
+              }
+            }
         }
       default:
         return {
