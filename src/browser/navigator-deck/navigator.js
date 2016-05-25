@@ -448,7 +448,7 @@ export const select =
     , Animation.transition
       ( model.animation
       , Display.selected
-      , 200
+      , 80
       , performance.now()
       )
     )
@@ -464,7 +464,7 @@ export const deselect =
     , Animation.transition
       ( model.animation
       , Display.deselected
-      , 200
+      , 80
       , performance.now()
       )
     )
