@@ -8,6 +8,7 @@ import {ease} from "eased"
 export type Time = number
 export type Action =
   | { type: "Tick", time: Time }
+  | { type: "End", time: Time }
 
 import type {Interpolation, Easing} from "eased"
 */
@@ -53,44 +54,27 @@ export const transition = /*::<action, model>*/
   ( model/*:Model<model>*/
   , to/*:model*/
   , duration/*:Time*/
-  , now/*:Time*/
   )/*:[Model<model>, Effects<Action>]*/ =>
   ( model.transition == null
-  ? fx
-    ( startTranstion
-      ( model.state
-      , to
-      , 0
-      , duration
-      , now
-      )
+  ? startTransition
+    ( model.state
+    , to
+    , 0
+    , duration
     )
   : model.transition.to === to
   ? nofx(model)
-  : fx
-    ( startTranstion
-      ( model.state
-      , to
-      , duration - (duration * model.transition.elapsed / model.transition.duration)
-      , duration
-      , now
-      )
+  : startTransition
+    ( model.state
+    , to
+    , duration - (duration * model.transition.elapsed / model.transition.duration)
+    , duration
     )
   )
 
 const nofx = /*::<model, action>*/
   (model/*:model*/)/*:[model, Effects<action>]*/ =>
   [model, Effects.none]
-
-const fx = /*::<model>*/
-  (model/*:model*/)/*:[model, Effects<Action>]*/ =>
-  [ model
-  , ( model.transition == null
-    ? Effects.none
-    : Effects.perform
-      (Task.requestAnimationFrame().map(Tick))
-    )
-  ]
 
 const Tick =
   time =>
@@ -99,47 +83,61 @@ const Tick =
     }
   );
 
+const End =
+  time =>
+  ( { type: "End"
+    , time
+    }
+  );
 
-const startTranstion = /*::<model>*/
+
+const startTransition = /*::<model>*/
   ( from/*:model*/
   , to/*:model*/
   , elapsed/*:Time*/
   , duration/*:Time*/
-  , now/*:Time*/
-  )/*:Model<model>*/ =>
-  new Model
-  ( from
-  , new Transition
+  )/*:[Model<model>, Effects<Action>]*/ =>
+  [ new Model
     ( from
-    , to
-    , now
-    , elapsed
-    , duration
-    , now
+    , new Transition
+      ( from
+      , to
+      , 0
+      , elapsed
+      , duration
+      )
     )
-  )
+  , Effects.perform
+    (Task.requestAnimationFrame().map(Tick))
+  ]
 
 const endTransition = /*::<model>*/
   ( model/*:Model<model>*/
-  )/*:Model<model>*/ =>
-  new Model
-  ( model.state
-  , null
-  );
+  )/*:[Model<model>, Effects<Action>]*/ =>
+  [ new Model
+    ( model.state
+    , null
+    )
+  , Effects.perform
+    (Task.requestAnimationFrame().map(End))
+  ]
 
 const tickTransitionWith = /*::<model>*/
   ( easing/*:Easing*/
   , interpolation/*:Interpolation<model>*/
   , model/*:Model<model>*/
   , now/*Time*/
-  )/*:Model<model>*/ =>
+  )/*:[Model<model>, Effects<Action>]*/ =>
   ( model.transition == null
-  ? model
+  ? nofx(model)
   : interpolateTransitionWith
     ( easing
     , interpolation
     , model.transition
-    , now - model.transition.now + model.transition.elapsed
+    , ( model.transition.now === 0
+      ? 0
+      : now - model.transition.now + model.transition.elapsed
+      )
     , now
     )
   )
@@ -150,26 +148,31 @@ const interpolateTransitionWith = /*::<model>*/
   , transition/*:Transition<model>*/
   , elapsed/*:Time*/
   , now/*:Time*/
-  )/*:Model<model>*/ =>
+  )/*:[Model<model>, Effects<Action>]*/ =>
   ( elapsed >= transition.duration
-  ? new Model(transition.to, null)
-  : new Model
-    ( ease
-      ( easing
-      , interpolation
-      , transition.from
-      , transition.to
-      , transition.duration
-      , elapsed
+  ? [ new Model(transition.to, null)
+    , Effects.receive(End(now))
+    ]
+  : [ new Model
+      ( ease
+        ( easing
+        , interpolation
+        , transition.from
+        , transition.to
+        , transition.duration
+        , elapsed
+        )
+      , new Transition
+        ( transition.from
+        , transition.to
+        , now
+        , elapsed
+        , transition.duration
+        )
       )
-    , new Transition
-      ( transition.from
-      , transition.to
-      , now
-      , elapsed
-      , transition.duration
-      )
-    )
+    , Effects.perform
+      (Task.requestAnimationFrame().map(Tick))
+    ]
   )
 
 export const updateWith = /*::<model>*/
@@ -180,7 +183,9 @@ export const updateWith = /*::<model>*/
   )/*:[Model<model>, Effects<Action>]*/ => {
     switch (action.type) {
       case "Tick":
-        return fx(tickTransitionWith(easing, interpolation, model, action.time));
+        return tickTransitionWith(easing, interpolation, model, action.time);
+      case "End":
+        return nofx(model);
       default:
         return Unknown.update(model, action);
     }

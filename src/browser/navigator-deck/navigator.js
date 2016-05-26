@@ -27,7 +27,6 @@ import {readTitle, isSecure, isDark, canGoBack} from './navigator/web-view/util'
 /*::
 import type {Address, DOM} from "reflex"
 import type {URI, Time} from "./navigator/web-view"
-import {performance} from "../../common/performance"
 
 export type Flags =
   { output: Output.Flags
@@ -109,6 +108,7 @@ export type Action =
 
   // Animation
   | { type: "Animation", animation: Animation.Action }
+  | { type: "AnimationEnd" }
 */
 
 const SubmitInput = { type: "SubmitInput" }
@@ -232,11 +232,14 @@ const tagProgress =
   }
 
 const tagAnimation =
-  action =>
-  ( { type: "Animation"
-    , animation: action
+  action => {
+    switch (action.type) {
+      case "End":
+        return { type: "AnimationEnd" };
+      default:
+        return { type: "Animation", animation: action }
     }
-  );
+  };
 
 export const Navigate =
   ( destination/*:string*/)/*:Action*/ =>
@@ -258,6 +261,7 @@ const SetSelectedInputValue =
 export class Model {
   /*::
   isSelected: boolean;
+  isClosed: boolean;
   output: Output.Model;
   input: Input.Model;
   overlay: Overlay.Model;
@@ -267,6 +271,7 @@ export class Model {
   */
   constructor(
     isSelected/*:boolean*/
+  , isClosed/*:boolean*/
   , input/*:Input.Model*/
   , output/*:Output.Model*/
   , assistant/*:Assistant.Model*/
@@ -275,6 +280,7 @@ export class Model {
   , animation/*:Animation.Model<Display.Model>*/
   ) {
     this.isSelected = isSelected
+    this.isClosed = isClosed
     this.input = input
     this.output = output
     this.assistant = assistant
@@ -286,6 +292,7 @@ export class Model {
 
 const assemble =
   ( isSelected
+  , isClosed
   , [input, $input]
   , [output, $output]
   , [assistant, $assistant]
@@ -295,6 +302,7 @@ const assemble =
   ) => {
     const model = new Model
       ( isSelected
+      , isClosed
       , input
       , output
       , assistant
@@ -320,6 +328,7 @@ export const init =
   (options/*:Flags*/)/*:[Model, Effects<Action>]*/ =>
   assemble
   ( options.output.disposition != 'background-tab'
+  , false
   , Input.init(options.input)
   , Output.init(options.output)
   , Assistant.init(options.assistant)
@@ -425,6 +434,8 @@ export const update =
 
       case 'Animation':
         return updateAnimation(model, action.animation);
+      case 'AnimationEnd':
+        return endAnimation(model);
 
       default:
         return Unknown.update(model, action);
@@ -445,11 +456,11 @@ export const select =
   : startAnimation
     ( model
     , true
+    , model.isClosed
     , Animation.transition
       ( model.animation
       , Display.selected
       , 80
-      , performance.now()
       )
     )
   )
@@ -461,11 +472,11 @@ export const deselect =
   ? startAnimation
     ( model
     , false
+    , model.isClosed
     , Animation.transition
       ( model.animation
       , Display.deselected
       , 80
-      , performance.now()
       )
     )
   : nofx(model)
@@ -478,11 +489,11 @@ export const close =
   ? startAnimation
     ( model
     , false
+    , true
     , Animation.transition
       ( model.animation
-      , Display.deselected
+      , Display.closed
       , 80
-      , performance.now()
       )
     )
   : [ model
@@ -557,6 +568,7 @@ const updateLoadProgress =
     const [progress, progress$] = Progress.update(source.progress, action)
     const model = new Model
     ( source.isSelected
+    , source.isClosed
     , source.input
     , output
     , source.assistant
@@ -627,6 +639,7 @@ const updateInput = cursor
       (model, input) =>
       new Model
       ( model.isSelected
+      , model.isClosed
       , input
       , model.output
       , model.assistant
@@ -645,6 +658,7 @@ const updateOutput = cursor
       (model, output) =>
       new Model
       ( model.isSelected
+      , model.isClosed
       , model.input
       , output
       , model.assistant
@@ -663,6 +677,7 @@ const updateProgress = cursor
       (model, progress) =>
       new Model
       ( model.isSelected
+      , model.isClosed
       , model.input
       , model.output
       , model.assistant
@@ -681,6 +696,7 @@ const updateAssistant = cursor
       (model, assistant) =>
       new Model
       ( model.isSelected
+      , model.isClosed
       , model.input
       , model.output
       , assistant
@@ -699,6 +715,7 @@ const updateOverlay = cursor
       (model, overlay) =>
       new Model
       ( model.isSelected
+      , model.isClosed
       , model.input
       , model.output
       , model.assistant
@@ -726,6 +743,7 @@ const updateAnimation = cursor
       (model, animation) =>
         new Model
         ( model.isSelected
+        , model.isClosed
         , model.input
         , model.output
         , model.assistant
@@ -739,9 +757,10 @@ const updateAnimation = cursor
   )
 
 const startAnimation =
-  (model, isSelected, [animation, fx]) =>
+  (model, isSelected, isClosed, [animation, fx]) =>
   [ new Model
     ( isSelected
+    , isClosed
     , model.input
     , model.output
     , model.assistant
@@ -751,6 +770,15 @@ const startAnimation =
     )
   , fx.map(tagAnimation)
   ]
+
+const endAnimation =
+  model =>
+  ( model.isClosed
+  ? [ model
+    , Effects.receive(Closed)
+    ]
+  : nofx(model)
+  )
 
 export const render =
   (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>

@@ -23,7 +23,6 @@ import type {Address, DOM} from "reflex"
 import type {ID} from "./sidebar/tabs"
 import * as Navigator from "./navigator-deck/navigator"
 import * as Deck from "./deck"
-import {performance} from "../common/performance"
 
 export type Action =
   | { type: "CreateWebView" }
@@ -219,7 +218,7 @@ const startAnimation =
 
 
 const expand =
-  (model, now) =>
+  ( model ) =>
   ( model.isExpanded
   ? nofx(model)
   : startAnimation
@@ -230,13 +229,12 @@ const expand =
       ( model.animation
       , Display.expanded
       , 550
-      , now
       )
     )
   );
 
 const collapse =
-  (model:Model, now) =>
+  (model/*:Model*/) =>
   ( !model.isExpanded
   ? nofx(model)
   : startAnimation
@@ -250,13 +248,12 @@ const collapse =
         : Display.collapsed
         )
       , 200
-      , now
       )
     )
   );
 
 const attach =
-  (model, now) =>
+  ( model ) =>
   ( model.isAttached
   ? nofx(model)
   : assemble
@@ -270,13 +267,12 @@ const attach =
         ? 200
         : 100
         )
-      , now
       )
     )
   )
 
 const detach =
-  ( model, now ) =>
+  ( model ) =>
   ( !model.isAttached
   ? nofx(model)
   : assemble
@@ -292,7 +288,6 @@ const detach =
           ? 200
           : 100
           )
-        , now
         )
       )
     )
@@ -321,13 +316,13 @@ export const update =
   (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
     switch (action.type) {
       case "Expand":
-        return expand(model, performance.now());
+        return expand(model);
       case "Collapse":
-        return collapse(model, performance.now());
+        return collapse(model);
       case "Attach":
-        return attach(model, performance.now());
+        return attach(model);
       case "Detach":
-        return detach(model, performance.now());
+        return detach(model);
 
       case "Animation":
         return updateAnimation(model, action.animation);

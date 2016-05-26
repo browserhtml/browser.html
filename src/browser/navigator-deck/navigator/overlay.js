@@ -17,7 +17,6 @@ import * as Display from "./Overlay/Display"
 /*::
 import type {Address, DOM} from "reflex"
 import type {Time} from "../../../common/prelude"
-import {performance} from "../../../common/performance"
 
 export type Flags = boolean
 
@@ -83,9 +82,9 @@ export const update =
       case "Animation":
         return updateAnimation(model, action.animation)
       case "Show":
-        return show(model, performance.now())
+        return show(model)
       case "Hide":
-        return hide(model, performance.now())
+        return hide(model)
       case "Click":
         return nofx(model)
       default:
@@ -94,7 +93,7 @@ export const update =
   };
 
 const show =
-  ( model, now) =>
+  ( model ) =>
   ( model.isVisible
   ? nofx(model)
   : startAnimation
@@ -103,13 +102,12 @@ const show =
       ( model.animation
       , Display.visible
       , 300
-      , now
       )
     )
   )
 
 const hide =
-  ( model, now) =>
+  ( model ) =>
   ( !model.isVisible
   ? nofx(model)
   : startAnimation
@@ -118,7 +116,6 @@ const hide =
       ( model.animation
       , Display.invisible
       , 300
-      , now
       )
     )
   )

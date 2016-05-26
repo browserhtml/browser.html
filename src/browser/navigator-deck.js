@@ -13,9 +13,9 @@ import * as Overlay from "./navigator-deck/Overlay"
 import * as Navigator from "./navigator-deck/navigator"
 import * as URI from "../common/url-helper";
 import * as Tabs from "./sidebar/tabs";
+import * as Dashboard from "./navigator-deck/dashboard";
 
 /*::
-import {performance} from "../common/performance"
 import type {Address, DOM} from "reflex"
 
 export type Action =
@@ -217,13 +217,13 @@ export const update =
       case "EditInput":
         return updateSelected(model, Navigator.EditInput);
       case "Focus":
-        return focus(model, performance.now());
+        return focus(model);
       case "Expose":
-        return expose(model, performance.now());
+        return expose(model);
       case "Shrink":
-        return shrink(model, performance.now());
+        return shrink(model);
       case "Expand":
-        return expand(model, performance.now());
+        return expand(model);
       case "Tabs":
         return updateTabs(model, action.tabs);
       default:
@@ -332,7 +332,7 @@ const close =
   )
 
 const focus =
-  ( model, now ) =>
+  ( model ) =>
   ( model.zoom
   ? nofx(model)
   : startAnimation
@@ -346,13 +346,12 @@ const focus =
         : Display.normal
         )
       , 200
-      , now
       )
     )
   )
 
 const expose =
-  ( model, now ) =>
+  ( model ) =>
   ( model.zoom
   ? startAnimation
     ( false
@@ -365,14 +364,13 @@ const expose =
         : Display.expose
         )
       , 500
-      , now
       )
     )
   : nofx(model)
   )
 
 const shrink =
-  ( model, now ) =>
+  ( model ) =>
   ( model.shrink
   ? nofx(model)
   : startAnimation
@@ -383,13 +381,12 @@ const shrink =
       ( model.animation
       , Display.shrinked
       , 200
-      , now
       )
     )
   )
 
 const expand =
-  ( model, now ) =>
+  ( model ) =>
   ( !model.shrink
   ? nofx(model)
   : model.zoom
@@ -401,7 +398,6 @@ const expand =
       ( model.animation
       , Display.normal
       , 200
-      , now
       )
     )
   : nofx
