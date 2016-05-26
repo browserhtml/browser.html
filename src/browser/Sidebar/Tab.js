@@ -11,15 +11,40 @@ import * as Target from "../../common/target";
 import * as Unknown from "../../common/unknown";
 
 import {always, merge} from '../../common/prelude';
-import {readTitle, readFaviconURI} from '../web-view/util';
+import {readTitle, readFaviconURI} from '../navigator-deck/navigator/web-view/util';
 import {cursor} from '../../common/cursor';
 
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {Context, Model, Action} from "./tab"
-import * as WebView from "../web-view"
+import * as Navigator from "../navigator-deck/navigator"
+import type {ID} from "../../common/prelude"
+import * as Target from "../../common/target"
+
+export type Context =
+  { tabWidth: number
+  , titleOpacity: number
+  }
+
+export type Action =
+  | { type: "Close" }
+  | { type: "Select" }
+  | { type: "Target", source: Target.Action }
 */
+
+export class Model {
+  /*::
+  isPointerOver: boolean;
+  */
+  constructor(isPointerOver/*:boolean*/) {
+    this.isPointerOver = isPointerOver
+  }
+}
+
+const over = new Model(true)
+const out = new Model(false)
+const transactOver = [over, Effects.none];
+const transactOut = [out, Effects.none];
 
 export const Close = {type: "Close"};
 export const Select = {type: "Select"};
@@ -32,21 +57,18 @@ const TargetAction = action =>
   );
 
 const updateTarget =
-  cursor
-  ( { update: Target.update
-    , tag: TargetAction
-    }
-  );
+  (model, action) =>
+  ( action.type === "Over"
+  ? transactOver
+  : transactOut
+  )
 
 const Out = TargetAction(Target.Out);
 const Over = TargetAction(Target.Over);
 
 export const init =
   ()/*:[Model, Effects<Action>]*/ =>
-  [ { isPointerOver: false
-    }
-  , Effects.none
-  ];
+  transactOut;
 
 export const update =
   (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
@@ -63,15 +85,14 @@ const styleSheet = Style.createSheet({
     WebkitAppRegion: 'no-drag',
     borderRadius: '5px',
     height: tabHeight,
-    color: '#fff',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    color: '#fff'
   },
 
   container: {
     height: tabHeight,
     lineHeight: tabHeight,
     width: '288px',
-    color: '#fff',
     fontSize: '14px',
     overflow: 'hidden',
     position: 'relative'
@@ -95,26 +116,32 @@ const styleSheet = Style.createSheet({
 
 
   closeMask: {
+    color: 'inherit',
+    fontFamily: 'FontAwesome',
+    fontSize: '12px',
+    lineHeight: tabHeight,
+    textAlign: 'center',
+
     background: `linear-gradient(
       to right,
       rgba(39,40,34,0) 0%,
-      rgba(39,40,34,1) 20%,
+      rgba(39,40,34, 0.8) 20%,
       rgba(39,40,34,1) 100%)`,
     width: tabHeight,
     height: tabHeight,
     position: 'absolute',
-    paddingLeft: '10px',
-    right: 0,
+    padding: 0,
+    margin: 0,
     top: 0,
-    transition: `transform 400ms cubic-bezier(0.215, 0.610, 0.355, 1.000),
-                opacity 300ms ease-out`
+    transition: `right 400ms cubic-bezier(0.215, 0.610, 0.355, 1.000),
+                color 300ms ease-out`
   },
 
   closeMaskSelected: {
     background: `linear-gradient(
       to right,
       rgba(86,87,81,0) 0%,
-      rgba(86,87,81,1) 20%,
+      rgba(86,87,81, 0.8) 20%,
       rgba(86,87,81,1) 100%)`,
   },
   closeMaskUnselected: {
@@ -122,17 +149,18 @@ const styleSheet = Style.createSheet({
   },
 
   closeMaskHidden: {
-    opacity: 0,
-    transform: 'translateX(16px)',
-    pointerEvents: 'none'
+    right: '-21px',
+    pointerEvents: 'none',
+    // color: 'rgba(255, 255, 255, 0)'
   },
 
   closeMaskVisible: {
-
+    right: 0,
+    // color: 'rgba(255, 255, 255, 1)'
   },
 
   closeIcon: {
-    color: '#fff',
+    color: 'inherit',
     fontFamily: 'FontAwesome',
     fontSize: '12px',
     width: tabHeight,
@@ -154,8 +182,8 @@ const viewIcon = Image.view('favicon', Style.createSheet({
 }));
 
 // TODO: Use button widget instead.
-const viewClose = ({isSelected, tab}, address) =>
-  html.div
+const viewClose = (isSelected, tab, address) =>
+  html.button
   ( { className: 'tab-close-mask'
     , style:
         Style.mix
@@ -169,22 +197,19 @@ const viewClose = ({isSelected, tab}, address) =>
           : styleSheet.closeMaskHidden
           )
         )
-    }, [
-      html.div
-      ( { className: 'tab-close-icon'
-        , style: styleSheet.closeIcon
-        , onClick:
-            event => {
-              // Should prevent propagation so that tab won't trigger
-              // Activate action when close button is clicked.
-              event.stopPropagation();
-              address(Close);
-            }
-        }, [''])
-  ]);
+    , onClick:
+        event => {
+          // Should prevent propagation so that tab won't trigger
+          // Activate action when close button is clicked.
+          event.stopPropagation();
+          address(Close);
+        }
+    }
+  , ['']
+  );
 
-export const view =
-  ( model/*:WebView.Model*/
+export const render =
+  ( model/*:Navigator.Model*/
   , address/*:Address<Action>*/
   , {tabWidth, titleOpacity}/*:Context*/
   )/*:DOM*/ =>
@@ -200,14 +225,14 @@ export const view =
       )
     , onMouseOver: forward(address, always(Over))
     , onMouseOut: forward(address, always(Out))
-    , onClick: forward(address, always(Activate))
+    , onClick: forward(address, always(Select))
     }
   , [ html.div
       ( { className: 'sidebar-tab-inner'
         , style: styleSheet.container
         }
       , [ viewIcon
-          ( { uri: readFaviconURI(model) }
+          ( { uri: readFaviconURI(model.output) }
           , address
           )
         , html.div
@@ -219,11 +244,25 @@ export const view =
               )
             }
             // @TODO localize this string
-          , [ readTitle(model, 'Untitled')
+          , [ readTitle(model.output, 'Untitled')
             ]
           )
-        , thunk('close', viewClose, model, address)
+        , thunk('close', viewClose, model.isSelected, model.output.tab, address)
         ]
       )
     ]
   );
+
+
+export const view =
+  ( model/*:Navigator.Model*/
+  , address/*:Address<Action>*/
+  , context/*:Context*/
+  )/*:DOM*/ =>
+  thunk
+  ( `${model.output.ref.value}`
+  , render
+  , model
+  , address
+  , context
+  )
