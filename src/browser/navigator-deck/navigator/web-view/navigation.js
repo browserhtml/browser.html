@@ -186,8 +186,8 @@ const elementCanGoForward =
 
 const invoke =
   name => {
-    const elementInvoke =
-      element =>
+    const elementInvoke = /*::<value>*/
+      (element/*:HTMLElement*/)/*:Task<Never, Result<Error, value>>*/ =>
       new Task((succeed, fail) => {
         try {
           // @FlowIgnore: We know that method may not exist.
@@ -197,8 +197,8 @@ const invoke =
         }
       })
 
-    const task =
-      (ref/*:Ref.Model*/)/*:Task<Never, Result<Error, *>>*/ =>
+    const task = /*::<value>*/
+      (ref/*:Ref.Model*/)/*:Task<Never, Result<Error, value>>*/ =>
       Ref
       .deref(ref)
       .chain(elementInvoke)

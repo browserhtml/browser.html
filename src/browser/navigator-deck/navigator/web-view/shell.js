@@ -143,14 +143,14 @@ const setElementVisibility =
     }
   })
 
-export const focus =
-  (ref/*:Ref.Model*/)/*:Task<Error, *>*/ =>
+export const focus = /*::<value>*/
+  (ref/*:Ref.Model*/)/*:Task<Error, value>*/ =>
   Ref
   .deref(ref)
   .chain(focusElement);
 
-const focusElement =
-  element =>
+const focusElement = /*::<value>*/
+  (element/*:HTMLElement*/)/*:Task<Error, value>*/ =>
   new Task((succeed, fail) => {
     try {
       element.focus()
@@ -160,15 +160,14 @@ const focusElement =
     }
   });
 
-
-export const blur =
-  (ref/*:Ref.Model*/)/*:Task<Error, *>*/ =>
+export const blur = /*::<value>*/
+  (ref/*:Ref.Model*/)/*:Task<Error, value>*/ =>
   Ref
   .deref(ref)
   .chain(blurElement);
 
-const blurElement =
-  element =>
+const blurElement =/*::<value>*/
+  (element/*:HTMLElement*/)/*:Task<Error, value>*/ =>
   new Task((succeed, fail) => {
     try {
       element.blur()
