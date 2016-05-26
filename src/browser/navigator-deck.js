@@ -13,7 +13,6 @@ import * as Overlay from "./navigator-deck/Overlay"
 import * as Navigator from "./navigator-deck/navigator"
 import * as URI from "../common/url-helper";
 import * as Tabs from "./sidebar/tabs";
-import * as Dashboard from "./navigator-deck/dashboard";
 
 /*::
 import type {Address, DOM} from "reflex"

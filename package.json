@@ -50,7 +50,7 @@
     "browserify": "13.0.0",
     "browserify-hmr": "0.3.1",
     "ecstatic": "0.8.0",
-    "flow-bin": "0.24.2",
+    "flow-bin": "0.25.0",
     "gulp": "3.9.1",
     "gulp-sequence": "0.4.5",
     "gulp-sourcemaps": "1.6.0",

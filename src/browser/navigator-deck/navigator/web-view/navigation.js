@@ -59,7 +59,7 @@ export type Action =
 export class Model {
   /*::
   ref: Ref.Model;
-  canGoBack: boolean
+  canGoBack: boolean;
   canGoForward: boolean;
   // URI of the page displayed by a web-view (although web view maybe still
   // loading & technically it won't be displayed). This uri updates during any

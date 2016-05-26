@@ -25,7 +25,7 @@ export type Action =
 export class Model {
   /*::
   state: State;
-  secure: boolean
+  secure: boolean;
   extendedValidation: boolean;
   */
   constructor(
