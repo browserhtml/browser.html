@@ -14,7 +14,7 @@ import * as Unknown from "../../common/unknown";
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {Context, Model, Action} from "./toolbar"
+import type {Context, Model, Action} from "./Toolbar"
 */
 
 export const Attach/*:Action*/ =

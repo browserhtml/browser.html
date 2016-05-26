@@ -8,13 +8,30 @@ import {html, thunk, forward, Effects} from 'reflex';
 import {merge, setIn} from '../../common/prelude';
 import {cursor} from '../../common/cursor';
 import * as Style from '../../common/style';
-import * as Toolbar from './toolbar';
-import * as Tab from './tab';
+import * as Toolbar from './Toolbar';
+import * as Tab from './Tab';
 import * as Unknown from '../../common/unknown';
 
 /*::
 import type {Address, DOM} from "reflex"
-import type {ID, Context, Model, Action} from "./tabs"
+import * as Tab from "./Tab"
+import * as Navigator from "../navigator-deck/navigator"
+import * as Deck from "../deck"
+
+export type ID = string
+export type Context = Tab.Context
+export type Model = Deck.Model<Navigator.Model>
+
+export type Action =
+  | { type: "Close", id: ID }
+  | { type: "Select", id: ID }
+  | { type: "Modify"
+    , id: ID
+    , modify:
+      { type: "Tab"
+      , tab: Tab.Action
+      }
+    }
 */
 
 const styleSheet = Style.createSheet({
@@ -36,9 +53,9 @@ export const Close =
   );
 
 
-export const Activate =
+export const Select =
   (id/*:ID*/)/*:Action*/ =>
-  ( { type: "Activate"
+  ( { type: "Select"
     , id
     }
   );
@@ -49,31 +66,45 @@ const ByID =
   action =>
   ( action.type === "Close"
   ? Close(id)
-  : action.type === "Activate"
-  ? Activate(id)
-  : { type: "Tab"
+  : action.type === "Select"
+  ? Select(id)
+  : { type: "Modify"
     , id
-    , source: action
+    , modify:
+      { type: "Tab"
+      , tab: action
+      }
     }
   );
 
+
+const settings =
+  { className: 'sidebar-tabs-scrollbox'
+  , style: styleSheet.base
+  }
+
+export const render =
+  (model/*:Model*/, address/*:Address<Action>*/, context/*:Context*/)/*:DOM*/ =>
+  html.div
+  ( settings
+  , model
+    .index
+    .map
+    ( id =>
+      Tab.view
+      ( model.cards[id]
+      , forward(address, ByID(id))
+      , context
+      )
+    )
+  );
 
 export const view =
   (model/*:Model*/, address/*:Address<Action>*/, context/*:Context*/)/*:DOM*/ =>
-  html.div
-  ( { className: 'sidebar-tabs-scrollbox'
-    , style: styleSheet.base
-    }
+  thunk
+  ( 'Browser/Sidebar/Tabs'
+  , render
   , model
-      .order
-      .map
-      ( id =>
-          thunk
-          ( id
-          , Tab.view
-          , model.entries[id]
-          , forward(address, ByID(id))
-          , context
-          )
-      )
-  );
+  , address
+  , context
+  )
