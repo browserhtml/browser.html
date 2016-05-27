@@ -30,6 +30,8 @@ import type {URI, Time} from "./Navigator/WebView"
 
 export type Flags =
   { output: Output.Flags
+  , isPinned?: boolean
+  , isInputEmbedded?: boolean
   , input?: Input.Flags
   , overlay?: Overlay.Flags
   , assistant?: Assistant.Flags
@@ -252,6 +254,8 @@ export class Model {
   /*::
   isSelected: boolean;
   isClosed: boolean;
+  isPinned: boolean;
+  isInputEmbedded: boolean;
   output: Output.Model;
   input: Input.Model;
   overlay: Overlay.Model;
@@ -262,6 +266,8 @@ export class Model {
   constructor(
     isSelected/*:boolean*/
   , isClosed/*:boolean*/
+  , isPinned/*:boolean*/
+  , isInputEmbedded/*:boolean*/
   , input/*:Input.Model*/
   , output/*:Output.Model*/
   , assistant/*:Assistant.Model*/
@@ -271,6 +277,8 @@ export class Model {
   ) {
     this.isSelected = isSelected
     this.isClosed = isClosed
+    this.isPinned = isPinned
+    this.isInputEmbedded = isInputEmbedded
     this.input = input
     this.output = output
     this.assistant = assistant
@@ -283,6 +291,8 @@ export class Model {
 const assemble =
   ( isSelected
   , isClosed
+  , isPinned
+  , isInputEmbedded
   , [input, $input]
   , [output, $output]
   , [assistant, $assistant]
@@ -293,6 +303,8 @@ const assemble =
     const model = new Model
       ( isSelected
       , isClosed
+      , isPinned
+      , isInputEmbedded
       , input
       , output
       , assistant
@@ -319,6 +331,8 @@ export const init =
   assemble
   ( options.output.disposition != 'background-tab'
   , false
+  , options.isPinned === true
+  , options.isInputEmbedded === true
   , Input.init(options.input)
   , Output.init(options.output)
   , Assistant.init(options.assistant)
@@ -475,7 +489,9 @@ export const deselect =
 export const close =
   ( model/*:Model*/
   )/*:[Model, Effects<Action>]*/ =>
-  ( model.isSelected
+  ( model.isPinned
+  ? nofx(model)
+  : model.isSelected
   ? startAnimation
     ( model
     , false
@@ -517,14 +533,24 @@ const submitInput =
 
 const escapeInput =
   model =>
-  batch
-  ( update
-  , model
-  , [ DeactivateAssistant
-    , AbortInput
-    , FocusOutput
-    , HideOverlay
-    ]
+  ( model.isInputEmbedded
+  ? batch
+    ( update
+    , model
+    , [ DeactivateAssistant
+      , FocusOutput
+      , HideOverlay
+      ]
+    )
+  : batch
+    ( update
+    , model
+    , [ DeactivateAssistant
+      , AbortInput
+      , FocusOutput
+      , HideOverlay
+      ]
+    )
   );
 
 
@@ -573,6 +599,8 @@ const updateLoadProgress =
     const model = new Model
     ( source.isSelected
     , source.isClosed
+    , source.isPinned
+    , source.isInputEmbedded
     , source.input
     , output
     , source.assistant
@@ -595,8 +623,15 @@ const editInput =
   batch
   ( update
   , model
-  , [ ActivateInput
-    , SetSelectedInputValue(model.output.navigation.currentURI)
+  , [ FocusInput
+    , ActivateAssistant
+    , ShowOverlay
+      // @TODO: Do not use `model.output.navigation.currentURI` as it ties it
+      // to webView API too much.
+    , ( model.isInputEmbedded
+      ? SetSelectedInputValue('')
+      : SetSelectedInputValue(model.output.navigation.currentURI)
+      )
     ]
   )
 
@@ -640,6 +675,8 @@ const updateInput = cursor
       new Model
       ( model.isSelected
       , model.isClosed
+      , model.isPinned
+      , model.isInputEmbedded
       , input
       , model.output
       , model.assistant
@@ -659,6 +696,8 @@ const updateOutput = cursor
       new Model
       ( model.isSelected
       , model.isClosed
+      , model.isPinned
+      , model.isInputEmbedded
       , model.input
       , output
       , model.assistant
@@ -678,6 +717,8 @@ const updateProgress = cursor
       new Model
       ( model.isSelected
       , model.isClosed
+      , model.isPinned
+      , model.isInputEmbedded
       , model.input
       , model.output
       , model.assistant
@@ -697,6 +738,8 @@ const updateAssistant = cursor
       new Model
       ( model.isSelected
       , model.isClosed
+      , model.isPinned
+      , model.isInputEmbedded
       , model.input
       , model.output
       , assistant
@@ -716,6 +759,8 @@ const updateOverlay = cursor
       new Model
       ( model.isSelected
       , model.isClosed
+      , model.isPinned
+      , model.isInputEmbedded
       , model.input
       , model.output
       , model.assistant
@@ -744,6 +789,8 @@ const updateAnimation = cursor
         new Model
         ( model.isSelected
         , model.isClosed
+        , model.isPinned
+        , model.isInputEmbedded
         , model.input
         , model.output
         , model.assistant
@@ -761,6 +808,8 @@ const startAnimation =
   [ new Model
     ( isSelected
     , isClosed
+    , model.isPinned
+    , model.isInputEmbedded
     , model.input
     , model.output
     , model.assistant
@@ -799,11 +848,14 @@ export const render =
       , styleBackground(model.output)
       )
     }
-  , [ Header.view
-      ( readTitle(model.output, 'Untitled')
-      , isSecure(model.output)
-      , canGoBack(model.output)
-      , forward(address, tagHeader)
+  , [ ( model.isInputEmbedded
+      ? ""
+      : Header.view
+        ( readTitle(model.output, 'Untitled')
+        , isSecure(model.output)
+        , canGoBack(model.output)
+        , forward(address, tagHeader)
+        )
       )
     , Progress.view(model.progress, forward(address, tagProgress))
     , Input.view(model.input, forward(address, tagInput))

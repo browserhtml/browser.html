@@ -251,7 +251,10 @@ export const render =
           , [ readTitle(model.output, 'Untitled')
             ]
           )
-        , thunk('close', viewClose, model.isSelected, model.output.tab, address)
+        , ( model.isPinned
+          ? ""
+          : thunk('close', viewClose, model.isSelected, model.output.tab, address)
+          )
         ]
       )
     ]

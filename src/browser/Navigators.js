@@ -156,6 +156,8 @@ export const init =
         }
       , assistant: true
       , overlay: true
+      , isPinned: true
+      , isInputEmbedded: true
       }
 
     const [deck, $deck] = Deck.init();
