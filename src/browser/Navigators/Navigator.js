@@ -94,14 +94,7 @@ export type Action =
 
   // Embedder
   | { type: "Navigate", uri: URI }
-  | { type: "Open"
-    , open:
-      { output: Output.Flags
-      , input?: Input.Flags
-      , assistant?: Assistant.Flags
-      , overlay?: Overlay.Flags
-      }
-    }
+  | { type: "Open", open: Flags }
 
   | { type: "Tab", tab: Tab.Action }
 
