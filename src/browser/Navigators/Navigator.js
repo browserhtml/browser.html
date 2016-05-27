@@ -63,7 +63,6 @@ export type Action =
   | { type: "ZoomOut" }
   | { type: "ResetZoom" }
   | { type: "FocusOutput" }
-  // | { type: "PushedDown" }
   | { type: "LoadStart", time: Time }
   | { type: "Connect", time: Time }
   | { type: "LoadEnd", time: Time }

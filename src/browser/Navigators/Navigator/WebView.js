@@ -87,8 +87,6 @@ export type Action =
   | { type: "Edit" }
   | { type: "ShowTabs" }
   | { type: "Create" }
-  | { type: "PushDown" }
-  | { type: "PushedDown" }
   | { type: "Shell", shell: Shell.Action }
   | { type: "Page", page: Page.Action }
   | { type: "Tab", tab: Tab.Action }
@@ -181,14 +179,6 @@ export const Create/*:Action*/ =
 
 export const Focus/*:Action*/ =
   { type: 'Focus'
-  };
-
-export const PushDown/*:Action*/ =
-  { type: 'PushDown'
-  };
-
-export const PushedDown/*:Action*/ =
-  { type: 'PushedDown'
   };
 
 export const Load =
@@ -460,11 +450,6 @@ export const update =
           ];
       case "Close":
         return close(model);
-
-  // Force push actions.
-  // We forward these up to WebViews.
-      case "PushDown":
-        return [ model, Effects.receive(PushedDown) ];
 
   // Delegate
       case "Shell":

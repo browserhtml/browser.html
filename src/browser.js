@@ -26,7 +26,7 @@ import {Style, StyleSheet} from './common/style';
 
 import {identity, compose} from "./lang/functional";
 
-import {onWindow} from "@driver";
+import {onWindow, on} from "@driver";
 import * as Navigators from "./browser/Navigators";
 
 
@@ -717,6 +717,8 @@ export const view =
     , onBlur: onWindow(address, always(Blur))
     , onFocus: onWindow(address, always(Focus))
     , onUnload: onWindow(address, always(Unload))
+    , onServoMouseForceDown: on(address, always(ShowTabs))
+    , onWebkitMouseForceDown: on(address, always(ShowTabs))
     }
   , [ Navigators.view
       ( model.navigators
