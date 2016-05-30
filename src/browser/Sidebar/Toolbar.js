@@ -24,20 +24,16 @@ export type Action =
   | { type: "Detach" }
   | { type: "CreateWebView" }
   | { type: "Toggle", toggle: Toggle.Action }
-  | { type: "CloseButton", closeButton: Button.Action }
 */
 
 export class Model {
   /*::
   pin: Toggle.Model;
-  close: Button.Model;
   */
   constructor(
     pin/*:Toggle.Model*/
-  , close/*:Button.Model*/
   ) {
     this.pin = pin
-    this.close = close
   }
 }
 
@@ -65,38 +61,19 @@ const ToggleAction =
     }
   };
 
-const CloseButtonAction =
-  action => {
-    switch (action.type) {
-      case "Press":
-        return CreateWebView;
-      default:
-        return { type: "CloseButton", closeButton: action }
-    }
-  };
-
 const updateToggle = cursor({
   get: model => model.pin,
-  set: (model, pin) => new Model(pin, model.close),
+  set: (model, pin) => new Model(pin),
   tag: ToggleAction,
   update: Toggle.update
 });
 
-const updateCloseButton = cursor({
-  get: model => model.close,
-  set: (model, close) => new Model(model.pin, close),
-  tag: CloseButtonAction,
-  update: Button.update
-})
-
 export const init = ()/*:[Model, Effects<Action>]*/ => {
   const [pin, pinFX] = Toggle.init();
-  const [close, closeFX] = Button.init(false, false, false, false, '');
   return [
-    new Model(pin, close),
+    new Model(pin),
     Effects.batch
     ( [ pinFX.map(ToggleAction)
-      , closeFX.map(CloseButtonAction)
       ]
     )
 
@@ -112,8 +89,6 @@ export const update =
 
   : action.type === "Toggle"
   ? updateToggle(model, action.toggle)
-  : action.type === "CloseButton"
-  ? updateCloseButton(model, action.closeButton)
 
   : Unknown.update(model, action)
   );
@@ -155,24 +130,6 @@ const viewPin = Toggle.view('pin-button', Style.createSheet({
   }
 }));
 
-const viewClose = Button.view('create-tab-button', Style.createSheet({
-  base:
-  { MozWindowDragging: 'no-drag'
-  , WebkitAppRegion: 'no-drag'
-  , color: 'rgb(255,255,255)'
-  , fontFamily: 'FontAwesome'
-  , fontSize: '18px'
-  , lineHeight: '32px'
-  , position: 'absolute'
-  , textAlign: 'center'
-  , bottom: '8px'
-  , right: '8px'
-  , width: '32px'
-  , height: '32px'
-  , background: 'transparent'
-  }
-}));
-
 export const view =
   (model/*:Model*/, address/*:Address<Action>*/, display/*:Context*/)/*:DOM*/ =>
   html.div({
@@ -187,6 +144,5 @@ export const view =
       )
     )
   }, [
-    thunk('pin', viewPin, model.pin, forward(address, ToggleAction)),
-    thunk('close', viewClose, model.close, forward(address, CloseButtonAction))
+    thunk('pin', viewPin, model.pin, forward(address, ToggleAction))
   ]);

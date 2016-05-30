@@ -326,6 +326,7 @@ const assemble =
     return [model, fx]
   }
 
+
 export const init =
   (options/*:Flags*/)/*:[Model, Effects<Action>]*/ =>
   assemble
@@ -349,7 +350,7 @@ export const update =
   ( model/*:Model*/
   , action/*:Action*/
   )/*:[Model, Effects<Action>]*/ => {
-    // console.log(action)
+    console.log(action)
     switch (action.type) {
       case 'NoOp':
         return nofx(model);
@@ -490,7 +491,9 @@ export const close =
   ( model/*:Model*/
   )/*:[Model, Effects<Action>]*/ =>
   ( model.isPinned
-  ? nofx(model)
+  ? [ model
+    , Effects.receive(Select)
+    ]
   : model.isSelected
   ? startAnimation
     ( model
@@ -623,9 +626,7 @@ const editInput =
   batch
   ( update
   , model
-  , [ FocusInput
-    , ActivateAssistant
-    , ShowOverlay
+  , [ ActivateInput
       // @TODO: Do not use `model.output.navigation.currentURI` as it ties it
       // to webView API too much.
     , ( model.isInputEmbedded
@@ -709,6 +710,33 @@ const updateOutput = cursor
     , tag: tagOutput
     }
   );
+
+const updateInputAndOutput =
+  ( source
+  , [input, $input]
+  , [output, $output]
+  ) => {
+    const fx = Effects.batch
+    ( [ $input.map(tagInput)
+      , $output.map(tagOutput)
+      ]
+    )
+
+    const model = new Model
+    ( source.isSelected
+    , source.isClosed
+    , source.isPinned
+    , source.isInputEmbedded
+    , input
+    , output
+    , source.assistant
+    , source.overlay
+    , source.progress
+    , source.animation
+    )
+
+    return [model, fx]
+  }
 
 const updateProgress = cursor
   ( { get: model => model.progress

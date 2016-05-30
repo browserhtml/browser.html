@@ -136,7 +136,12 @@ export const view =
         , readWallpaper(activeWallpaper)
         )
       }
-    , [ thunk
+    , [ html.meta
+        ( { name: "theme-color"
+          , content: activeWallpaper.color
+          }
+        )
+      , thunk
         ( 'tiles'
         , Tiles.view
         , tiles
