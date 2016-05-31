@@ -25,6 +25,7 @@ import * as OS from './common/os';
 import * as Keyboard from './common/keyboard';
 import * as Stopwatch from "./common/stopwatch";
 import * as Easing from "eased";
+import * as Issue from "./common/issue-reporter";
 import {merge, always, batch, tag, tagged} from "./common/prelude";
 import {cursor} from "./common/cursor";
 import {Style, StyleSheet} from './common/style';
@@ -43,6 +44,7 @@ export const init = ()/*:[Model, Effects<Action>]*/ => {
   const [devtools, devtoolsFx] = Devtools.init({isActive: Config.devtools});
   const [input, inputFx] = Input.init(false, false, "");
   const [shell, shellFx] = Shell.init();
+  const [issue, issueFx] = Issue.init();
   const [webViews, webViewsFx] = WebViews.init();
   const [sidebar, sidebarFx] = Sidebar.init();
   const [assistant, assistantFx] = Assistant.init();
@@ -52,6 +54,7 @@ export const init = ()/*:[Model, Effects<Action>]*/ => {
     { version
     , mode: 'create-web-view'
     , shell
+    , issue
     , input
     , assistant
     , webViews
@@ -69,6 +72,7 @@ export const init = ()/*:[Model, Effects<Action>]*/ => {
     ( [ devtoolsFx.map(DevtoolsAction)
       , inputFx.map(InputAction)
       , shellFx.map(ShellAction)
+      , issueFx.map(IssueAction)
       , webViewsFx.map(WebViewsAction)
       , sidebarFx.map(SidebarAction)
       , assistantFx.map(AssistantAction)
@@ -135,6 +139,11 @@ const WebViewsAction = (action/*:WebViews.Action*/)/*:Action*/ =>
   ? ShowTabs
   : action.type === "Create"
   ? CreateWebView
+  : action.type === "Crash"
+  ? {
+    type: "ReportWebviewCrash",
+    source: action
+  }
   : action.type === "Edit"
   ? EditWebView
   : action.type === "SelectRelative"
@@ -167,6 +176,20 @@ const ShellAction = action =>
     , source: action
     }
   );
+
+const IssueAction = action =>
+  ( action.type === "DismissReport"
+   ? {
+     type: "DismissReport",
+   }
+   : action.type === "FileReport"
+   ? {
+     type: "FileReport",
+   }
+   : { type: 'Issue'
+     , action
+    }
+  )
 
 const DevtoolsAction = action =>
   ( { type: 'Devtools'
@@ -230,6 +253,13 @@ const updateOverlay = cursor({
   set: (model, overlay) => merge(model, {overlay}),
   tag: OverlayAction,
   update: Overlay.update
+});
+
+const updateIssue = cursor({
+  get: model => model.issue,
+  set: (model, issue) => merge(model, {issue}),
+  update: Issue.update,
+  tag: IssueAction
 });
 
 const Reloaded/*:Action*/ =
@@ -790,6 +820,11 @@ export const update =
       .map(NoOp)
     ]
 
+  : action.type === 'ReportWebviewCrash' ||
+    action.type === 'DismissReport' ||
+    action.type === 'FileReport'
+  ? updateIssue(model, action)
+
   // Ignore some actions.
   : action.type === 'Reloaded'
   ? [model, Effects.none]
@@ -890,6 +925,13 @@ export const view =
       , Shell.view
       , model.shell
       , forward(address, ShellAction)
+      )
+
+    , thunk
+      ( 'issue'
+      , Issue.view
+      , model.issue
+      , forward(address, IssueAction)
       )
     ]
   );

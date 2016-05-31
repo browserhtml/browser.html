@@ -58,7 +58,7 @@ export const view =
     , onMozBrowserOpenWindow: on(address, decodeOpenWindow)
     , onMozBrowserOpenTab: on(address, decodeOpenTab)
     , onMozBrowserContextMenu: on(address, decodeContexMenu)
-    , onMozBrowserError: on(address, decodeLoadFail)
+    , onMozBrowserError: on(address, decodeError)
     , onMozBrowserLoadStart: on(address, decodeLoadStart)
     , onMozBrowserConnected: on(address, decodeConnected)
     , onMozBrowserLoadEnd: on(address, decodeLoadEnd)
@@ -105,16 +105,27 @@ const decodeOpenTab =
   );
 
 // See: https://developer.mozilla.org/en-US/docs/Web/Events/mozbrowsererror
-const decodeLoadFail =
-  ( { detail } ) =>
-  ( { type: "LoadFail"
-    , time: performance.now()
-    , reason: detail.type
-    // Gecko unlike Electron does not actually pass error codes. Absense of
-    // it is identified as `-1` which is what used here.
-    , code: -1
-    }
-  );
+const decodeError =
+  ( e ) => {
+  if (e.detail.type == "fatal") {
+    return ( { type: "Crash"
+      , time: performance.now()
+      , description: e.detail.description
+      , backtrace: e.detail.report
+      , url: e.target.dataset.currentUri
+      }
+    );
+  } else {
+    return ( { type: "LoadFail"
+      , time: performance.now()
+      , reason: e.detail.type
+      // Gecko unlike Electron does not actually pass error codes. Absense of
+      // it is identified as `-1` which is what used here.
+      , code: -1
+      }
+    );
+  }
+}
 
 // See: https://developer.mozilla.org/en-US/docs/Web/Events/mozbrowsercontextmenu
 const decodeContexMenu =

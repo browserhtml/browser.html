@@ -162,6 +162,8 @@ const WebViewAction =
   ? Create
   : action.type === "Edit"
   ? Edit
+  : action.type === "Crash"
+  ? action
   :{ type: "WebView"
     , id
     , action
