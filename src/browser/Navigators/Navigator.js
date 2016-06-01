@@ -530,10 +530,41 @@ export const close =
 
 const navigate =
   (model, uri) =>
-  updateOutput
-  ( model
-  , Output.Load(uri)
+  ( model.isPinned
+  ? open(model, uri)
+  : updateOutput
+    ( model
+    , Output.Load(uri)
+    )
   )
+
+const open =
+  (model, uri) => {
+    const [next, fx1] = escapeInput(model)
+    const fx2 = Effects.receive
+      ( { type: "Open"
+        , open:
+          { output:
+            { uri
+            , disposition: 'default'
+            , name: ''
+            , features: ''
+            , ref: null
+            , guestInstanceId: null
+            }
+          }
+        }
+      )
+
+    const fx = Effects.batch
+      ( [ fx1
+        , fx2
+        ]
+      )
+
+    return [next, fx]
+  }
+
 
 const commitInput =
   model =>
