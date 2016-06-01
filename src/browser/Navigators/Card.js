@@ -6,38 +6,38 @@ import * as NewTab from "./NewTab"
 
 /*::
 export type Action =
-  | { tag: "NewTab", value: NewTab.Action }
-  | { tag: "Navigator", value: Navigator.Action }
+  | { tag: "NewTab", newTab: NewTab.Action }
+  | { tag: "Navigator", navigator: Navigator.Action }
 
 
 export type Flags =
-  | { tag: "Navigator", value: Navigator.Flags }
-  | { tag: "NewTab", value: NewTab.Flags }
+  | { tag: "Navigator", navigator: Navigator.Flags }
+  | { tag: "NewTab", newTab: NewTab.Flags }
 
 export type Model =
-  | { tag: "NewTab", value: NewTab.Model }
-  | { tag: "Navigator", value: Navigator.Model }
+  | { tag: "NewTab", newTab: NewTab.Model }
+  | { tag: "Navigator", navigator: Navigator.Model }
 */
 
 class NewTabTag /*::<value>*/ {
   /*::
   tag: "NewTab";
-  value: value;
+  newTab: value;
   */
   constructor(value/*:value*/) {
     this.tag = "NewTab"
-    this.value = value
+    this.newTab = value
   }
 }
 
 class NavigatorTag /*::<value>*/ {
   /*::
   tag: "Navigator";
-  value: value;
+  navigator: value;
   */
   constructor(value/*:value*/) {
     this.tag = "Navigator"
-    this.value = value
+    this.navigator = value
   }
 }
 
@@ -55,13 +55,13 @@ export const init =
     switch (flags.tag) {
       case "NewTab":
         {
-          const [model, fx] = NewTab.init(flags.value);
+          const [model, fx] = NewTab.init(flags.newTab);
           return [ new NewTabTag(model), fx.map(tagNewTab) ]
         }
       case "Navigator":
       default:
         {
-          const [model, fx] = Navigator.init(flags.value);
+          const [model, fx] = Navigator.init(flags.navigator);
           return [ new NavigatorTag(model), fx.map(tagNavigator) ]
         }
     }
@@ -71,23 +71,89 @@ export const update =
   ( model/*:Model*/
   , action/*:Action*/
   )/*:[Model, Effects<Action>]*/ => {
+    switch (model.tag) {
+      case "NewTab":
+        return updateNewTab(model, action)
+
+      case "Navigator":
+        return updateNavigator(model, action)
+
+      default:
+        return [model, Effects.none]
+    }
+  }
+
+const updateNewTab =
+  (model, action) => {
     switch (action.tag) {
+      case "NewTab":
+        const [value, fx] = NewTab.update(model.newTab, action.newTab)
+        return [new NewTabTag(value), fx.map(tagNewTab)]
+      default:
+        return [model, Effects.none]
+    }
+  }
+
+const updateNavigator =
+  (model, action) => {
+    switch (action.tag) {
+      case "Navigator":
+        const [value, fx] = Navigator.update(model.navigator, action.navigator)
+        return [new NavigatorTag(value), fx.map(tagNavigator)]
+      default:
+        return [model, Effects.none]
+    }
+  }
+
+export const close =
+  ( model/*:Model*/
+  , action/*:Action*/
+  )/*:[Model, Effects<Action>]*/ => {
+    switch (model.tag) {
       case "NewTab": {
-        switch (model.tag) {
-          case "NewTab":
-            const [value, fx] = NewTab.update(model.value, action.value);
-            return [new NewTabTag(value), fx.map(tagNewTab)]
-        }
+        const [value, fx] = NewTab.close(model.newTab)
+        return [new NewTabTag(value), fx.map(tagNewTab)]
       }
-
-      case "Navigator":{
-        switch (model.tag) {
-          case "Navigator":
-            const [value, fx] = Navigator.update(model.value, action.value);
-            return [new NavigatorTag(value), fx.map(tagNavigator) ]
-        }
+      case "Navigator": {
+        const [value, fx] = Navigator.close(model.navigator);
+        return [new NavigatorTag(value), fx.map(tagNavigator) ]
       }
+      default:
+        return [model, Effects.none]
+    }
+  }
 
+export const select =
+  ( model/*:Model*/
+  , action/*:Action*/
+  )/*:[Model, Effects<Action>]*/ => {
+    switch (model.tag) {
+      case "NewTab": {
+        const [value, fx] = NewTab.select(model.newTab)
+        return [new NewTabTag(value), fx.map(tagNewTab)]
+      }
+      case "Navigator": {
+        const [value, fx] = Navigator.select(model.navigator);
+        return [new NavigatorTag(value), fx.map(tagNavigator) ]
+      }
+      default:
+        return [model, Effects.none]
+    }
+  }
+
+export const deselect =
+  ( model/*:Model*/
+  , action/*:Action*/
+  )/*:[Model, Effects<Action>]*/ => {
+    switch (model.tag) {
+      case "NewTab": {
+        const [value, fx] = NewTab.deselect(model.newTab)
+        return [new NewTabTag(value), fx.map(tagNewTab)]
+      }
+      case "Navigator": {
+        const [value, fx] = Navigator.deselect(model.navigator);
+        return [new NavigatorTag(value), fx.map(tagNavigator) ]
+      }
       default:
         return [model, Effects.none]
     }
