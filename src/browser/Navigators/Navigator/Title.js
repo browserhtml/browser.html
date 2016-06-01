@@ -1,8 +1,8 @@
 /* @flow */
 
 import {html, thunk, forward} from 'reflex';
-import * as Style from '../../../../common/style';
-import {always} from '../../../../common/prelude';
+import * as Style from '../../../common/style';
+import {always} from '../../../common/prelude';
 
 /*::
 import type {Address, DOM} from "reflex"
@@ -15,13 +15,20 @@ const Activate = always({ type: "Activate" })
 
 
 export const render =
-  ( title/*:string*/
+  ( isDisabled/*:boolean*/
+  , title/*:string*/
   , secure/*:boolean*/
   , address/*:Address<Action>*/
   )/*:DOM*/ =>
   html.summary
   ( { className: 'webview-combobox'
-    , style: styleSheet.base
+    , style: Style.mix
+      ( styleSheet.base
+      , ( isDisabled
+        ? styleSheet.disabled
+        : styleSheet.enabled
+        )
+      )
     , onClick: forward(address, Activate)
     , open: true
     }
@@ -52,13 +59,15 @@ export const render =
   );
 
 export const view =
-  ( title/*:string*/
+  ( isDisabled/*:boolean*/
+  , title/*:string*/
   , secure/*:boolean*/
   , address/*:Address<Action>*/
   )/*:DOM*/ =>
   thunk
   ( 'Browser/NavigatorDeck/Navigator/Header/Title'
   , render
+  , isDisabled
   , title
   , secure
   , address
@@ -116,5 +125,9 @@ const styleSheet = Style.createSheet
       , marginRight: '6px'
       , display: 'none'
       }
+    , disabled:
+      { display: 'none'
+      }
+    , enabled: null
     }
   );
