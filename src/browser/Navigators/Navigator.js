@@ -565,14 +565,23 @@ const escapeInput =
 
 const activateInput =
   model =>
-  batch
-  ( update
-  , model
-  , [ FocusInput
-    , ActivateAssistant
-    , ShowOverlay
-    ]
-  );
+  ( model.isInputEmbedded
+  ? batch
+    ( update
+    , model
+    , [ FocusInput
+      , ActivateAssistant
+      ]
+    )
+  : batch
+    ( update
+    , model
+    , [ FocusInput
+      , ActivateAssistant
+      , ShowOverlay
+      ]
+    )
+  )
 
 const abortInput =
   model =>
