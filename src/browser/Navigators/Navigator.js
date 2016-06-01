@@ -138,6 +138,18 @@ export const Select = { type: "Select" }
 export const FocusInput = { type: "Input", input: Input.Focus }
 export const HideInput = { type: "Input", input: Input.Hide }
 export const FocusOutput = { type: "Output", output: Output.Focus }
+export const ClearInput =
+  { type: "Input"
+  , input:
+    { type: "Change"
+    , value: ""
+    , selection:
+      { start: 0
+      , end: 0
+      , direction: "none"
+      }
+    }
+  }
 
 const tagInput =
   action => {
@@ -549,6 +561,7 @@ const escapeInput =
     , [ DeactivateAssistant
       , FocusOutput
       , HideOverlay
+      , ClearInput
       ]
     )
   : batch
@@ -558,6 +571,7 @@ const escapeInput =
       , AbortInput
       , FocusOutput
       , HideOverlay
+      , ClearInput
       ]
     )
   );
