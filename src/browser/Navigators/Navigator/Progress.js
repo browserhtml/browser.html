@@ -12,7 +12,6 @@ import {always} from '../../../common/prelude';
 import * as Unknown from '../../../common/unknown';
 import * as Runtime from '../../../common/runtime';
 import * as Ref from '../../../common/ref';
-import * as Layer from './Layer';
 import * as PolyfillView from './Progress/PolyfillView';
 import * as ProgressView from './Progress/ProgressView';
 

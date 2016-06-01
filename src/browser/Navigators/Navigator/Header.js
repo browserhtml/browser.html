@@ -7,7 +7,6 @@ import * as Title from './Title';
 import * as ShowTabsButton from './Header/ShowTabsButton';
 import * as NewTabButton from './Header/NewTabButton';
 import * as BackButton from './Header/BackButton';
-import * as Layer from './Layer';
 
 /*::
 import type {Address, DOM} from "reflex"
@@ -66,7 +65,6 @@ const styleSheet = Style.createSheet
       , height: `${height}px`
       , color: 'inherit'
       , background: 'inherit'
-      , zIndex: Layer.header
       }
     }
   )
