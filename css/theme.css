@@ -57,7 +57,7 @@ body.use-native-titlebar {
   background: rgba(0,0,0,0.1);
 }
 
-.webview-is-dark .webview-combobox:hover {
+.navigator.dark .webview-combobox:hover {
   background: rgba(255,255,255,0.1);
 }
 
@@ -67,4 +67,22 @@ body.use-native-titlebar {
 
 .webview-combobox:hover .webview-search-icon {
   opacity: 1;
+}
+
+
+progress::-webkit-progress-inner-element,
+progress::-webkit-progress-bar {
+  background: inherit;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+
+progress::-webkit-progress-value {
+  background-color: inherit;
+  background-image: inherit;
+}
+progress::-moz-progress-bar {
+  background-color: inherit;
+  background-image: inherit;
 }

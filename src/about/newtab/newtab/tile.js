@@ -70,6 +70,7 @@ export const view =
   html.a
   ( { className: 'tile'
     , style: styleSheet.tile
+    , target: '_blank'
     , href: model.uri
     }
   , [ html.div

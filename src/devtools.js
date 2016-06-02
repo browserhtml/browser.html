@@ -1,6 +1,6 @@
 /* @flow */
 
-import {Effects, Task, html, forward} from "reflex"
+import {Effects, Task, thunk, html, forward} from "reflex"
 import {merge} from "./common/prelude"
 import {cursor} from "./common/cursor"
 import {ok, error} from "./common/result"
@@ -347,7 +347,7 @@ export const update = /*::<input, state>*/
   transact(updateTools(model, action));
 
 
-export const view = /*::<model, action>*/
+export const render = /*::<model, action>*/
   ( model/*:Model<model, action>*/
   , address/*:Address<Action<model, action>>*/
   )/*:DOM*/ =>
@@ -371,4 +371,15 @@ export const view = /*::<model, action>*/
       : Log.view(model.log, forward(address, tagLog))
       )
     ]
+  )
+
+export const view = /*::<model, action>*/
+  ( model/*:Model<model, action>*/
+  , address/*:Address<Action<model, action>>*/
+  )/*:DOM*/ =>
+  thunk
+  ( 'Devtools'
+  , render
+  , model
+  , address
   )

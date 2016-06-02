@@ -4,7 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, Task, html, forward} from "reflex";
+import {Effects, Task, html, thunk, forward} from "reflex";
 import {merge, always} from "../common/prelude";
 import {cursor} from "../common/cursor";
 import * as Focusable from "../common/focusable";
@@ -187,11 +187,20 @@ export const update =
   : Unknown.update(model, action)
   );
 
-export const view =
+export const render =
   (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ => {
     if (!Runtime.useNativeTitlebar()) {
       return Controls.view(model.controls, forward(address, ControlsAction));
     } else {
-      return html.div();
+      return "";
     }
   }
+
+export const view =
+  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  thunk
+  ( "Browser/Shell"
+  , render
+  , model
+  , address
+  );

@@ -84,10 +84,13 @@ export const update =
     ]
 
   : action.type === "Check"
-  ? [model, Effects.none]
+  ? [ merge(model, {isChecked: true })
+    , Effects.none
+    ]
   : action.type === "Uncheck"
-  ? [model, Effects.none]
-
+  ? [ merge(model, {isChecked: false })
+    , Effects.none
+    ]
   : action.type === "Button"
   ? updateButton(model, action.action)
   : action.type === "Target"

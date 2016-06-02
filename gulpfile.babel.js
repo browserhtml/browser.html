@@ -145,8 +145,9 @@ gulp.task('servo', function() {
       var app = child.spawn(settings.servoPath, [
           '-w',
           '-b',
-          '--pref',
-          'dom.mozbrowser.enabled',
+          '--pref', 'dom.mozbrowser.enabled',
+          '--pref', 'dom.forcetouch.enabled',
+          '--pref', 'dom.quit-on-escape.enabled=false',
           'http://localhost:' + settings.port
       ], {
           stdio: 'inherit'

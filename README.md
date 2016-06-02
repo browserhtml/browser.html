@@ -56,7 +56,7 @@ npm run build-server
 Finally, start Servo with the Browser.html flags turned on in either debug (`-d`) or release (`-r`) mode:
 
 ``` sh
-./mach run -r -- -b -w --pref dom.mozbrowser.enabled http://localhost:6060
+./mach run -r -- -b -w --pref dom.mozbrowser.enabled --pref dom.forcetouch.enabled --pref dom.quit-on-escape.enabled=false http://localhost:6060
 ```
 
 ### Running in Gecko

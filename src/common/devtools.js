@@ -219,6 +219,7 @@ const styleSheet = StyleSheet.create
       , backgroundColor: 'white'
       , border: '2px solid #F06'
       , overflow: 'scroll'
+      , zIndex: 3
       }
     , initializing:
       { display: 'none'

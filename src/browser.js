@@ -5,17 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {version} from "../package.json";
+import * as Package from "../package.json";
 import * as Config from "../browserhtml.json";
 import {Effects, html, forward, thunk} from "reflex";
 
 import * as Shell from "./browser/shell";
-import * as Input from "./browser/input";
-import * as Assistant from "./browser/assistant";
-import * as Sidebar from './browser/sidebar';
-import * as WebViews from "./browser/web-views";
-import * as Overlay from './browser/overlay';
-
+import * as Sidebar from './browser/Sidebar';
 import * as Devtools from "./common/devtools";
 import * as Runtime from "./common/runtime";
 import * as URL from './common/url-helper';
@@ -25,55 +20,129 @@ import * as OS from './common/os';
 import * as Keyboard from './common/keyboard';
 import * as Stopwatch from "./common/stopwatch";
 import * as Easing from "eased";
-import {merge, always, batch, tag, tagged} from "./common/prelude";
+import {always, batch, tag, tagged} from "./common/prelude";
 import {cursor} from "./common/cursor";
 import {Style, StyleSheet} from './common/style';
 
 import {identity, compose} from "./lang/functional";
 
-import {onWindow} from "@driver";
+import {onWindow, on} from "@driver";
+import * as Navigators from "./browser/Navigators";
+
 
 /*::
+
+import type {ID} from "./common/prelude"
+import * as Tabs from "./browser/Sidebar/Tabs"
+
+export type Version = string
+
+export type Action =
+  | { type: "NoOp" }
+  | { type: "GoBack" }
+  | { type: "GoForward" }
+  | { type: "Reload" }
+  | { type: "ZoomIn" }
+  | { type: "ZoomOut" }
+  | { type: "ResetZoom" }
+  | { type: "CloseSelected" }
+  | { type: "SelectNext" }
+  | { type: "SelectPrevious" }
+  | { type: "EndSelection" }
+  | { type: "Focus" }
+  | { type: "Blur" }
+  | { type: "OpenNewTab" }
+  | { type: "EditWebView" }
+  | { type: "ShowWebView" }
+  | { type: "ShowTabs" }
+  | { type: "SelectWebView" }
+  | { type: "OpenWebView" }
+  | { type: "AttachSidebar" }
+  | { type: "DetachSidebar" }
+  | { type: "OverlayClicked" }
+  | { type: "SubmitInput" }
+  | { type: "BlurInput" }
+  | { type: "ExitInput" }
+  | { type: "Escape" }
+  | { type: "Unload" }
+  | { type: "ReloadRuntime" }
+  | { type: "PrintSnapshot" }
+  | { type: "PublishSnapshot" }
+  | { type: "Sidebar", action: Sidebar.Action }
+  | { type: "Navigators", navigators: Navigators.Action }
+  | { type: "Shell", source: Shell.Action }
+  | { type: "Devtools", action: Devtools.Action }
+  | { type: "Expand" }
+  | { type: "Expanded" }
+  | { type: "Shrink" }
+  | { type: "Shrinked" }
+  | { type: "ReceiveOpenURLNotification" }
+  | { type: "LiveReload" }
+  | { type: "Reloaded" }
+  | { type: "OpenURL", uri: URI }
+  | { type: "Close" }
+  // @TODO: Do not use any here.
+  | { type: "Modify", modify: ID, action: any }
+  | { type: "Open" }
+  | { type: "Tabs", tabs: Tabs.Action }
+
+
 import type {Address, DOM} from "reflex"
 import type {URI} from "./common/prelude"
-import type {Model, Action} from "./browser"
 */
+
+export class Model {
+  /*::
+  version: Version;
+  shell: Shell.Model;
+  navigators: Navigators.Model;
+  sidebar: Sidebar.Model;
+  devtools: Devtools.Model;
+  */
+  constructor(
+    version/*:Version*/=Package.version
+  , shell/*:Shell.Model*/
+  , navigators/*:Navigators.Model*/
+  , sidebar/*:Sidebar.Model*/
+  , devtools/*:Devtools.Model*/
+  ) {
+    this.version = version
+    this.shell = shell
+    this.navigators = navigators
+    this.sidebar = sidebar
+    this.devtools = devtools
+  }
+}
+
+
+const Modify =
+  (id, action) =>
+  ( { type: "Modify"
+    , modify: id
+    , action
+    }
+  )
 
 export const init = ()/*:[Model, Effects<Action>]*/ => {
   const [devtools, devtoolsFx] = Devtools.init({isActive: Config.devtools});
-  const [input, inputFx] = Input.init(false, false, "");
   const [shell, shellFx] = Shell.init();
-  const [webViews, webViewsFx] = WebViews.init();
   const [sidebar, sidebarFx] = Sidebar.init();
-  const [assistant, assistantFx] = Assistant.init();
-  const [overlay, overlayFx] = Overlay.init(false, false);
+  const [navigators, navigatorsFx] = Navigators.init();
 
-  const model =
-    { version
-    , mode: 'create-web-view'
+  const model = new Model
+    ( Package.version
     , shell
-    , input
-    , assistant
-    , webViews
+    , navigators
     , sidebar
-    , overlay
     , devtools
-    , resizeAnimation: null
-
-    , display: { rightOffset: 0 }
-    , isExpanded: true
-    };
+    );
 
   const fx =
     Effects.batch
     ( [ devtoolsFx.map(DevtoolsAction)
-      , inputFx.map(InputAction)
       , shellFx.map(ShellAction)
-      , webViewsFx.map(WebViewsAction)
       , sidebarFx.map(SidebarAction)
-      , assistantFx.map(AssistantAction)
-      , overlayFx.map(OverlayAction)
-      , Effects.receive(CreateWebView)
+      , navigatorsFx.map(NavigatorsAction)
       , Effects
         .perform(Runtime.receive('mozbrowseropenwindow'))
         .map(OpenURL)
@@ -86,14 +155,10 @@ export const init = ()/*:[Model, Effects<Action>]*/ => {
 const NoOp = always({ type: "NoOp" });
 
 const SidebarAction = action =>
-  ( action.type === "CreateWebView"
-  ? CreateWebView
-  : action.type === "ActivateTab"
-  ? ActivateWebViewByID(action.id)
-  : action.type === "CloseTab"
-  ? CloseWebViewByID(action.id)
+  ( action.type === "OpenNewTab"
+  ? OpenNewTab
   : action.type === "Tabs"
-  ? WebViewActionByID(action.source.id, action.source)
+  ? action
   : action.type === "Attach"
   ? AttachSidebar
   : action.type === "Detach"
@@ -103,60 +168,21 @@ const SidebarAction = action =>
     }
   );
 
-const OverlayAction = action =>
-  ( action.type === "Click"
-  ? OverlayClicked
-  : { type: "Overlay"
-    , action
-    }
-  );
 
+const NavigatorsAction =
+  (action/*:Navigators.Action*/)/*:Action*/ => {
+    switch (action.type) {
+      case "ShowTabs":
+        return ShowTabs
+      case "ShowWebView":
+        return ShowWebView
+      case "OpenNewTab":
+        return OpenNewTab
+      default:
+        return { type: 'Navigators', navigators: action }
+    }
+  };
 
-const InputAction = action =>
-  ( action.type === 'Submit'
-  ? SubmitInput
-  : action.type === 'Abort'
-  ? ExitInput
-  : action.type === 'Blur'
-  ? BlurInput
-  : action.type === 'Query'
-  ? Query
-  : action.type === 'SuggestNext'
-  ? SuggestNext
-  : action.type === 'SuggestPrevious'
-  ? SuggestPrevious
-  : { type: 'Input'
-    , source: action
-    }
-  );
-
-const WebViewsAction = (action/*:WebViews.Action*/)/*:Action*/ =>
-  ( action.type === "ShowTabs"
-  ? ShowTabs
-  : action.type === "Create"
-  ? CreateWebView
-  : action.type === "Edit"
-  ? EditWebView
-  : action.type === "SelectRelative"
-  ? { type: "SelectTab"
-    , source: action
-    }
-    // Note: Flow type checker has some bug releated to union types where
-    // use of the same properties across union types seem to confuse it.
-    // avoiding same shapes (and calling source differently on each type)
-    // seems to resolve the problem.
-  : action.type === "ActivateSelected"
-  ? { type: "ActivateTab"
-    , activateTab: action
-    }
-  : action.type === "ActivateByID"
-  ? { type: "ActivateTabByID"
-    , activateTabByID: action
-    }
-  : { type: 'WebViews'
-    , source: action
-    }
-  );
 
 const ShellAction = action =>
   ( action.type === 'Focus'
@@ -174,62 +200,65 @@ const DevtoolsAction = action =>
     }
   );
 
-const AssistantAction =
-  action =>
-  ( action.type === 'Suggest'
-  ? Suggest(action.source)
-  : { type: 'Assistant'
-    , source: action
-    }
-  );
 
-const updateInput = cursor({
-  get: model => model.input,
-  set: (model, input) => merge(model, {input}),
-  update: Input.update,
-  tag: InputAction
-});
-
-const updateWebViews = cursor({
-  get: model => model.webViews,
-  set: (model, webViews) => merge(model, {webViews}),
-  update: WebViews.update,
-  tag: WebViewsAction
+const updateNavigators = cursor({
+  get: model => model.navigators,
+  set:
+    (model, navigators) =>
+    new Model
+    ( model.version
+    , model.shell
+    , navigators
+    , model.sidebar
+    , model.devtools
+    ),
+  update: Navigators.update,
+  tag: NavigatorsAction
 });
 
 const updateShell = cursor({
   get: model => model.shell,
-  set: (model, shell) => merge(model, {shell}),
+  set:
+    (model, shell) =>
+    new Model
+    ( model.version
+    , shell
+    , model.navigators
+    , model.sidebar
+    , model.devtools
+    ),
   update: Shell.update,
   tag: ShellAction
 });
 
 const updateDevtools = cursor({
   get: model => model.devtools,
-  set: (model, devtools) => merge(model, {devtools}),
+  set:
+    (model, devtools) =>
+    new Model
+    ( model.version
+    , model.shell
+    , model.navigators
+    , model.sidebar
+    , devtools
+    ),
   update: Devtools.update,
   tag: DevtoolsAction
 });
 
-const updateAssistant = cursor({
-  get: model => model.assistant,
-  set: (model, assistant) => merge(model, {assistant}),
-  update: Assistant.update,
-  tag: AssistantAction
-});
-
 const updateSidebar = cursor({
   get: model => model.sidebar,
-  set: (model, sidebar) => merge(model, {sidebar}),
+  set:
+    (model, sidebar) =>
+    new Model
+    ( model.version
+    , model.shell
+    , model.navigators
+    , sidebar
+    , model.devtools
+    ),
   tag: SidebarAction,
   update: Sidebar.update
-});
-
-const updateOverlay = cursor({
-  get: model => model.overlay,
-  set: (model, overlay) => merge(model, {overlay}),
-  tag: OverlayAction,
-  update: Overlay.update
 });
 
 const Reloaded/*:Action*/ =
@@ -246,8 +275,8 @@ const Failure = error =>
 // ### Mode changes
 
 
-export const CreateWebView/*:Action*/ =
-  { type: 'CreateWebView'
+export const OpenNewTab/*:Action*/ =
+  { type: 'OpenNewTab'
   };
 
 export const EditWebView/*:Action*/ =
@@ -282,19 +311,6 @@ export const DetachSidebar/*:Action*/ =
   , source: Sidebar.Detach
   };
 
-export const OverlayClicked/*:Action*/ =
-  { type: "OverlayClicked"
-  };
-
-export const SubmitInput/*:Action*/ =
-  { type: 'SubmitInput'
-  };
-
-export const ExitInput/*:Action*/ =
-  { type: 'ExitInput'
-  , source: Input.Abort
-  };
-
 export const Escape/*:Action*/ =
   { type: 'Escape'
   };
@@ -312,35 +328,21 @@ export const BlurInput/*:Action*/ =
   { type: 'BlurInput'
   };
 
-// ## Resize actions
-
-export const SuggestNext/*:Action*/ = { type: "SuggestNext" };
-export const SuggestPrevious/*:Action*/ = { type: "SuggestPrevious" };
-export const Suggest = tag('Suggest');
-export const Expand/*:Action*/ = {type: "Expand"};
-export const Expanded/*:Action*/ = {type: "Expanded"};
-export const Shrink/*:Action*/ = {type: "Shrink"};
-export const Shrinked/*:Action*/ = {type: "Shrinked"};
-
 
 // Following Browser actions directly delegate to a `WebViews` module, there for
 // they are just tagged versions of `WebViews` actions, but that is Just an
 // implementation detail.
-export const ZoomIn = WebViewsAction(WebViews.ZoomIn);
-export const ZoomOut = WebViewsAction(WebViews.ZoomOut);
-export const ResetZoom = WebViewsAction(WebViews.ResetZoom);
-export const Reload = WebViewsAction(WebViews.Reload);
-export const CloseWebView = WebViewsAction(WebViews.CloseActive);
-export const GoBack = WebViewsAction(WebViews.GoBack);
-export const GoForward = WebViewsAction(WebViews.GoForward);
-export const SelectNext = WebViewsAction(WebViews.SelectNext);
-export const SelectPrevious = WebViewsAction(WebViews.SelectPrevious);
-export const ActivateSeleted = WebViewsAction(WebViews.ActivateSelected);
-export const FocusWebView = WebViewsAction(WebViews.Focus);
-export const NavigateTo = compose(WebViewsAction, WebViews.NavigateTo);
-const UnfoldWebViews = WebViewsAction(WebViews.Unfold);
-const FoldWebViews = WebViewsAction(WebViews.Fold);
-const Open = compose(WebViewsAction, WebViews.Open);
+export const ZoomIn = { type: "ZoomIn" }
+export const ZoomOut = { type: "ZoomOut" }
+export const ResetZoom = { type: "ResetZoom" }
+export const Reload = { type: "Reload" }
+export const Close = { type: "Close" }
+export const GoBack = { type: "GoBack" };
+export const GoForward = { type: "GoForward" };
+export const SelectNext = { type: "SelectNext" };
+export const SelectPrevious = { type: "SelectPrevious" }
+export const EndSelection = { type: "EndSelection" }
+
 const ReceiveOpenURLNotification =
   { type: "ReceiveOpenURLNotification"
   };
@@ -350,16 +352,6 @@ const OpenURL = ({url}) =>
     , uri: url
     }
   );
-const Query/*:Action*/ = { type: 'Query' };
-
-export const ActivateWebViewByID =
-  compose(WebViewsAction, WebViews.ActivateByID);
-const WebViewActionByID =
-  compose(WebViewsAction, WebViews.ActionByID);
-
-const CloseWebViewByID =
-  compose(WebViewsAction, WebViews.CloseByID);
-
 // Following browser actions directly delegate to one of the existing modules
 // there for we define them by just wrapping actions from that module to avoid
 // additional wiring (which is implementation detail that may change).
@@ -371,21 +363,15 @@ const StartRecording = { type: "StartRecording" };
 const StopRecording = { type: "StopRecording" };
 export const Blur = ShellAction(Shell.Blur);
 export const Focus = ShellAction(Shell.Focus);
+const ExpandSidebar = SidebarAction(Sidebar.Expand);
+const CollapseSidebar = SidebarAction(Sidebar.Collapse);
 
-
-const ShowInput = InputAction(Input.Show);
-const HideInput = InputAction(Input.Hide);
-const EnterInput = InputAction(Input.Enter);
-const EnterInputSelection = compose(InputAction, Input.EnterSelection);
-export const FocusInput = InputAction(Input.Focus);
-
-const OpenAssistant = AssistantAction(Assistant.Open);
-const CloseAssistant = AssistantAction(Assistant.Close);
-const ExpandAssistant = AssistantAction(Assistant.Expand);
-const QueryAssistant = compose(AssistantAction, Assistant.Query);
-
-const OpenSidebar = SidebarAction(Sidebar.Open);
-const CloseSidebar = SidebarAction(Sidebar.Close);
+const ExposeNavigators = NavigatorsAction(Navigators.Expose);
+const NavigatorsOpenNewTab = NavigatorsAction(Navigators.OpenNewTab);
+const FocusNavigators = NavigatorsAction(Navigators.Focus);
+const ShrinkNavigators = NavigatorsAction(Navigators.Shrink);
+const ExpandNavigators = NavigatorsAction(Navigators.Expand);
+const EditNivagatorInput = NavigatorsAction(Navigators.EditInput);
 
 const DockSidebar =
   { type: "Sidebar"
@@ -397,34 +383,19 @@ const UndockSidebar =
   , action: Sidebar.Detach
   };
 
-const HideOverlay = OverlayAction(Overlay.Hide);
-const ShowOverlay = OverlayAction(Overlay.Show);
-const FadeOverlay = OverlayAction(Overlay.Fade);
-
 export const LiveReload =
   { type: 'LiveReload'
   };
 
-// Animation
-
-const ResizeAnimationAction = action =>
-  ( { type: "ResizeAnimation"
-    , action
-    }
-  );
-
-
-
-
 const modifier = OS.platform() == 'linux' ? 'alt' : 'accel';
 const decodeKeyDown = Keyboard.bindings({
   'accel l': always(EditWebView),
-  'accel t': always(CreateWebView),
+  'accel t': always(OpenNewTab),
   'accel 0': always(ResetZoom),
   'accel -': always(ZoomOut),
   'accel =': always(ZoomIn),
   'accel shift =': always(ZoomIn),
-  'accel w': always(CloseWebView),
+  'accel w': always(Close),
   'accel shift ]': always(SelectNext),
   'accel shift [': always(SelectPrevious),
   'control tab': always(SelectNext),
@@ -452,109 +423,161 @@ const decodeKeyDown = Keyboard.bindings({
 });
 
 const decodeKeyUp = Keyboard.bindings({
-  'control': always(ActivateSeleted),
-  'accel': always(ActivateSeleted)
+  'control': always(EndSelection),
+  'accel': always(EndSelection)
 });
 
 const showWebView = model =>
   batch
   ( update
-  , merge(model, {mode: 'show-web-view'})
-  , [ HideInput
-    , CloseAssistant
-    , CloseSidebar
-    , HideOverlay
-    , FoldWebViews
-    , FocusWebView
+  , model
+  , [ CollapseSidebar
+    , FocusNavigators
     ]
   );
 
-const createWebView = model =>
-  batch
-  ( update
-  , merge(model, {mode: 'create-web-view'})
-  , [ ShowInput
-    , ExpandAssistant
-    , CloseSidebar
-    , HideOverlay
-    , FoldWebViews
-    , EnterInput
-    ]
-  );
+const openNewTab =
+  model => {
+    const [sidebar, $sidebar] =
+      Sidebar.update(model.sidebar, Sidebar.Collapse);
+
+    const [navigators, $navigators] =
+      Navigators.update(model.navigators, Navigators.OpenNewTab);
+
+    const next = new Model
+      ( model.version
+      , model.shell
+      , navigators
+      , sidebar
+      , model.devtools
+      )
+
+    const fx = Effects.batch
+      ( [ $sidebar.map(SidebarAction)
+        , $navigators.map(NavigatorsAction)
+        ]
+      )
+
+    return [next, fx]
+  }
+
 
 const editWebView = model =>
   batch
   ( update
-  , merge(model, {mode: 'edit-web-view'})
-  , [ ShowInput
+  , model
+  , [ /*ShowInput
     , OpenAssistant
-    , CloseSidebar
-    , ShowOverlay
-    , FoldWebViews
-    , EnterInputSelection(WebViews.getActiveURI(model.webViews, ''))
+    , */CollapseSidebar
+    // , ShowOverlay
+    // , FoldWebViews
+    /*, EnterInputSelection(WebViews.getActiveURI(model.webViews, ''))*/
+    , FocusNavigators
+    , EditNivagatorInput
     ]
   );
 
 const showTabs = model =>
   batch
   ( update
-  , merge(model, {mode: 'show-tabs'})
-  , [ HideInput
-    , CloseAssistant
-    , OpenSidebar
-    , ShowOverlay
-    , UnfoldWebViews
+  , model
+  , [ ExpandSidebar
+    , ExposeNavigators
     ]
   );
 
-
-const selectWebView = (model, action) =>
-  batch
-  ( update
-  , merge(model, {mode: 'select-web-view'})
-  , [ HideInput
-    , CloseAssistant
-    , OpenSidebar
-    , UnfoldWebViews
-    , FadeOverlay
-    ]
+const toggleTabs =
+  model =>
+  ( model.sidebar.isExpanded
+  ? showWebView(model)
+  : showTabs(model)
   );
 
 
-const submitInput = model =>
-  update(model, NavigateTo(URL.read(model.input.value)));
-
-const openWebView = model =>
-  update
+const goBack =
+  model =>
+  updateNavigators
   ( model
-  , Open
-    ( { uri: URL.read(model.input.value)
-      , disposition: 'default'
-      , name: ''
-      , features: ''
-      , ref: null
-      , guestInstanceId: null
-      }
-    )
-  );
+  , Navigators.GoBack
+  )
 
-const openURL = (model, uri) =>
+const goForward =
+  model =>
+  updateNavigators
+  ( model
+  , Navigators.GoForward
+  )
+
+
+const reload =
+  model =>
+  updateNavigators
+  ( model
+  , Navigators.Reload
+  )
+
+const zoomIn =
+  model =>
+  updateNavigators
+  ( model
+  , Navigators.ZoomIn
+  )
+
+const zoomOut =
+  model =>
+  updateNavigators
+  ( model
+  , Navigators.ZoomOut
+  )
+
+
+const resetZoom =
+  model =>
+  updateNavigators
+  ( model
+  , Navigators.ResetZoom
+  )
+
+const close =
+  model =>
+  updateNavigators
+  ( model
+  , Navigators.Close
+  )
+
+const SelectNextNavigator =
+  { type: "Navigators"
+  , navigators: Navigators.SelectNext
+  }
+
+const selectNext =
+  model =>
   batch
   ( update
   , model
-  , [ Open
-      ( { uri
-        , disposition: 'default'
-        , name: ''
-        , features: ''
-        , ref: null
-        , guestInstanceId: null
-        }
-      )
-    , ShowWebView
-    , ReceiveOpenURLNotification
+  , [ ExpandSidebar
+    , ExposeNavigators
+    , SelectNextNavigator
     ]
-  );
+  )
+
+const SelectPreviousNavigator =
+  { type: "Navigators"
+  , navigators: Navigators.SelectPrevious
+  }
+
+const selectPrevious =
+  model =>
+  batch
+  ( update
+  , model
+  , [ ExpandSidebar
+    , ExposeNavigators
+    , SelectPreviousNavigator
+    ]
+  )
+
+const endSelection = showWebView
 
 const reciveOpenURLNotification = model =>
   [ model
@@ -563,30 +586,12 @@ const reciveOpenURLNotification = model =>
     .map(OpenURL)
   ];
 
-
-const focusWebView = model =>
-  update(model, FocusWebView)
-
-const exitInput = model =>
-  batch
-  ( update
-  , model
-  , [ CloseAssistant
-    , FocusWebView
-    ]
-  );
-
-
 const attachSidebar = model =>
   batch
   ( update
-  , merge(model, {mode: 'show-web-view'})
+  , model
   , [ DockSidebar
-    , Shrink
-    , CloseSidebar
-    , HideOverlay
-    , FoldWebViews
-    , FocusWebView
+    , ShrinkNavigators
     ]
   );
 
@@ -595,7 +600,7 @@ const detachSidebar = model =>
   ( update
   , model
   , [ UndockSidebar
-    , Expand
+    , ExpandNavigators
     ]
   );
 
@@ -607,213 +612,90 @@ const reloadRuntime = model =>
   ];
 
 
-const updateQuery =
-  (model, action) =>
-  updateAssistant
-  ( model
-  , Assistant.Query(model.input.value)
-  );
-
-// Animations
-
-const expand = model =>
-  ( model.isExpanded
-  ? [ model, Effects.none ]
-  : startResizeAnimation(merge(model, {isExpanded: true}))
-  );
-
-const shrink = model =>
-  ( model.isExpanded
-  ? startResizeAnimation(merge(model, {isExpanded: false}))
-  : [ model, Effects.none ]
-  );
-
-
-const startResizeAnimation = model => {
-  const [resizeAnimation, fx] =
-    Stopwatch.update(model.resizeAnimation, Stopwatch.Start);
-  return [ merge(model, {resizeAnimation}), fx.map(ResizeAnimationAction) ];
-}
-
-const endResizeAnimation = model => {
-  const [resizeAnimation, fx] =
-    Stopwatch.update(model.resizeAnimation, Stopwatch.End);
-
-  return [ merge(model, {resizeAnimation}), Effects.none ];
-}
-
-const shrinked = endResizeAnimation;
-const expanded = endResizeAnimation;
-
-const updateResizeAnimation = (model, action) => {
-  const [resizeAnimation, fx] =
-    Stopwatch.update(model.resizeAnimation, action);
-  const duration = 200;
-
-  const [begin, end] =
-    ( model.isExpanded
-    ? [50, 0]
-    : [0, 50]
-    );
-
-  const result =
-    ( (resizeAnimation && duration > resizeAnimation.elapsed)
-    ? [ merge
-        ( model
-        , { resizeAnimation
-          , display:
-              merge
-              ( model.display
-              , { rightOffset
-                  : Easing.ease
-                    ( Easing.easeOutCubic
-                    , Easing.float
-                    , begin
-                    , end
-                    , duration
-                    , resizeAnimation.elapsed
-                    )
-                }
-              )
-          }
-        )
-      , fx.map(ResizeAnimationAction)
-      ]
-    : [ merge
-        ( model
-        , { resizeAnimation
-          , display: merge(model.display, { rightOffset: end })
-          }
-        )
-      , Effects.receive
-        ( model.isExpanded
-        ? Expanded
-        : Shrinked
-        )
-      ]
-    );
-
-  return result;
-}
-
 
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
-  ( action.type === 'SubmitInput'
-  ? submitInput(model)
-  : action.type === 'OpenWebView'
-  ? openWebView(model)
-  : action.type === 'OpenURL'
-  ? openURL(model, action.uri)
-  : action.type === 'ReceiveOpenURLNotification'
-  ? reciveOpenURLNotification(model)
-  : action.type === 'ExitInput'
-  ? exitInput(model)
-  : action.type === 'CreateWebView'
-  ? createWebView(model)
-  : action.type === 'EditWebView'
-  ? editWebView(model)
-  : action.type === 'ShowWebView'
-  ? showWebView(model)
-  : action.type === 'ShowTabs'
-  ? showTabs(model)
-  : action.type === 'SelectWebView'
-  ? selectWebView(model)
-  // @TODO Change this to toggle tabs instead.
-  : action.type === 'Escape'
-  ? showTabs(model)
-  : action.type === 'AttachSidebar'
-  ? attachSidebar(model)
-  : action.type === 'DetachSidebar'
-  ? detachSidebar(model)
-  : action.type === 'ReloadRuntime'
-  ? reloadRuntime(model)
+  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+    switch (action.type) {
+      case 'GoBack':
+        return goBack(model);
+      case 'GoForward':
+        return goForward(model);
+      case 'Reload':
+        return reload(model);
+      case 'ZoomIn':
+        return zoomIn(model);
+      case 'ZoomOut':
+        return zoomOut(model);
+      case 'ResetZoom':
+        return resetZoom(model);
+      case 'Close':
+        return close(model);
+      case 'OpenNewTab':
+        return openNewTab(model);
+      case 'EditWebView':
+        return editWebView(model);
+      case 'ShowWebView':
+        return showWebView(model);
+      case 'ShowTabs':
+        return showTabs(model);
+      case 'Escape':
+        return toggleTabs(model);
+      case 'AttachSidebar':
+        return attachSidebar(model);
+      case 'DetachSidebar':
+        return detachSidebar(model);
+      case 'ReloadRuntime':
+        return reloadRuntime(model);
+      case 'SelectNext':
+        return selectNext(model);
+      case 'SelectPrevious':
+        return selectPrevious(model);
+      case 'EndSelection':
+        return endSelection(model);
+      case 'Shell':
+        return updateShell(model, action.source);
+      case 'Focus':
+        return updateShell(model, Shell.Focus);
+      case 'Devtools':
+        return updateDevtools(model, action.action);
+      case 'Sidebar':
+        return updateSidebar(model, action.action);
+      case 'Tabs':
+        return updateNavigators(model, action);
+      case 'Navigators':
+        return updateNavigators(model, action.navigators);
+      case 'Failure':
+        return [
+           model
+        , Effects
+          .perform(Unknown.error(action.error))
+          .map(NoOp)
+        ];
 
-  // Expand / Shrink animations
-  : action.type === "Expand"
-  ? expand(model)
-  : action.type === "Shrink"
-  ? shrink(model)
-  : action.type === "ResizeAnimation"
-  ? updateResizeAnimation(model, action.action)
-  : action.type === "Expanded"
-  ? expanded(model)
-  : action.type === "Shrinked"
-  ? shrinked(model)
+      // Ignore some actions.
+      case 'Reloaded':
+        return [ model, Effects.none ]
+      case 'PrintSnapshot':
+        return [model, Effects.none];
+      case 'UploadSnapshot':
+        return [model, Effects.none];
+      // TODO: Delegate to modules that need to do cleanup.
+      case 'LiveReload':
+        return [model, Effects.none];
+      case 'PrintSnapshot':
+        return [model, Effects.none];
+      case 'UploadSnapshot':
+        return [model, Effects.none];
+      case 'StopRecording':
+        return [model, Effects.none];
+      case 'StartRecording':
+        return [model, Effects.none];
 
-  // Delegate to the appropriate module
-  : action.type === 'Input'
-  ? updateInput(model, action.source)
-  : action.type === 'Suggest'
-  ? updateInput
-    ( model
-    , Input.Suggest
-      ( { query: model.assistant.query
-        , match: action.source.match
-        , hint: action.source.hint
-        }
-      )
-    )
-
-  : action.type === 'BlurInput'
-  ? updateInput(model, Input.Blur)
-
-  : action.type === 'WebViews'
-  ? updateWebViews(model, action.source)
-  : action.type === 'SelectTab'
-  ? updateWebViews(model, action.source)
-  : action.type === 'ActivateTabByID'
-  ? updateWebViews(model, action.activateTabByID)
-  : action.type === 'ActivateTab'
-  ? updateWebViews(model, action.activateTab)
-
-  : action.type === 'Shell'
-  ? updateShell(model, action.source)
-  : action.type === 'Focus'
-  ? updateShell(model, Shell.Focus)
-
-  // Assistant
-  : action.type === 'Assistant'
-  ? updateAssistant(model, action.source)
-  : action.type === 'Query'
-  ? updateQuery(model)
-  : action.type === 'SuggestNext'
-  ? updateAssistant(model, Assistant.SuggestNext)
-  : action.type === 'SuggestPrevious'
-  ? updateAssistant(model, Assistant.SuggestPrevious)
-
-  : action.type === 'Devtools'
-  ? updateDevtools(model, action.action)
-  : action.type === 'Sidebar'
-  ? updateSidebar(model, action.action)
-  : action.type === 'Overlay'
-  ? updateOverlay(model, action.action)
-
-  : action.type === 'Failure'
-  ? [ model
-    , Effects
-      .perform(Unknown.error(action.error))
-      .map(NoOp)
-    ]
-
-  // Ignore some actions.
-  : action.type === 'Reloaded'
-  ? [model, Effects.none]
-  : action.type === 'PrintSnapshot'
-  ? [model, Effects.none]
-  : action.type === 'UploadSnapshot'
-  ? [model, Effects.none]
-  : action.type === 'StopRecording'
-  ? [model, Effects.none]
-  : action.type === 'StartRecording'
-  ? [model, Effects.none]
-  // TODO: Delegate to modules that need to do cleanup.
-  : action.type === 'LiveReload'
-  ? [model, Effects.none]
-
-  : Unknown.update(model, action)
-  );
+      default:
+        return Unknown.update(model, action);
+    }
+  };
 
 const styleSheet = StyleSheet.create({
   root: {
@@ -847,60 +729,28 @@ export const view =
     , onBlur: onWindow(address, always(Blur))
     , onFocus: onWindow(address, always(Focus))
     , onUnload: onWindow(address, always(Unload))
+    , onServoMouseForceDown: on(address, always(ShowTabs))
+    , onWebkitMouseForceDown: on(address, always(ShowTabs))
     }
-  , [ html.div
-      ( { className: 'browser-content'
-        , style:
-          Style
-          ( styleSheet.content
-          , { width: `calc(100vw - ${model.display.rightOffset}px)`
-            }
-          )
-        }
-      , [ thunk
-          ( 'web-views'
-          , WebViews.view
-          , model.webViews
-          , forward(address, WebViewsAction)
-          )
-        , thunk
-          ( 'overlay'
-          , Overlay.view
-          , model.overlay
-          , forward(address, OverlayAction))
-        , thunk
-          ( 'assistant'
-          , Assistant.view
-          , model.assistant
-          , forward(address, AssistantAction)
-          )
-        , thunk
-          ( 'input'
-          , Input.view
-          , model.input
-          , forward(address, InputAction)
-          )
-        , thunk
-          ( 'devtools'
-          , Devtools.view
-          , model.devtools
-          , forward(address, DevtoolsAction)
-          )
-        ]
+  , [ Navigators.view
+      ( model.navigators
+      , forward(address, NavigatorsAction)
       )
-      , thunk
-      ( 'sidebar'
-      , Sidebar.view
-      , model.sidebar
-      , model.webViews
+
+    , Sidebar.view
+      ( model.sidebar
+      , model.navigators.deck
       , forward(address, SidebarAction)
       )
 
-    , thunk
-      ( 'shell'
-      , Shell.view
-      , model.shell
+    , Shell.view
+      ( model.shell
       , forward(address, ShellAction)
+      )
+
+    , Devtools.view
+      ( model.devtools
+      , forward(address, DevtoolsAction)
       )
     ]
   );

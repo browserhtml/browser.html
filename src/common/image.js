@@ -28,7 +28,7 @@ export const view =
   , address/*:Address<Action>*/
   , contextStyle/*?:ContextStyle*/
   )/*:DOM*/ =>
-  html.img
+  html.figure
   ( { style: Style.mix
         ( baseStyleSheet.base
         , styleSheet.base
