@@ -23,7 +23,6 @@ import * as Focusable from '../../../common/focusable';
 import * as Easing from 'eased';
 import * as MozBrowserFrame from './WebView/MozBrowserFrame';
 import * as ElectronFrame from './WebView/ElectronFrame';
-import * as Layer from './Layer';
 import * as Ref from '../../../common/ref';
 import * as Tab from '../../Sidebar/Tab';
 
@@ -473,7 +472,6 @@ const styleSheet = StyleSheet.create({
   base: {
     position: 'absolute',
     top: topBarHeight,
-    zIndex: Layer.output,
     left: 0,
     width: '100%',
     height: `calc(100% - ${topBarHeight})`,

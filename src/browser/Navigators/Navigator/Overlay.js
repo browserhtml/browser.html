@@ -11,7 +11,6 @@ import * as Style from "../../../common/style";
 import * as Easing from "eased";
 import * as Animation from "../../../common/Animation"
 import * as Unknown from "../../../common/unknown";
-import * as Layer from "./Layer";
 import * as Display from "./Overlay/Display"
 
 /*::
@@ -195,7 +194,6 @@ const styleSheet = Style.createSheet
       , position: 'absolute'
       , width: '100vw'
       , height: '100vh'
-      , zIndex: Layer.overlay
       }
     , visible: null
     , invisible:

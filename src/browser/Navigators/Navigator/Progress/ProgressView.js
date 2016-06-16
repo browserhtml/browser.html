@@ -2,7 +2,6 @@
 
 import {thunk, html} from 'reflex';
 import * as Style from '../../../../common/style';
-import * as Layer from '../Layer'
 
 /*::
 import * as Ref from '../../../../common/ref';
@@ -45,13 +44,12 @@ const styleSheet = Style.createSheet
       , boxShadow: "none"
       , color: "#4A90E2"
       , overflow: "hidden"
-      , backgroundColor: "inherit"
+      , backgroundColor: "transparent"
       , backgroundImage: "linear-gradient(135deg, #4A90E2 calc(100% - 4px), transparent calc(100% - 4px))"
       , backgroundSize: 0
 
       , position: 'absolute'
-      , zIndex: Layer.progress
-      , top: '27px'
+      , top: '24px'
       , width: "100%"
       }
     , idle:

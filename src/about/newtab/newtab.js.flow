@@ -7,23 +7,20 @@
 
 import {Effects} from "reflex"
 import type {Address, DOM} from "reflex"
-import type {Tagged} from "../../common/prelude"
 import * as Wallpapers from "./newtab/wallpapers"
 import * as Tiles from "./newtab/tiles"
-import * as Help from "./newtab/help"
 
 
 export type Model =
   { wallpapers: Wallpapers.Model
   , tiles: Tiles.Model
-  , help: Help.Model
   }
 
 
 export type Action =
-  | Tagged<"Tiles", Tiles.Action>
-  | Tagged<"Wallpapers", Wallpapers.Action>
-  | Tagged<"Help", Help.Action>
+  | { type: "Wallpapers", wallpapers: Wallpapers.Action }
+  | { type: "Tiles", tiles: Tiles.Action }
+
 
 
 declare export function init

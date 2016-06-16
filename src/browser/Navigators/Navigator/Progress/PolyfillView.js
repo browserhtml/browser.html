@@ -2,7 +2,6 @@
 
 import {thunk, html} from 'reflex';
 import * as Style from '../../../../common/style';
-import * as Layer from '../Layer'
 
 /*::
 import * as Ref from '../../../../common/ref';
@@ -43,8 +42,7 @@ const styleSheet = Style.createSheet
       , overflow: "hidden"
 
       , position: 'absolute'
-      , zIndex: Layer.progress
-      , top: '27px'
+      , top: '24px'
       , width: "100%"
       }
     , idle:

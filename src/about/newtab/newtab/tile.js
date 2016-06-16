@@ -71,6 +71,7 @@ export const view =
   ( { className: 'tile'
     , style: styleSheet.tile
     , target: '_blank'
+    , rel: 'noopener noreferrer'
     , href: model.uri
     }
   , [ html.div

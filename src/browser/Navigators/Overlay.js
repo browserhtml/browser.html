@@ -26,7 +26,7 @@ export const render =
         : styleSheet.closed
         )
       )
-    , onClick: forward(address, Click)
+    , onMouseDown: forward(address, Click)
     }
   )
 

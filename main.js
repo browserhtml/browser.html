@@ -49,8 +49,8 @@ const encodeArgsAsQueryString =
 var onReady = function() {
   // Create the browser window.
   mainWindow = new BrowserWindow
-  ( { width: 800
-    , height: 600
+  ( { width: 1024
+    , height: 720
     , frame: false
     , webPreferences:
       { nodeIntegration: false

@@ -15,7 +15,6 @@ import * as Editable from '../../../common/editable';
 import * as Keyboard from '../../../common/keyboard';
 import * as Unknown from '../../../common/unknown';
 import * as Style from '../../../common/style';
-import * as Layer from './Layer';
 
 /*::
 import type {Address, DOM} from "reflex"
@@ -248,7 +247,6 @@ const style = Style.createSheet({
     position: 'absolute',
     top: '40px',
     width: `${inputWidth}px`,
-    zIndex: Layer.input
   },
   field: {
     backgroundColor: '#EBEEF2',

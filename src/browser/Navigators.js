@@ -108,6 +108,14 @@ const tagDeck =
               type: "Deck"
             , deck: action.modify
             }
+          case "Select":
+            return {
+              type: "Deck"
+            , deck:
+              { type: "Select"
+              , id: action.id
+              }
+            }
           case "Closed":
             return {
               type: "Deck"
@@ -156,6 +164,8 @@ export const init =
         }
       , assistant: true
       , overlay: true
+      , isPinned: true
+      , isInputEmbedded: true
       }
 
     const [deck, $deck] = Deck.init();

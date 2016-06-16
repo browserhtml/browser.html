@@ -66,7 +66,7 @@
     }
   , "10":
     { "title": "Stack Overflow"
-    , "uri": "https://github.com/browserhtml/browserhtml/issues"
+    , "uri": "https://stackoverflow.com"
     , "src": "./tiles/stackoverflow.com.png"
     }
   , "11":
