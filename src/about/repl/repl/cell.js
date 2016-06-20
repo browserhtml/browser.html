@@ -4,168 +4,125 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {html, thunk, forward, Effects} from 'reflex';
-import {merge, batch, tag, tagged} from "../../../common/prelude";
-import {Style, StyleSheet} from '../../../common/style';
-import * as Unknown from '../../../common/unknown';
-import {cursor} from '../../../common/cursor';
-import * as Input from './input';
-import * as Output from './output';
+import { html, thunk, forward, Effects } from 'reflex'
+import { merge } from '../../../common/prelude'
+import { Style, StyleSheet } from '../../../common/style'
+import * as Unknown from '../../../common/unknown'
+import { cursor } from '../../../common/cursor'
+import * as Input from './input'
+import * as Output from './output'
 
 /*::
-import type {Address, DOM} from "reflex"
-import type {ID, Model, Action} from "./cell"
-*/
+ import type {Address, DOM} from "reflex"
+ import type {ID, Model, Action} from "./cell"
+ */
 
-export const Print =
-  (output/*:Output.Model*/)/*:Action*/ =>
-  ( { type: "Print"
-    , print: output
+export const Print = (output:Output.Model):Action =>( {
+  type: "Print", print: output
+}
+)
+
+export const Remove:Action = {
+  type: "Remove"
+}
+
+const InputAction = (action:Input.Action):Action =>( action.type === "Submit" ? {
+      type: "Submit", source: action.source
+    } : {
+      type: "Input", input: action
     }
-  )
+);
 
-export const Remove/*:Action*/ =
-  { type: "Remove"
-  }
+const OutputAction = (action:Output.Action):Action =>( {
+  type: "Output", output: action
+}
+);
 
-const InputAction =
-  (action/*:Input.Action*/)/*:Action*/ =>
-  ( action.type === "Submit"
-  ? { type: "Submit"
-    , source: action.source
-    }
-  : { type: "Input"
-    , input: action
-    }
-  );
-
-const OutputAction =
-  (action/*:Output.Action*/)/*:Action*/ =>
-  ( { type: "Output"
-    , output: action
-    }
-  );
-
-export const Edit/*:Action*/ =
-  InputAction(Input.Edit);
+export const Edit:Action = InputAction(Input.Edit);
 
 
-export const init =
-  (id/*:ID*/)/*:[Model, Effects<Action>]*/ => {
-    const [input, inputFX] = Input.init(0, '', true);
-    const [output, outputFX] = Output.init(0);
-    const model =
-      { id
-      , input
-      , output
-      };
-
-    const fx = Effects.batch
-      ( [ inputFX.map(InputAction)
-        , outputFX.map(OutputAction)
-        ]
-      );
-
-    return [model, fx];
+export const init = (id:ID):[Model, Effects<Action>] => {
+  const [input, inputFX] = Input.init(0, '', true);
+  const [output, outputFX] = Output.init(0);
+  const model = {
+    id, input, output
   };
 
-const updateInput = cursor
-  ( { get: model => model.input
-    , set: (model, input) => merge(model, {input})
-    , tag: InputAction
-    , update: Input.update
-    }
-  );
+  const fx = Effects.batch([
+                             inputFX.map(InputAction), outputFX.map(OutputAction)
+                           ]);
 
-const updateOutput = cursor
-  ( { get: model => model.output
-    , set: (model, output) => merge(model, {output})
-    , tag: OutputAction
-    , update: Output.update
-    }
-  );
+  return [model, fx];
+};
 
-const print =
-  (model, output) =>
-  updateOutput
-  ( model
-  , { type: "Print"
-    , source: output
-    }
-  );
+const updateInput = cursor({
+                             get: model => model.input,
+                             set: (model, input) => merge(model, { input }),
+                             tag: InputAction,
+                             update: Input.update
+                           });
 
-const submit =
-  (model, input) =>
-  updateInput
-  ( model
-  , { type: "Submit"
-    , source: input
-    }
-  );
+const updateOutput = cursor({
+                              get: model => model.output,
+                              set: (model, output) => merge(model, { output }),
+                              tag: OutputAction,
+                              update: Output.update
+                            });
 
-export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
-  ( action.type === 'Input'
-  ? updateInput(model, action.input)
-  : action.type === 'Submit'
-  ? submit(model, action.source)
-  : action.type === 'Output'
-  ? updateOutput(model, action.output)
-  : action.type === 'Print'
-  ? print(model, action.print)
-  : Unknown.update(model, action)
-  );
+const print = (model, output) =>updateOutput(model, {
+  type: "Print", source: output
+});
 
-const styleSheet = StyleSheet.create
-  ( { base:
-      { padding: '10px'
-      , whiteSpace: 'pre'
-      , borderLeft: '3px solid'
-      , borderColor: '#073642'
-      , borderLeftColor: '#073642'
-      , borderBottom: '1px dotted #073642'
-      , position: 'relative'
-      }
-    , editing:
-      { borderLeftColor: '#586e75'
-      }
-    , displaying:
-      {
-      }
-    , modified:
-      { borderLeftColor: '#b58900'
-      }
-    , saved:
-      {
-      }
-    }
-  );
+const submit = (model, input) =>updateInput(model, {
+  type: "Submit", source: input
+});
+
+export const update = (model:Model, action:Action):[Model, Effects<Action>] =>( action.type === 'Input'
+        ? updateInput(model, action.input)
+        : action.type === 'Submit'
+        ? submit(model, action.source)
+        : action.type === 'Output'
+        ? updateOutput(model, action.output)
+        : action.type === 'Print'
+        ? print(model, action.print)
+        : Unknown.update(model, action)
+);
+
+const styleSheet = StyleSheet.create({
+                                       base: {
+                                         padding: '10px',
+                                         whiteSpace: 'pre',
+                                         borderLeft: '3px solid',
+                                         borderColor: '#073642',
+                                         borderLeftColor: '#073642',
+                                         borderBottom: '1px dotted #073642',
+                                         position: 'relative'
+                                       }, editing: {
+    borderLeftColor: '#586e75'
+  }, displaying: {}, modified: {
+    borderLeftColor: '#b58900'
+  }, saved: {}
+                                     });
 
 
-export const render =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
-  html.form
-  ( { id: `cell-${model.id}`
-    , style: Style
-      ( styleSheet.base
-      , ( model.input.isEditing
-        ? styleSheet.editing
-        : styleSheet.displaying
-        )
-      , ( model.input.version !== model.output.version
-        ? styleSheet.modified
-        : styleSheet.saved
-        )
-      )
-    , onSubmit:
-        event =>
-        event.preventDefault()
-    }
-  , [ Input.view(model.input, forward(address, InputAction))
-    , Output.view(model.output, forward(address, OutputAction))
-    ]
-  );
+export const render = (model:Model, address:Address<Action>):DOM =>html.form({
+                                                                               id: `cell-${model.id}`,
+                                                                               style: Style(styleSheet.base,
+                                                                                            ( model.input.isEditing
+                                                                                                    ? styleSheet.editing
+                                                                                                    : styleSheet.displaying
+                                                                                            ),
+                                                                                            ( model.input.version !== model.output.version
+                                                                                                    ? styleSheet.modified
+                                                                                                    : styleSheet.saved
+                                                                                            )),
+                                                                               onSubmit: event =>event.preventDefault()
+                                                                             }, [
+                                                                               Input.view(model.input, forward(address,
+                                                                                                               InputAction)),
+                                                                               Output.view(model.output,
+                                                                                           forward(address,
+                                                                                                   OutputAction))
+                                                                             ]);
 
-export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
-  thunk(model.id, render, model, address);
+export const view = (model:Model, address:Address<Action>):DOM =>thunk(model.id, render, model, address);

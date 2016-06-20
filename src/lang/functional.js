@@ -8,21 +8,21 @@
 
 const compose = (...lambdas) => {
   /**
-  Returns the composition of a list of functions, where each function
-  consumes the return value of the function that follows. In math
-  terms, composing the functions `f()`, `g()`, and `h()` produces
-  `f(g(h()))`.
-  Usage:
+   Returns the composition of a list of functions, where each function
+   consumes the return value of the function that follows. In math
+   terms, composing the functions `f()`, `g()`, and `h()` produces
+   `f(g(h()))`.
+   Usage:
 
-  var square = function(x) { return x * x }
-  var increment = function(x) { return x + 1 }
+   var square = function(x) { return x * x }
+   var increment = function(x) { return x + 1 }
 
-  var f1 = compose(increment, square)
-  f1(5) // => 26
+   var f1 = compose(increment, square)
+   f1(5) // => 26
 
-  var f2 = compose(square, increment)
-  f2(5) // => 36
-  **/
+   var f2 = compose(square, increment)
+   f2(5) // => 36
+   **/
 
   const composed = (...args) => {
     var index = lambdas.length;
@@ -36,35 +36,34 @@ const compose = (...lambdas) => {
   composed.toString = compose$toString;
   return composed;
 };
-const compose$toString = function() {
+const compose$toString = function () {
   return `compose(${this.lambdas.join(', ')})`
 }
 
-const partial = (lambda, ...curried) =>
-  (...passed) => lambda(...curried, ...passed);
+const partial = (lambda, ...curried) =>(...passed) => lambda(...curried, ...passed);
 
-const curry = (lambda, arity=lambda.length, curried) => {
+const curry = (lambda, arity = lambda.length, curried) => {
   /**
-  Returns function with implicit currying, which will continue currying until
-  expected number of argument is collected. Expected number of arguments is
-  determined by `lambda.length` unless it's 0. In later case function will be
-  assumed to be variadic and will be curried until invoked with `0` arguments.
-  Optionally `arity` of curried arguments can be overridden via second `arity`
-  argument.
-  ## Examples
-     var sum = curry(function(a, b) {
+   Returns function with implicit currying, which will continue currying until
+   expected number of argument is collected. Expected number of arguments is
+   determined by `lambda.length` unless it's 0. In later case function will be
+   assumed to be variadic and will be curried until invoked with `0` arguments.
+   Optionally `arity` of curried arguments can be overridden via second `arity`
+   argument.
+   ## Examples
+   var sum = curry(function(a, b) {
        return a + b
      })
-     console.log(sum(2, 2)) // 4
-     console.log(sum(2)(4)) // 6
-     var sum = curry(function() {
+   console.log(sum(2, 2)) // 4
+   console.log(sum(2)(4)) // 6
+   var sum = curry(function() {
        return Array.prototype.reduce.call(arguments, function(sum, number) {
          return sum + number
        }, 0)
      })
-     console.log(sum(2, 2)()) // 4
-     console.log(sum(2, 4, 5)(-3)(1)()) // 9
-  **/
+   console.log(sum(2, 2)()) // 4
+   console.log(sum(2, 4, 5)(-3)(1)()) // 9
+   **/
   return (...passed) => {
     const args = curried ? [...curried, ...passed] : passed;
     return args.length >= arity ? lambda(...args) : curry(lambda, arity, args);
@@ -100,12 +99,12 @@ const scheduler = task => {
 }
 
 
-const throttle = (f, wait, options={}) => {
+const throttle = (f, wait, options = {}) => {
   var args = null;
   var result = null;
   var timeout = null;
   var previous = 0;
-  var {leading, trailing} = options;
+  var { leading, trailing } = options;
 
 
   const later = () => {
@@ -117,7 +116,9 @@ const throttle = (f, wait, options={}) => {
 
   return (...params) => {
     var now = Date.now();
-    if (!previous && leading === false) previous = now;
+    if (!previous && leading === false) {
+      previous = now;
+    }
     var remaining = wait - (now - previous);
     args = params;
     if (remaining <= 0) {
@@ -148,7 +149,9 @@ const debounce = (f, wait, immediate) => {
       timeout = null;
       if (!immediate) {
         result = f(...args);
-        if (!timeout) args = null;
+        if (!timeout) {
+          args = null;
+        }
       }
     }
   };
@@ -157,7 +160,9 @@ const debounce = (f, wait, immediate) => {
     args = params;
     timestamp = Date.now();
     var callNow = immediate && !timeout;
-    if (!timeout) timeout = setTimeout(later, wait);
+    if (!timeout) {
+      timeout = setTimeout(later, wait);
+    }
     if (callNow) {
       result = f(...args);
       args = null;

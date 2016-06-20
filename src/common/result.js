@@ -6,22 +6,18 @@
 
 
 /*::
-import type {Result, Ok, Error} from "./result"
-export type {Result, Ok, Error}
-*/
+ import type {Result, Ok, Error} from "./result"
+ export type {Result, Ok, Error}
+ */
 
 export const ok = /*::<value>*/
-  (value/*:value*/)/*:Ok<value>*/ =>
-  ( { isOk: true
-    , isError: false
-    , value
+    (value:value):Ok<value> =>( {
+      isOk: true, isError: false, value
     }
-  );
+    );
 
 export const error = /*::<error>*/
-  (error/*:error*/)/*:Error<error>*/ =>
-  ( { isOk: false
-    , isError: true
-    , error
+    (error:error):Error<error> =>( {
+      isOk: false, isError: true, error
     }
-  );
+    );

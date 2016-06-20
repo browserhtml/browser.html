@@ -5,107 +5,95 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import * as Package from "../package.json";
-import * as Config from "../browserhtml.json";
-import {Effects, html, forward, thunk} from "reflex";
-
-import * as Shell from "./browser/shell";
-import * as Sidebar from './browser/Sidebar';
-import * as Devtools from "./common/devtools";
-import * as Runtime from "./common/runtime";
-import * as URL from './common/url-helper';
-import * as Unknown from "./common/unknown";
-import * as Focusable from "./common/focusable";
-import * as OS from './common/os';
-import * as Keyboard from './common/keyboard';
-import * as Stopwatch from "./common/stopwatch";
-import * as Easing from "eased";
-import {always, batch, tag, tagged} from "./common/prelude";
-import {cursor} from "./common/cursor";
-import {Style, StyleSheet} from './common/style';
-
-import {identity, compose} from "./lang/functional";
-
-import {onWindow, on} from "@driver";
-import * as Navigators from "./browser/Navigators";
+import * as Package from '../package.json'
+import * as Config from '../browserhtml.json'
+import { Effects, html, forward } from 'reflex'
+import * as Shell from './browser/shell'
+import * as Sidebar from './browser/Sidebar'
+import * as Devtools from './common/devtools'
+import * as Runtime from './common/runtime'
+import * as Unknown from './common/unknown'
+import * as OS from './common/os'
+import * as Keyboard from './common/keyboard'
+import { always, batch } from './common/prelude'
+import { cursor } from './common/cursor'
+import { StyleSheet } from './common/style'
+import { onWindow, on } from '@driver'
+import * as Navigators from './browser/Navigators'
 
 
 /*::
 
-import type {ID} from "./common/prelude"
-import * as Tabs from "./browser/Sidebar/Tabs"
+ import type {ID} from "./common/prelude"
+ import * as Tabs from "./browser/Sidebar/Tabs"
 
-export type Version = string
+ export type Version = string
 
-export type Action =
-  | { type: "NoOp" }
-  | { type: "GoBack" }
-  | { type: "GoForward" }
-  | { type: "Reload" }
-  | { type: "ZoomIn" }
-  | { type: "ZoomOut" }
-  | { type: "ResetZoom" }
-  | { type: "CloseSelected" }
-  | { type: "SelectNext" }
-  | { type: "SelectPrevious" }
-  | { type: "EndSelection" }
-  | { type: "Focus" }
-  | { type: "Blur" }
-  | { type: "OpenNewTab" }
-  | { type: "EditWebView" }
-  | { type: "ShowWebView" }
-  | { type: "ShowTabs" }
-  | { type: "SelectWebView" }
-  | { type: "OpenWebView" }
-  | { type: "AttachSidebar" }
-  | { type: "DetachSidebar" }
-  | { type: "OverlayClicked" }
-  | { type: "SubmitInput" }
-  | { type: "BlurInput" }
-  | { type: "ExitInput" }
-  | { type: "Escape" }
-  | { type: "Unload" }
-  | { type: "ReloadRuntime" }
-  | { type: "PrintSnapshot" }
-  | { type: "PublishSnapshot" }
-  | { type: "Sidebar", action: Sidebar.Action }
-  | { type: "Navigators", navigators: Navigators.Action }
-  | { type: "Shell", source: Shell.Action }
-  | { type: "Devtools", action: Devtools.Action }
-  | { type: "Expand" }
-  | { type: "Expanded" }
-  | { type: "Shrink" }
-  | { type: "Shrinked" }
-  | { type: "ReceiveOpenURLNotification" }
-  | { type: "LiveReload" }
-  | { type: "Reloaded" }
-  | { type: "OpenURL", uri: URI }
-  | { type: "Close" }
-  // @TODO: Do not use any here.
-  | { type: "Modify", modify: ID, action: any }
-  | { type: "Open" }
-  | { type: "Tabs", tabs: Tabs.Action }
+ export type Action =
+ | { type: "NoOp" }
+ | { type: "GoBack" }
+ | { type: "GoForward" }
+ | { type: "Reload" }
+ | { type: "ZoomIn" }
+ | { type: "ZoomOut" }
+ | { type: "ResetZoom" }
+ | { type: "CloseSelected" }
+ | { type: "SelectNext" }
+ | { type: "SelectPrevious" }
+ | { type: "EndSelection" }
+ | { type: "Focus" }
+ | { type: "Blur" }
+ | { type: "OpenNewTab" }
+ | { type: "EditWebView" }
+ | { type: "ShowWebView" }
+ | { type: "ShowTabs" }
+ | { type: "SelectWebView" }
+ | { type: "OpenWebView" }
+ | { type: "AttachSidebar" }
+ | { type: "DetachSidebar" }
+ | { type: "OverlayClicked" }
+ | { type: "SubmitInput" }
+ | { type: "BlurInput" }
+ | { type: "ExitInput" }
+ | { type: "Escape" }
+ | { type: "Unload" }
+ | { type: "ReloadRuntime" }
+ | { type: "PrintSnapshot" }
+ | { type: "PublishSnapshot" }
+ | { type: "Sidebar", action: Sidebar.Action }
+ | { type: "Navigators", navigators: Navigators.Action }
+ | { type: "Shell", source: Shell.Action }
+ | { type: "Devtools", action: Devtools.Action }
+ | { type: "Expand" }
+ | { type: "Expanded" }
+ | { type: "Shrink" }
+ | { type: "Shrinked" }
+ | { type: "ReceiveOpenURLNotification" }
+ | { type: "LiveReload" }
+ | { type: "Reloaded" }
+ | { type: "OpenURL", uri: URI }
+ | { type: "Close" }
+ // @TODO: Do not use any here.
+ | { type: "Modify", modify: ID, action: any }
+ | { type: "Open" }
+ | { type: "Tabs", tabs: Tabs.Action }
 
 
-import type {Address, DOM} from "reflex"
-import type {URI} from "./common/prelude"
-*/
+ import type {Address, DOM} from "reflex"
+ import type {URI} from "./common/prelude"
+ */
 
 export class Model {
   /*::
-  version: Version;
-  shell: Shell.Model;
-  navigators: Navigators.Model;
-  sidebar: Sidebar.Model;
-  devtools: Devtools.Model;
-  */
-  constructor(
-    version/*:Version*/=Package.version
-  , shell/*:Shell.Model*/
-  , navigators/*:Navigators.Model*/
-  , sidebar/*:Sidebar.Model*/
-  , devtools/*:Devtools.Model*/
-  ) {
+   version: Version;
+   shell: Shell.Model;
+   navigators: Navigators.Model;
+   sidebar: Sidebar.Model;
+   devtools: Devtools.Model;
+   */
+  constructor(version:Version = Package.version, shell:Shell.Model, navigators:Navigators.Model, sidebar:Sidebar.Model,
+              devtools:Devtools.Model)
+  {
     this.version = version
     this.shell = shell
     this.navigators = navigators
@@ -115,218 +103,171 @@ export class Model {
 }
 
 
-const Modify =
-  (id, action) =>
-  ( { type: "Modify"
-    , modify: id
-    , action
-    }
-  )
+const Modify = (id, action) =>( {
+  type: "Modify", modify: id, action
+}
+)
 
-export const init = ()/*:[Model, Effects<Action>]*/ => {
-  const [devtools, devtoolsFx] = Devtools.init({isActive: Config.devtools});
+export const init = ():[Model, Effects<Action>] => {
+  const [devtools, devtoolsFx] = Devtools.init({ isActive: Config.devtools });
   const [shell, shellFx] = Shell.init();
   const [sidebar, sidebarFx] = Sidebar.init();
   const [navigators, navigatorsFx] = Navigators.init();
 
-  const model = new Model
-    ( Package.version
-    , shell
-    , navigators
-    , sidebar
-    , devtools
-    );
+  const model = new Model(Package.version, shell, navigators, sidebar, devtools);
 
-  const fx =
-    Effects.batch
-    ( [ devtoolsFx.map(DevtoolsAction)
-      , shellFx.map(ShellAction)
-      , sidebarFx.map(SidebarAction)
-      , navigatorsFx.map(NavigatorsAction)
-      , Effects
-        .perform(Runtime.receive('mozbrowseropenwindow'))
-        .map(OpenURL)
-      ]
-    );
+  const fx = Effects.batch([
+                             devtoolsFx.map(DevtoolsAction),
+                             shellFx.map(ShellAction),
+                             sidebarFx.map(SidebarAction),
+                             navigatorsFx.map(NavigatorsAction),
+                             Effects
+                                 .perform(Runtime.receive('mozbrowseropenwindow'))
+                                 .map(OpenURL)
+                           ]);
 
   return [model, fx];
 }
 
 const NoOp = always({ type: "NoOp" });
 
-const SidebarAction = action =>
-  ( action.type === "OpenNewTab"
-  ? OpenNewTab
-  : action.type === "Tabs"
-  ? action
-  : action.type === "Attach"
-  ? AttachSidebar
-  : action.type === "Detach"
-  ? DetachSidebar
-  : { type: "Sidebar"
-    , action
+const SidebarAction = action =>( action.type === "OpenNewTab"
+        ? OpenNewTab
+        : action.type === "Tabs"
+        ? action
+        : action.type === "Attach"
+        ? AttachSidebar
+        : action.type === "Detach"
+        ? DetachSidebar
+        : {
+      type: "Sidebar",
+      action
     }
-  );
+);
 
 
-const NavigatorsAction =
-  (action/*:Navigators.Action*/)/*:Action*/ => {
-    switch (action.type) {
-      case "ShowTabs":
-        return ShowTabs
-      case "ShowWebView":
-        return ShowWebView
-      case "OpenNewTab":
-        return OpenNewTab
-      default:
-        return { type: 'Navigators', navigators: action }
-    }
-  };
+const NavigatorsAction = (action:Navigators.Action):Action => {
+  switch (action.type) {
+    case "ShowTabs":
+      return ShowTabs
+    case "ShowWebView":
+      return ShowWebView
+    case "OpenNewTab":
+      return OpenNewTab
+    default:
+      return { type: 'Navigators', navigators: action }
+  }
+};
 
 
-const ShellAction = action =>
-  ( action.type === 'Focus'
-  ? { type: 'Focus'
-    , source: action
+const ShellAction = action =>( action.type === 'Focus' ? {
+      type: 'Focus', source: action
+    } : {
+      type: 'Shell', source: action
     }
-  : { type: 'Shell'
-    , source: action
-    }
-  );
+);
 
-const DevtoolsAction = action =>
-  ( { type: 'Devtools'
-    , action
-    }
-  );
+const DevtoolsAction = action =>( {
+  type: 'Devtools', action
+}
+);
 
 
 const updateNavigators = cursor({
-  get: model => model.navigators,
-  set:
-    (model, navigators) =>
-    new Model
-    ( model.version
-    , model.shell
-    , navigators
-    , model.sidebar
-    , model.devtools
-    ),
-  update: Navigators.update,
-  tag: NavigatorsAction
-});
+                                  get: model => model.navigators,
+                                  set: (model,
+                                        navigators) =>new Model(model.version, model.shell, navigators, model.sidebar, model.devtools),
+                                  update: Navigators.update,
+                                  tag: NavigatorsAction
+                                });
 
 const updateShell = cursor({
-  get: model => model.shell,
-  set:
-    (model, shell) =>
-    new Model
-    ( model.version
-    , shell
-    , model.navigators
-    , model.sidebar
-    , model.devtools
-    ),
-  update: Shell.update,
-  tag: ShellAction
-});
+                             get: model => model.shell,
+                             set: (model,
+                                   shell) =>new Model(model.version, shell, model.navigators, model.sidebar, model.devtools),
+                             update: Shell.update,
+                             tag: ShellAction
+                           });
 
 const updateDevtools = cursor({
-  get: model => model.devtools,
-  set:
-    (model, devtools) =>
-    new Model
-    ( model.version
-    , model.shell
-    , model.navigators
-    , model.sidebar
-    , devtools
-    ),
-  update: Devtools.update,
-  tag: DevtoolsAction
-});
+                                get: model => model.devtools,
+                                set: (model,
+                                      devtools) =>new Model(model.version, model.shell, model.navigators, model.sidebar, devtools),
+                                update: Devtools.update,
+                                tag: DevtoolsAction
+                              });
 
 const updateSidebar = cursor({
-  get: model => model.sidebar,
-  set:
-    (model, sidebar) =>
-    new Model
-    ( model.version
-    , model.shell
-    , model.navigators
-    , sidebar
-    , model.devtools
-    ),
-  tag: SidebarAction,
-  update: Sidebar.update
-});
+                               get: model => model.sidebar,
+                               set: (model,
+                                     sidebar) =>new Model(model.version, model.shell, model.navigators, sidebar, model.devtools),
+                               tag: SidebarAction,
+                               update: Sidebar.update
+                             });
 
-const Reloaded/*:Action*/ =
-  { type: "Reloaded"
-  };
+const Reloaded:Action = {
+  type: "Reloaded"
+};
 
-const Failure = error =>
-  ( { type: "Failure"
-    , error: error
-    }
-  );
+const Failure = error =>( {
+  type: "Failure", error: error
+}
+);
 
 
 // ### Mode changes
 
 
-export const OpenNewTab/*:Action*/ =
-  { type: 'OpenNewTab'
-  };
+export const OpenNewTab:Action = {
+  type: 'OpenNewTab'
+};
 
-export const EditWebView/*:Action*/ =
-  { type: 'EditWebView'
-  };
+export const EditWebView:Action = {
+  type: 'EditWebView'
+};
 
-export const ShowWebView/*:Action*/ =
-  { type: 'ShowWebView'
-  };
+export const ShowWebView:Action = {
+  type: 'ShowWebView'
+};
 
-export const ShowTabs/*:Action*/ =
-  { type: 'ShowTabs'
-  };
+export const ShowTabs:Action = {
+  type: 'ShowTabs'
+};
 
-export const SelectWebView/*:Action*/ =
-  { type: 'SelectWebView'
-  };
+export const SelectWebView:Action = {
+  type: 'SelectWebView'
+};
 
 // ### Actions that affect multilpe sub-components
 
-export const OpenWebView/*:Action*/ =
-  { type: 'OpenWebView'
-  };
+export const OpenWebView:Action = {
+  type: 'OpenWebView'
+};
 
-export const AttachSidebar/*:Action*/ =
-  { type: "AttachSidebar"
-  , source: Sidebar.Attach
-  };
+export const AttachSidebar:Action = {
+  type: "AttachSidebar", source: Sidebar.Attach
+};
 
-export const DetachSidebar/*:Action*/ =
-  { type: "DetachSidebar"
-  , source: Sidebar.Detach
-  };
+export const DetachSidebar:Action = {
+  type: "DetachSidebar", source: Sidebar.Detach
+};
 
-export const Escape/*:Action*/ =
-  { type: 'Escape'
-  };
+export const Escape:Action = {
+  type: 'Escape'
+};
 
 
-export const Unload/*:Action*/ =
-  { type: 'Unload'
-  };
+export const Unload:Action = {
+  type: 'Unload'
+};
 
-export const ReloadRuntime/*:Action*/ =
-  { type: 'ReloadRuntime'
-  };
+export const ReloadRuntime:Action = {
+  type: 'ReloadRuntime'
+};
 
-export const BlurInput/*:Action*/ =
-  { type: 'BlurInput'
-  };
+export const BlurInput:Action = {
+  type: 'BlurInput'
+};
 
 
 // Following Browser actions directly delegate to a `WebViews` module, there for
@@ -343,15 +284,14 @@ export const SelectNext = { type: "SelectNext" };
 export const SelectPrevious = { type: "SelectPrevious" }
 export const EndSelection = { type: "EndSelection" }
 
-const ReceiveOpenURLNotification =
-  { type: "ReceiveOpenURLNotification"
-  };
+const ReceiveOpenURLNotification = {
+  type: "ReceiveOpenURLNotification"
+};
 
-const OpenURL = ({url}) =>
-  ( { type: "OpenURL"
-    , uri: url
-    }
-  );
+const OpenURL = ({ url }) =>( {
+  type: "OpenURL", uri: url
+}
+);
 // Following browser actions directly delegate to one of the existing modules
 // there for we define them by just wrapping actions from that module to avoid
 // additional wiring (which is implementation detail that may change).
@@ -370,372 +310,268 @@ const ShrinkNavigators = NavigatorsAction(Navigators.Shrink);
 const ExpandNavigators = NavigatorsAction(Navigators.Expand);
 const EditNivagatorInput = NavigatorsAction(Navigators.EditInput);
 
-const DockSidebar =
-  { type: "Sidebar"
-  , action: Sidebar.Attach
-  };
+const DockSidebar = {
+  type: "Sidebar", action: Sidebar.Attach
+};
 
-const UndockSidebar =
-  { type: "Sidebar"
-  , action: Sidebar.Detach
-  };
+const UndockSidebar = {
+  type: "Sidebar", action: Sidebar.Detach
+};
 
-export const LiveReload =
-  { type: 'LiveReload'
-  };
+export const LiveReload = {
+  type: 'LiveReload'
+};
 
 const modifier = OS.platform() == 'linux' ? 'alt' : 'accel';
 const decodeKeyDown = Keyboard.bindings({
-  'accel l': always(EditWebView),
-  'accel t': always(OpenNewTab),
-  'accel 0': always(ResetZoom),
-  'accel -': always(ZoomOut),
-  'accel =': always(ZoomIn),
-  'accel shift =': always(ZoomIn),
-  'accel w': always(Close),
-  'accel shift ]': always(SelectNext),
-  'accel shift [': always(SelectPrevious),
-  'control tab': always(SelectNext),
-  'control shift tab': always(SelectPrevious),
-  // 'accel shift backspace':  always(ResetBrowserSession),
-  // 'accel shift s': always(SaveBrowserSession),
-  'accel r': always(Reload),
-  'escape': always(Escape),
-  [`${modifier} left`]: always(GoBack),
-  [`${modifier} right`]: always(GoForward),
+                                          'accel l': always(EditWebView),
+                                          'accel t': always(OpenNewTab),
+                                          'accel 0': always(ResetZoom),
+                                          'accel -': always(ZoomOut),
+                                          'accel =': always(ZoomIn),
+                                          'accel shift =': always(ZoomIn),
+                                          'accel w': always(Close),
+                                          'accel shift ]': always(SelectNext),
+                                          'accel shift [': always(SelectPrevious),
+                                          'control tab': always(SelectNext),
+                                          'control shift tab': always(
+                                              SelectPrevious), // 'accel shift backspace':  always(ResetBrowserSession),
+                                          // 'accel shift s': always(SaveBrowserSession),
+                                          'accel r': always(Reload),
+                                          'escape': always(Escape),
+                                          [`${modifier} left`]: always(GoBack),
+                                          [`${modifier} right`]: always(GoForward),
 
-  // TODO: `meta alt i` generates `accel alt i` on OSX we need to look
-  // more closely into this but so declaring both shortcuts should do it.
-  'accel alt i': always(ToggleDevtools),
-  'accel alt ˆ': always(ToggleDevtools),
-  'F12': always(ToggleDevtools),
-  'F5': always(ReloadRuntime),
-  'meta control r': always(ReloadRuntime),
-  'meta alt 3': always(PrintSnapshot),
-  'meta alt 4': always(PublishSnapshot)
-});
+                                          // TODO: `meta alt i` generates `accel alt i` on OSX we need to look
+                                          // more closely into this but so declaring both shortcuts should do it.
+                                          'accel alt i': always(ToggleDevtools),
+                                          'accel alt ˆ': always(ToggleDevtools),
+                                          'F12': always(ToggleDevtools),
+                                          'F5': always(ReloadRuntime),
+                                          'meta control r': always(ReloadRuntime),
+                                          'meta alt 3': always(PrintSnapshot),
+                                          'meta alt 4': always(PublishSnapshot)
+                                        });
 
 const decodeKeyUp = Keyboard.bindings({
-  'control': always(EndSelection),
-  'accel': always(EndSelection)
-});
+                                        'control': always(EndSelection), 'accel': always(EndSelection)
+                                      });
 
-const showWebView = model =>
-  batch
-  ( update
-  , model
-  , [ CollapseSidebar
-    , FocusNavigators
-    ]
-  );
+const showWebView = model =>batch(update, model, [
+  CollapseSidebar, FocusNavigators
+]);
 
-const openNewTab =
-  model => {
-    const [sidebar, $sidebar] =
+const openNewTab = model => {
+  const [sidebar, $sidebar] =
       Sidebar.update(model.sidebar, Sidebar.Collapse);
 
-    const [navigators, $navigators] =
+  const [navigators, $navigators] =
       Navigators.update(model.navigators, Navigators.OpenNewTab);
 
-    const next = new Model
-      ( model.version
-      , model.shell
-      , navigators
-      , sidebar
-      , model.devtools
-      )
+  const next = new Model(model.version, model.shell, navigators, sidebar, model.devtools)
 
-    const fx = Effects.batch
-      ( [ $sidebar.map(SidebarAction)
-        , $navigators.map(NavigatorsAction)
-        ]
-      )
+  const fx = Effects.batch([
+                             $sidebar.map(SidebarAction), $navigators.map(NavigatorsAction)
+                           ])
 
-    return [next, fx]
-  }
+  return [next, fx]
+}
 
 
-const editWebView = model =>
-  batch
-  ( update
-  , model
-  , [ /*ShowInput
-    , OpenAssistant
-    , */CollapseSidebar
-    // , ShowOverlay
-    // , FoldWebViews
-    /*, EnterInputSelection(WebViews.getActiveURI(model.webViews, ''))*/
-    , FocusNavigators
-    , EditNivagatorInput
-    ]
-  );
+const editWebView = model =>batch(update, model, [
+  /*ShowInput
+   , OpenAssistant
+   , */CollapseSidebar
+  // , ShowOverlay
+  // , FoldWebViews
+  /*, EnterInputSelection(WebViews.getActiveURI(model.webViews, ''))*/, FocusNavigators, EditNivagatorInput
+]);
 
-const showTabs = model =>
-  batch
-  ( update
-  , model
-  , [ ExpandSidebar
-    , ExposeNavigators
-    ]
-  );
+const showTabs = model =>batch(update, model, [
+  ExpandSidebar, ExposeNavigators
+]);
 
-const toggleTabs =
-  model =>
-  ( model.sidebar.isExpanded
-  ? showWebView(model)
-  : showTabs(model)
-  );
+const toggleTabs = model =>( model.sidebar.isExpanded ? showWebView(model) : showTabs(model)
+);
 
 
-const goBack =
-  model =>
-  updateNavigators
-  ( model
-  , Navigators.GoBack
-  )
+const goBack = model =>updateNavigators(model, Navigators.GoBack)
 
-const goForward =
-  model =>
-  updateNavigators
-  ( model
-  , Navigators.GoForward
-  )
+const goForward = model =>updateNavigators(model, Navigators.GoForward)
 
 
-const reload =
-  model =>
-  updateNavigators
-  ( model
-  , Navigators.Reload
-  )
+const reload = model =>updateNavigators(model, Navigators.Reload)
 
-const zoomIn =
-  model =>
-  updateNavigators
-  ( model
-  , Navigators.ZoomIn
-  )
+const zoomIn = model =>updateNavigators(model, Navigators.ZoomIn)
 
-const zoomOut =
-  model =>
-  updateNavigators
-  ( model
-  , Navigators.ZoomOut
-  )
+const zoomOut = model =>updateNavigators(model, Navigators.ZoomOut)
 
 
-const resetZoom =
-  model =>
-  updateNavigators
-  ( model
-  , Navigators.ResetZoom
-  )
+const resetZoom = model =>updateNavigators(model, Navigators.ResetZoom)
 
-const close =
-  model =>
-  updateNavigators
-  ( model
-  , Navigators.Close
-  )
+const close = model =>updateNavigators(model, Navigators.Close)
 
-const SelectNextNavigator =
-  { type: "Navigators"
-  , navigators: Navigators.SelectNext
-  }
+const SelectNextNavigator = {
+  type: "Navigators", navigators: Navigators.SelectNext
+}
 
-const selectNext =
-  model =>
-  batch
-  ( update
-  , model
-  , [ ExpandSidebar
-    , ExposeNavigators
-    , SelectNextNavigator
-    ]
-  )
+const selectNext = model =>batch(update, model, [
+  ExpandSidebar, ExposeNavigators, SelectNextNavigator
+])
 
-const SelectPreviousNavigator =
-  { type: "Navigators"
-  , navigators: Navigators.SelectPrevious
-  }
+const SelectPreviousNavigator = {
+  type: "Navigators", navigators: Navigators.SelectPrevious
+}
 
-const selectPrevious =
-  model =>
-  batch
-  ( update
-  , model
-  , [ ExpandSidebar
-    , ExposeNavigators
-    , SelectPreviousNavigator
-    ]
-  )
+const selectPrevious = model =>batch(update, model, [
+  ExpandSidebar, ExposeNavigators, SelectPreviousNavigator
+])
 
 const endSelection = showWebView
 
-const reciveOpenURLNotification = model =>
-  [ model
-  , Effects
-    .perform(Runtime.receive('mozbrowseropenwindow'))
-    .map(OpenURL)
-  ];
+const reciveOpenURLNotification = model =>[
+  model, Effects
+      .perform(Runtime.receive('mozbrowseropenwindow'))
+      .map(OpenURL)
+];
 
-const attachSidebar = model =>
-  batch
-  ( update
-  , model
-  , [ DockSidebar
-    , ShrinkNavigators
-    ]
-  );
+const attachSidebar = model =>batch(update, model, [
+  DockSidebar, ShrinkNavigators
+]);
 
-const detachSidebar = model =>
-  batch
-  ( update
-  , model
-  , [ UndockSidebar
-    , ExpandNavigators
-    ]
-  );
+const detachSidebar = model =>batch(update, model, [
+  UndockSidebar, ExpandNavigators
+]);
 
-const reloadRuntime = model =>
-  [ model
-  , Effects
-    .perform(Runtime.reload)
-    .map(always(Reloaded))
-  ];
+const reloadRuntime = model =>[
+  model, Effects
+      .perform(Runtime.reload)
+      .map(always(Reloaded))
+];
 
 
-
-
-export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
-    switch (action.type) {
-      case 'GoBack':
-        return goBack(model);
-      case 'GoForward':
-        return goForward(model);
-      case 'Reload':
-        return reload(model);
-      case 'ZoomIn':
-        return zoomIn(model);
-      case 'ZoomOut':
-        return zoomOut(model);
-      case 'ResetZoom':
-        return resetZoom(model);
-      case 'Close':
-        return close(model);
-      case 'OpenNewTab':
-        return openNewTab(model);
-      case 'EditWebView':
-        return editWebView(model);
-      case 'ShowWebView':
-        return showWebView(model);
-      case 'ShowTabs':
-        return showTabs(model);
-      case 'Escape':
-        return toggleTabs(model);
-      case 'AttachSidebar':
-        return attachSidebar(model);
-      case 'DetachSidebar':
-        return detachSidebar(model);
-      case 'ReloadRuntime':
-        return reloadRuntime(model);
-      case 'SelectNext':
-        return selectNext(model);
-      case 'SelectPrevious':
-        return selectPrevious(model);
-      case 'EndSelection':
-        return endSelection(model);
-      case 'Shell':
-        return updateShell(model, action.source);
-      case 'Focus':
-        return updateShell(model, Shell.Focus);
-      case 'Devtools':
-        return updateDevtools(model, action.action);
-      case 'Sidebar':
-        return updateSidebar(model, action.action);
-      case 'Tabs':
-        return updateNavigators(model, action);
-      case 'Navigators':
-        return updateNavigators(model, action.navigators);
-      case 'Failure':
-        return [
-           model
-        , Effects
-          .perform(Unknown.error(action.error))
-          .map(NoOp)
-        ];
+export const update = (model:Model, action:Action):[Model, Effects<Action>] => {
+  switch (action.type) {
+    case 'GoBack':
+      return goBack(model);
+    case 'GoForward':
+      return goForward(model);
+    case 'Reload':
+      return reload(model);
+    case 'ZoomIn':
+      return zoomIn(model);
+    case 'ZoomOut':
+      return zoomOut(model);
+    case 'ResetZoom':
+      return resetZoom(model);
+    case 'Close':
+      return close(model);
+    case 'OpenNewTab':
+      return openNewTab(model);
+    case 'EditWebView':
+      return editWebView(model);
+    case 'ShowWebView':
+      return showWebView(model);
+    case 'ShowTabs':
+      return showTabs(model);
+    case 'Escape':
+      return toggleTabs(model);
+    case 'AttachSidebar':
+      return attachSidebar(model);
+    case 'DetachSidebar':
+      return detachSidebar(model);
+    case 'ReloadRuntime':
+      return reloadRuntime(model);
+    case 'SelectNext':
+      return selectNext(model);
+    case 'SelectPrevious':
+      return selectPrevious(model);
+    case 'EndSelection':
+      return endSelection(model);
+    case 'Shell':
+      return updateShell(model, action.source);
+    case 'Focus':
+      return updateShell(model, Shell.Focus);
+    case 'Devtools':
+      return updateDevtools(model, action.action);
+    case 'Sidebar':
+      return updateSidebar(model, action.action);
+    case 'Tabs':
+      return updateNavigators(model, action);
+    case 'Navigators':
+      return updateNavigators(model, action.navigators);
+    case 'Failure':
+      return [
+        model, Effects
+            .perform(Unknown.error(action.error))
+            .map(NoOp)
+      ];
 
       // Ignore some actions.
-      case 'Reloaded':
-        return [ model, Effects.none ]
-      case 'PrintSnapshot':
-        return [model, Effects.none];
-      case 'UploadSnapshot':
-        return [model, Effects.none];
+    case 'Reloaded':
+      return [model, Effects.none]
+    case 'PrintSnapshot':
+      return [model, Effects.none];
+    case 'UploadSnapshot':
+      return [model, Effects.none];
       // TODO: Delegate to modules that need to do cleanup.
-      case 'LiveReload':
-        return [model, Effects.none];
+    case 'LiveReload':
+      return [model, Effects.none];
 
-      default:
-        return Unknown.update(model, action);
-    }
-  };
+    default:
+      return Unknown.update(model, action);
+  }
+};
 
 const styleSheet = StyleSheet.create({
-  root: {
-    background: '#171814',
-    perspective: '1000px',
-    // These styles prevent scrolling with the arrow keys in the root window
-    // when elements move outside of viewport.
-    width: '100vw',
-    height: '100vh',
-    overflow: 'hidden',
-    position: 'absolute',
-    MozWindowDragging: 'drag',
-    WebkitAppRegion: 'drag'
-  },
-  content: {
-    position: 'absolute',
-    perspective: '1000px',
-    height: '100vh',
-    width: '100vw'
+                                       root: {
+                                         background: '#171814',
+                                         perspective: '1000px', // These styles prevent scrolling with the arrow keys
+                                                                // in the root window
+                                         // when elements move outside of viewport.
+                                         width: '100vw',
+                                         height: '100vh',
+                                         overflow: 'hidden',
+                                         position: 'absolute',
+                                         MozWindowDragging: 'drag',
+                                         WebkitAppRegion: 'drag'
+                                       }, content: {
+    position: 'absolute', perspective: '1000px', height: '100vh', width: '100vw'
   }
-});
+                                     });
 
-export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
-  html.main
-  ( { className: 'root'
-    , style: styleSheet.root
-    , tabIndex: 1
-    , onKeyDown: onWindow(address, decodeKeyDown)
-    , onKeyUp: onWindow(address, decodeKeyUp)
-    , onBlur: onWindow(address, always(Blur))
-    , onFocus: onWindow(address, always(Focus))
-    , onUnload: onWindow(address, always(Unload))
-    , onServoMouseForceDown: on(address, always(ShowTabs))
-    , onWebkitMouseForceDown: on(address, always(ShowTabs))
-    }
-  , [ Navigators.view
-      ( model.navigators
-      , forward(address, NavigatorsAction)
-      )
+export const view = (model:Model, address:Address<Action>):DOM =>html.main({
+                                                                             className: 'root',
+                                                                             style: styleSheet.root,
+                                                                             tabIndex: 1,
+                                                                             onKeyDown: onWindow(address,
+                                                                                                 decodeKeyDown),
+                                                                             onKeyUp: onWindow(address, decodeKeyUp),
+                                                                             onBlur: onWindow(address, always(Blur)),
+                                                                             onFocus: onWindow(address, always(Focus)),
+                                                                             onUnload: onWindow(address,
+                                                                                                always(Unload)),
+                                                                             onServoMouseForceDown: on(address, always(
+                                                                                 ShowTabs)),
+                                                                             onWebkitMouseForceDown: on(address, always(
+                                                                                 ShowTabs))
+                                                                           }, [
+                                                                             Navigators.view(model.navigators,
+                                                                                             forward(address,
+                                                                                                     NavigatorsAction))
 
-    , Sidebar.view
-      ( model.sidebar
-      , model.navigators.deck
-      , forward(address, SidebarAction)
-      )
+                                                                             ,
+                                                                             Sidebar.view(model.sidebar,
+                                                                                          model.navigators.deck,
+                                                                                          forward(address,
+                                                                                                  SidebarAction))
 
-    , Shell.view
-      ( model.shell
-      , forward(address, ShellAction)
-      )
+                                                                             ,
+                                                                             Shell.view(model.shell,
+                                                                                        forward(address, ShellAction))
 
-    , Devtools.view
-      ( model.devtools
-      , forward(address, DevtoolsAction)
-      )
-    ]
-  );
+                                                                             ,
+                                                                             Devtools.view(model.devtools,
+                                                                                           forward(address,
+                                                                                                   DevtoolsAction))
+                                                                           ]);

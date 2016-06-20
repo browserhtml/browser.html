@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /*::
-import type {Rules, Sheet} from "./style"
-*/
+ import type {Rules, Sheet} from "./style"
+ */
 
 const composedStyles = Object.create(null);
 
@@ -14,7 +14,7 @@ const ID = Symbol('style-sheet/id');
 var id = 0;
 
 export const StyleSheet = {
-  create: /*::<sheet:Sheet>*/(sheet/*:sheet*/)/*:sheet*/ => {
+  create: /*::<sheet:Sheet>*/(sheet:sheet):sheet => {
     const result = {}
     for (var name in sheet) {
       if (sheet.hasOwnProperty(name)) {
@@ -23,8 +23,7 @@ export const StyleSheet = {
           // @FlowIssue: Flow does not work with symbols
           style[ID] = ++id;
           result[name] = style;
-        }
-        else {
+        } else {
           result[name] = style;
         }
       }
@@ -38,7 +37,7 @@ export const StyleSheet = {
 // Mix multiple style objects together. Will memoize the combination of styles
 // to minimize object creation. Returns style object that is the result of
 // mixing styles together.
-export const mix = (...styles/*:Array<?Rules>*/)/*:Rules*/ => {
+export function mix(...styles:Array<?Rules>):Rules {
   var length = styles.length;
   var index = 0;
   var id = null;
@@ -60,21 +59,17 @@ export const mix = (...styles/*:Array<?Rules>*/)/*:Rules*/ => {
     }
   }
 
-  const composedStyle = id !== null ?
-    composedStyles[id/*::.toString()*/] :
-    null;
+  const composedStyle = id !== null ? composedStyles[id/*::.toString()*/] : null;
 
   if (composedStyle != null) {
     return composedStyle
-  }
-  else if (id != null) {
+  } else if (id != null) {
     const composedStyle = Object.assign({}, ...styles);
     // @FlowIssue: Flow does not get spread here.
     composedStyle[ID] = id;
     composedStyles[id/*::.toString()*/] = composedStyle;
     return composedStyle;
-  }
-  else {
+  } else {
     const composedStyle = Object.assign({}, ...styles);
     // @FlowIssue: Flow does not get spread here.
     composedStyle[ID] = null;

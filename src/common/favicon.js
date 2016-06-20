@@ -4,17 +4,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {getOrigin} from '../common/url-helper';
+import { getOrigin } from '../common/url-helper'
 
 /*::
-import type {Icon, URI} from "./favicon"
-*/
+ import type {Icon, URI} from "./favicon"
+ */
 
 const constructFaviconURI = (href, size) => `${href}#-moz-resolution=${size},${size}`;
 
-export const getFallback =
-  (pageURI/*:URI*/)/*:URI*/ =>
-  constructFaviconURI(getOrigin(pageURI) + '/favicon.ico', FAVICON_SIZE);
+export const getFallback = (pageURI:URI):URI =>constructFaviconURI(getOrigin(pageURI) + '/favicon.ico', FAVICON_SIZE);
 
 // Ideal size for a favicon.
 const FAVICON_SIZE = 16 * window.devicePixelRatio;
@@ -27,8 +25,7 @@ const FAVICON_SIZE = 16 * window.devicePixelRatio;
  *  rel: Maybe(String)   // "shortcut icon", "icon"
  * }
  */
-export const getBestIcon =
-  (icons/*:Array<Icon>*/)/*:{ bestIcon: ?Icon, faviconURI: ?URI}*/ => {
+export const getBestIcon = (icons:Array<Icon>)/*:{ bestIcon: ?Icon, faviconURI: ?URI}*/ => {
 
   const allSizes = new Map(); // store icons per size
   const others = new Set();   // store icons without sizes or non-shortcut icons
@@ -80,18 +77,16 @@ export const getBestIcon =
     const size = bestFit[0];
     const href = bestFit[1].href;
     return {
-      bestIcon: bestFit[1],
-      faviconURI: constructFaviconURI(href, size),
+      bestIcon: bestFit[1], faviconURI: constructFaviconURI(href, size),
     }
   }
 
   if (bestFitForOthers) {
     const href = bestFitForOthers.href;
     return {
-      bestIcon: bestFitForOthers,
-      faviconURI: constructFaviconURI(href, FAVICON_SIZE),
+      bestIcon: bestFitForOthers, faviconURI: constructFaviconURI(href, FAVICON_SIZE),
     }
   }
 
-  return {bestIcon: null, faviconURI: null};
+  return { bestIcon: null, faviconURI: null };
 }

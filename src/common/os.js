@@ -7,13 +7,15 @@
 
 // Subset of `os` module from node.js and io.js:
 // https://iojs.org/api/os.html
-const PLATFORM = navigator.platform.startsWith('Win') ? 'win32' :
-                 navigator.platform.startsWith('Mac') ? 'darwin' :
-                 navigator.platform.startsWith('Linux') ? 'linux' :
-                 navigator.platform.startsWith('FreeBSD') ? 'freebsd' :
-                 navigator.platform;
+const PLATFORM = navigator.platform.startsWith('Win')
+    ? 'win32'
+    : navigator.platform.startsWith('Mac')
+    ? 'darwin'
+    : navigator.platform.startsWith('Linux')
+    ? 'linux'
+    : navigator.platform.startsWith('FreeBSD')
+    ? 'freebsd'
+    : navigator.platform;
 
 // https://iojs.org/api/os.html#os_os_platform
-export const platform =
-  ()/*:string*/ =>
-  PLATFORM;
+export const platform = ():string =>PLATFORM;

@@ -11,7 +11,7 @@ exports.fromDOMRequest = request => new Promise((resolve, reject) => {
   request.onerror = event => reject(request.error.name);
 });
 
-exports.fromEvent = (target, type, capture=false) => new Promise((resolve, reject) => {
+exports.fromEvent = (target, type, capture = false) => new Promise((resolve, reject) => {
   target.addEventListener(type, {
     handleEvent(event) {
       target.removeEventListener(type, this, capture);

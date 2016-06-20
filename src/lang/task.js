@@ -10,11 +10,11 @@
 // in a given mode (`next` or `throw`). Result is a function
 // that takes a `value` and resumes `task` in a curried `mode`
 // with a given `value`.
-const resume = (task, mode="next") => value => {
+const resume = (task, mode = "next") => value => {
   try {
     return task[mode](value);
   } catch (error) {
-    return {error}
+    return { error }
   }
 }
 
@@ -29,7 +29,7 @@ const resume = (task, mode="next") => value => {
 // that will be rejection reason. If exception is thrown / not
 // handled in generator body then returned promise will be
 // rejected with a given exception.
-const spawn = function(task, ...params) {
+const spawn = function (task, ...params) {
   return new Promise((resolve, reject) => {
     // start a task by passing arguments to generator, note if generator
     // throws right away it will just reject outer promise.
@@ -46,7 +46,7 @@ const spawn = function(task, ...params) {
     // exception was captured or resolves with value if generator returned)
     // or suspends generator until yield value is resolved / rejected and
     // then resumes it with resolution value / rejecetion reason.
-    const step = ({done, error, value}) => {
+    const step = ({ done, error, value }) => {
       // If error was captured reject promise.
       if (error) {
         reject(error);
@@ -60,10 +60,7 @@ const spawn = function(task, ...params) {
       // reseming funciton and caputre results which then are cycled back
       // onto next step.
       else {
-        Promise.
-        resolve(value).
-        then(next, raise).
-        then(step);
+        Promise.resolve(value).then(next, raise).then(step);
       }
     };
 
@@ -83,7 +80,7 @@ exports.spawn = spawn;
 // promise or exception will be thrown into generator if promise is
 // rejected. If exception is throw / not caught in generator body
 // then returned promise will be rejected with that promise.
-const async = task => function(...params) {
+const async = task => function (...params) {
   return spawn.call(this, task, ...params);
 };
 exports.async = async;
@@ -98,9 +95,9 @@ const schedule = (id, task, ...params) => {
     try {
       yield pending;
     }
-    // spawn a task regardless if previous task completed with error
-    // or success. Note we do not catch error here to let it propagate
-    // and make devtools handle it more properly.
+        // spawn a task regardless if previous task completed with error
+        // or success. Note we do not catch error here to let it propagate
+        // and make devtools handle it more properly.
     finally {
       return spawn(task, ...params);
     }
