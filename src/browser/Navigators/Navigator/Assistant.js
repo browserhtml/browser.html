@@ -46,22 +46,22 @@ export type Action =
 
 
 
-export const Open/*:Action*/ = { type: "Open" };
-export const Close/*:Action*/ = { type: "Close" };
-export const Expand/*:Action*/ = { type: "Expand" };
-export const Unselect/*:Action*/ = { type: "Unselect" };
-export const Reset/*:Action*/ = { type: "Reset" };
-export const SuggestNext/*:Action*/ = { type: "SuggestNext" };
-export const SuggestPrevious/*:Action*/ = { type: "SuggestPrevious" };
+export const Open:Action = { type: "Open" };
+export const Close:Action = { type: "Close" };
+export const Expand:Action = { type: "Expand" };
+export const Unselect:Action = { type: "Unselect" };
+export const Reset:Action = { type: "Reset" };
+export const SuggestNext:Action = { type: "SuggestNext" };
+export const SuggestPrevious:Action = { type: "SuggestPrevious" };
 export const Suggest =
-  (suggestion/*:Suggestion*/)/*:Action*/ =>
+  (suggestion:Suggestion):Action =>
   ( { type: "Suggest"
     , suggest: suggestion
     }
   )
 
 export const Query =
-  (input/*:string*/)/*:Action*/ =>
+  (input:string):Action =>
   ( { type: "Query"
     , query: input
     }
@@ -85,9 +85,9 @@ const HistoryAction =
   );
 
 export const init =
-  ( isOpen/*:boolean*/=false
-  , isExpanded/*:boolean*/=false
-  )/*:[Model, Effects<Action>]*/ => {
+  ( isOpen:boolean=false
+  , isExpanded:boolean=false
+  ):[Model, Effects<Action>] => {
     const query = ''
     const [search, fx1] = Search.init(query, 5);
     const [history, fx2] = History.init(query, 5);
@@ -203,9 +203,9 @@ const suggestPrevious =
   updateSearch(model, Search.SelectPrevious);
 
 export const update =
-  ( model/*:Model*/
-  , action/*:Action*/
-  )/*:[Model, Effects<Action>]*/ => {
+  ( model:Model
+  , action:Action
+  ):[Model, Effects<Action>] => {
     switch (action.type) {
       case "Open":
         return open(model)
@@ -269,7 +269,7 @@ const styleSheet = StyleSheet.create
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.div
   ( { className: 'assistant'
     , style: Style

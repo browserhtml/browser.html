@@ -42,7 +42,7 @@ const styleSheet = StyleSheet.create
   );
 
 export const render =
-  (isSelected/*:boolean*/, content/*:Array<DOM>*/)/*:DOM*/ =>
+  (isSelected:boolean, content:Array<DOM>):DOM =>
   html.li
   ( { className: 'assistant suggestion'
     , style: Style

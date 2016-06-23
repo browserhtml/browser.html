@@ -13,17 +13,17 @@ import {Effects} from "reflex";
 import type {Model, Action} from "./focusable"
 
 
-export const Focus/*:Action*/ =
+export const Focus:Action =
   { type:"Focus"
   };
 
-export const Blur/*:Action*/ =
+export const Blur:Action =
   { type: "Blur"
   };
 
 
 export const update = /*::<model:Model>*/
-  ( model/*:model*/, action/*:Action*/)/*:[model, Effects<Action>]*/ =>
+  ( model:model, action:Action):[model, Effects<Action>] =>
   ( action.type === "Focus"
   ? [ merge
       ( model

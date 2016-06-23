@@ -22,7 +22,7 @@ import type {Action, Model} from "./tiles"
 
 
 export const init =
-  ()/*:[Model, Effects<Action>]*/ =>
+  ():[Model, Effects<Action>] =>
   [ hardcodedTiles
   , Effects.none
   ];
@@ -30,7 +30,7 @@ export const init =
 const TileAction = tag('Tile')
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   Unknown.update(model, action)
 
 const styleSheet = StyleSheet.create
@@ -49,7 +49,7 @@ const styleSheet = StyleSheet.create
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/, isDark/*:boolean*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>, isDark:boolean):DOM =>
   html.div
   ( { className: 'tiles'
     , style: styleSheet.tiles

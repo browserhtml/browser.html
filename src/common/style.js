@@ -14,7 +14,7 @@ const ID = Symbol('style-sheet/id');
 var id = 0;
 
 export const StyleSheet = {
-  create: /*::<sheet:Sheet>*/(sheet/*:sheet*/)/*:sheet*/ => {
+  create: /*::<sheet:Sheet>*/(sheet:sheet):sheet => {
     const result = {}
     for (var name in sheet) {
       if (sheet.hasOwnProperty(name)) {
@@ -38,7 +38,7 @@ export const StyleSheet = {
 // Mix multiple style objects together. Will memoize the combination of styles
 // to minimize object creation. Returns style object that is the result of
 // mixing styles together.
-export function mix(...styles/*:Array<?Rules>*/)/*:Rules*/ {
+export function mix(...styles:Array<?Rules>):Rules {
   var length = styles.length;
   var index = 0;
   var id = null;

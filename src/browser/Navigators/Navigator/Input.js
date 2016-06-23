@@ -59,23 +59,23 @@ export type Action =
 // Create a new input submit action.
 export const Query/*:()=>Action*/ = always({ type: 'Query' });
 export const Suggest =
-  (suggestion/*:Suggestion*/)/*:Action*/ =>
+  (suggestion:Suggestion):Action =>
   ( { type: "Suggest"
     , suggest: suggestion
     }
   );
 
-export const SuggestNext/*:Action*/ = { type: 'SuggestNext' };
-export const SuggestPrevious/*:Action*/ = { type: 'SuggestPrevious' };
-export const Submit/*:Action*/ = {type: 'Submit'};
-export const Abort/*:Action*/ = {type: 'Abort'};
-export const Enter/*:Action*/ = {type: 'Enter'};
-export const Focus/*:Action*/ = {type: 'Focus', source: Focusable.Focus };
-export const Blur/*:Action*/ = {type: 'Blur', source: Focusable.Blur };
-export const Show/*:Action*/ = {type: 'Show'};
-export const Hide/*:Action*/ = {type: 'Hide'};
+export const SuggestNext:Action = { type: 'SuggestNext' };
+export const SuggestPrevious:Action = { type: 'SuggestPrevious' };
+export const Submit:Action = {type: 'Submit'};
+export const Abort:Action = {type: 'Abort'};
+export const Enter:Action = {type: 'Enter'};
+export const Focus:Action = {type: 'Focus', source: Focusable.Focus };
+export const Blur:Action = {type: 'Blur', source: Focusable.Blur };
+export const Show:Action = {type: 'Show'};
+export const Hide:Action = {type: 'Hide'};
 export const EnterSelection =
-  (value/*:string*/)/*:Action*/ =>
+  (value:string):Action =>
   ( { type: 'EnterSelection'
     , value
     }
@@ -98,7 +98,7 @@ const EditableAction =
     }
   );
 
-const Clear/*:Action*/ = EditableAction(Editable.Clear);
+const Clear:Action = EditableAction(Editable.Clear);
 
 const updateFocusable = cursor({
   tag: FocusableAction,
@@ -136,7 +136,7 @@ const defaultFlags =
   }
 
 export const init =
-  (flags/*:Flags*/=defaultFlags)/*:[Model, Effects<Action>]*/ =>
+  (flags:Flags=defaultFlags):[Model, Effects<Action>] =>
   [ ( { value: flags.value
       , isFocused: !!flags.isFocused
       , isVisible: !!flags.isVisible
@@ -158,7 +158,7 @@ const suggest = (model, {query, match, hint}) =>
   )
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+  (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
       case 'Abort':
         return [merge(model, {isVisible: false}), Effects.none];
@@ -302,7 +302,7 @@ const style = Style.createSheet({
 
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.form({
     className: 'input-combobox',
     style: Style.mix

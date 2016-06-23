@@ -67,10 +67,10 @@ export class Model {
   animation: Animation.Model<Display.Model>;
   
   constructor(
-    zoom/*:boolean*/
-  , shrink/*:boolean*/
-  , deck/*:Deck.Model*/
-  , animation/*:Animation.Model<Display.Model>*/
+    zoom:boolean
+  , shrink:boolean
+  , deck:Deck.Model
+  , animation:Animation.Model<Display.Model>
   ) {
     this.zoom = zoom;
     this.shrink = shrink;
@@ -95,7 +95,7 @@ const Card =
 
 
 const tagDeck =
-  (action/*:Deck.Action<Navigator.Action, Navigator.Flags>*/)/*:Action*/ => {
+  (action:Deck.Action<Navigator.Action, Navigator.Flags>):Action => {
     switch (action.type) {
       case "Modify":
         switch (action.modify.type) {
@@ -144,9 +144,9 @@ const tagOverlay = always(ShowWebView);
 
 
 export const init =
-  ( zoom/*:boolean*/=true
-  , shrink/*:boolean*/=false
-  )/*:[Model, Effects<Action>]*/ => {
+  ( zoom:boolean=true
+  , shrink:boolean=false
+  ):[Model, Effects<Action>] => {
     const flags =
       { input:
         { value: ''
@@ -195,7 +195,7 @@ export const init =
   }
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+  (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
       case "Animation":
         return updateAnimation(model, action.animation);
@@ -432,9 +432,9 @@ const startAnimation =
 
 
 export const render =
-  ( model/*:Model*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( model:Model
+  , address:Address<Action>
+  ):DOM =>
   html.div
   ( { className: 'navigator-deck'
     , style:
@@ -459,9 +459,9 @@ export const render =
   )
 
 export const view =
-  ( model/*:Model*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( model:Model
+  , address:Address<Action>
+  ):DOM =>
   thunk
   ( 'Browser/NavigatorDeck'
   , render

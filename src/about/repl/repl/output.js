@@ -20,9 +20,9 @@ import type {Model, Action} from "./output"
 export const Print = tag("Print");
 
 export const init =
-  ( version/*:number*/
-  , result/*:?EvaluationResult*/=null
-  )/*:[Model, Effects<Action>]*/ =>
+  ( version:number
+  , result:?EvaluationResult=null
+  ):[Model, Effects<Action>] =>
   [ { version
     , result
     }
@@ -40,7 +40,7 @@ const print = (model, output) =>
   ];
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Print'
   ? print(model, action.source)
   : Unknown.update(model, action)
@@ -113,5 +113,5 @@ const render =
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   thunk('output', render, model, address);

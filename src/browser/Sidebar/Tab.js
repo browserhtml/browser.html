@@ -36,7 +36,7 @@ export class Model {
   
   isPointerOver: boolean;
   
-  constructor(isPointerOver/*:boolean*/) {
+  constructor(isPointerOver:boolean) {
     this.isPointerOver = isPointerOver
   }
 }
@@ -67,11 +67,11 @@ const Out = TargetAction(Target.Out);
 const Over = TargetAction(Target.Over);
 
 export const init =
-  ()/*:[Model, Effects<Action>]*/ =>
+  ():[Model, Effects<Action>] =>
   transactOut;
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === "Target"
   ? updateTarget(model, action.source)
   : Unknown.update(model, action)
@@ -213,10 +213,10 @@ const viewClose = (isSelected, tab, address) =>
   );
 
 export const render =
-  ( model/*:Navigator.Model*/
-  , address/*:Address<Action>*/
-  , {tabWidth, titleOpacity}/*:Context*/
-  )/*:DOM*/ =>
+  ( model:Navigator.Model
+  , address:Address<Action>
+  , {tabWidth, titleOpacity}:Context
+  ):DOM =>
   html.div
   ( { className: 'sidebar-tab'
     , style: Style.mix
@@ -262,10 +262,10 @@ export const render =
 
 
 export const view =
-  ( model/*:Navigator.Model*/
-  , address/*:Address<Action>*/
-  , context/*:Context*/
-  )/*:DOM*/ =>
+  ( model:Navigator.Model
+  , address:Address<Action>
+  , context:Context
+  ):DOM =>
   thunk
   ( `${model.output.ref.value}`
   , render

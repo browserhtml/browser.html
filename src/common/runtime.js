@@ -52,38 +52,38 @@ export const FullscreenToggled
 
 
 export const RemoteDebugResponse =
-  (value/*:boolean*/)/*:RemoteDebugResponseType*/ =>
+  (value:boolean):RemoteDebugResponseType =>
   ( { type: "RemoteDebugResponse"
     , value
     }
   );
 
 export const DownloadUpdate =
-  (result/*:string*/)/*:DownloadUpdateType*/ =>
+  (result:string):DownloadUpdateType =>
   ( { type: "DownloadUpdate"
     , result
     }
   );
 
-export const isServo/*:boolean*/ =
+export const isServo:boolean =
   window
   .navigator
   .userAgent
   .toLowerCase()
   .indexOf(' servo') != -1
 
-export const isElectron/*:boolean*/ =
+export const isElectron:boolean =
   window
   .navigator
   .userAgent
   .toLowerCase()
   .indexOf(' electron') != -1
 
-export const never/*:Task<Never, any>*/ =
+export const never:Task<Never, any> =
   new Task(succeed => void(0));
 
 export const respond = /*::<message>*/
-  (message/*:message*/)/*:Task<Never, message>*/ =>
+  (message:message):Task<Never, message> =>
   new Task
   ( (succeed, fail) =>
     void ( Promise
@@ -93,7 +93,7 @@ export const respond = /*::<message>*/
   );
 
 export const send = /*::<message>*/
-  (message/*:message*/)/*:Task<Never, void>*/ =>
+  (message:message):Task<Never, void> =>
   new Task(succeed => {
     window.dispatchEvent(new window.CustomEvent("mozContentEvent", {
       bubbles: true,
@@ -105,7 +105,7 @@ export const send = /*::<message>*/
   });
 
 export const receive = /*::<message>*/
-  (type/*:string*/)/*:Task<Never, message>*/ =>
+  (type:string):Task<Never, message> =>
   new Task(succeed => {
     const onMessage = ({detail: message}) => {
       if (message.type === type) {
@@ -118,12 +118,12 @@ export const receive = /*::<message>*/
 
 
 export const request = /*::<request, response>*/
-  (type/*:string*/, message/*:request*/)/*:Task<Never, response>*/ =>
+  (type:string, message:request):Task<Never, response> =>
   send(message)
   .chain(always(receive(type)));
 
 
-export const quit/*:Task<Never, Result<Error, void>>*/ =
+export const quit:Task<Never, Result<Error, void>> =
   ( isServo
   ? new Task((succeed, fail) => {
       try {
@@ -139,19 +139,19 @@ export const quit/*:Task<Never, Result<Error, void>>*/ =
     .chain(always(never))
   );
 
-export const minimize/*:Task<Never, Result<Error, void>>*/ =
+export const minimize:Task<Never, Result<Error, void>> =
   send({type: "minimize-native-window"})
   // We do not get event back when window is minimized so we just pretend
   // that we got it after a tick.
   .chain(always(respond(ok())))
 
-export const toggleFullscreen/*:Task<Never, Result<Error, void>>*/ =
+export const toggleFullscreen:Task<Never, Result<Error, void>> =
   send({type: "toggle-fullscreen-native-window"})
   // We do not get event back when window is maximized so we just pretend
   // that we got it after a tick.
   .chain(always(respond(ok())));
 
-export const reload/*:Task<Never, Result<Error, void>>*/ =
+export const reload:Task<Never, Result<Error, void>> =
   new Task(succeed => {
     try {
       window.location.reload();
@@ -162,15 +162,15 @@ export const reload/*:Task<Never, Result<Error, void>>*/ =
   });
 
 
-export const restart/*:Task<Never, Result<Error, void>>*/ =
+export const restart:Task<Never, Result<Error, void>> =
   send({type: "restart"})
   .chain(always(respond(error(Error(`Unsupported runtime task "restart" was triggered`)))));
 
-export const cleanRestart/*:Task<Never, Result<Error, void>>*/ =
+export const cleanRestart:Task<Never, Result<Error, void>> =
   send({type: "clear-cache-and-restart"})
   .chain(always(never));
 
-export const cleanReload/*:Task<Never, Result<Error, void>>*/ =
+export const cleanReload:Task<Never, Result<Error, void>> =
   ( isServo
   ? new Task(succeed => {
       try {
@@ -188,7 +188,7 @@ export const cleanReload/*:Task<Never, Result<Error, void>>*/ =
 // titlebar configuration.
 const platform = OS.platform()
 export const useNativeTitlebar =
-  ()/*:boolean*/ =>
+  ():boolean =>
   platform != "darwin";
 
 const Env =

@@ -25,7 +25,7 @@ import type {Action, Model, StyleSheet, ContextStyle} from './text-input'
 
 const EditableAction = tag("Editable");
 const FocusableAction =
-  (action/*:Focusable.Action*/)/*:Action*/ =>
+  (action:Focusable.Action):Action =>
   ( action.type === "Focus"
   ? Focus
   : action.type === "Blur"
@@ -35,18 +35,18 @@ const FocusableAction =
 const ControlAction = tag("Control");
 
 export const Change = Editable.Change;
-export const Focus/*:Action*/ = { type: "Focus" };
-export const Blur/*:Action*/ = { type: "Blur" };
-export const Enable/*:Action*/ = ControlAction(Control.Enable);
-export const Disable/*:Action*/ = ControlAction(Control.Disable);
+export const Focus:Action = { type: "Focus" };
+export const Blur:Action = { type: "Blur" };
+export const Enable:Action = ControlAction(Control.Enable);
+export const Disable:Action = ControlAction(Control.Disable);
 
 
 export const init =
-  ( value/*:string*/=''
-  , selection/*:?Editable.Selection*/=null
-  , placeholder/*:string*/=''
-  , isDisabled/*:boolean*/=false
-  )/*:[Model, Effects<Action>]*/ =>
+  ( value:string=''
+  , selection:?Editable.Selection=null
+  , placeholder:string=''
+  , isDisabled:boolean=false
+  ):[Model, Effects<Action>] =>
   [ { value
     , placeholder
     , selection
@@ -87,7 +87,7 @@ const updateControl = cursor
   );
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Change'
   ? updateEditable(model, action)
   : action.type === 'Editable'
@@ -122,11 +122,11 @@ const decodeChange = compose
 
 
 export const view =
-  (key/*:string*/, styleSheet/*:StyleSheet*/)/*:(model:Model, address:Address<Action>, contextStyle?:ContextStyle) => DOM*/ =>
-  ( model/*:Model*/
-  , address/*:Address<Action>*/
+  (key:string, styleSheet:StyleSheet)/*:(model:Model, address:Address<Action>, contextStyle?:ContextStyle) => DOM*/ =>
+  ( model:Model
+  , address:Address<Action>
   , contextStyle/*?:ContextStyle*/
-  )/*:DOM*/ =>
+  ):DOM =>
   html.input
   ( { key
     , type: 'input'

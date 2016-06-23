@@ -11,7 +11,7 @@ export type {Result, Ok, Error}
 
 
 export const ok = /*::<value>*/
-  (value/*:value*/)/*:Ok<value>*/ =>
+  (value:value):Ok<value> =>
   ( { isOk: true
     , isError: false
     , value
@@ -19,7 +19,7 @@ export const ok = /*::<value>*/
   );
 
 export const error = /*::<error>*/
-  (error/*:error*/)/*:Error<error>*/ =>
+  (error:error):Error<error> =>
   ( { isOk: false
     , isError: true
     , error

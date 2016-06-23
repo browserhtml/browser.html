@@ -29,7 +29,7 @@ const styleSheet = StyleSheet.create
   );
 
 export const render =
-  (title/*:?string*/, isSelected/*:boolean*/)/*:DOM*/ =>
+  (title:?string, isSelected:boolean):DOM =>
   html.span
   ( { className: 'assistant title'
     , style: Style
@@ -48,7 +48,7 @@ export const render =
   );
 
 export const view =
-  (title/*:?string*/, isSelected/*:boolean*/)/*:DOM*/ =>
+  (title:?string, isSelected:boolean):DOM =>
   thunk
   ( `${title}`
   , render

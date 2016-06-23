@@ -32,14 +32,14 @@ const Abort =
   );
 
 export const Query =
-  (input/*:string*/)/*:Action*/ =>
+  (input:string):Action =>
   ( { type: "Query"
     , source: input
     }
   );
 
 const UpdateMatches =
-  (result/*:Result<Error, Array<Match>>*/)/*:Action*/ =>
+  (result:Result<Error, Array<Match>>):Action =>
   ( { type: "UpdateMatches"
     , source: result
     }
@@ -60,19 +60,19 @@ const byURI =
 const pendingRequests = Object.create(null);
 
 const abort =
-  (id/*:number*/)/*:Task<Never, number>*/ =>
+  (id:number):Task<Never, number> =>
   new Task(succeed => void(0))
 
 const search =
-  ( id/*:number*/
-  , input/*:string*/
-  , limit/*:number*/
-  )/*:Task<Never, Result<Error, Array<Match>>>*/ =>
+  ( id:number
+  , input:string
+  , limit:number
+  ):Task<Never, Result<Error, Array<Match>>> =>
   new Task(succeed => void(0))
 
 
 export const init =
-  (query/*:string*/, limit/*:number*/)/*:[Model, Effects<Action>]*/ =>
+  (query:string, limit:number):[Model, Effects<Action>] =>
   [ { query
     , size: 0
     , queryID: 0
@@ -177,7 +177,7 @@ const retainSelected = (model, {matches, items}) => {
 };
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === "Query"
   ? updateQuery(model, action.source)
   : action.type === "SelectNext"
@@ -200,7 +200,7 @@ const innerView =
 
 
 export const render =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.section
   ( { style: {borderColor: 'inherit' } }
   , model.items.map
@@ -217,7 +217,7 @@ export const render =
   )
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   thunk
   ( 'history'
   , render

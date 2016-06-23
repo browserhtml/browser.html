@@ -252,7 +252,7 @@ const tagAnimation =
   };
 
 export const Navigate =
-  ( destination/*:string*/)/*:Action*/ =>
+  ( destination:string):Action =>
   ( { type: "Navigate"
     , uri: URL.read(destination)
     }
@@ -282,16 +282,16 @@ export class Model {
   animation: Animation.Model<Display.Model>;
   
   constructor(
-    isSelected/*:boolean*/
-  , isClosed/*:boolean*/
-  , isPinned/*:boolean*/
-  , isInputEmbedded/*:boolean*/
-  , input/*:Input.Model*/
-  , output/*:Output.Model*/
-  , assistant/*:Assistant.Model*/
-  , overlay/*:Overlay.Model*/
-  , progress/*:Progress.Model*/
-  , animation/*:Animation.Model<Display.Model>*/
+    isSelected:boolean
+  , isClosed:boolean
+  , isPinned:boolean
+  , isInputEmbedded:boolean
+  , input:Input.Model
+  , output:Output.Model
+  , assistant:Assistant.Model
+  , overlay:Overlay.Model
+  , progress:Progress.Model
+  , animation:Animation.Model<Display.Model>
   ) {
     this.isSelected = isSelected
     this.isClosed = isClosed
@@ -346,7 +346,7 @@ const assemble =
 
 
 export const init =
-  (options/*:Flags*/)/*:[Model, Effects<Action>]*/ =>
+  (options:Flags):[Model, Effects<Action>] =>
   assemble
   ( options.output.disposition != 'background-tab'
   , false
@@ -365,9 +365,9 @@ export const init =
   )
 
 export const update =
-  ( model/*:Model*/
-  , action/*:Action*/
-  )/*:[Model, Effects<Action>]*/ => {
+  ( model:Model
+  , action:Action
+  ):[Model, Effects<Action>] => {
     // console.log(action)
     switch (action.type) {
       case 'NoOp':
@@ -466,14 +466,14 @@ export const update =
   };
 
 const nofx =
-  (model/*:Model*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model):[Model, Effects<Action>] =>
   [ model
   , Effects.none
   ];
 
 export const select =
-  ( model/*:Model*/
-  )/*:[Model, Effects<Action>]*/ =>
+  ( model:Model
+  ):[Model, Effects<Action>] =>
   ( model.isSelected
   ? nofx(model)
   : startAnimation
@@ -489,8 +489,8 @@ export const select =
   )
 
 export const deselect =
-  ( model/*:Model*/
-  )/*:[Model, Effects<Action>]*/ =>
+  ( model:Model
+  ):[Model, Effects<Action>] =>
   ( model.isSelected
   ? startAnimation
     ( model
@@ -506,8 +506,8 @@ export const deselect =
   )
 
 export const close =
-  ( model/*:Model*/
-  )/*:[Model, Effects<Action>]*/ =>
+  ( model:Model
+  ):[Model, Effects<Action>] =>
   ( model.isPinned
   ? [ model
     , Effects.receive(Select)
@@ -891,7 +891,7 @@ const endAnimation =
   )
 
 export const render =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.dialog
   ( { className: `navigator ${mode(model.output)}`
     , open: true
@@ -928,7 +928,7 @@ export const render =
   )
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   thunk
   ( model.output.ref.value
   , render

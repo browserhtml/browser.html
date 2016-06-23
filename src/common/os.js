@@ -15,5 +15,5 @@ const PLATFORM = navigator.platform.startsWith('Win') ? 'win32' :
 
 // https://iojs.org/api/os.html#os_os_platform
 export const platform =
-  ()/*:string*/ =>
+  ():string =>
   PLATFORM;

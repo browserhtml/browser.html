@@ -69,7 +69,7 @@ const evalContext =
   }
 
 export const evaluate =
-  (id/*:ID*/, code/*:string*/)/*:Task<Never, EvaluationResult>*/ =>
+  (id:ID, code:string):Task<Never, EvaluationResult> =>
   new Task((succeed, fail) => void(new Promise((resolve, reject) => {
     try {
       const out = executeWith(evalContext, () => window.eval(code));

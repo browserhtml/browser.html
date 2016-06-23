@@ -71,11 +71,11 @@ export class Model {
   src: URI;
   
   constructor(
-    ref/*: Ref.Model*/
-  , canGoBack/*: boolean*/
-  , canGoForward/*: boolean*/
-  , currentURI/*: URI*/
-  , src/*: URI*/
+    ref: Ref.Model
+  , canGoBack: boolean
+  , canGoForward: boolean
+  , currentURI: URI
+  , src: URI
   ) {
     this.ref = ref
     this.canGoBack = canGoBack
@@ -87,18 +87,18 @@ export class Model {
 
 
 // User interaction interaction may also triggered following actions:
-export const Stop/*:Action*/ = {type: "Stop"};
-export const Reload/*:Action*/ = {type: "Reload"};
-export const GoBack/*:Action*/ = {type: "GoBack"};
-export const GoForward/*:Action*/ = {type: "GoForward"};
+export const Stop:Action = {type: "Stop"};
+export const Reload:Action = {type: "Reload"};
+export const GoBack:Action = {type: "GoBack"};
+export const GoForward:Action = {type: "GoForward"};
 
 const NoOp = always({type: "NoOp"});
 export const Load =
-  (uri/*:URI*/)/*:Action*/ =>
+  (uri:URI):Action =>
   ({type: "Load", uri});
 
 export const LocationChanged =
-  (uri/*:URI*/, canGoBack/*:?boolean*/, canGoForward/*:?boolean*/)/*:Action*/ =>
+  (uri:URI, canGoBack:?boolean, canGoForward:?boolean):Action =>
   ({type: "LocationChanged", uri, canGoBack, canGoForward});
 
 const CanGoBackChanged =
@@ -142,7 +142,7 @@ const WentForward = result =>
   );
 
 export const canGoBack =
-  (ref/*:Ref.Model*/)/*:Task<Never, Result<Error, boolean>>*/ =>
+  (ref:Ref.Model):Task<Never, Result<Error, boolean>> =>
   Ref
   .deref(ref)
   .chain(elementCanGoBack);
@@ -162,7 +162,7 @@ const elementCanGoBack =
   });
 
 export const canGoForward =
-  (ref/*:Ref.Model*/)/*:Task<Never, Result<Error, boolean>>*/ =>
+  (ref:Ref.Model):Task<Never, Result<Error, boolean>> =>
   Ref
   .deref(ref)
   .chain(elementCanGoForward);
@@ -185,7 +185,7 @@ const elementCanGoForward =
 const invoke =
   name => {
     const elementInvoke = /*::<value>*/
-      (element/*:HTMLElement*/)/*:Task<Never, Result<Error, value>>*/ =>
+      (element:HTMLElement):Task<Never, Result<Error, value>> =>
       new Task((succeed, fail) => {
         try {
           // @FlowIgnore: We know that method may not exist.
@@ -196,7 +196,7 @@ const invoke =
       })
 
     const task = /*::<value>*/
-      (ref/*:Ref.Model*/)/*:Task<Never, Result<Error, value>>*/ =>
+      (ref:Ref.Model):Task<Never, Result<Error, value>> =>
       Ref
       .deref(ref)
       .chain(elementInvoke)
@@ -216,11 +216,11 @@ const report =
   });
 
 export const init =
-  ( ref/*:Ref.Model*/=Ref.create()
-  , uri/*:URI*/='about:blank'
-  , canGoBack/*: boolean*/ = false
-  , canGoForward/*: boolean*/ = false
-  )/*:[Model, Effects<Action>]*/ =>
+  ( ref:Ref.Model=Ref.create()
+  , uri:URI='about:blank'
+  , canGoBack: boolean = false
+  , canGoForward: boolean = false
+  ):[Model, Effects<Action>] =>
   [ new Model
     ( ref
     , canGoBack
@@ -304,9 +304,9 @@ const updateLocation =
   );
 
 export const load =
-  ( model/*:Model*/
-  , uri/*:URI*/='about:blank'
-  )/*:[Model, Effects<Action>]*/ =>
+  ( model:Model
+  , uri:URI='about:blank'
+  ):[Model, Effects<Action>] =>
   [ new Model
     ( model.ref
     , false
@@ -322,7 +322,7 @@ export const load =
   ]
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+  (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
       case "CanGoForwardChanged":
         return  (

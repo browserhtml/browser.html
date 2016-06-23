@@ -9,7 +9,7 @@ import type {DOM} from 'reflex';
 */
 
 export const render =
-  (ref/*:Ref.Model*/, value/*:number*/)/*:DOM*/ =>
+  (ref:Ref.Model, value:number):DOM =>
   html.progress
   ( { [ref.name]: ref.value
     , style: Style.mix
@@ -26,7 +26,7 @@ export const render =
   )
 
 export const view =
-  (ref/*:Ref.Model*/, value/*:number*/)/*:DOM*/ =>
+  (ref:Ref.Model, value:number):DOM =>
   thunk
   ( 'Browser/NavigtorDeck/Navigator/Progress/ProgressView'
   , render

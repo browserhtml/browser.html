@@ -34,21 +34,21 @@ const Abort =
 export const SelectNext = { type: "SelectNext" };
 export const SelectPrevious = { type: "SelectPrevious" };
 export const Suggest =
-  (suggestion/*:Completion*/)/*:Action*/ =>
+  (suggestion:Completion):Action =>
   ( { type: "Suggest"
     , source: suggestion
     }
   );
 
 export const Query =
-  (input/*:string*/)/*:Action*/ =>
+  (input:string):Action =>
   ( { type: "Query"
     , source: input
     }
   );
 
 export const Activate =
-  ()/*:Action*/ =>
+  ():Action =>
   ( { type: "Activate"
     }
   );
@@ -61,7 +61,7 @@ const Load =
   );
 
 const UpdateMatches =
-  (result/*:Result<Error, Array<Match>>*/)/*:Action*/ =>
+  (result:Result<Error, Array<Match>>):Action =>
   ( { type: "UpdateMatches"
     , source: result
     }
@@ -126,10 +126,10 @@ const abort =
   })
 
 const search =
-  ( id/*:number*/
-  , input/*:string*/
-  , limit/*:number*/
-  )/*:Task<Never, Result<Error, Array<Match>>>*/ =>
+  ( id:number
+  , input:string
+  , limit:number
+  ):Task<Never, Result<Error, Array<Match>>> =>
   new Task((succeed, fail) => {
     const request = new XMLHttpRequest({ mozSystem: true });
     pendingRequests[id] = request;
@@ -157,7 +157,7 @@ const search =
 
 
 export const init =
-  (query/*:string*/, limit/*:number*/)/*:[Model, Effects<Action>]*/ =>
+  (query:string, limit:number):[Model, Effects<Action>] =>
   [ { query
     , size: 0
     , queryID: 0
@@ -314,7 +314,7 @@ const activate =
   ]
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === "Query"
   ? updateQuery(model, action.source)
   : action.type === "SelectNext"
@@ -339,7 +339,7 @@ const innerView =
   ];
 
 export const render =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.section
   ( { style: {borderColor: 'inherit' } }
   , model
@@ -359,7 +359,7 @@ export const render =
   )
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   thunk
   ( 'search'
   , render

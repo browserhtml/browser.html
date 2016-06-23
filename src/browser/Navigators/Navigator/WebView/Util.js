@@ -12,7 +12,7 @@ import * as WebView from "../WebView"
 */
 
 export const readTitle =
-  (model/*:WebView.Model*/, fallback/*:string*/)/*:string*/ =>
+  (model:WebView.Model, fallback:string):string =>
   ( ( model.page != null &&
       model.page.title != null &&
       model.page.title !== ''
@@ -24,23 +24,23 @@ export const readTitle =
   );
 
 export const readFaviconURI =
-  (model/*:WebView.Model*/)/*:string*/ =>
+  (model:WebView.Model):string =>
   ( (model.page && model.page.faviconURI)
   ? model.page.faviconURI
   : Favicon.getFallback(model.navigation.currentURI)
   );
 
 export const isDark =
-  (model/*:WebView.Model*/)/*:boolean*/ =>
+  (model:WebView.Model):boolean =>
   ( model.page != null
   ? model.page.pallet.isDark
   : false
   );
 
 export const canGoBack =
-  (model/*:WebView.Model*/)/*:boolean*/ =>
+  (model:WebView.Model):boolean =>
   model.navigation.canGoBack === true;
 
 export const isSecure =
-  (model/*:WebView.Model*/)/*:boolean*/ =>
+  (model:WebView.Model):boolean =>
   model.security.secure;

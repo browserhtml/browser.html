@@ -22,9 +22,9 @@ const DocumentFirstPaint = always({ type: "DocumentFirstPaint" });
 
 export const view =
   ( styleSheet/*:{ base: Style.Rules }*/
-  , model/*:Model*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  , model:Model
+  , address:Address<Action>
+  ):DOM =>
   html.iframe
   ( { [model.ref.name]: model.ref.value
     , src: model.navigation.src

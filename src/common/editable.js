@@ -16,32 +16,32 @@ import type {Model, Action, Selection} from "./editable"
 
 // Actions
 
-export const Clear/*:Action*/ = {type: "Clear"};
+export const Clear:Action = {type: "Clear"};
 
 export const Select =
-  (range/*:Selection*/)/*:Action*/ =>
+  (range:Selection):Action =>
   ({type: "Select", range});
 
 export const Change =
-  (value/*:string*/, selection/*:Selection*/)/*:Action*/ =>
+  (value:string, selection:Selection):Action =>
   ({type: "Change", value, selection});
 
 
 
 const select = /*::<model:Model>*/
-  (model/*:model*/, selection/*:Selection*/)/*:model*/ =>
+  (model:model, selection:Selection):model =>
   merge(model, {selection});
 
 const change = /*::<model:Model>*/
-  (model/*:model*/, value/*:string*/, selection/*:Selection*/)/*:model*/ =>
+  (model:model, value:string, selection:Selection):model =>
   merge(model, {selection, value});
 
 const clear = /*::<model:Model>*/
-  (model/*:model*/)/*:model*/ =>
+  (model:model):model =>
   merge(model, {value: "", selection: null});
 
 export const init =
-  (value/*:string*/, selection/*:?Selection*/=null)/*:[Model, Effects<Action>]*/ =>
+  (value:string, selection:?Selection=null):[Model, Effects<Action>] =>
   [ { value
     , selection
     }
@@ -49,7 +49,7 @@ export const init =
   ]
 
 export const update = /*::<model:Model>*/
-  (model/*:model*/, action/*:Action*/)/*:[model, Effects<Action>]*/ =>
+  (model:model, action:Action):[model, Effects<Action>] =>
   ( action.type === "Clear"
   ? [clear(model), Effects.none]
   : action.type === "Select"

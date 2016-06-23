@@ -73,7 +73,7 @@ const CellAction =
 
 
 export const init =
-  ()/*:[Model, Effects<Action>]*/ =>
+  ():[Model, Effects<Action>] =>
   createCell
   ( { nextID: 0
     , order: []
@@ -169,7 +169,7 @@ const print = (model, action) =>
   );
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Cell'
   ? updateCell(model, action.id, action.source)
   : action.type === 'Evaluate'
@@ -202,7 +202,7 @@ const styleSheet = StyleSheet.create
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.div
   ( { style: styleSheet.base
     , id: 'repl'

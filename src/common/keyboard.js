@@ -158,7 +158,7 @@ const writeChord = event => {
 
 
 export const bindings = /*::<Action>*/
-  (bindingTable/*:BindingTable<Action>*/)/*:(event:KeyboardEvent) => Action | Abort*/ => {
+  (bindingTable:BindingTable<Action>)/*:(event:KeyboardEvent) => Action | Abort*/ => {
   const bindings = Object.create(null);
   Object.keys(bindingTable).forEach(key => {
     bindings[readChord(key)] = bindingTable[key];

@@ -9,7 +9,7 @@ import type {DOM} from 'reflex';
 */
 
 export const render =
-  (ref/*:Ref.Model*/, value/*:number*/)/*:DOM*/ =>
+  (ref:Ref.Model, value:number):DOM =>
   html.div
   ( { className: "progress"
     , style: styleSheet.base
@@ -27,7 +27,7 @@ export const render =
   )
 
 export const view =
-  (ref/*:Ref.Model*/, value/*:number*/)/*:DOM*/ =>
+  (ref:Ref.Model, value:number):DOM =>
   thunk
   ( 'Browser/NavigtorDeck/Navigator/Progress/PolyfillView'
   , render

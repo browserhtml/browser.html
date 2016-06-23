@@ -35,7 +35,7 @@ const styleSheet = StyleSheet.create
   );
 
 export const render =
-  (content/*:string*/, isSelected/*:boolean*/)/*:DOM*/ =>
+  (content:string, isSelected:boolean):DOM =>
   html.span
   ( { className: 'assistant icon'
     , style: Style
@@ -51,7 +51,7 @@ export const render =
   );
 
 export const view =
-  (content/*:string*/, isSelected/*:boolean*/)/*:DOM*/ =>
+  (content:string, isSelected:boolean):DOM =>
   thunk
   ( `${content}`
   , render

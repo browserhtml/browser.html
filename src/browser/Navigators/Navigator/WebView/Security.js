@@ -29,9 +29,9 @@ export class Model {
   extendedValidation: boolean;
   
   constructor(
-    state/*:State*/
-  , secure/*:boolean*/
-  , extendedValidation/*:boolean*/
+    state:State
+  , secure:boolean
+  , extendedValidation:boolean
   ) {
     this.state = state
     this.secure = secure
@@ -45,12 +45,12 @@ const insecure = new Model
   , false
   )
 
-export const LoadStart/*:Action*/ =
+export const LoadStart:Action =
   { type: "LoadStart"
   };
 
 export const Changed =
-  (state/*:State*/, extendedValidation/*:boolean*/)/*:Action*/ =>
+  (state:State, extendedValidation:boolean):Action =>
   ( { type: "SecurityChanged"
     , state
     , extendedValidation
@@ -58,7 +58,7 @@ export const Changed =
   );
 
 export const init =
-  ()/*:[Model, Effects<Action>]*/ =>
+  ():[Model, Effects<Action>] =>
   [ insecure
   , Effects.none
   ]
@@ -78,7 +78,7 @@ const updateSecurity =
   ]
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+  (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
       case "LoadStart":
         return loadStart(model);

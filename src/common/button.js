@@ -73,12 +73,12 @@ const updateControl = cursor
   );
 
 export const init =
-  ( isDisabled/*:boolean*/
-  , isFocused/*:boolean*/
-  , isActive/*:boolean*/
-  , isPointerOver/*:boolean*/
-  , text/*:string*/=''
-  )/*:[Model, Effects<Action>]*/ =>
+  ( isDisabled:boolean
+  , isFocused:boolean
+  , isActive:boolean
+  , isPointerOver:boolean
+  , text:string=''
+  ):[Model, Effects<Action>] =>
   [ ({isDisabled: false
     , isFocused: false
     , isActive: false
@@ -89,7 +89,7 @@ export const init =
   ]
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === "Down"
   ? [merge(model, {isActive: true}), Effects.none]
   : action.type === "Up"
@@ -107,11 +107,11 @@ export const update =
 
 
 export const view =
-  (key/*:string*/, styleSheet/*:StyleSheet*/)/*:(model:Model, address:Address<Action>, contextStyle?:ContextStyle) => DOM*/ =>
-  ( model/*:Model*/
-  , address/*:Address<Action>*/
+  (key:string, styleSheet:StyleSheet)/*:(model:Model, address:Address<Action>, contextStyle?:ContextStyle) => DOM*/ =>
+  ( model:Model
+  , address:Address<Action>
   , contextStyle/*?:ContextStyle*/
-  )/*:DOM*/ =>
+  ):DOM =>
   html.button({
     key: key,
     className: key,

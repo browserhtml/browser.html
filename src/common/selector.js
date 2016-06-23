@@ -13,11 +13,11 @@ import type {Integer} from "../common/prelude"
 // is out of bounds position is calculated by looping. Otherwise last / first
 // index is retuned.
 export const indexOfOffset =
-  ( index/*:Integer*/
-  , offset/*:Integer*/
-  , size/*:Integer*/
-  , loop/*:boolean*/
-  )/*:Integer*/ => {
+  ( index:Integer
+  , offset:Integer
+  , size:Integer
+  , loop:boolean
+  ):Integer => {
   const position = index + offset;
   if (size === 0) {
     return index

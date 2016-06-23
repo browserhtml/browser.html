@@ -24,9 +24,9 @@ const DocumentFirstPaint = always({ type: "DocumentFirstPaint" });
 
 export const view =
   ( styleSheet/*:{ base: Style.Rules }*/
-  , model/*:Model*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  , model:Model
+  , address:Address<Action>
+  ):DOM =>
   node
   ( 'webview'
   , { [model.ref.name]: model.ref.value

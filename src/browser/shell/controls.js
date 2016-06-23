@@ -20,16 +20,16 @@ import type {Address, DOM} from "reflex"
 import type {Model, Action} from "./controls"
 
 
-export const CloseWindow/*:Action*/ = {type: "CloseWindow"};
-export const MinimizeWindow/*:Action*/ = {type: "MinimizeWindow"};
-export const ToggleWindowFullscreen/*:Action*/ = {type: "ToggleWindowFullscreen"};
+export const CloseWindow:Action = {type: "CloseWindow"};
+export const MinimizeWindow:Action = {type: "MinimizeWindow"};
+export const ToggleWindowFullscreen:Action = {type: "ToggleWindowFullscreen"};
 
-export const FullscreenToggled/*:Action*/ = {type: "FullscreenToggled"};
-export const Ignore/*:Action*/ = {type: "Ignore"};
-export const Over/*:Action*/ = {type: "Over"};
-export const Out/*:Action*/ = {type: "Out"};
-export const Enable/*:Action*/ = {type: "Enable"};
-export const Disable/*:Action*/ = {type: "Disable"};
+export const FullscreenToggled:Action = {type: "FullscreenToggled"};
+export const Ignore:Action = {type: "Ignore"};
+export const Over:Action = {type: "Over"};
+export const Out:Action = {type: "Out"};
+export const Enable:Action = {type: "Enable"};
+export const Disable:Action = {type: "Disable"};
 
 const ignore = action =>
   ( action.type === "Target"
@@ -105,7 +105,7 @@ const updateToggle = cursor({
 });
 
 export const init =
-  (isDisabled/*:boolean*/, isPointerOver/*:boolean*/, isMaximized/*:boolean*/)/*:[Model, Effects<Action>]*/ => {
+  (isDisabled:boolean, isPointerOver:boolean, isMaximized:boolean):[Model, Effects<Action>] => {
   const [isFocused, isActive] = [false, false];
 
   const [close, closeFX] = Button.init
@@ -165,7 +165,7 @@ const updateButtons = (model, action) => {
 }
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Over'
   ? updateButtons(model, Button.Over)
   : action.type === 'Out'
@@ -262,7 +262,7 @@ const viewToggle = Toggle.view('window-toggle-fullscreen-button', StyleSheet.cre
 
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.div({
     key: 'window-controls',
     className: 'window-controls',

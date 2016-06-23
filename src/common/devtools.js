@@ -52,11 +52,11 @@ const readValue = (key, value) =>
   : value
   );
 
-export const Toggle/*:Action*/ =
+export const Toggle:Action =
   { type: "Toggle"
   };
 
-export const Restart/*:Action*/ =
+export const Restart:Action =
   { type: "Restart"
   };
 
@@ -66,11 +66,11 @@ const Report = result =>
     }
   );
 
-export const CleanRestart/*:Action*/ =
+export const CleanRestart:Action =
   { type: "CleanRestart"
   };
 
-export const CleanReload/*:Action*/ =
+export const CleanReload:Action =
   { type: "CleanReload"
   };
 
@@ -136,7 +136,7 @@ const changeSetting = (model, {name, value}) =>
 
 
 const report =
-  (model/*:Model*/, result/*:Result<any, any>*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, result:Result<any, any>):[Model, Effects<Action>] =>
   [ model
   , ( result.isOk
     ? Effects.none
@@ -148,7 +148,7 @@ const report =
 
 
 export const init =
-  ({isActive}/*:{isActive:boolean}*/)/*:[Model, Effects<Action>]*/ => {
+  ({isActive}/*:{isActive:boolean}*/):[Model, Effects<Action>] => {
   const [settings, fx] =
     Settings.init(Object.keys(descriptions));
 
@@ -165,7 +165,7 @@ export const init =
 
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Toggle'
   ? toggle(model)
 
@@ -258,7 +258,7 @@ const viewSettings = (settings, address) =>
            .map(key => thunk(key, viewSetting, key, settings[key], address)))
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.div({
     className: 'devtools toolbox',
     key: 'devtools-toolbox',

@@ -12,7 +12,7 @@ import type {Address, DOM} from "reflex"
 import type {Action, Model, StyleSheet, ContextStyle} from "./image"
 
 
-const baseStyleSheet/*:StyleSheet*/ = Style.createSheet
+const baseStyleSheet:StyleSheet = Style.createSheet
   ( { base:
       { backgroundSize: 'cover'
       , backgroundPosition: 'center center'
@@ -23,11 +23,11 @@ const baseStyleSheet/*:StyleSheet*/ = Style.createSheet
   );
 
 export const view =
-  (key/*:string*/, styleSheet/*:StyleSheet*/)/*:(model:Model, address:Address<Action>, contextStyle?:ContextStyle) => DOM*/ =>
-  ( model/*:Model*/
-  , address/*:Address<Action>*/
+  (key:string, styleSheet:StyleSheet)/*:(model:Model, address:Address<Action>, contextStyle?:ContextStyle) => DOM*/ =>
+  ( model:Model
+  , address:Address<Action>
   , contextStyle/*?:ContextStyle*/
-  )/*:DOM*/ =>
+  ):DOM =>
   html.figure
   ( { style: Style.mix
         ( baseStyleSheet.base

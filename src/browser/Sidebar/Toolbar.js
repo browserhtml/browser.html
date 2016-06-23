@@ -31,21 +31,21 @@ export class Model {
   pin: Toggle.Model;
   
   constructor(
-    pin/*:Toggle.Model*/
+    pin:Toggle.Model
   ) {
     this.pin = pin
   }
 }
 
-export const Attach/*:Action*/ =
+export const Attach:Action =
   { type: "Attach"
   };
 
-export const Detach/*:Action*/ =
+export const Detach:Action =
   { type: "Detach"
   };
 
-export const CreateWebView/*:Action*/ =
+export const CreateWebView:Action =
   { type: "CreateWebView"
   };
 
@@ -68,7 +68,7 @@ const updateToggle = cursor({
   update: Toggle.update
 });
 
-export const init = ()/*:[Model, Effects<Action>]*/ => {
+export const init = ():[Model, Effects<Action>] => {
   const [pin, pinFX] = Toggle.init();
   return [
     new Model(pin),
@@ -81,7 +81,7 @@ export const init = ()/*:[Model, Effects<Action>]*/ => {
 }
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === "Attach"
   ? updateToggle(model, Toggle.Check)
   : action.type === "Detach"
@@ -131,7 +131,7 @@ const viewPin = Toggle.view('pin-button', Style.createSheet({
 }));
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/, display/*:Context*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>, display:Context):DOM =>
   html.div({
     key: 'sidebar-toolbar',
     className: 'sidebar-toolbar',

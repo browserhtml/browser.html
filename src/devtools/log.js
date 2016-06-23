@@ -31,7 +31,7 @@ type Step <model, action> =
 const NoOp = always({ type: "NoOp" });
 
 export const init = /*::<model, action, flags>*/
-  ()/*:Step<model, action>*/ =>
+  ():Step<model, action> =>
   ( [ { mode:
         ( Runtime.env.log === 'json'
         ? 'json'
@@ -45,9 +45,9 @@ export const init = /*::<model, action, flags>*/
   )
 
 export const update = /*::<model, action>*/
-  ( model/*:Model<model, action>*/
-  , action/*:Action<model, action>*/
-  )/*:Step<model, action>*/ =>
+  ( model:Model<model, action>
+  , action:Action<model, action>
+  ):Step<model, action> =>
   ( action.type === "NoOp"
   ? nofx(model)
   : action.type === 'Debuggee'
@@ -62,9 +62,9 @@ const nofx =
   ]
 
 const log = /*::<model, action>*/
-  ( model/*:Model<model, action>*/
-  , action/*:action*/
-  )/*:Step<model, action>*/ => {
+  ( model:Model<model, action>
+  , action:action
+  ):Step<model, action> => {
     ( model.mode === 'raw'
     ? console.log('Action >>', action)
     : model.mode === 'json'
@@ -76,7 +76,7 @@ const log = /*::<model, action>*/
   }
 
 export const view = /*::<model, action>*/
-  ( model/*:Model<model, action>*/
-  , address/*:Address<Action<model, action>>*/
-  )/*:DOM*/ =>
+  ( model:Model<model, action>
+  , address:Address<Action<model, action>>
+  ):DOM =>
   html.noscript()

@@ -25,9 +25,9 @@ const tagGoBack = always({ type: "GoBack" });
 export const height = Title.outerHeight;
 
 export const render =
-  ( canGoBack/*:boolean*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( canGoBack:boolean
+  , address:Address<Action>
+  ):DOM =>
   html.header
   ( { className: 'topbar'
     , style: styleSheet.base
@@ -46,9 +46,9 @@ export const render =
   );
 
 export const view =
-  ( canGoBack/*:boolean*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( canGoBack:boolean
+  , address:Address<Action>
+  ):DOM =>
   thunk
   ( 'Browser/NavigatorDeck/Navigator/Header'
   , render

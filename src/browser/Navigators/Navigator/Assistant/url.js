@@ -35,7 +35,7 @@ const preventDefault =
   event.preventDefault();
 
 export const render =
-  (uri/*:URI*/, isSelected/*:boolean*/)/*:DOM*/ =>
+  (uri:URI, isSelected:boolean):DOM =>
   html.a
   ( { className: 'assistant url'
     , style: Style
@@ -53,7 +53,7 @@ export const render =
   );
 
 export const view =
-  (uri/*:URI*/, isSelected/*:boolean*/)/*:DOM*/ =>
+  (uri:URI, isSelected:boolean):DOM =>
   thunk
   ( uri
   , render

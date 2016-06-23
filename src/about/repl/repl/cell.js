@@ -18,18 +18,18 @@ import type {ID, Model, Action} from "./cell"
 
 
 export const Print =
-  (output/*:Output.Model*/)/*:Action*/ =>
+  (output:Output.Model):Action =>
   ( { type: "Print"
     , print: output
     }
   )
 
-export const Remove/*:Action*/ =
+export const Remove:Action =
   { type: "Remove"
   }
 
 const InputAction =
-  (action/*:Input.Action*/)/*:Action*/ =>
+  (action:Input.Action):Action =>
   ( action.type === "Submit"
   ? { type: "Submit"
     , source: action.source
@@ -40,18 +40,18 @@ const InputAction =
   );
 
 const OutputAction =
-  (action/*:Output.Action*/)/*:Action*/ =>
+  (action:Output.Action):Action =>
   ( { type: "Output"
     , output: action
     }
   );
 
-export const Edit/*:Action*/ =
+export const Edit:Action =
   InputAction(Input.Edit);
 
 
 export const init =
-  (id/*:ID*/)/*:[Model, Effects<Action>]*/ => {
+  (id:ID):[Model, Effects<Action>] => {
     const [input, inputFX] = Input.init(0, '', true);
     const [output, outputFX] = Output.init(0);
     const model =
@@ -104,7 +104,7 @@ const submit =
   );
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Input'
   ? updateInput(model, action.input)
   : action.type === 'Submit'
@@ -143,7 +143,7 @@ const styleSheet = StyleSheet.create
 
 
 export const render =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.form
   ( { id: `cell-${model.id}`
     , style: Style
@@ -167,5 +167,5 @@ export const render =
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   thunk(model.id, render, model, address);

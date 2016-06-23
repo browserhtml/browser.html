@@ -46,7 +46,7 @@ const styleSheet = Style.createSheet({
 });
 
 export const Close =
-  (id/*:ID*/)/*:Action*/ =>
+  (id:ID):Action =>
   ( { type: "Close"
     , id
     }
@@ -54,7 +54,7 @@ export const Close =
 
 
 export const Select =
-  (id/*:ID*/)/*:Action*/ =>
+  (id:ID):Action =>
   ( { type: "Select"
     , id
     }
@@ -84,7 +84,7 @@ const settings =
   }
 
 export const render =
-  (model/*:Model*/, address/*:Address<Action>*/, context/*:Context*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>, context:Context):DOM =>
   html.div
   ( settings
   , model
@@ -100,7 +100,7 @@ export const render =
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/, context/*:Context*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>, context:Context):DOM =>
   thunk
   ( 'Browser/Sidebar/Tabs'
   , render

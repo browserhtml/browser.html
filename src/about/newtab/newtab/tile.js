@@ -15,7 +15,7 @@ import type {URI, Action, Model} from "./tile";
 
 
 export const init =
-  (title/*:string*/, uri/*:URI*/, src/*:URI*/)/*:[Model, Effects<Action>]*/ =>
+  (title:string, uri:URI, src:URI):[Model, Effects<Action>] =>
   [ { title
     , uri
     , src
@@ -24,7 +24,7 @@ export const init =
   ]
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   Unknown.update(model, action)
 
 const styleSheet = Style.createSheet
@@ -66,7 +66,7 @@ const styleSheet = Style.createSheet
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/, isDark/*:boolean*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>, isDark:boolean):DOM =>
   html.a
   ( { className: 'tile'
     , style: styleSheet.tile

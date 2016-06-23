@@ -11,11 +11,11 @@ import type {Integer} from "../common/prelude"
 
 
 export const readTitle = /*::<value, model:{title?:string}>*/
-  (model/*:model*/, fallback/*:value*/)/*: string | value*/ =>
+  (model:model, fallback:value)/*: string | value*/ =>
   model.title ? model.title : fallback;
 
 export const query = /*::<action>*/
-  (input/*:string*/, limit/*:Integer*/)/*:Effects<action>*/ =>
+  (input:string, limit:Integer):Effects<action> =>
   Effects.perform(new Task(deliver => {
 
   }))

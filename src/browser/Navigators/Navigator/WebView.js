@@ -128,15 +128,15 @@ export class Model {
   page: Page.Model;
   
   constructor(
-    ref/*: Ref.Model*/
-  , guestInstanceId/*: ?string*/
-  , name/*: string*/
-  , features/*: string*/
-  , tab/*: Tab.Model*/
-  , shell/*: Shell.Model*/
-  , navigation/*: Navigation.Model*/
-  , security/*: Security.Model*/
-  , page/*: Page.Model*/
+    ref: Ref.Model
+  , guestInstanceId: ?string
+  , name: string
+  , features: string
+  , tab: Tab.Model
+  , shell: Shell.Model
+  , navigation: Navigation.Model
+  , security: Security.Model
+  , page: Page.Model
   ) {
     this.ref = ref
     this.guestInstanceId = guestInstanceId
@@ -152,36 +152,36 @@ export class Model {
 
 const NoOp = always({ type: "NoOp" });
 
-export const Close/*:Action*/ =
+export const Close:Action =
   { type: "Close"
   };
 
-export const Select/*:Action*/ =
+export const Select:Action =
   { type: "Select"
   };
 
-export const Closed/*:Action*/ =
+export const Closed:Action =
   { type: "Closed"
   };
 
-export const Edit/*:Action*/ =
+export const Edit:Action =
   { type: "Edit"
   };
 
-export const ShowTabs/*:Action*/ =
+export const ShowTabs:Action =
   { type: 'ShowTabs'
   };
 
-export const Create/*:Action*/ =
+export const Create:Action =
   { type: 'Create'
   };
 
-export const Focus/*:Action*/ =
+export const Focus:Action =
   { type: 'Focus'
   };
 
 export const Load =
-  (uri/*:URI*/)/*:Action*/ =>
+  (uri:URI):Action =>
   ( { type: 'Load'
     , uri
     }
@@ -194,12 +194,12 @@ const ShellAction = action =>
     }
   );
 
-export const ZoomIn/*:Action*/ = ShellAction(Shell.ZoomIn);
-export const ZoomOut/*:Action*/ = ShellAction(Shell.ZoomOut);
-export const ResetZoom/*:Action*/ = ShellAction(Shell.ResetZoom);
-export const MakeVisible/*:Action*/ =
+export const ZoomIn:Action = ShellAction(Shell.ZoomIn);
+export const ZoomOut:Action = ShellAction(Shell.ZoomOut);
+export const ResetZoom:Action = ShellAction(Shell.ResetZoom);
+export const MakeVisible:Action =
   ShellAction(Shell.MakeVisible);
-export const MakeNotVisible/*:Action*/ =
+export const MakeNotVisible:Action =
   ShellAction(Shell.MakeNotVisible);
 
 const NavigationAction = action =>
@@ -207,13 +207,13 @@ const NavigationAction = action =>
     , navigation: action
   });
 
-export const Stop/*:Action*/ =
+export const Stop:Action =
   NavigationAction(Navigation.Stop);
-export const Reload/*:Action*/ =
+export const Reload:Action =
   NavigationAction(Navigation.Reload);
-export const GoBack/*:Action*/ =
+export const GoBack:Action =
   NavigationAction(Navigation.GoBack);
-export const GoForward/*:Action*/ =
+export const GoForward:Action =
   NavigationAction(Navigation.GoForward);
 
 const SecurityAction = action =>
@@ -315,7 +315,7 @@ const updateNavigation = cursor
 
 
 export const init =
-  (options/*:Flags*/)/*:[Model, Effects<Action>]*/ => {
+  (options:Flags):[Model, Effects<Action>] => {
     const ref = Ref.create()
     return assemble(
         ref
@@ -331,15 +331,15 @@ export const init =
   };
 
 const assemble =
-  ( ref/*:Ref.Model*/
-  , guestInstanceId/*:?string*/
-  , name/*:string*/
-  , features/*:string*/
-  , [tab, $tab]/*:[Tab.Model, Effects<Tab.Action>]*/
-  , [shell, $shell]/*:[Shell.Model, Effects<Shell.Action>]*/
-  , [navigation, $navigation]/*:[Navigation.Model, Effects<Navigation.Action>]*/
-  , [security, $security]/*:[Security.Model, Effects<Security.Action>]*/
-  , [page, $page]/*:[Page.Model, Effects<Page.Action>]*/
+  ( ref:Ref.Model
+  , guestInstanceId:?string
+  , name:string
+  , features:string
+  , [tab, $tab]:[Tab.Model, Effects<Tab.Action>]
+  , [shell, $shell]:[Shell.Model, Effects<Shell.Action>]
+  , [navigation, $navigation]:[Navigation.Model, Effects<Navigation.Action>]
+  , [security, $security]:[Security.Model, Effects<Security.Action>]
+  , [page, $page]:[Page.Model, Effects<Page.Action>]
   ) => {
     const model = new Model
       ( ref
@@ -392,7 +392,7 @@ const endLoad = (model, time) =>
   );
 
 const nofx = /*::<model, action>*/
-  (model/*:model*/)/*:[model, Effects<action>]*/ =>
+  (model:model):[model, Effects<action>] =>
   [ model, Effects.none ]
 
 const connect = nofx;
@@ -410,7 +410,7 @@ const close = model =>
   [ model, Effects.receive(Closed) ];
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+  (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
       case "NoOp":
         return [ model, Effects.none ];
@@ -491,5 +491,5 @@ const Frame =
 
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   Frame.view(styleSheet, model, address);

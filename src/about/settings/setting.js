@@ -21,7 +21,7 @@ import type {Value, Model, Action} from "./setting"
 
 
 const TextInputAction =
-  (action/*:TextInput.Action*/)/*:Action*/ =>
+  (action:TextInput.Action):Action =>
   ( action.type === "Blur"
   ? Abort
   : { type: "TextInput"
@@ -30,22 +30,22 @@ const TextInputAction =
   );
 
 
-export const Edit/*:Action*/ = { type: "Edit" };
-export const Abort/*:Action*/ = { type: "Abort" };
-export const Submit/*:Action*/ = { type: "Submit" };
+export const Edit:Action = { type: "Edit" };
+export const Abort:Action = { type: "Abort" };
+export const Submit:Action = { type: "Submit" };
 
 const Save = tag("Save");
 export const Change = tag("Change");
 
-const FocusInput/*:Action*/ = TextInputAction(TextInput.Focus);
-const DisableInput/*:Action*/ = TextInputAction(TextInput.Disable);
-const EnableInput/*:Action*/ = TextInputAction(TextInput.Enable);
+const FocusInput:Action = TextInputAction(TextInput.Focus);
+const DisableInput:Action = TextInputAction(TextInput.Disable);
+const EnableInput:Action = TextInputAction(TextInput.Enable);
 const ChangeInput = compose(TextInputAction, TextInput.Change);
 
 
 
 export const init =
-  (value/*:Value*/)/*:[Model, Effects<Action>]*/ => {
+  (value:Value):[Model, Effects<Action>] => {
     const [input, fx] = TextInput.init
       ( ( value == null
         ? ''
@@ -142,7 +142,7 @@ const parseInput =
   };
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Edit'
   ? edit(model)
   : action.type === 'Abort'
@@ -272,7 +272,7 @@ const viewInput = TextInput.view
 
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.form
   ( { onKeyDown:
       event => {

@@ -61,7 +61,7 @@ const Changed =
 
 
 const SettingAction =
-  (name/*:Name*/, action/*:Setting.Action*/)/*:Action*/ =>
+  (name:Name, action:Setting.Action):Action =>
   ( action.type === 'Save'
   ? Save
     ( { [name]: action.source
@@ -74,7 +74,7 @@ const SettingAction =
   );
 
 const SettingActionByName =
-  (name/*:Name*/)/*:(action:Setting.Action) => Action*/ =>
+  (name:Name)/*:(action:Setting.Action) => Action*/ =>
   action =>
   SettingAction(name, action);
 
@@ -82,7 +82,7 @@ const ChangeSetting =
   (name, value) =>
   SettingAction(name, Setting.Change(value));
 
-export const init = ()/*:[Model, Effects<Action>]*/ => {
+export const init = ():[Model, Effects<Action>] => {
   const model =
     { settings: {}
     };
@@ -204,7 +204,7 @@ const updateSettingByName = (model, name, action) => {
 }
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Save'
   ? save(model, action.source)
 
@@ -273,7 +273,7 @@ const styleSheet = StyleSheet.create
 
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.div
   ( { key: 'settings'
     , style: styleSheet.base

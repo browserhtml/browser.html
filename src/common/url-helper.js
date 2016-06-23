@@ -9,7 +9,7 @@ import {URL, nullURL} from "./url"
 import type {URI} from "../common/prelude"
 
 
-export const parse = (input/*:string*/)/*:URL*/ => {
+export const parse = (input:string):URL => {
   try {
     return new URL(input);
   } catch(_) {
@@ -18,35 +18,35 @@ export const parse = (input/*:string*/)/*:URL*/ => {
 }
 
 export const hasScheme =
-  (input/*:URI*/)/*:boolean*/ =>
+  (input:URI):boolean =>
   !!(rscheme.exec(input) || [])[0];
 
 export const getOrigin =
-  (url/*:URI*/)/*:string*/ =>
+  (url:URI):string =>
   parse(url).origin;
 
 export const getBaseURI =
-  ()/*:URL*/ =>
+  ():URL =>
   new URL('./', location.href);
 
 export const getHostname =
-  (url/*:URI*/)/*:string*/ =>
+  (url:URI):string =>
   parse(url).hostname;
 
 export const getDomainName =
-  (url/*:URI*/)/*:string*/ =>
+  (url:URI):string =>
   getHostname(url).replace(/^www\./, '');
 
 export const getProtocol =
-  (url/*:URI*/)/*:string*/ =>
+  (url:URI):string =>
   parse(url).protocol;
 
 export const getManifestURL =
-  ()/*:URL*/ =>
+  ():URL =>
   new URL('./manifest.webapp', getBaseURI().href);
 
 export const getPathname =
-  (input/*:URI*/)/*:string*/ =>
+  (input:URI):string =>
   parse(input).pathname;
 
 
@@ -56,17 +56,17 @@ const isHttpOrHttps = (url) => {
 }
 
 export const isAboutURL =
-  (url/*:URI*/)/*:boolean*/ =>
+  (url:URI):boolean =>
   parse(url).protocol === 'about:';
 
-export const isPrivileged = (uri/*:URI*/)/*:boolean*/ => {
+export const isPrivileged = (uri:URI):boolean => {
   // FIXME: not safe. White list?
   return uri.startsWith(new URL('./components/about/', getBaseURI().href).href);
 };
 
 const rscheme = /^(?:[a-z\u00a1-\uffff0-9-+]+)(?::|:\/\/)/i;
 
-export const isNotURL = (input/*:string*/)/*:boolean*/ => {
+export const isNotURL = (input:string):boolean => {
   var str = input.trim();
 
   // for cases, ?abc and 'a? b' which should searching query
@@ -99,17 +99,17 @@ const readAboutURL = input =>
   input === 'about:blank' ? input :
   `${getBaseURI()}components/about/${input.replace('about:', '')}/index.html`;
 
-export const read = (input/*:string*/)/*:URI*/ =>
+export const read = (input:string):URI =>
   isNotURL(input) ? readSearchURL(input) :
   !hasScheme(input) ? `http://${input}` :
   isAboutURL(input) ? readAboutURL(input) :
   input;
 
-export const normalize = (uri/*:URI*/)/*:URI*/ =>
+export const normalize = (uri:URI):URI =>
   isAboutURL(uri) ? readAboutURL(uri) :
   uri;
 
-export const resolve = (from/*:URI*/, to/*:URI*/)/*:URI*/ =>
+export const resolve = (from:URI, to:URI):URI =>
   new URL(to, from).href;
 
 const aboutPattern = /\/about\/([^\/]+)\/index.html$/;
@@ -119,7 +119,7 @@ const readAboutTerm = input => {
   return match != null ? match[1] : null;
 }
 
-export const asAboutURI = (uri/*:URI*/)/*:?URI*/ => {
+export const asAboutURI = (uri:URI):?URI => {
   const base = getBaseURI();
   const {origin, pathname} = new window.URI(uri);
   const about = base.origin === origin ? readAboutTerm(pathname) : null;
@@ -127,7 +127,7 @@ export const asAboutURI = (uri/*:URI*/)/*:?URI*/ => {
 }
 
 // Prettify a URL for display purposes. Will minimize the amount of URL cruft.
-export const prettify = (input/*:URI*/)/*:string*/ =>
+export const prettify = (input:URI):string =>
   // Don't mess with non-urls.
   ( isNotURL(input)
   ? input
