@@ -38,7 +38,7 @@ export const StyleSheet = {
 // Mix multiple style objects together. Will memoize the combination of styles
 // to minimize object creation. Returns style object that is the result of
 // mixing styles together.
-export const mix = (...styles/*:Array<?Rules>*/)/*:Rules*/ => {
+export function mix(...styles/*:Array<?Rules>*/)/*:Rules*/ {
   var length = styles.length;
   var index = 0;
   var id = null;
