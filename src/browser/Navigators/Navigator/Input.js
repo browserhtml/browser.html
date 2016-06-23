@@ -16,7 +16,7 @@ import * as Keyboard from '../../../common/keyboard';
 import * as Unknown from '../../../common/unknown';
 import * as Style from '../../../common/style';
 
-/*::
+
 import type {Address, DOM} from "reflex"
 
 export type Flags =
@@ -54,7 +54,7 @@ export type Action =
   | { type: "Change", value: string, selection: Editable.Selection }
   | { type: 'Editable', editable: Editable.Action }
   | { type: 'Focusable', focusable: Focusable.Action }
-*/
+
 
 // Create a new input submit action.
 export const Query/*:()=>Action*/ = always({ type: 'Query' });

@@ -5,9 +5,9 @@
  * file, you can obtain one at http://mozilla.org/mpl/2.0/. */
 
 import {URL, nullURL} from "./url"
-/*::
+
 import type {URI} from "../common/prelude"
-*/
+
 
 export const parse = (input/*:string*/)/*:URL*/ => {
   try {

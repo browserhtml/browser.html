@@ -14,10 +14,10 @@ import * as Host from './repl/host';
 
 import {onWindow} from "@driver";
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {Model, Action} from "./repl"
-*/
+
 
 
 // Actions

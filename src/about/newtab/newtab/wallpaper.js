@@ -11,10 +11,10 @@ import * as Unknown from "../../../common/unknown";
 
 import hardcodedWallpaper from "../wallpaper.json";
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {Model, Action, URI, Color} from "./wallpaper"
-*/
+
 
 const Choose/*:Action*/ =
   { type: 'Choose'

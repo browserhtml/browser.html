@@ -6,7 +6,7 @@ import {ok, error} from "../common/result"
 import * as Runtime from "../common/runtime"
 import * as Unknown from "../common/unknown"
 
-/*::
+
 import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} from "reflex"
 import type {Result} from "../common/result"
 import type {URI, ID} from "../common/prelude"
@@ -24,7 +24,7 @@ type Step <model, action> =
   [ Model<model, action>
   , Effects<Action<model, action>>
   ]
-*/
+
 
 
 

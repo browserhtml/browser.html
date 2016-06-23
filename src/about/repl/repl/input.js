@@ -11,10 +11,10 @@ import * as Settings from '../../../common/settings';
 import * as Unknown from '../../../common/unknown';
 import {focus} from "@driver";
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {Model, Action} from "./input"
-*/
+
 
 export const Change =
   (value/*:string*/)/*:Action*/ =>

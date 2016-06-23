@@ -13,9 +13,9 @@ import * as Focusable from "../common/focusable"
 import {Style} from "../common/style"
 import {html, Effects, forward} from "reflex"
 
-/*::
+
 import type {Model, Action} from "./control"
-*/
+
 
 export const Disable/*:Action*/ =
   { type: "Disable"

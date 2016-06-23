@@ -8,9 +8,9 @@ import {Effects, Task} from 'reflex';
 import {merge, always} from "../common/prelude";
 import * as Unknown from "../common/unknown";
 
-/*::
+
 import type {Action, Model, Time} from "./stopwatch"
-*/
+
 
 export const Start/*:Action*/ = {type: "Start"};
 export const End/*:Action*/ = {type: "End"};

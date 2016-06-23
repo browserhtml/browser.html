@@ -7,10 +7,10 @@
 
 import {Effects} from "reflex";
 
-/*::
+
 import type {Cursor} from "./cursor"
 export type {Cursor}
-*/
+
 
 export const cursor = /*::<from, to, in, out>*/
   (config/*:Cursor*/)/*:(model:from, action:in) => [from, Effects<out>]*/ => {

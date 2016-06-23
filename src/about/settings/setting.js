@@ -15,10 +15,10 @@ import * as Focusable from '../../common/focusable';
 import * as Editable from '../../common/editable';
 import * as TextInput from '../../common/text-input';
 
-/*::
+
 import type {Address, DOM} from "reflex";
 import type {Value, Model, Action} from "./setting"
-*/
+
 
 const TextInputAction =
   (action/*:TextInput.Action*/)/*:Action*/ =>

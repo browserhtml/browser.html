@@ -13,7 +13,7 @@ import * as Animation from "../../../common/Animation"
 import * as Unknown from "../../../common/unknown";
 import * as Display from "./Overlay/Display"
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {Time} from "../../../common/prelude"
 
@@ -24,13 +24,13 @@ export type Action =
   | { type: "Show" }
   | { type: "Hide" }
   | { type: "Animation", animation: Animation.Action }
-*/
+
 
 export class Model {
-  /*::
+  
   animation: Animation.Model<Display.Model>;
   isVisible: boolean;
-  */
+  
   constructor(
     isVisible/*:boolean*/
   , animation/*:Animation.Model<Display.Model>*/

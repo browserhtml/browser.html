@@ -8,10 +8,10 @@ import {html, Effects} from "reflex";
 import * as Style from "../../../common/style";
 import * as Unknown from "../../../common/unknown";
 
-/*::
+
 import type {Address, DOM} from "reflex";
 import type {URI, Action, Model} from "./tile";
-*/
+
 
 
 export const init =

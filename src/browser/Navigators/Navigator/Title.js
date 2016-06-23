@@ -4,12 +4,12 @@ import {html, thunk, forward} from 'reflex';
 import * as Style from '../../../common/style';
 import {always} from '../../../common/prelude';
 
-/*::
+
 import type {Address, DOM} from "reflex"
 
 export type Action =
   | { type: "Activate" }
-*/
+
 
 const Activate = always({ type: "Activate" })
 

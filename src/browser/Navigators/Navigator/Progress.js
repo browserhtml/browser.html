@@ -15,7 +15,7 @@ import * as Ref from '../../../common/ref';
 import * as PolyfillView from './Progress/PolyfillView';
 import * as ProgressView from './Progress/ProgressView';
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {Time, Float} from "../../../common/prelude"
 
@@ -34,12 +34,12 @@ export type Action =
   | { type: "Connect", time: Time }
   | { type: "Tick", time: Time }
   | { type: "NoOp" }
-*/
+
 
 const second = 1000;
 
 export class Model {
-  /*::
+  
   ref: Ref.Model;
   value: Percentage;
 
@@ -47,7 +47,7 @@ export class Model {
   loadStart: Time;
   connectTime: Time;
   loadEnd: Time;
-  */
+  
   constructor(
     ref/*:Ref.Model*/
   , value/*:Percentage*/

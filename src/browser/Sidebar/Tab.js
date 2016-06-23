@@ -33,9 +33,9 @@ export type Action =
 */
 
 export class Model {
-  /*::
+  
   isPointerOver: boolean;
-  */
+  
   constructor(isPointerOver/*:boolean*/) {
     this.isPointerOver = isPointerOver
   }

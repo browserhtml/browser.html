@@ -9,9 +9,9 @@ import {Effects} from "reflex";
 import {merge} from "../common/prelude";
 import * as Unknown from "../common/unknown";
 
-/*::
+
 import type {Action, Model} from "./target"
-*/
+
 
 export const Over/*:Action*/ = {type: "Over"};
 export const Out/*:Action*/ = {type: "Out"};

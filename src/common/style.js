@@ -4,9 +4,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/*::
+
 import type {Rules, Sheet} from "./style"
-*/
+
 
 const composedStyles = Object.create(null);
 
@@ -61,7 +61,7 @@ export const mix = (...styles/*:Array<?Rules>*/)/*:Rules*/ => {
   }
 
   const composedStyle = id !== null ?
-    composedStyles[id/*::.toString()*/] :
+    composedStyles[id.toString()] :
     null;
 
   if (composedStyle != null) {
@@ -71,7 +71,7 @@ export const mix = (...styles/*:Array<?Rules>*/)/*:Rules*/ => {
     const composedStyle = Object.assign({}, ...styles);
     // @FlowIssue: Flow does not get spread here.
     composedStyle[ID] = id;
-    composedStyles[id/*::.toString()*/] = composedStyle;
+    composedStyles[id.toString()] = composedStyle;
     return composedStyle;
   }
   else {

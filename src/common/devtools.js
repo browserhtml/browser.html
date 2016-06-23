@@ -5,11 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {Model, Action} from './devtools'
 import type {Result} from "./result"
-*/
+
 
 import * as Settings from '../common/settings';
 import * as Runtime from '../common/runtime';

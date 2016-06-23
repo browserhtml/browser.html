@@ -13,11 +13,11 @@ import hardcodedTiles from '../tiles.json';
 import * as Unknown from "../../../common/unknown";
 import {cursor} from "../../../common/cursor";
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {Tagged} from "../../../common/prelude"
 import type {Action, Model} from "./tiles"
-*/
+
 
 
 

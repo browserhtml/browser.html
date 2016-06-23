@@ -14,10 +14,10 @@ import * as Control from "../common/control"
 import {Style} from "../common/style"
 import {html, Effects, forward} from "reflex"
 
-/*::
+
 import type {Model, Action, StyleSheet, ContextStyle} from "./button"
 import type {Address, DOM} from "reflex"
-*/
+
 
 const TargetAction =
   action =>

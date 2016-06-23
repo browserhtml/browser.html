@@ -6,9 +6,9 @@
 
 import {getOrigin} from '../common/url-helper';
 
-/*::
+
 import type {Icon, URI} from "./favicon"
-*/
+
 
 const constructFaviconURI = (href, size) => `${href}#-moz-resolution=${size},${size}`;
 

@@ -4,9 +4,9 @@
  * license, v. 2.0. if a copy of the mpl was not distributed with this
  * file, you can obtain one at http://mozilla.org/mpl/2.0/. */
 
-/*::
+
 import type {BindingTable, Abort, kind} from "./keyboard"
-*/
+
 
 import {Effects} from "reflex";
 import * as OS from './os';
@@ -92,7 +92,7 @@ if (!('key' in window.KeyboardEvent.prototype)) {
   ( window.KeyboardEvent.prototype
   , 'key'
   , { get: getKey
-    /*::, value: void(0)*/
+    , value: void(0)
     }
   );
 }

@@ -9,7 +9,7 @@ import {merge} from "../common/prelude"
 import * as Unknown from "../common/unknown"
 import {indexOfOffset} from "../common/selector"
 
-/*::
+
 import type {Address, DOM, Never} from "reflex"
 export type Integer = number
 export type ID = string
@@ -52,15 +52,15 @@ export type Card <action, model, flags> =
   , select: (model:model) => [model, Effects<action>]
   , deselect: (model:model) => [model, Effects<action>]
   }
-*/
 
-export class Model /*::<model>*/ {
-  /*::
+
+export class Model <model> {
+  
   nextID: Integer;
   index: Array<ID>;
   cards: Dictionary<ID, model>;
   selected: Maybe<ID>;
-  */
+  
   constructor(
     nextID/*:Integer*/
   , index/*:Array<ID>*/

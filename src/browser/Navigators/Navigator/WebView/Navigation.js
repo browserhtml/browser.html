@@ -10,7 +10,7 @@ import {Effects, Task} from 'reflex';
 import * as Unknown from '../../../../common/unknown'
 import * as Ref from '../../../../common/ref';
 
-/*::
+
 import type {Never} from "reflex";
 import type {Result} from '../../../../common/result';
 import type {ID, URI, Time} from "../../../../common/prelude"
@@ -49,10 +49,10 @@ export type Action =
   | { type: "WentForward"
     , wentForward: Result<Error, void>
     }
-*/
+
 
 export class Model {
-  /*::
+  
   ref: Ref.Model;
   canGoBack: boolean;
   canGoForward: boolean;
@@ -69,7 +69,7 @@ export class Model {
   // `currentURI` as that would cause iframe a reload every time the user
   // navigates away & also destroy navgation history along the way.
   src: URI;
-  */
+  
   constructor(
     ref/*: Ref.Model*/
   , canGoBack/*: boolean*/

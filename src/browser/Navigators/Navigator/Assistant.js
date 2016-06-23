@@ -12,7 +12,7 @@ import {StyleSheet, Style} from '../../../common/style';
 import {cursor} from '../../../common/cursor';
 import * as Unknown from '../../../common/unknown';
 
-/*::
+
 import type {Address, DOM} from "reflex";
 
 export type Flags = boolean
@@ -43,7 +43,7 @@ export type Action =
   | { type: "Suggest", suggest: Suggestion }
   | { type: "Search", search: Search.Action }
   | { type: "History", history: History.Action }
-*/
+
 
 
 export const Open/*:Action*/ = { type: "Open" };

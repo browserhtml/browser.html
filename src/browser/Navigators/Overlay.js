@@ -4,12 +4,12 @@ import {always} from "../../common/prelude"
 import * as Style from "../../common/style"
 import {html, forward, thunk} from "reflex"
 
-/*::
+
 import type {Address, DOM} from "reflex"
 
 export type Action =
   | { type: "Click" }
-*/
+
 
 const Click = always({ type: "Click" })
 

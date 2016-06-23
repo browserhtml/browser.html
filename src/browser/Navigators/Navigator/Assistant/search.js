@@ -16,11 +16,11 @@ import * as Icon from "./icon";
 import * as Suggestion from "./suggestion";
 import * as Unknown from '../../../../common/unknown';
 
-/*::
+
 import type {Address, DOM, Never} from "reflex";
 import type {Result} from "../../../../common/result";
 import type {Completion, Match, Model, Action} from "./search";
-*/
+
 
 const NoOp = always({type: "NoOp"});
 

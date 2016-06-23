@@ -5,11 +5,11 @@ import * as Style from '../../../../common/style'
 import {always} from '../../../../common/prelude'
 import * as Title from '../Title'
 
-/*::
+
 import type {Address, DOM} from "reflex"
 export type Action =
   | { type: "Click" }
-*/
+
 
 const Click = always({ type: "Click" })
 

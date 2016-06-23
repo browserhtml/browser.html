@@ -4,23 +4,23 @@ import * as Unknown from "./unknown"
 import {Task, Effects} from "reflex"
 import {ease} from "eased"
 
-/*::
+
 export type Time = number
 export type Action =
   | { type: "Tick", time: Time }
   | { type: "End", time: Time }
 
 import type {Interpolation, Easing} from "eased"
-*/
 
-class Transition /*::<model>*/ {
-  /*::
+
+class Transition <model> {
+  
   duration: Time;
   now: Time;
   elapsed: Time;
   from: model;
   to: model;
-  */
+  
   constructor(
     from/*:model*/
   , to/*:model*/
@@ -36,11 +36,11 @@ class Transition /*::<model>*/ {
   }
 }
 
-export class Model /*::<model>*/ {
-  /*::
+export class Model <model> {
+  
   state: model;
   transition: ?Transition<model>;
-  */
+  
   constructor(
     state/*:model*/
   , transition/*:?Transition<model>*/

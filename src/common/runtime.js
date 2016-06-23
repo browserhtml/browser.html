@@ -5,12 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-/*::
+
 import type {Never} from "reflex"
 import type {Result} from "../common/result"
 import type {RemoteDebugResponseType, DownloadUpdateType} from "./runtime"
 
-*/
+
 import {always} from "../common/prelude";
 import {Task} from "reflex";
 import {ok, error} from "../common/result";

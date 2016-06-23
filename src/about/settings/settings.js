@@ -11,10 +11,10 @@ import * as Settings from '../../common/settings';
 import * as Unknown from '../../common/unknown';
 import * as Setting from './setting';
 
-/*::
+
 import type {Address, DOM} from "reflex";
 import type {Name, Value, Model, Action} from "./settings";
-*/
+
 
 // Actions
 

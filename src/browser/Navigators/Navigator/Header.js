@@ -8,7 +8,7 @@ import * as ShowTabsButton from './Header/ShowTabsButton';
 import * as NewTabButton from './Header/NewTabButton';
 import * as BackButton from './Header/BackButton';
 
-/*::
+
 import type {Address, DOM} from "reflex"
 
 export type Model = string
@@ -16,7 +16,7 @@ export type Action =
   | { type: "ShowTabs" }
   | { type: "OpenNewTab" }
   | { type: "GoBack" }
-*/
+
 
 const tagShowTabs = always({ type: "ShowTabs" });
 const tagNewTab = always({ type: "OpenNewTab" });

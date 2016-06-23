@@ -9,9 +9,9 @@ import {merge} from "../common/prelude";
 import * as Unknown from "../common/unknown";
 import {Effects} from "reflex";
 
-/*::
+
 import type {Model, Action} from "./focusable"
-*/
+
 
 export const Focus/*:Action*/ =
   { type:"Focus"

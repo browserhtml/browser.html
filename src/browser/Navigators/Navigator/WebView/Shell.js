@@ -11,7 +11,7 @@ import {ok, error} from "../../../../common/result";
 import * as Focusable from "../../../../common/focusable";
 import * as Ref from '../../../../common/ref';
 
-/*::
+
 import type {Result} from "../../../../common/result"
 import type {Never} from "reflex"
 import type {Float} from "../../../../common/prelude"
@@ -32,15 +32,15 @@ export type Action =
     }
   | { type: "Focus" }
   | { type: "Blur" }
-*/
+
 
 export class Model {
-  /*::
+  
   ref: Ref.Model;
   zoom: Float;
   isVisible: boolean;
   isFocused: boolean;
-  */
+  
   constructor(
     ref/*:Ref.Model*/
   , zoom/*:Float*/

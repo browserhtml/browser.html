@@ -12,10 +12,10 @@ import {cursor} from '../../../common/cursor';
 import * as Input from './input';
 import * as Output from './output';
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {ID, Model, Action} from "./cell"
-*/
+
 
 export const Print =
   (output/*:Output.Model*/)/*:Action*/ =>

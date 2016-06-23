@@ -13,10 +13,10 @@ import * as Runtime from "../common/runtime";
 import * as Controls from "./shell/controls";
 import * as Unknown from "../common/unknown";
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {Model, Action} from "./shell"
-*/
+
 
 // @TODO: IO stuff should probably live elsewhere.
 const fetchFocus =

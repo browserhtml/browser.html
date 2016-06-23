@@ -10,10 +10,10 @@ import {merge, always, batch} from "../../../../common/prelude";
 import {Style, StyleSheet} from '../../../../common/style';
 import * as URL from '../../../../common/url-helper';
 
-/*::
+
 import type {Address, DOM} from "reflex";
 import type {URI} from "./url";
-*/
+
 
 
 const styleSheet = StyleSheet.create

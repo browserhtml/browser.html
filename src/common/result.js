@@ -5,10 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-/*::
+
 import type {Result, Ok, Error} from "./result"
 export type {Result, Ok, Error}
-*/
+
 
 export const ok = /*::<value>*/
   (value/*:value*/)/*:Ok<value>*/ =>

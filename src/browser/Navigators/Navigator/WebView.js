@@ -26,7 +26,7 @@ import * as ElectronFrame from './WebView/ElectronFrame';
 import * as Ref from '../../../common/ref';
 import * as Tab from '../../Sidebar/Tab';
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {URI, Time, Integer, Float} from "../../../common/prelude"
 import type {Icon} from "../../../common/favicon"
@@ -113,10 +113,10 @@ export type Action =
     , title: string
     , message: string
     }
-*/
+
 
 export class Model {
-  /*::
+  
   ref: Ref.Model;
   guestInstanceId: ?string;
   name: string;
@@ -126,7 +126,7 @@ export class Model {
   navigation: Navigation.Model;
   security: Security.Model;
   page: Page.Model;
-  */
+  
   constructor(
     ref/*: Ref.Model*/
   , guestInstanceId/*: ?string*/

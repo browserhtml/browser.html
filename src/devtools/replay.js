@@ -7,7 +7,7 @@ import * as Runtime from "../common/runtime"
 import * as Unknown from "../common/unknown"
 import * as Style from "../common/style"
 
-/*::
+
 import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} from "reflex"
 import type {Result} from "../common/result"
 
@@ -27,7 +27,7 @@ type Step <model, action> =
   [ Model
   , Effects<Action<model, action>>
   ]
-*/
+
 
 
 

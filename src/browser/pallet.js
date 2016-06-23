@@ -10,10 +10,10 @@ import tinycolor from 'tinycolor2';
 import {Effects, Task} from 'reflex';
 import {getDomainName} from '../common/url-helper';
 
-/*::
+
 import type {Address, DOM, Never} from "reflex"
 import type {URI, HexColor, Color, Model, Theme} from "./pallet";
-*/
+
 
 // Hand-curated themes for popular websites.
 const curated = {

@@ -7,10 +7,10 @@
 import * as Easing from "eased";
 
 export class Model {
-  /*::
+  
   rightOffset: number;
   depth: number;
-  */
+  
   constructor(depth/*:number*/, rightOffset/*:number*/=0) {
     this.depth = depth
     this.rightOffset = rightOffset

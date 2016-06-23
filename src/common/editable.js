@@ -9,10 +9,10 @@ import {merge} from "../common/prelude";
 import * as Unknown from "../common/unknown";
 import {Effects} from "reflex";
 
-/*::
+
 import type {Address, DOM} from "reflex";
 import type {Model, Action, Selection} from "./editable"
-*/
+
 
 // Actions
 

@@ -14,10 +14,10 @@ import * as Button from "../common/button"
 import {Style} from "../common/style"
 import {html, Effects, forward, Task} from "reflex"
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {Action, Model, StyleSheet, ContextStyle} from "./toggle"
-*/
+
 
 
 export const init =

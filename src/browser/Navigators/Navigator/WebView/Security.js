@@ -8,7 +8,7 @@ import {Effects} from 'reflex';
 import * as Unknown from '../../../../common/unknown';
 
 
-/*::
+
 export type State =
   | "broken"
   | "secure"
@@ -20,14 +20,14 @@ export type Action =
     , state: State
     , extendedValidation: boolean
     }
-*/
+
 
 export class Model {
-  /*::
+  
   state: State;
   secure: boolean;
   extendedValidation: boolean;
-  */
+  
   constructor(
     state/*:State*/
   , secure/*:boolean*/

@@ -14,7 +14,7 @@ import * as Navigator from "./Navigators/Navigator"
 import * as URI from "../common/url-helper";
 import * as Tabs from "./Sidebar/Tabs";
 
-/*::
+
 import type {Address, DOM} from "reflex"
 
 export type Action =
@@ -38,7 +38,7 @@ export type Action =
   | { type: "Animation", animation: Animation.Action }
   | { type: "Tabs", tabs: Tabs.Action }
   | { type: "Deck", deck: Deck.Action<Navigator.Action, Navigator.Flags> }
-*/
+
 
 export const Expose = { type: "Expose" }
 export const Focus = { type: "Focus" }
@@ -60,12 +60,12 @@ export const SelectPrevious = { type: "SelectPrevious" }
 export const Close = { type: "Close" }
 
 export class Model {
-  /*::
+  
   zoom: boolean;
   shrink: boolean;
   deck: Deck.Model;
   animation: Animation.Model<Display.Model>;
-  */
+  
   constructor(
     zoom/*:boolean*/
   , shrink/*:boolean*/
@@ -292,7 +292,7 @@ const updateTabs =
   (model, action) =>
   // Flow inference seems to fail here, so we just make it believe
   // that we restructured action so it will suceed inferring.
-  (/*::
+  (
     action.type === "Modify"
   ? updateDeck
     ( model
@@ -304,7 +304,7 @@ const updateTabs =
         }
       }
     )
-  :*/updateDeck(model, action)
+  :updateDeck(model, action)
   )
 
 const selectNext =

@@ -7,9 +7,9 @@
 
 import {Effects} from "reflex"
 
-/*::
+
 import type {Tagged} from "./prelude"
-*/
+
 
 export const merge = /*::<model:{}>*/
   ( model/*:model*/

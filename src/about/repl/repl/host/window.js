@@ -8,10 +8,10 @@ import {html, thunk, forward, Effects, Task} from 'reflex';
 import {merge, batch, tag, tagged} from "../../../../common/prelude";
 import {ok, error} from "../../../../common/result";
 
-/*::
+
 import type {ID, EvaluationResult} from "../host"
 import type {Never} from "reflex"
-*/
+
 
 const DELETE = new String('delete');
 const executeWith = (context, execute) => {

@@ -6,19 +6,19 @@
 
 import * as Easing from "eased";
 
-/*::
+
 import type {Integer, Float} from "../../common/prelude"
-*/
+
 
 export class Model {
-  /*::
+  
   x: Integer;
   shadow: Float;
   spacing: Integer;
   toolbarOpacity: Float;
   titleOpacity: Float;
   tabWidth: Integer;
-  */
+  
   constructor(
     x/*: Integer*/
   , shadow/*: Float*/

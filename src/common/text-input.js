@@ -16,10 +16,10 @@ import * as Control from '../common/control';
 
 import {on, focus, selection} from '@driver';
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {Action, Model, StyleSheet, ContextStyle} from './text-input'
-*/
+
 
 
 

@@ -40,12 +40,12 @@ export type Action =
 
 
 export class Model {
-  /*::
+  
   isAttached: boolean;
   isExpanded: boolean;
   animation: Animation.Model<Display.Model>;
   toolbar: Toolbar.Model;
-  */
+  
   constructor(
     isAttached/*: boolean*/
   , isExpanded/*: boolean*/

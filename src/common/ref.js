@@ -2,7 +2,7 @@
 
 import {Effects, Task} from "reflex"
 
-/*::
+
 import type {Never} from "reflex"
 
 export type Model =
@@ -12,7 +12,7 @@ export type Model =
 
 export type Action =
   | Action
-*/
+
 
 const state =
   { nextRef: 0

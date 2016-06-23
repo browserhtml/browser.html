@@ -15,10 +15,10 @@ import {always, merge} from '../../common/prelude';
 import {cursor} from '../../common/cursor';
 
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {Model, Action} from "./controls"
-*/
+
 
 export const CloseWindow/*:Action*/ = {type: "CloseWindow"};
 export const MinimizeWindow/*:Action*/ = {type: "MinimizeWindow"};

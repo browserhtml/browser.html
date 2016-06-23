@@ -9,11 +9,11 @@ import * as Unknown from '../common/unknown';
 import {merge, always} from '../common/prelude';
 import {Effects, Task} from 'reflex';
 
-/*::
+
 import type {Model, Action, Name, Value, Settings} from "./settings"
 import type {Address, Never} from "reflex"
 import type {Result} from "./result"
-*/
+
 
 
 const NotSupported =

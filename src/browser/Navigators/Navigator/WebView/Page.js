@@ -11,7 +11,7 @@ import * as Pallet from '../../../../browser/pallet';
 import * as Unknown from '../../../../common/unknown';
 import * as Ref from '../../../../common/ref';
 
-/*::
+
 import type {URI} from "../../../../common/prelude"
 import type {Icon} from "../../../../common/favicon"
 
@@ -43,10 +43,10 @@ export type Action =
   | { type: "LocationChanged"
     , uri: URI
     }
-*/
+
 
 export class Model {
-  /*::
+  
   uri: URI;
   title: ?string;
   faviconURI: ?URI;
@@ -56,7 +56,7 @@ export class Model {
   curatedColor: ?Pallet.Theme;
 
   pallet: Pallet.Model;
-  */
+  
   constructor(
     uri/*: URI*/
   , title/*: ?string*/

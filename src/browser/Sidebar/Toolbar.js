@@ -12,7 +12,7 @@ import {merge} from "../../common/prelude";
 import {cursor} from "../../common/cursor";
 import * as Unknown from "../../common/unknown";
 
-/*::
+
 import type {Address, DOM} from "reflex"
 
 export type Context =
@@ -24,12 +24,12 @@ export type Action =
   | { type: "Detach" }
   | { type: "CreateWebView" }
   | { type: "Toggle", toggle: Toggle.Action }
-*/
+
 
 export class Model {
-  /*::
+  
   pin: Toggle.Model;
-  */
+  
   constructor(
     pin/*:Toggle.Model*/
   ) {

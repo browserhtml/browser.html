@@ -6,9 +6,9 @@
 
 import {Task, Effects} from "reflex"
 
-/*::
+
 import type {Integer} from "../common/prelude"
-*/
+
 
 export const readTitle = /*::<value, model:{title?:string}>*/
   (model/*:model*/, fallback/*:value*/)/*: string | value*/ =>

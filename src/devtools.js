@@ -10,7 +10,7 @@ import * as Replay from "./devtools/replay"
 import * as Record from "./devtools/record"
 import * as Log from "./devtools/log"
 
-/*::
+
 import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} from "reflex"
 import type {Result} from "./common/result"
 
@@ -46,7 +46,7 @@ type Flags <model, action, flags> =
   { Debuggee: Debuggee<model, action>
   , flags: flags
   }
-*/
+
 
 const TagRecord = /*::<model, action>*/
   (action/*:Record.Action<model, action>*/)/*:Action<model, action>*/ =>

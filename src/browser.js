@@ -92,13 +92,13 @@ import type {URI} from "./common/prelude"
 */
 
 export class Model {
-  /*::
+  
   version: Version;
   shell: Shell.Model;
   navigators: Navigators.Model;
   sidebar: Sidebar.Model;
   devtools: Devtools.Model;
-  */
+  
   constructor(
     version/*:Version*/=Package.version
   , shell/*:Shell.Model*/

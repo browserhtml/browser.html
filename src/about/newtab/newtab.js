@@ -13,10 +13,10 @@ import * as Unknown from "../../common/unknown";
 import * as Tiles from './newtab/tiles';
 import * as Wallpapers from './newtab/wallpapers';
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {Model, Action} from "./newtab"
-*/
+
 
 const WallpapersAction =
   action =>

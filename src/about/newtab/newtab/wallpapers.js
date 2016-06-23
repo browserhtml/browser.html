@@ -12,10 +12,10 @@ import * as Unknown from "../../../common/unknown";
 import hardcodedWallpaper from "../wallpaper.json";
 import * as Wallpaper from "./wallpaper";
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {Model, Action, ID} from "./wallpapers"
-*/
+
 
 export const init =
   ()/*:[Model, Effects<Action>]*/ =>
