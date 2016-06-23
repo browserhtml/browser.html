@@ -185,7 +185,7 @@ const decodeLocationChange =
     , canGoForward: null
     }
   : { type: "LocationChanged"
-    , uri: detail.uri
+    , uri: detail.url || detail.uri
     , time: performance.now()
     , canGoBack: detail.canGoBack
     , canGoForward: detail.canGoForward

@@ -15,19 +15,19 @@
   ]
 , "entries":
   { "0":
-    { "title": "YouTube"
-    , "uri": "https://youtube.com"
-    , "src": "./tiles/youtube.com.png"
+    { "title": "DuckDuckGo"
+    , "uri": "https://duckduckgo.com"
+    , "src": "./tiles/duckduckgo.com.png"
     }
   , "1":
-    { "title": "Facebook"
-    , "uri": "https://facebook.com"
-    , "src": "./tiles/facebook.com.png"
+    { "title": "Github"
+    , "uri": "https://github.com"
+    , "src": "./tiles/github.com.png"
     }
   , "2":
-    { "title": "Amazon"
-    , "uri": "https://amazon.com"
-    , "src": "./tiles/amazon.com.png"
+    { "title": "Wikipedia"
+    , "uri": "https://wikipedia.org"
+    , "src": "./tiles/wikipedia.org.png"
     }
   , "3":
     { "title": "Twitter"
@@ -35,44 +35,44 @@
     , "src": "./tiles/twitter.com.png"
     }
   , "4":
-    { "title": "Wikipedia"
-    , "uri": "https://wikipedia.org"
-    , "src": "./tiles/wikipedia.org.png"
+    { "title": "Reddit"
+    , "uri": "https://reddit.com"
+    , "src": "./tiles/reddit.com.png"
     }
   , "5":
-    { "title": "Quartz"
-    , "uri": "https://qz.com"
-    , "src": "./tiles/qz.com.png"
+    { "title": "Hacker News"
+    , "uri": "https://news.ycombinator.com"
+    , "src": "./tiles/news.ycombinator.com.png"
     }
   , "6":
-    { "title": "Medium"
-    , "uri": "https://medium.com"
-    , "src": "./tiles/medium.com.png"
+    { "title": "Servo"
+    , "uri": "https://servo.org"
+    , "src": "./tiles/servo.org.png"
     }
   , "7":
-    { "title": "Vox"
-    , "uri": "https://vox.com"
-    , "src": "./tiles/vox.com.png"
+    { "title": "Rust"
+    , "uri": "https://www.rust-lang.org"
+    , "src": "./tiles/rust-lang.org.png"
     }
   , "8":
-    { "title": "Tumblr"
-    , "uri": "https://tumblr.com"
-    , "src": "./tiles/tumblr.com.png"
+    { "title": "Demo: Moire"
+    , "uri": "https://servo.org/bhtml-newtab/webrender-demos/moire.html"
+    , "src": "./tiles/demo-moire.png"
     }
   , "9":
-    { "title": "Github"
-    , "uri": "https://github.com"
-    , "src": "./tiles/github.com.png"
+    { "title": "Demo: Spheres"
+    , "uri": "https://servo.org/bhtml-newtab/webrender-demos/spheres.html"
+    , "src": "./tiles/demo-spheres.png"
     }
   , "10":
-    { "title": "Stack Overflow"
-    , "uri": "https://stackoverflow.com"
-    , "src": "./tiles/stackoverflow.com.png"
+    { "title": "Demo: Transparent Rects"
+    , "uri": "https://servo.org/bhtml-newtab/webrender-demos/transparent_rects.html"
+    , "src": "./tiles/demo-transparent_rects.png"
     }
   , "11":
-    { "title": "browser.html Slack"
-    , "uri": "https://browserhtml.slack.com"
-    , "src": "./tiles/slack.com.png"
+    { "title": "Demo: Menus"
+    , "uri": "https://servo.org/bhtml-newtab/webrender-demos/menus.html"
+    , "src": "./tiles/demo-menus.png"
     }
   }
 }

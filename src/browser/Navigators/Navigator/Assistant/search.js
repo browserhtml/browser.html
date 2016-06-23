@@ -133,7 +133,7 @@ const search =
   new Task((succeed, fail) => {
     const request = new XMLHttpRequest({ mozSystem: true });
     pendingRequests[id] = request;
-    const uri = `http://ac.duckduckgo.com/ac/?q=${input}&type=list`
+    const uri = `https://ac.duckduckgo.com/ac/?q=${input}&type=list`
     request.open
     ( 'GET'
     , uri
