@@ -5,16 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {merge, always} from "../common/prelude"
-import {cursor} from "../common/cursor"
-import * as Unknown from "../common/unknown"
-import * as Target from "../common/target"
-import * as Focusable from "../common/focusable"
-import {Style} from "../common/style"
-import {html, Effects, forward} from "reflex"
-
-
-import type {Model, Action} from "./control"
+import { merge } from '../common/prelude'
+import * as Unknown from '../common/unknown'
+import { Effects } from 'reflex'
+import type { Model, Action } from './control'
 
 
 export const Disable:Action =

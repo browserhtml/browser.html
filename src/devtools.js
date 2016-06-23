@@ -1,18 +1,14 @@
 /* @flow */
 
-import {Effects, Task, thunk, html, forward} from "reflex"
-import {merge} from "./common/prelude"
-import {cursor} from "./common/cursor"
-import {ok, error} from "./common/result"
-import * as Runtime from "./common/runtime"
-import * as Unknown from "./common/unknown"
-import * as Replay from "./devtools/replay"
-import * as Record from "./devtools/record"
-import * as Log from "./devtools/log"
-
-
-import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} from "reflex"
-import type {Result} from "./common/result"
+import type { Address, Never, DOM, Init, Update, View, AdvancedConfiguration } from 'reflex'
+import { Effects, thunk, html, forward } from 'reflex'
+import { merge } from './common/prelude'
+import type { Result } from './common/result'
+import * as Runtime from './common/runtime'
+import * as Unknown from './common/unknown'
+import * as Replay from './devtools/replay'
+import * as Record from './devtools/record'
+import * as Log from './devtools/log'
 
 export type Model <model, action> =
   { record: ?Record.Model<model, action>

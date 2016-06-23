@@ -4,23 +4,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {html, forward, Effects} from 'reflex';
-import {Style} from '../common/style';
-import {compose} from '../lang/functional';
-import {tag, tagged, merge, always} from '../common/prelude';
-import {cursor} from "../common/cursor"
-import * as Unknown from '../common/unknown';
-import * as Focusable from '../common/focusable';
-import * as Editable from '../common/editable';
-import * as Control from '../common/control';
-
-import {on, focus, selection} from '@driver';
-
-
-import type {Address, DOM} from "reflex"
-import type {Action, Model, StyleSheet, ContextStyle} from './text-input'
-
-
+import type { Address, DOM } from 'reflex'
+import { html, forward, Effects } from 'reflex'
+import { Style } from '../common/style'
+import { compose } from '../lang/functional'
+import { tag, tagged, merge, always } from '../common/prelude'
+import { cursor } from '../common/cursor'
+import * as Unknown from '../common/unknown'
+import * as Focusable from '../common/focusable'
+import * as Editable from '../common/editable'
+import * as Control from '../common/control'
+import { on, focus, selection } from '@driver'
+import type { Action, Model, StyleSheet, ContextStyle } from './text-input'
 
 
 const EditableAction = tag("Editable");

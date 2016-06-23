@@ -4,30 +4,26 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, html, forward, thunk} from "reflex"
-import {merge, always, batch} from "../../common/prelude";
-import {cursor} from "../../common/cursor";
-import * as Style from "../../common/style";
-
-import * as Assistant from "./Navigator/Assistant";
-import * as Overlay from "./Navigator/Overlay";
-import * as Input from "./Navigator/Input";
-import * as Output from "./Navigator/WebView";
-import * as Unknown from "../../common/unknown";
-import * as URL from '../../common/url-helper';
-import * as Header from './Navigator/Header';
-import * as Title from './Navigator/Title';
-import * as Progress from './Navigator/Progress';
-import * as Display from './Navigator/Display';
-import * as Animation from "../../common/Animation";
-import * as Easing from "eased";
-import * as Tab from "../Sidebar/Tab";
-
-import {readTitle, isSecure, isDark, canGoBack} from './Navigator/WebView/Util';
-
-
-import type {Address, DOM} from "reflex"
-import type {URI, Time} from "./Navigator/WebView"
+import type { Address, DOM } from 'reflex'
+import { Effects, html, forward, thunk } from 'reflex'
+import { always, batch } from '../../common/prelude'
+import { cursor } from '../../common/cursor'
+import * as Style from '../../common/style'
+import * as Assistant from './Navigator/Assistant'
+import * as Overlay from './Navigator/Overlay'
+import * as Input from './Navigator/Input'
+import type { URI, Time } from './Navigator/WebView'
+import * as Output from './Navigator/WebView'
+import * as Unknown from '../../common/unknown'
+import * as URL from '../../common/url-helper'
+import * as Header from './Navigator/Header'
+import * as Title from './Navigator/Title'
+import * as Progress from './Navigator/Progress'
+import * as Display from './Navigator/Display'
+import * as Animation from '../../common/Animation'
+import * as Easing from 'eased'
+import * as Tab from '../Sidebar/Tab'
+import { readTitle, isSecure, isDark, canGoBack } from './Navigator/WebView/Util'
 
 export type Flags =
   { output: Output.Flags

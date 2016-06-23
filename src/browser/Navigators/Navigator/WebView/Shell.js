@@ -4,17 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, Task} from "reflex";
-import {merge, always} from "../../../../common/prelude";
-import {cursor} from "../../../../common/cursor";
-import {ok, error} from "../../../../common/result";
-import * as Focusable from "../../../../common/focusable";
-import * as Ref from '../../../../common/ref';
-
-
-import type {Result} from "../../../../common/result"
-import type {Never} from "reflex"
-import type {Float} from "../../../../common/prelude"
+import type { Never } from 'reflex'
+import { Effects, Task } from 'reflex'
+import type { Float } from '../../../../common/prelude'
+import { always } from '../../../../common/prelude'
+import type { Result } from '../../../../common/result'
+import { ok, error } from '../../../../common/result'
+import * as Focusable from '../../../../common/focusable'
+import * as Ref from '../../../../common/ref'
 
 export type Action =
   | { type: "NoOp" }

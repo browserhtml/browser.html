@@ -1,21 +1,19 @@
 /* @flow */
 
-import * as Deck from "../common/Deck"
-import * as Animation from "../common/Animation"
-import * as Unknown from "../common/unknown"
-import * as Display from "./Navigators/Display"
-import {Effects, html, forward, thunk} from "reflex"
-import {cursor} from "../common/cursor"
-import {always} from "../common/prelude"
-import * as Style from "../common/style"
-import * as Easing from "eased"
-import * as Overlay from "./Navigators/Overlay"
-import * as Navigator from "./Navigators/Navigator"
-import * as URI from "../common/url-helper";
-import * as Tabs from "./Sidebar/Tabs";
-
-
-import type {Address, DOM} from "reflex"
+import * as Deck from '../common/Deck'
+import * as Animation from '../common/Animation'
+import * as Unknown from '../common/unknown'
+import * as Display from './Navigators/Display'
+import type { Address, DOM } from 'reflex'
+import { Effects, html, forward, thunk } from 'reflex'
+import { cursor } from '../common/cursor'
+import { always } from '../common/prelude'
+import * as Style from '../common/style'
+import * as Easing from 'eased'
+import * as Overlay from './Navigators/Overlay'
+import * as Navigator from './Navigators/Navigator'
+import * as URI from '../common/url-helper'
+import * as Tabs from './Sidebar/Tabs'
 
 export type Action =
   | { type: "Expose" }

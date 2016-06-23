@@ -1,17 +1,12 @@
 /* @flow */
 
-import {Effects, node, html, forward} from 'reflex';
-import * as URL from '../../../../common/url-helper';
-import * as Driver from '@driver';
-import * as Style from '../../../../common/style';
-import {on} from '@driver';
-import {always} from '../../../../common/prelude';
-
-
-
-import type {Address, DOM} from "reflex"
-import type {Model, Action} from "../WebView"
-import {performance} from "../../../../common/performance"
+import type { Address, DOM } from 'reflex'
+import { node, forward } from 'reflex'
+import { on } from '@driver'
+import * as Style from '../../../../common/style'
+import { always } from '../../../../common/prelude'
+import type { Model, Action } from '../WebView'
+import { performance } from '../../../../common/performance'
 
 
 const Blur = always({ type: "Blur" });

@@ -4,12 +4,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, Task} from 'reflex';
-import {merge, always} from "../common/prelude";
-import * as Unknown from "../common/unknown";
-
-
-import type {Action, Model, Time} from "./stopwatch"
+import { Effects, Task } from 'reflex'
+import { merge } from '../common/prelude'
+import * as Unknown from '../common/unknown'
+import type { Action, Model, Time } from './stopwatch'
 
 
 export const Start:Action = {type: "Start"};

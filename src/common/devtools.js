@@ -6,18 +6,16 @@
 
 
 
-import type {Address, DOM} from "reflex"
-import type {Model, Action} from './devtools'
-import type {Result} from "./result"
-
-
-import * as Settings from '../common/settings';
-import * as Runtime from '../common/runtime';
-import * as Unknown from '../common/unknown';
-import {merge, always} from '../common/prelude';
-import {cursor} from '../common/cursor';
-import {Effects, html, thunk, forward} from 'reflex';
-import {Style, StyleSheet} from '../common/style';
+import type { Address, DOM } from 'reflex'
+import { Effects, html, thunk, forward } from 'reflex'
+import type { Model, Action } from './devtools'
+import type { Result } from './result'
+import * as Settings from '../common/settings'
+import * as Runtime from '../common/runtime'
+import * as Unknown from '../common/unknown'
+import { merge, always } from '../common/prelude'
+import { cursor } from '../common/cursor'
+import { Style, StyleSheet } from '../common/style'
 
 
 const descriptions =

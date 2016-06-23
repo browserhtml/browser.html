@@ -4,21 +4,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {tag} from "../../../common/prelude"
-import {Effects, html, thunk, forward} from "reflex"
-import {Style, StyleSheet} from "../../../common/style";
-import * as Tile from './tile';
+import type { Tagged } from '../../../common/prelude'
+import { tag } from '../../../common/prelude'
+import type { Address, DOM } from 'reflex'
+import { Effects, html, thunk, forward } from 'reflex'
+import { StyleSheet } from '../../../common/style'
+import * as Tile from './tile'
+import hardcodedTiles from '../tiles.json'
+import * as Unknown from '../../../common/unknown'
+import type { Action, Model } from './tiles'
 // @TODO hard-coded until we get history support in Servo.
-import hardcodedTiles from '../tiles.json';
-import * as Unknown from "../../../common/unknown";
-import {cursor} from "../../../common/cursor";
-
-
-import type {Address, DOM} from "reflex"
-import type {Tagged} from "../../../common/prelude"
-import type {Action, Model} from "./tiles"
-
-
 
 
 export const init =

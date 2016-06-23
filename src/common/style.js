@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import type {Rules, Sheet} from "./style"
+import type { Rules, Sheet } from './style'
 
 
 const composedStyles = Object.create(null);

@@ -5,21 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {Effects, Task, html, forward, thunk} from "reflex";
-import {merge, always, batch} from "../../../../common/prelude";
-import {Style, StyleSheet} from '../../../../common/style';
-import {ok, error} from '../../../../common/result';
-
-import * as Title from "./title";
-import * as URL from "./url";
-import * as Icon from "./icon";
-import * as Suggestion from "./suggestion";
-import * as Unknown from '../../../../common/unknown';
-
-
-import type {Address, DOM, Never} from "reflex";
-import type {Result} from "../../../../common/result";
-import type {Completion, Match, Model, Action} from "./history";
+import type { Address, DOM, Never } from 'reflex'
+import { Effects, Task, html, forward, thunk } from 'reflex'
+import { merge, always } from '../../../../common/prelude'
+import type { Result } from '../../../../common/result'
+import * as Title from './title'
+import * as URL from './url'
+import * as Icon from './icon'
+import * as Suggestion from './suggestion'
+import * as Unknown from '../../../../common/unknown'
+import type { Completion, Match, Model, Action } from './history'
 
 
 const NoOp = always({type: "NoOp"});

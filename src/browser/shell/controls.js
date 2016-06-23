@@ -4,20 +4,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {html, forward, Effects} from 'reflex';
-import {Style, StyleSheet} from '../../common/style';
-import * as Target from '../../common/target';
-import * as Button from '../../common/button';
-import * as Toggle from '../../common/toggle';
-import * as Unknown from '../../common/unknown';
-import {compose} from '../../lang/functional';
-import {always, merge} from '../../common/prelude';
-import {cursor} from '../../common/cursor';
-
-
-
-import type {Address, DOM} from "reflex"
-import type {Model, Action} from "./controls"
+import type { Address, DOM } from 'reflex'
+import { html, forward, Effects } from 'reflex'
+import { Style, StyleSheet } from '../../common/style'
+import * as Target from '../../common/target'
+import * as Button from '../../common/button'
+import * as Toggle from '../../common/toggle'
+import * as Unknown from '../../common/unknown'
+import { compose } from '../../lang/functional'
+import { always, merge } from '../../common/prelude'
+import { cursor } from '../../common/cursor'
+import type { Model, Action } from './controls'
 
 
 export const CloseWindow:Action = {type: "CloseWindow"};

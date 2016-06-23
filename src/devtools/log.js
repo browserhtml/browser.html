@@ -1,15 +1,12 @@
 /* @flow */
 
-import {Effects, Task, html, forward} from "reflex"
-import {merge, always} from "../common/prelude"
-import {ok, error} from "../common/result"
-import * as Runtime from "../common/runtime"
-import * as Unknown from "../common/unknown"
-
-
-import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} from "reflex"
-import type {Result} from "../common/result"
-import type {URI, ID} from "../common/prelude"
+import type { Address, Never, DOM, Init, Update, View, AdvancedConfiguration } from 'reflex'
+import { Effects, html } from 'reflex'
+import type { URI, ID } from '../common/prelude'
+import { always } from '../common/prelude'
+import type { Result } from '../common/result'
+import * as Runtime from '../common/runtime'
+import * as Unknown from '../common/unknown'
 
 
 export type Model <model, action> =

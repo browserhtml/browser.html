@@ -1,7 +1,7 @@
 /* @flow */
 
-import {thunk, html} from 'reflex';
-import * as Style from '../../../../common/style';
+import { thunk, html } from 'reflex'
+import * as Style from '../../../../common/style'
 
 /*::
 import * as Ref from '../../../../common/ref';

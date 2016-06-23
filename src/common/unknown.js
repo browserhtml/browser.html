@@ -4,10 +4,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, Task} from "reflex";
-
-import type {Action} from "./unknown";
-import type {Never} from "reflex";
+import type { Never } from 'reflex'
+import { Effects, Task } from 'reflex'
+import type { Action } from './unknown'
 
 
 export function warn(...params:Array<any>):Task<Never, Action> {

@@ -6,7 +6,7 @@
 
 
 
-import type {Result, Ok, Error} from "./result"
+import type { Result, Ok, Error } from './result'
 export type {Result, Ok, Error}
 
 

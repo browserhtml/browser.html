@@ -4,12 +4,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {html, thunk, forward, Effects} from 'reflex';
-import * as Style from '../common/style';
-
-
-import type {Address, DOM} from "reflex"
-import type {Action, Model, StyleSheet, ContextStyle} from "./image"
+import type { Address, DOM } from 'reflex'
+import { html } from 'reflex'
+import * as Style from '../common/style'
+import type { Action, Model, StyleSheet, ContextStyle } from './image'
 
 
 const baseStyleSheet:StyleSheet = Style.createSheet

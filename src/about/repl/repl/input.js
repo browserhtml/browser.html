@@ -4,16 +4,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {html, thunk, forward, Effects} from 'reflex';
-import {merge, always} from "../../../common/prelude";
-import {Style, StyleSheet} from '../../../common/style';
-import * as Settings from '../../../common/settings';
-import * as Unknown from '../../../common/unknown';
-import {focus} from "@driver";
-
-
-import type {Address, DOM} from "reflex"
-import type {Model, Action} from "./input"
+import type { Address, DOM } from 'reflex'
+import { html, thunk, forward, Effects } from 'reflex'
+import { merge, always } from '../../../common/prelude'
+import { Style, StyleSheet } from '../../../common/style'
+import * as Unknown from '../../../common/unknown'
+import { focus } from '@driver'
+import type { Model, Action } from './input'
 
 
 export const Change =

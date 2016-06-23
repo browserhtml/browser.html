@@ -4,17 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, html, thunk, forward} from "reflex"
-import {merge, tagged} from "../../../common/prelude"
-import {Style, StyleSheet} from "../../../common/style";
-import * as Unknown from "../../../common/unknown";
-
-import hardcodedWallpaper from "../wallpaper.json";
-import * as Wallpaper from "./wallpaper";
-
-
-import type {Address, DOM} from "reflex"
-import type {Model, Action, ID} from "./wallpapers"
+import type { Address, DOM } from 'reflex'
+import { Effects, html, thunk, forward } from 'reflex'
+import { merge } from '../../../common/prelude'
+import { StyleSheet } from '../../../common/style'
+import * as Unknown from '../../../common/unknown'
+import hardcodedWallpaper from '../wallpaper.json'
+import * as Wallpaper from './wallpaper'
+import type { Model, Action, ID } from './wallpapers'
 
 
 export const init =

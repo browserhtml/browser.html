@@ -4,10 +4,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {getOrigin} from '../common/url-helper';
-
-
-import type {Icon, URI} from "./favicon"
+import { getOrigin } from '../common/url-helper'
+import type { Icon, URI } from './favicon'
 
 
 const constructFaviconURI = (href, size) => `${href}#-moz-resolution=${size},${size}`;

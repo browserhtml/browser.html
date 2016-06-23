@@ -4,17 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {html, thunk, forward, Effects} from 'reflex';
-import {merge, always, batch, tag, tagged} from "../../../common/prelude";
-import {Style, StyleSheet} from '../../../common/style';
-import * as Settings from '../../../common/settings';
-import * as Unknown from '../../../common/unknown';
-import {focus} from "@driver";
-
-
-import type {Address, DOM} from "reflex"
-import type {EvaluationResult} from "./host"
-import type {Model, Action} from "./output"
+import type { Address, DOM } from 'reflex'
+import { html, thunk, Effects } from 'reflex'
+import { merge, tag } from '../../../common/prelude'
+import { Style, StyleSheet } from '../../../common/style'
+import * as Unknown from '../../../common/unknown'
+import { focus } from '@driver'
+import type { EvaluationResult } from './host'
+import type { Model, Action } from './output'
 
 
 export const Print = tag("Print");

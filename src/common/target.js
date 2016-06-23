@@ -5,12 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {Effects} from "reflex";
-import {merge} from "../common/prelude";
-import * as Unknown from "../common/unknown";
-
-
-import type {Action, Model} from "./target"
+import { Effects } from 'reflex'
+import { merge } from '../common/prelude'
+import * as Unknown from '../common/unknown'
+import type { Action, Model } from './target'
 
 
 export const Over:Action = {type: "Over"};

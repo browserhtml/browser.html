@@ -1,16 +1,13 @@
 /* @flow */
 
-import {Effects, Task, html, thunk, forward} from "reflex"
-import {merge, always} from "../common/prelude"
-import {ok, error} from "../common/result"
-import * as Runtime from "../common/runtime"
-import * as Unknown from "../common/unknown"
-import * as Style from "../common/style"
-
-
-import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} from "reflex"
-import type {Result} from "../common/result"
-import type {URI, ID} from "../common/prelude"
+import type { Address, Never, DOM, Init, Update, View, AdvancedConfiguration } from 'reflex'
+import { Effects, Task, html, thunk } from 'reflex'
+import type { URI, ID } from '../common/prelude'
+import { merge, always } from '../common/prelude'
+import type { Result } from '../common/result'
+import { ok, error } from '../common/result'
+import * as Unknown from '../common/unknown'
+import * as Style from '../common/style'
 
 
 export type Gist =

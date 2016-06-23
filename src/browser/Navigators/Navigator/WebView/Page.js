@@ -4,16 +4,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, Task} from 'reflex';
-import {merge} from '../../../../common/prelude';
-import * as Favicon from '../../../../common/favicon';
-import * as Pallet from '../../../../browser/pallet';
-import * as Unknown from '../../../../common/unknown';
-import * as Ref from '../../../../common/ref';
-
-
-import type {URI} from "../../../../common/prelude"
-import type {Icon} from "../../../../common/favicon"
+import { Effects } from 'reflex'
+import type { URI } from '../../../../common/prelude'
+import type { Icon } from '../../../../common/favicon'
+import * as Favicon from '../../../../common/favicon'
+import * as Pallet from '../../../../browser/pallet'
+import * as Unknown from '../../../../common/unknown'
 
 export type Action =
   | { type: "LoadStart" }

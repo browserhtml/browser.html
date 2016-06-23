@@ -1,15 +1,13 @@
 /* @flow */
 
-import {html, thunk, forward} from 'reflex';
-import * as Style from '../../../common/style';
-import {always} from '../../../common/prelude';
-import * as Title from './Title';
-import * as ShowTabsButton from './Header/ShowTabsButton';
-import * as NewTabButton from './Header/NewTabButton';
-import * as BackButton from './Header/BackButton';
-
-
-import type {Address, DOM} from "reflex"
+import type { Address, DOM } from 'reflex'
+import { html, thunk, forward } from 'reflex'
+import * as Style from '../../../common/style'
+import { always } from '../../../common/prelude'
+import * as Title from './Title'
+import * as ShowTabsButton from './Header/ShowTabsButton'
+import * as NewTabButton from './Header/NewTabButton'
+import * as BackButton from './Header/BackButton'
 
 export type Model = string
 export type Action =

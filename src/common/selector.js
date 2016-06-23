@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import type {Integer} from "../common/prelude"
+import type { Integer } from '../common/prelude'
 
 
 // Returns position that is `offset` by given number from the given `index` if

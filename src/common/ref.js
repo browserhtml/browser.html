@@ -1,9 +1,7 @@
 /* @flow */
 
-import {Effects, Task} from "reflex"
-
-
-import type {Never} from "reflex"
+import type { Never } from 'reflex'
+import { Task } from 'reflex'
 
 export type Model =
   { name: string

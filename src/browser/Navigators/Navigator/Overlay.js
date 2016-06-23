@@ -4,18 +4,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, html, thunk, forward} from "reflex";
-import {merge, always} from "../../../common/prelude";
-import {cursor} from "../../../common/cursor";
-import * as Style from "../../../common/style";
-import * as Easing from "eased";
-import * as Animation from "../../../common/Animation"
-import * as Unknown from "../../../common/unknown";
-import * as Display from "./Overlay/Display"
-
-
-import type {Address, DOM} from "reflex"
-import type {Time} from "../../../common/prelude"
+import type { Address, DOM } from 'reflex'
+import { Effects, html, thunk, forward } from 'reflex'
+import type { Time } from '../../../common/prelude'
+import { always } from '../../../common/prelude'
+import { cursor } from '../../../common/cursor'
+import * as Style from '../../../common/style'
+import * as Easing from 'eased'
+import * as Animation from '../../../common/Animation'
+import * as Unknown from '../../../common/unknown'
+import * as Display from './Overlay/Display'
 
 export type Flags = boolean
 

@@ -1,9 +1,7 @@
 /* @flow */
 
-import * as Easing from "eased"
-
-
-import type {Float} from "../../../../common/prelude"
+import * as Easing from 'eased'
+import type { Float } from '../../../../common/prelude'
 
 
 export class Model {

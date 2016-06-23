@@ -4,18 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, Task, html, thunk, forward} from "reflex";
-import {merge, always} from "../common/prelude";
-import {cursor} from "../common/cursor";
-import * as Focusable from "../common/focusable";
-import * as Target from "../common/target";
-import * as Runtime from "../common/runtime";
-import * as Controls from "./shell/controls";
-import * as Unknown from "../common/unknown";
-
-
-import type {Address, DOM} from "reflex"
-import type {Model, Action} from "./shell"
+import type { Address, DOM } from 'reflex'
+import { Effects, Task, thunk, forward } from 'reflex'
+import { merge } from '../common/prelude'
+import { cursor } from '../common/cursor'
+import * as Runtime from '../common/runtime'
+import * as Controls from './shell/controls'
+import * as Unknown from '../common/unknown'
+import type { Model, Action } from './shell'
 
 
 // @TODO: IO stuff should probably live elsewhere.

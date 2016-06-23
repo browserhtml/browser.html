@@ -5,12 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {merge} from "../common/prelude";
-import * as Unknown from "../common/unknown";
-import {Effects} from "reflex";
-
-
-import type {Model, Action} from "./focusable"
+import { merge } from '../common/prelude'
+import * as Unknown from '../common/unknown'
+import { Effects } from 'reflex'
+import type { Model, Action } from './focusable'
 
 
 export const Focus:Action =

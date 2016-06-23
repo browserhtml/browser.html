@@ -4,13 +4,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {html, thunk, forward, Effects, Task} from 'reflex';
-import {merge, batch, tag, tagged} from "../../../../common/prelude";
-import {ok, error} from "../../../../common/result";
-
-
-import type {ID, EvaluationResult} from "../host"
-import type {Never} from "reflex"
+import type { Never } from 'reflex'
+import { html, thunk, forward, Effects, Task } from 'reflex'
+import { merge, batch, tag, tagged } from '../../../../common/prelude'
+import { ok, error } from '../../../../common/result'
+import type { ID, EvaluationResult } from '../host'
 
 
 const DELETE = new String('delete');

@@ -4,20 +4,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {html, forward, Effects} from 'reflex';
-import {on, focus, selection} from '@driver';
-import {identity} from '../../../lang/functional';
-import {always, merge} from '../../../common/prelude';
-import {cursor} from "../../../common/cursor";
-import {compose, debounce} from '../../../lang/functional';
-import * as Focusable from '../../../common/focusable';
-import * as Editable from '../../../common/editable';
-import * as Keyboard from '../../../common/keyboard';
-import * as Unknown from '../../../common/unknown';
-import * as Style from '../../../common/style';
-
-
-import type {Address, DOM} from "reflex"
+import type { Address, DOM } from 'reflex'
+import { html, forward, Effects } from 'reflex'
+import { on, focus, selection } from '@driver'
+import { compose } from '../../../lang/functional'
+import { always, merge } from '../../../common/prelude'
+import { cursor } from '../../../common/cursor'
+import * as Focusable from '../../../common/focusable'
+import * as Editable from '../../../common/editable'
+import * as Keyboard from '../../../common/keyboard'
+import * as Unknown from '../../../common/unknown'
+import * as Style from '../../../common/style'
 
 export type Flags =
   { isVisible?: boolean

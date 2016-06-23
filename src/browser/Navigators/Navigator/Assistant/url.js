@@ -5,15 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {Effects, html, forward, thunk} from "reflex";
-import {merge, always, batch} from "../../../../common/prelude";
-import {Style, StyleSheet} from '../../../../common/style';
-import * as URL from '../../../../common/url-helper';
-
-
-import type {Address, DOM} from "reflex";
-import type {URI} from "./url";
-
+import type { Address, DOM } from 'reflex'
+import { html, thunk } from 'reflex'
+import { Style, StyleSheet } from '../../../../common/style'
+import * as URL from '../../../../common/url-helper'
+import type { URI } from './url'
 
 
 const styleSheet = StyleSheet.create

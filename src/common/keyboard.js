@@ -5,11 +5,8 @@
  * file, you can obtain one at http://mozilla.org/mpl/2.0/. */
 
 
-import type {BindingTable, Abort, kind} from "./keyboard"
-
-
-import {Effects} from "reflex";
-import * as OS from './os';
+import type { BindingTable, Abort, kind } from './keyboard'
+import * as OS from './os'
 
 const platform = OS.platform();
 

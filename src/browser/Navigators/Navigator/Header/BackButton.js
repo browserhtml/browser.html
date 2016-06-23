@@ -1,12 +1,10 @@
 /* @flow */
 
-import {html, thunk, forward} from 'reflex'
+import type { Address, DOM } from 'reflex'
+import { html, thunk, forward } from 'reflex'
 import * as Style from '../../../../common/style'
-import {always} from '../../../../common/prelude'
+import { always } from '../../../../common/prelude'
 import * as Title from '../Title'
-
-
-import type {Address, DOM} from "reflex"
 export type Action =
   | { type: "Click" }
 

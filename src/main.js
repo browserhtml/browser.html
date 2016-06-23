@@ -4,15 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import "babel-polyfill";
-import "./common/request-animation-frame";
-import {start, Effects} from "reflex";
-import * as UI from "./browser";
-import {version} from "../package.json";
-import * as Config from "../browserhtml.json";
-import * as Runtime from "./common/runtime";
-import {Renderer} from "@driver";
-import * as Devtools from "./devtools"
+import 'babel-polyfill'
+import './common/request-animation-frame'
+import { start, Effects } from 'reflex'
+import * as UI from './browser'
+import { version } from '../package.json'
+import * as Runtime from './common/runtime'
+import { Renderer } from '@driver'
+import * as Devtools from './devtools'
 
 const isReload = window.application != null;
 console.timeStamp =

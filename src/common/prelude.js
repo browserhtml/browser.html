@@ -5,10 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {Effects} from "reflex"
-
-
-import type {Tagged} from "./prelude"
+import { Effects } from 'reflex'
+import type { Tagged } from './prelude'
 
 
 export const merge = /*::<model:{}>*/

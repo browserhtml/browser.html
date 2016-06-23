@@ -1,8 +1,7 @@
 /* @flow */
 
-import * as Runtime from "./runtime"
-
-import {performance} from "./performance"
+import * as Runtime from './runtime'
+import { performance } from './performance'
 
 
 const state =

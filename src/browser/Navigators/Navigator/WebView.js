@@ -5,32 +5,27 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {Effects, html, forward} from 'reflex';
-import {merge, always, batch} from '../../../common/prelude';
-import {cursor} from '../../../common/cursor';
-import {compose} from '../../../lang/functional';
-import {on} from '@driver';
-import {isElectron} from "../../../common/runtime";
-import * as Shell from './WebView/Shell';
-import * as Navigation from './WebView/Navigation';
-import * as Security from './WebView/Security';
-import * as Page from './WebView/Page';
-import * as Unknown from '../../../common/unknown';
-import {Style, StyleSheet} from '../../../common/style';
-import {readTitle, isDark, canGoBack} from './WebView/Util';
-import * as Driver from '@driver';
-import * as Focusable from '../../../common/focusable';
-import * as Easing from 'eased';
-import * as MozBrowserFrame from './WebView/MozBrowserFrame';
-import * as ElectronFrame from './WebView/ElectronFrame';
-import * as Ref from '../../../common/ref';
-import * as Tab from '../../Sidebar/Tab';
-
-
-import type {Address, DOM} from "reflex"
-import type {URI, Time, Integer, Float} from "../../../common/prelude"
-import type {Icon} from "../../../common/favicon"
-import {performance} from "../../../common/performance"
+import type { Address, DOM } from 'reflex'
+import { Effects } from 'reflex'
+import type { URI, Time, Integer, Float } from '../../../common/prelude'
+import { merge, always, batch } from '../../../common/prelude'
+import { cursor } from '../../../common/cursor'
+import { compose } from '../../../lang/functional'
+import { on } from '@driver'
+import { isElectron } from '../../../common/runtime'
+import * as Shell from './WebView/Shell'
+import * as Navigation from './WebView/Navigation'
+import * as Security from './WebView/Security'
+import * as Page from './WebView/Page'
+import * as Unknown from '../../../common/unknown'
+import { StyleSheet } from '../../../common/style'
+import { canGoBack } from './WebView/Util'
+import * as MozBrowserFrame from './WebView/MozBrowserFrame'
+import * as ElectronFrame from './WebView/ElectronFrame'
+import * as Ref from '../../../common/ref'
+import * as Tab from '../../Sidebar/Tab'
+import type { Icon } from '../../../common/favicon'
+import { performance } from '../../../common/performance'
 
 export type {URI, Time}
 

@@ -1,11 +1,9 @@
 /* @flow */
 
-import {html, thunk, forward} from 'reflex';
-import * as Style from '../../../common/style';
-import {always} from '../../../common/prelude';
-
-
-import type {Address, DOM} from "reflex"
+import type { Address, DOM } from 'reflex'
+import { html, thunk, forward } from 'reflex'
+import * as Style from '../../../common/style'
+import { always } from '../../../common/prelude'
 
 export type Action =
   | { type: "Activate" }

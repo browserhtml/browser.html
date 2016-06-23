@@ -5,29 +5,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import * as Package from "../package.json";
-import * as Config from "../browserhtml.json";
-import {Effects, html, forward, thunk} from "reflex";
-
-import * as Shell from "./browser/shell";
-import * as Sidebar from './browser/Sidebar';
-import * as Devtools from "./common/devtools";
-import * as Runtime from "./common/runtime";
-import * as URL from './common/url-helper';
-import * as Unknown from "./common/unknown";
-import * as Focusable from "./common/focusable";
-import * as OS from './common/os';
-import * as Keyboard from './common/keyboard';
-import * as Stopwatch from "./common/stopwatch";
-import * as Easing from "eased";
-import {always, batch, tag, tagged} from "./common/prelude";
-import {cursor} from "./common/cursor";
-import {Style, StyleSheet} from './common/style';
-
-import {identity, compose} from "./lang/functional";
-
-import {onWindow, on} from "@driver";
-import * as Navigators from "./browser/Navigators";
+import * as Package from '../package.json'
+import * as Config from '../browserhtml.json'
+import { Effects, html, forward } from 'reflex'
+import * as Shell from './browser/shell'
+import * as Sidebar from './browser/Sidebar'
+import * as Devtools from './common/devtools'
+import * as Runtime from './common/runtime'
+import * as Unknown from './common/unknown'
+import * as OS from './common/os'
+import * as Keyboard from './common/keyboard'
+import { always, batch } from './common/prelude'
+import { cursor } from './common/cursor'
+import { StyleSheet } from './common/style'
+import { onWindow, on } from '@driver'
+import * as Navigators from './browser/Navigators'
 
 
 /*::

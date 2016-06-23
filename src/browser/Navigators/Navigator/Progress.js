@@ -5,19 +5,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {Effects, Task, html} from 'reflex';
-import {ease, easeOutQuart, float} from 'eased';
-import * as Style from '../../../common/style';
-import {always} from '../../../common/prelude';
-import * as Unknown from '../../../common/unknown';
-import * as Runtime from '../../../common/runtime';
-import * as Ref from '../../../common/ref';
-import * as PolyfillView from './Progress/PolyfillView';
-import * as ProgressView from './Progress/ProgressView';
-
-
-import type {Address, DOM} from "reflex"
-import type {Time, Float} from "../../../common/prelude"
+import type { Address, DOM } from 'reflex'
+import { Effects, Task } from 'reflex'
+import type { Time, Float } from '../../../common/prelude'
+import { always } from '../../../common/prelude'
+import * as Unknown from '../../../common/unknown'
+import * as Runtime from '../../../common/runtime'
+import * as Ref from '../../../common/ref'
+import * as PolyfillView from './Progress/PolyfillView'
+import * as ProgressView from './Progress/ProgressView'
 
 // Implied to be 0.0 - 1.0 range
 export type LoadProgress = Float

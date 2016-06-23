@@ -1,16 +1,15 @@
 /* @flow */
 
-import * as Unknown from "./unknown"
-import {Task, Effects} from "reflex"
-import {ease} from "eased"
+import * as Unknown from './unknown'
+import { Task, Effects } from 'reflex'
+import type { Interpolation, Easing } from 'eased'
+import { ease } from 'eased'
 
 
 export type Time = number
 export type Action =
   | { type: "Tick", time: Time }
   | { type: "End", time: Time }
-
-import type {Interpolation, Easing} from "eased"
 
 
 class Transition <model> {

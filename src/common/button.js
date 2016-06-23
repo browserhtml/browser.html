@@ -5,18 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {merge, always, tag} from "../common/prelude"
-import {cursor} from "../common/cursor"
-import * as Unknown from "../common/unknown"
-import * as Target from "../common/target"
-import * as Focusable from "../common/focusable"
-import * as Control from "../common/control"
-import {Style} from "../common/style"
-import {html, Effects, forward} from "reflex"
-
-
-import type {Model, Action, StyleSheet, ContextStyle} from "./button"
-import type {Address, DOM} from "reflex"
+import { merge, always } from '../common/prelude'
+import { cursor } from '../common/cursor'
+import * as Unknown from '../common/unknown'
+import * as Target from '../common/target'
+import * as Focusable from '../common/focusable'
+import * as Control from '../common/control'
+import { Style } from '../common/style'
+import type { Address, DOM } from 'reflex'
+import { html, Effects, forward } from 'reflex'
+import type { Model, Action, StyleSheet, ContextStyle } from './button'
 
 
 const TargetAction =

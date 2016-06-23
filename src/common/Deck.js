@@ -4,13 +4,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, Task, html, forward, thunk} from "reflex"
-import {merge} from "../common/prelude"
-import * as Unknown from "../common/unknown"
-import {indexOfOffset} from "../common/selector"
-
-
-import type {Address, DOM, Never} from "reflex"
+import type { Address, DOM, Never } from 'reflex'
+import { Effects, Task, forward, thunk } from 'reflex'
+import { merge } from '../common/prelude'
+import * as Unknown from '../common/unknown'
+import { indexOfOffset } from '../common/selector'
 export type Integer = number
 export type ID = string
 

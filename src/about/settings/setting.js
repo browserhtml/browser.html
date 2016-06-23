@@ -4,20 +4,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Style, StyleSheet} from '../../common/style';
-import {html, thunk, forward, Effects} from 'reflex';
-import {compose} from '../../lang/functional';
-import {merge, always, tag, tagged, batch} from "../../common/prelude"
-import {cursor} from "../../common/cursor"
-import {ok, error} from "../../common/result";
-import * as Unknown from '../../common/unknown';
-import * as Focusable from '../../common/focusable';
-import * as Editable from '../../common/editable';
-import * as TextInput from '../../common/text-input';
-
-
-import type {Address, DOM} from "reflex";
-import type {Value, Model, Action} from "./setting"
+import { Style, StyleSheet } from '../../common/style'
+import type { Address, DOM } from 'reflex'
+import { html, thunk, forward, Effects } from 'reflex'
+import { compose } from '../../lang/functional'
+import { merge, always, tag, batch } from '../../common/prelude'
+import { cursor } from '../../common/cursor'
+import { ok, error } from '../../common/result'
+import * as Unknown from '../../common/unknown'
+import * as TextInput from '../../common/text-input'
+import type { Value, Model, Action } from './setting'
 
 
 const TextInputAction =

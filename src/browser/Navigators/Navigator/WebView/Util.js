@@ -4,8 +4,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import * as URI from '../../../../common/url-helper';
-import * as Favicon from '../../../../common/favicon';
+import * as URI from '../../../../common/url-helper'
+import * as Favicon from '../../../../common/favicon'
 
 /*::
 import * as WebView from "../WebView"

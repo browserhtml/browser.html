@@ -4,16 +4,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {error, ok} from '../common/result';
-import * as Unknown from '../common/unknown';
-import {merge, always} from '../common/prelude';
-import {Effects, Task} from 'reflex';
-
-
-import type {Model, Action, Name, Value, Settings} from "./settings"
-import type {Address, Never} from "reflex"
-import type {Result} from "./result"
-
+import { error, ok } from '../common/result'
+import * as Unknown from '../common/unknown'
+import { merge, always } from '../common/prelude'
+import type { Address, Never } from 'reflex'
+import { Effects, Task } from 'reflex'
+import type { Model, Action, Name, Value, Settings } from './settings'
+import type { Result } from './result'
 
 
 const NotSupported =
