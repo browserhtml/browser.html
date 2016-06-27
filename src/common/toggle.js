@@ -5,29 +5,26 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {merge, always} from "../common/prelude"
-import {cursor} from "../common/cursor"
-import * as Unknown from "../common/unknown"
-import * as Target from "../common/target"
-import * as Focusable from "../common/focusable"
-import * as Button from "../common/button"
-import {Style} from "../common/style"
-import {html, Effects, forward, Task} from "reflex"
-
-/*::
-import type {Address, DOM} from "reflex"
-import type {Action, Model, StyleSheet, ContextStyle} from "./toggle"
-*/
+import { merge, always } from '../common/prelude'
+import { cursor } from '../common/cursor'
+import * as Unknown from '../common/unknown'
+import * as Target from '../common/target'
+import * as Focusable from '../common/focusable'
+import * as Button from '../common/button'
+import { Style } from '../common/style'
+import type { Address, DOM } from 'reflex'
+import { html, Effects, forward, Task } from 'reflex'
+import type { Action, Model, StyleSheet, ContextStyle } from './toggle'
 
 
 export const init =
-  ( isDisabled/*:boolean*/=false
-  , isFocused/*:boolean*/=false
-  , isActive/*:boolean*/=false
-  , isPointerOver/*:boolean*/=false
-  , isChecked/*:boolean*/=false
-  , text/*:string*/=""
-  )/*:[Model, Effects<Action>]*/ =>
+  ( isDisabled:boolean=false
+  , isFocused:boolean=false
+  , isActive:boolean=false
+  , isPointerOver:boolean=false
+  , isChecked:boolean=false
+  , text:string=""
+  ):[Model, Effects<Action>] =>
   [
     { isDisabled,
       isFocused,
@@ -39,22 +36,22 @@ export const init =
   , Effects.none
   ];
 
-export const Press/*:Action*/ = {type: "Press"};
-export const Check/*:Action*/ = {type: "Check"};
-export const Uncheck/*:Action*/ = {type: "Uncheck"};
+export const Press:Action = {type: "Press"};
+export const Check:Action = {type: "Check"};
+export const Uncheck:Action = {type: "Uncheck"};
 
 const TargetAction =action => ({type: "Target", action});
 const FocusableAction = action => ({type: "Focusable", action});
 const ButtonAction = action => ({type: "Button", action});
 
-export const Focus/*:Action*/ = FocusableAction(Focusable.Focus);
-export const Blur/*:Action*/ = FocusableAction(Focusable.Blur);
+export const Focus:Action = FocusableAction(Focusable.Focus);
+export const Blur:Action = FocusableAction(Focusable.Blur);
 
-export const Over/*:Action*/ = TargetAction(Target.Over);
-export const Out/*:Action*/ = TargetAction(Target.Out);
+export const Over:Action = TargetAction(Target.Over);
+export const Out:Action = TargetAction(Target.Out);
 
-export const Down/*:Action*/ = ButtonAction(Button.Down);
-export const Up/*:Action*/ = ButtonAction(Button.Up);
+export const Down:Action = ButtonAction(Button.Down);
+export const Up:Action = ButtonAction(Button.Up);
 
 
 const updateTarget = cursor({
@@ -74,7 +71,7 @@ const updateButton = cursor({
 
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === "Press"
   ? [ merge(model, {isChecked: !model.isChecked})
     , ( model.isChecked
@@ -101,12 +98,12 @@ export const update =
   );
 
 
-export const view =
-  (key/*:string*/, styleSheet/*:StyleSheet*/)/*:(model:Model, address:Address<Action>, contextStyle?:ContextStyle) => DOM*/ =>
-  ( model/*:Model*/
-  , address/*:Address<Action>*/
-  , contextStyle/*?:ContextStyle*/
-  )/*:DOM*/ =>
+export function view(key:string,
+                     styleSheet:StyleSheet):(model:Model, address:Address<Action>, contextStyle?:ContextStyle) => DOM {
+  return ( model
+         , address
+         , contextStyle
+  ):DOM =>
   html.button({
     key: key,
     className: key,
@@ -148,3 +145,4 @@ export const view =
 
     onClick: forward(address, always(Press))
   });
+}

@@ -4,11 +4,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects} from 'reflex';
-import * as Unknown from '../../../../common/unknown';
+import { Effects } from 'reflex'
+import * as Unknown from '../../../../common/unknown'
 
 
-/*::
 export type State =
   | "broken"
   | "secure"
@@ -20,18 +19,18 @@ export type Action =
     , state: State
     , extendedValidation: boolean
     }
-*/
+
 
 export class Model {
-  /*::
+  
   state: State;
   secure: boolean;
   extendedValidation: boolean;
-  */
+  
   constructor(
-    state/*:State*/
-  , secure/*:boolean*/
-  , extendedValidation/*:boolean*/
+    state:State
+  , secure:boolean
+  , extendedValidation:boolean
   ) {
     this.state = state
     this.secure = secure
@@ -45,12 +44,12 @@ const insecure = new Model
   , false
   )
 
-export const LoadStart/*:Action*/ =
+export const LoadStart:Action =
   { type: "LoadStart"
   };
 
 export const Changed =
-  (state/*:State*/, extendedValidation/*:boolean*/)/*:Action*/ =>
+  (state:State, extendedValidation:boolean):Action =>
   ( { type: "SecurityChanged"
     , state
     , extendedValidation
@@ -58,7 +57,7 @@ export const Changed =
   );
 
 export const init =
-  ()/*:[Model, Effects<Action>]*/ =>
+  ():[Model, Effects<Action>] =>
   [ insecure
   , Effects.none
   ]
@@ -78,7 +77,7 @@ const updateSecurity =
   ]
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+  (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
       case "LoadStart":
         return loadStart(model);

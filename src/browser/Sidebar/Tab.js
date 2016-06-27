@@ -4,15 +4,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {html, thunk, forward, Effects} from 'reflex';
-import * as Style from '../../common/style';
-import * as Image from '../../common/image';
-import * as Target from "../../common/target";
-import * as Unknown from "../../common/unknown";
-
-import {always, merge} from '../../common/prelude';
-import {readTitle, readFaviconURI} from '../Navigators/Navigator/WebView/Util';
-import {cursor} from '../../common/cursor';
+import { html, thunk, forward, Effects } from 'reflex'
+import * as Style from '../../common/style'
+import * as Image from '../../common/image'
+import * as Target from '../../common/target'
+import * as Unknown from '../../common/unknown'
+import { always } from '../../common/prelude'
+import { readTitle, readFaviconURI } from '../Navigators/Navigator/WebView/Util'
 
 
 /*::
@@ -33,10 +31,10 @@ export type Action =
 */
 
 export class Model {
-  /*::
+  
   isPointerOver: boolean;
-  */
-  constructor(isPointerOver/*:boolean*/) {
+  
+  constructor(isPointerOver:boolean) {
     this.isPointerOver = isPointerOver
   }
 }
@@ -67,11 +65,11 @@ const Out = TargetAction(Target.Out);
 const Over = TargetAction(Target.Over);
 
 export const init =
-  ()/*:[Model, Effects<Action>]*/ =>
+  ():[Model, Effects<Action>] =>
   transactOut;
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === "Target"
   ? updateTarget(model, action.source)
   : Unknown.update(model, action)
@@ -213,10 +211,10 @@ const viewClose = (isSelected, tab, address) =>
   );
 
 export const render =
-  ( model/*:Navigator.Model*/
-  , address/*:Address<Action>*/
-  , {tabWidth, titleOpacity}/*:Context*/
-  )/*:DOM*/ =>
+  ( model:Navigator.Model
+  , address:Address<Action>
+  , {tabWidth, titleOpacity}:Context
+  ):DOM =>
   html.div
   ( { className: 'sidebar-tab'
     , style: Style.mix
@@ -262,10 +260,10 @@ export const render =
 
 
 export const view =
-  ( model/*:Navigator.Model*/
-  , address/*:Address<Action>*/
-  , context/*:Context*/
-  )/*:DOM*/ =>
+  ( model:Navigator.Model
+  , address:Address<Action>
+  , context:Context
+  ):DOM =>
   thunk
   ( `${model.output.ref.value}`
   , render

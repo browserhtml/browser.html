@@ -4,8 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {identity} from '../../lang/functional'
-import {forward, Effects, Task} from 'reflex'
+import { Task } from 'reflex'
 export {Renderer} from 'reflex-virtual-dom-driver'
 
 // @TODO documentation
@@ -203,7 +202,7 @@ export const selection = metaProperty((node, next, previous) => {
 });
 
 
-export const forceRender/*:Task<Error, void>*/ =
+export const forceRender:Task<Error, void> =
   new Task
   ( (succeed, fail) => {
       if (window.renderer) {
@@ -234,12 +233,12 @@ const handleEvent = phase => event => {
     handler.handleEvent(event)
   }
 }
-const handleCapturing/*:EventListener*/ = handleEvent('capture')
-const handleBubbling/*:EventListener*/ = handleEvent('bubble')
+const handleCapturing:EventListener = handleEvent('capture')
+const handleBubbling:EventListener = handleEvent('bubble')
 
 
 export const replaceElement =
-  (query/*:string*/, element/*:HTMLElement*/)/*:Task<Error, void>*/ =>
+  (query:string, element:HTMLElement):Task<Error, void> =>
   new Task
   ( ( succeed, fail ) => {
       const target = document.querySelector(query)
@@ -292,6 +291,6 @@ export const replaceElement =
   );
 
 export const forceReplace =
-  (query/*:string*/, element/*:HTMLElement*/)/*:Task<Error, void>*/ =>
+  (query:string, element:HTMLElement):Task<Error, void> =>
   forceRender
   .chain(_ => replaceElement(query, element));

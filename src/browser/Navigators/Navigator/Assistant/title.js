@@ -5,13 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {Effects, html, forward, thunk} from "reflex";
-import {merge, always, batch} from "../../../../common/prelude";
-import {Style, StyleSheet} from '../../../../common/style';
-
-/*::
-import type {Address, DOM} from "reflex"
-*/
+import type { Address, DOM } from 'reflex'
+import { html, thunk } from 'reflex'
+import { Style, StyleSheet } from '../../../../common/style'
 
 
 const styleSheet = StyleSheet.create
@@ -29,7 +25,7 @@ const styleSheet = StyleSheet.create
   );
 
 export const render =
-  (title/*:?string*/, isSelected/*:boolean*/)/*:DOM*/ =>
+  (title:?string, isSelected:boolean):DOM =>
   html.span
   ( { className: 'assistant title'
     , style: Style
@@ -48,7 +44,7 @@ export const render =
   );
 
 export const view =
-  (title/*:?string*/, isSelected/*:boolean*/)/*:DOM*/ =>
+  (title:?string, isSelected:boolean):DOM =>
   thunk
   ( `${title}`
   , render

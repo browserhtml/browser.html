@@ -1,22 +1,20 @@
 /* @flow */
 
-import {html, thunk, forward} from 'reflex';
-import * as Style from '../../../common/style';
-import {always} from '../../../common/prelude';
-import * as Title from './Title';
-import * as ShowTabsButton from './Header/ShowTabsButton';
-import * as NewTabButton from './Header/NewTabButton';
-import * as BackButton from './Header/BackButton';
-
-/*::
-import type {Address, DOM} from "reflex"
+import type { Address, DOM } from 'reflex'
+import { html, thunk, forward } from 'reflex'
+import * as Style from '../../../common/style'
+import { always } from '../../../common/prelude'
+import * as Title from './Title'
+import * as ShowTabsButton from './Header/ShowTabsButton'
+import * as NewTabButton from './Header/NewTabButton'
+import * as BackButton from './Header/BackButton'
 
 export type Model = string
 export type Action =
   | { type: "ShowTabs" }
   | { type: "OpenNewTab" }
   | { type: "GoBack" }
-*/
+
 
 const tagShowTabs = always({ type: "ShowTabs" });
 const tagNewTab = always({ type: "OpenNewTab" });
@@ -25,9 +23,9 @@ const tagGoBack = always({ type: "GoBack" });
 export const height = Title.outerHeight;
 
 export const render =
-  ( canGoBack/*:boolean*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( canGoBack:boolean
+  , address:Address<Action>
+  ):DOM =>
   html.header
   ( { className: 'topbar'
     , style: styleSheet.base
@@ -46,9 +44,9 @@ export const render =
   );
 
 export const view =
-  ( canGoBack/*:boolean*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( canGoBack:boolean
+  , address:Address<Action>
+  ):DOM =>
   thunk
   ( 'Browser/NavigatorDeck/Navigator/Header'
   , render

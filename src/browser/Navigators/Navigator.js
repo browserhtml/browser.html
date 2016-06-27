@@ -4,30 +4,26 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, html, forward, thunk} from "reflex"
-import {merge, always, batch} from "../../common/prelude";
-import {cursor} from "../../common/cursor";
-import * as Style from "../../common/style";
-
-import * as Assistant from "./Navigator/Assistant";
-import * as Overlay from "./Navigator/Overlay";
-import * as Input from "./Navigator/Input";
-import * as Output from "./Navigator/WebView";
-import * as Unknown from "../../common/unknown";
-import * as URL from '../../common/url-helper';
-import * as Header from './Navigator/Header';
-import * as Title from './Navigator/Title';
-import * as Progress from './Navigator/Progress';
-import * as Display from './Navigator/Display';
-import * as Animation from "../../common/Animation";
-import * as Easing from "eased";
-import * as Tab from "../Sidebar/Tab";
-
-import {readTitle, isSecure, isDark, canGoBack} from './Navigator/WebView/Util';
-
-/*::
-import type {Address, DOM} from "reflex"
-import type {URI, Time} from "./Navigator/WebView"
+import type { Address, DOM } from 'reflex'
+import { Effects, html, forward, thunk } from 'reflex'
+import { always, batch } from '../../common/prelude'
+import { cursor } from '../../common/cursor'
+import * as Style from '../../common/style'
+import * as Assistant from './Navigator/Assistant'
+import * as Overlay from './Navigator/Overlay'
+import * as Input from './Navigator/Input'
+import type { URI, Time } from './Navigator/WebView'
+import * as Output from './Navigator/WebView'
+import * as Unknown from '../../common/unknown'
+import * as URL from '../../common/url-helper'
+import * as Header from './Navigator/Header'
+import * as Title from './Navigator/Title'
+import * as Progress from './Navigator/Progress'
+import * as Display from './Navigator/Display'
+import * as Animation from '../../common/Animation'
+import * as Easing from 'eased'
+import * as Tab from '../Sidebar/Tab'
+import { readTitle, isSecure, isDark, canGoBack } from './Navigator/WebView/Util'
 
 export type Flags =
   { output: Output.Flags
@@ -106,7 +102,7 @@ export type Action =
   // Animation
   | { type: "Animation", animation: Animation.Action }
   | { type: "AnimationEnd" }
-*/
+
 
 const SubmitInput = { type: "SubmitInput" }
 const EscapeInput = { type: "EscapeInput" }
@@ -252,7 +248,7 @@ const tagAnimation =
   };
 
 export const Navigate =
-  ( destination/*:string*/)/*:Action*/ =>
+  ( destination:string):Action =>
   ( { type: "Navigate"
     , uri: URL.read(destination)
     }
@@ -269,7 +265,7 @@ const SetSelectedInputValue =
   )
 
 export class Model {
-  /*::
+  
   isSelected: boolean;
   isClosed: boolean;
   isPinned: boolean;
@@ -280,18 +276,18 @@ export class Model {
   assistant: Assistant.Model;
   progress: Progress.Model;
   animation: Animation.Model<Display.Model>;
-  */
+  
   constructor(
-    isSelected/*:boolean*/
-  , isClosed/*:boolean*/
-  , isPinned/*:boolean*/
-  , isInputEmbedded/*:boolean*/
-  , input/*:Input.Model*/
-  , output/*:Output.Model*/
-  , assistant/*:Assistant.Model*/
-  , overlay/*:Overlay.Model*/
-  , progress/*:Progress.Model*/
-  , animation/*:Animation.Model<Display.Model>*/
+    isSelected:boolean
+  , isClosed:boolean
+  , isPinned:boolean
+  , isInputEmbedded:boolean
+  , input:Input.Model
+  , output:Output.Model
+  , assistant:Assistant.Model
+  , overlay:Overlay.Model
+  , progress:Progress.Model
+  , animation:Animation.Model<Display.Model>
   ) {
     this.isSelected = isSelected
     this.isClosed = isClosed
@@ -346,7 +342,7 @@ const assemble =
 
 
 export const init =
-  (options/*:Flags*/)/*:[Model, Effects<Action>]*/ =>
+  (options:Flags):[Model, Effects<Action>] =>
   assemble
   ( options.output.disposition != 'background-tab'
   , false
@@ -365,9 +361,9 @@ export const init =
   )
 
 export const update =
-  ( model/*:Model*/
-  , action/*:Action*/
-  )/*:[Model, Effects<Action>]*/ => {
+  ( model:Model
+  , action:Action
+  ):[Model, Effects<Action>] => {
     // console.log(action)
     switch (action.type) {
       case 'NoOp':
@@ -466,14 +462,14 @@ export const update =
   };
 
 const nofx =
-  (model/*:Model*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model):[Model, Effects<Action>] =>
   [ model
   , Effects.none
   ];
 
 export const select =
-  ( model/*:Model*/
-  )/*:[Model, Effects<Action>]*/ =>
+  ( model:Model
+  ):[Model, Effects<Action>] =>
   ( model.isSelected
   ? nofx(model)
   : startAnimation
@@ -489,8 +485,8 @@ export const select =
   )
 
 export const deselect =
-  ( model/*:Model*/
-  )/*:[Model, Effects<Action>]*/ =>
+  ( model:Model
+  ):[Model, Effects<Action>] =>
   ( model.isSelected
   ? startAnimation
     ( model
@@ -506,8 +502,8 @@ export const deselect =
   )
 
 export const close =
-  ( model/*:Model*/
-  )/*:[Model, Effects<Action>]*/ =>
+  ( model:Model
+  ):[Model, Effects<Action>] =>
   ( model.isPinned
   ? [ model
     , Effects.receive(Select)
@@ -891,7 +887,7 @@ const endAnimation =
   )
 
 export const render =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.dialog
   ( { className: `navigator ${mode(model.output)}`
     , open: true
@@ -928,7 +924,7 @@ export const render =
   )
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   thunk
   ( model.output.ref.value
   , render

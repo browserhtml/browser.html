@@ -1,9 +1,7 @@
 /* @flow */
 
-import {Effects, Task} from "reflex"
-
-/*::
-import type {Never} from "reflex"
+import type { Never } from 'reflex'
+import { Task } from 'reflex'
 
 export type Model =
   { name: string
@@ -12,21 +10,21 @@ export type Model =
 
 export type Action =
   | Action
-*/
+
 
 const state =
   { nextRef: 0
   };
 
 export const create =
-  ()/*:Model*/ =>
+  ():Model =>
   ( { name: 'data-ref'
     , value: `ref-${++state.nextRef}`
     }
   );
 
 export const deref =
-  (ref/*:Model*/)/*:Task<Error, HTMLElement>*/ =>
+  (ref:Model):Task<Error, HTMLElement> =>
   new Task
   ( (succeed, fail) => {
       const element = document.querySelector(`[${ref.name}='${ref.value}']`);

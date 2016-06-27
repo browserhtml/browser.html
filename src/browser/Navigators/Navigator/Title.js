@@ -1,25 +1,23 @@
 /* @flow */
 
-import {html, thunk, forward} from 'reflex';
-import * as Style from '../../../common/style';
-import {always} from '../../../common/prelude';
-
-/*::
-import type {Address, DOM} from "reflex"
+import type { Address, DOM } from 'reflex'
+import { html, thunk, forward } from 'reflex'
+import * as Style from '../../../common/style'
+import { always } from '../../../common/prelude'
 
 export type Action =
   | { type: "Activate" }
-*/
+
 
 const Activate = always({ type: "Activate" })
 
 
 export const render =
-  ( isDisabled/*:boolean*/
-  , title/*:string*/
-  , secure/*:boolean*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( isDisabled:boolean
+  , title:string
+  , secure:boolean
+  , address:Address<Action>
+  ):DOM =>
   html.summary
   ( { className: 'webview-combobox'
     , style: Style.mix
@@ -59,11 +57,11 @@ export const render =
   );
 
 export const view =
-  ( isDisabled/*:boolean*/
-  , title/*:string*/
-  , secure/*:boolean*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( isDisabled:boolean
+  , title:string
+  , secure:boolean
+  , address:Address<Action>
+  ):DOM =>
   thunk
   ( 'Browser/NavigatorDeck/Navigator/Header/Title'
   , render

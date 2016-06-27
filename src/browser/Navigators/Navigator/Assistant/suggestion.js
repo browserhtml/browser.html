@@ -5,12 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {html, thunk} from "reflex";
-import {Style, StyleSheet} from '../../../../common/style';
-
-/*::
-import type {Address, DOM} from "reflex"
-*/
+import type { Address, DOM } from 'reflex'
+import { html } from 'reflex'
+import { Style, StyleSheet } from '../../../../common/style'
 
 
 const styleSheet = StyleSheet.create
@@ -42,7 +39,7 @@ const styleSheet = StyleSheet.create
   );
 
 export const render =
-  (isSelected/*:boolean*/, content/*:Array<DOM>*/)/*:DOM*/ =>
+  (isSelected:boolean, content:Array<DOM>):DOM =>
   html.li
   ( { className: 'assistant suggestion'
     , style: Style

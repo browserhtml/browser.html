@@ -4,32 +4,30 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {html, thunk, forward, Effects} from 'reflex';
-import {merge, batch, tag, tagged} from "../../../common/prelude";
-import {Style, StyleSheet} from '../../../common/style';
-import * as Unknown from '../../../common/unknown';
-import {cursor} from '../../../common/cursor';
-import * as Input from './input';
-import * as Output from './output';
+import type { Address, DOM } from 'reflex'
+import { html, thunk, forward, Effects } from 'reflex'
+import { merge } from '../../../common/prelude'
+import { Style, StyleSheet } from '../../../common/style'
+import * as Unknown from '../../../common/unknown'
+import { cursor } from '../../../common/cursor'
+import * as Input from './input'
+import * as Output from './output'
+import type { ID, Model, Action } from './cell'
 
-/*::
-import type {Address, DOM} from "reflex"
-import type {ID, Model, Action} from "./cell"
-*/
 
 export const Print =
-  (output/*:Output.Model*/)/*:Action*/ =>
+  (output:Output.Model):Action =>
   ( { type: "Print"
     , print: output
     }
   )
 
-export const Remove/*:Action*/ =
+export const Remove:Action =
   { type: "Remove"
   }
 
 const InputAction =
-  (action/*:Input.Action*/)/*:Action*/ =>
+  (action:Input.Action):Action =>
   ( action.type === "Submit"
   ? { type: "Submit"
     , source: action.source
@@ -40,18 +38,18 @@ const InputAction =
   );
 
 const OutputAction =
-  (action/*:Output.Action*/)/*:Action*/ =>
+  (action:Output.Action):Action =>
   ( { type: "Output"
     , output: action
     }
   );
 
-export const Edit/*:Action*/ =
+export const Edit:Action =
   InputAction(Input.Edit);
 
 
 export const init =
-  (id/*:ID*/)/*:[Model, Effects<Action>]*/ => {
+  (id:ID):[Model, Effects<Action>] => {
     const [input, inputFX] = Input.init(0, '', true);
     const [output, outputFX] = Output.init(0);
     const model =
@@ -104,7 +102,7 @@ const submit =
   );
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Input'
   ? updateInput(model, action.input)
   : action.type === 'Submit'
@@ -143,7 +141,7 @@ const styleSheet = StyleSheet.create
 
 
 export const render =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.form
   ( { id: `cell-${model.id}`
     , style: Style
@@ -167,5 +165,5 @@ export const render =
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   thunk(model.id, render, model, address);

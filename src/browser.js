@@ -5,29 +5,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import * as Package from "../package.json";
-import * as Config from "../browserhtml.json";
-import {Effects, html, forward, thunk} from "reflex";
-
-import * as Shell from "./browser/shell";
-import * as Sidebar from './browser/Sidebar';
-import * as Devtools from "./common/devtools";
-import * as Runtime from "./common/runtime";
-import * as URL from './common/url-helper';
-import * as Unknown from "./common/unknown";
-import * as Focusable from "./common/focusable";
-import * as OS from './common/os';
-import * as Keyboard from './common/keyboard';
-import * as Stopwatch from "./common/stopwatch";
-import * as Easing from "eased";
-import {always, batch, tag, tagged} from "./common/prelude";
-import {cursor} from "./common/cursor";
-import {Style, StyleSheet} from './common/style';
-
-import {identity, compose} from "./lang/functional";
-
-import {onWindow, on} from "@driver";
-import * as Navigators from "./browser/Navigators";
+import * as Package from '../package.json'
+import * as Config from '../browserhtml.json'
+import { Effects, html, forward } from 'reflex'
+import * as Shell from './browser/shell'
+import * as Sidebar from './browser/Sidebar'
+import * as Devtools from './common/devtools'
+import * as Runtime from './common/runtime'
+import * as Unknown from './common/unknown'
+import * as OS from './common/os'
+import * as Keyboard from './common/keyboard'
+import { always, batch } from './common/prelude'
+import { cursor } from './common/cursor'
+import { StyleSheet } from './common/style'
+import { onWindow, on } from '@driver'
+import * as Navigators from './browser/Navigators'
 
 
 /*::
@@ -92,19 +84,19 @@ import type {URI} from "./common/prelude"
 */
 
 export class Model {
-  /*::
+  
   version: Version;
   shell: Shell.Model;
   navigators: Navigators.Model;
   sidebar: Sidebar.Model;
   devtools: Devtools.Model;
-  */
+  
   constructor(
-    version/*:Version*/=Package.version
-  , shell/*:Shell.Model*/
-  , navigators/*:Navigators.Model*/
-  , sidebar/*:Sidebar.Model*/
-  , devtools/*:Devtools.Model*/
+    version:Version=Package.version
+  , shell:Shell.Model
+  , navigators:Navigators.Model
+  , sidebar:Sidebar.Model
+  , devtools:Devtools.Model
   ) {
     this.version = version
     this.shell = shell
@@ -123,7 +115,7 @@ const Modify =
     }
   )
 
-export const init = ()/*:[Model, Effects<Action>]*/ => {
+export const init = ():[Model, Effects<Action>] => {
   const [devtools, devtoolsFx] = Devtools.init({isActive: Config.devtools});
   const [shell, shellFx] = Shell.init();
   const [sidebar, sidebarFx] = Sidebar.init();
@@ -170,7 +162,7 @@ const SidebarAction = action =>
 
 
 const NavigatorsAction =
-  (action/*:Navigators.Action*/)/*:Action*/ => {
+  (action:Navigators.Action):Action => {
     switch (action.type) {
       case "ShowTabs":
         return ShowTabs
@@ -261,7 +253,7 @@ const updateSidebar = cursor({
   update: Sidebar.update
 });
 
-const Reloaded/*:Action*/ =
+const Reloaded:Action =
   { type: "Reloaded"
   };
 
@@ -275,56 +267,56 @@ const Failure = error =>
 // ### Mode changes
 
 
-export const OpenNewTab/*:Action*/ =
+export const OpenNewTab:Action =
   { type: 'OpenNewTab'
   };
 
-export const EditWebView/*:Action*/ =
+export const EditWebView:Action =
   { type: 'EditWebView'
   };
 
-export const ShowWebView/*:Action*/ =
+export const ShowWebView:Action =
   { type: 'ShowWebView'
   };
 
-export const ShowTabs/*:Action*/ =
+export const ShowTabs:Action =
   { type: 'ShowTabs'
   };
 
-export const SelectWebView/*:Action*/ =
+export const SelectWebView:Action =
   { type: 'SelectWebView'
   };
 
 // ### Actions that affect multilpe sub-components
 
-export const OpenWebView/*:Action*/ =
+export const OpenWebView:Action =
   { type: 'OpenWebView'
   };
 
-export const AttachSidebar/*:Action*/ =
+export const AttachSidebar:Action =
   { type: "AttachSidebar"
   , source: Sidebar.Attach
   };
 
-export const DetachSidebar/*:Action*/ =
+export const DetachSidebar:Action =
   { type: "DetachSidebar"
   , source: Sidebar.Detach
   };
 
-export const Escape/*:Action*/ =
+export const Escape:Action =
   { type: 'Escape'
   };
 
 
-export const Unload/*:Action*/ =
+export const Unload:Action =
   { type: 'Unload'
   };
 
-export const ReloadRuntime/*:Action*/ =
+export const ReloadRuntime:Action =
   { type: 'ReloadRuntime'
   };
 
-export const BlurInput/*:Action*/ =
+export const BlurInput:Action =
   { type: 'BlurInput'
   };
 
@@ -608,7 +600,7 @@ const reloadRuntime = model =>
 
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+  (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
       case 'GoBack':
         return goBack(model);
@@ -704,7 +696,7 @@ const styleSheet = StyleSheet.create({
 });
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.main
   ( { className: 'root'
     , style: styleSheet.root

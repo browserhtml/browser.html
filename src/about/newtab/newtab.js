@@ -4,19 +4,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {merge, tag, tagged} from "../../common/prelude"
-import {Effects, html, thunk, forward} from "reflex"
-import {Style, StyleSheet} from "../../common/style";
-import {cursor} from "../../common/cursor";
-import * as Unknown from "../../common/unknown";
+import { merge } from '../../common/prelude'
+import type { Address, DOM } from 'reflex'
+import { Effects, html, thunk, forward } from 'reflex'
+import { Style, StyleSheet } from '../../common/style'
+import { cursor } from '../../common/cursor'
+import * as Unknown from '../../common/unknown'
+import * as Tiles from './newtab/tiles'
+import * as Wallpapers from './newtab/wallpapers'
+import type { Model, Action } from './newtab'
 
-import * as Tiles from './newtab/tiles';
-import * as Wallpapers from './newtab/wallpapers';
-
-/*::
-import type {Address, DOM} from "reflex"
-import type {Model, Action} from "./newtab"
-*/
 
 const WallpapersAction =
   action =>
@@ -33,7 +30,7 @@ const TilesAction =
   );
 
 export const init =
-  ()/*:[Model, Effects<Action>]*/ =>
+  ():[Model, Effects<Action>] =>
   {
     const [tiles, tilesFx] = Tiles.init();
     const [wallpapers, wallpaperFx] = Wallpapers.init();
@@ -67,7 +64,7 @@ const updateTiles = cursor
   );
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Wallpapers'
   ? updateWallpapers(model, action.wallpapers)
   : action.type === 'Tiles'
@@ -107,7 +104,7 @@ const readWallpaper = ({src, color}) =>
   );
 
 export const view =
-  ({wallpapers, tiles, help}/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ => {
+  ({wallpapers, tiles, help}:Model, address:Address<Action>):DOM => {
   const activeWallpaper = Wallpapers.active(wallpapers);
   return (
     html.div

@@ -4,28 +4,26 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import * as Easing from "eased";
+import * as Easing from 'eased'
+import type { Integer, Float } from '../../common/prelude'
 
-/*::
-import type {Integer, Float} from "../../common/prelude"
-*/
 
 export class Model {
-  /*::
+  
   x: Integer;
   shadow: Float;
   spacing: Integer;
   toolbarOpacity: Float;
   titleOpacity: Float;
   tabWidth: Integer;
-  */
+  
   constructor(
-    x/*: Integer*/
-  , shadow/*: Float*/
-  , spacing/*: Integer*/
-  , toolbarOpacity/*: Float*/
-  , titleOpacity/*: Float*/
-  , tabWidth/*: Integer*/
+    x: Integer
+  , shadow: Float
+  , spacing: Integer
+  , toolbarOpacity: Float
+  , titleOpacity: Float
+  , tabWidth: Integer
   ) {
     this.x = x
     this.shadow = shadow
@@ -65,10 +63,10 @@ export const expanded = new Model
   )
 
 export const interpolate =
-  ( from/*:Model*/
-  , to/*:Model*/
-  , progress/*:Float*/
-  )/*:Model*/ =>
+  ( from:Model
+  , to:Model
+  , progress:Float
+  ):Model =>
   new Model
   ( Easing.float(from.x, to.x, progress)
   , Easing.float(from.shadow, to.shadow, progress)

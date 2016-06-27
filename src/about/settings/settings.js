@@ -4,17 +4,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {html, thunk, forward, Effects} from 'reflex';
-import {merge, batch, always, tag, tagged} from "../../common/prelude";
-import {Style, StyleSheet} from '../../common/style';
-import * as Settings from '../../common/settings';
-import * as Unknown from '../../common/unknown';
-import * as Setting from './setting';
+import type { Address, DOM } from 'reflex'
+import { html, thunk, forward, Effects } from 'reflex'
+import { merge, batch, always } from '../../common/prelude'
+import { Style, StyleSheet } from '../../common/style'
+import * as Settings from '../../common/settings'
+import * as Unknown from '../../common/unknown'
+import * as Setting from './setting'
+import type { Name, Value, Model, Action } from './settings'
 
-/*::
-import type {Address, DOM} from "reflex";
-import type {Name, Value, Model, Action} from "./settings";
-*/
 
 // Actions
 
@@ -61,7 +59,7 @@ const Changed =
 
 
 const SettingAction =
-  (name/*:Name*/, action/*:Setting.Action*/)/*:Action*/ =>
+  (name:Name, action:Setting.Action):Action =>
   ( action.type === 'Save'
   ? Save
     ( { [name]: action.source
@@ -74,7 +72,7 @@ const SettingAction =
   );
 
 const SettingActionByName =
-  (name/*:Name*/)/*:(action:Setting.Action) => Action*/ =>
+  (name:Name):(action:Setting.Action) => Action =>
   action =>
   SettingAction(name, action);
 
@@ -82,7 +80,7 @@ const ChangeSetting =
   (name, value) =>
   SettingAction(name, Setting.Change(value));
 
-export const init = ()/*:[Model, Effects<Action>]*/ => {
+export const init = ():[Model, Effects<Action>] => {
   const model =
     { settings: {}
     };
@@ -204,7 +202,7 @@ const updateSettingByName = (model, name, action) => {
 }
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Save'
   ? save(model, action.source)
 
@@ -273,7 +271,7 @@ const styleSheet = StyleSheet.create
 
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.div
   ( { key: 'settings'
     , style: styleSheet.base

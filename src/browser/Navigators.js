@@ -1,21 +1,19 @@
 /* @flow */
 
-import * as Deck from "../common/Deck"
-import * as Animation from "../common/Animation"
-import * as Unknown from "../common/unknown"
-import * as Display from "./Navigators/Display"
-import {Effects, html, forward, thunk} from "reflex"
-import {cursor} from "../common/cursor"
-import {always} from "../common/prelude"
-import * as Style from "../common/style"
-import * as Easing from "eased"
-import * as Overlay from "./Navigators/Overlay"
-import * as Navigator from "./Navigators/Navigator"
-import * as URI from "../common/url-helper";
-import * as Tabs from "./Sidebar/Tabs";
-
-/*::
-import type {Address, DOM} from "reflex"
+import * as Deck from '../common/Deck'
+import * as Animation from '../common/Animation'
+import * as Unknown from '../common/unknown'
+import * as Display from './Navigators/Display'
+import type { Address, DOM } from 'reflex'
+import { Effects, html, forward, thunk } from 'reflex'
+import { cursor } from '../common/cursor'
+import { always } from '../common/prelude'
+import * as Style from '../common/style'
+import * as Easing from 'eased'
+import * as Overlay from './Navigators/Overlay'
+import * as Navigator from './Navigators/Navigator'
+import * as URI from '../common/url-helper'
+import * as Tabs from './Sidebar/Tabs'
 
 export type Action =
   | { type: "Expose" }
@@ -38,7 +36,7 @@ export type Action =
   | { type: "Animation", animation: Animation.Action }
   | { type: "Tabs", tabs: Tabs.Action }
   | { type: "Deck", deck: Deck.Action<Navigator.Action, Navigator.Flags> }
-*/
+
 
 export const Expose = { type: "Expose" }
 export const Focus = { type: "Focus" }
@@ -60,17 +58,17 @@ export const SelectPrevious = { type: "SelectPrevious" }
 export const Close = { type: "Close" }
 
 export class Model {
-  /*::
+  
   zoom: boolean;
   shrink: boolean;
   deck: Deck.Model;
   animation: Animation.Model<Display.Model>;
-  */
+  
   constructor(
-    zoom/*:boolean*/
-  , shrink/*:boolean*/
-  , deck/*:Deck.Model*/
-  , animation/*:Animation.Model<Display.Model>*/
+    zoom:boolean
+  , shrink:boolean
+  , deck:Deck.Model
+  , animation:Animation.Model<Display.Model>
   ) {
     this.zoom = zoom;
     this.shrink = shrink;
@@ -95,7 +93,7 @@ const Card =
 
 
 const tagDeck =
-  (action/*:Deck.Action<Navigator.Action, Navigator.Flags>*/)/*:Action*/ => {
+  (action:Deck.Action<Navigator.Action, Navigator.Flags>):Action => {
     switch (action.type) {
       case "Modify":
         switch (action.modify.type) {
@@ -144,9 +142,9 @@ const tagOverlay = always(ShowWebView);
 
 
 export const init =
-  ( zoom/*:boolean*/=true
-  , shrink/*:boolean*/=false
-  )/*:[Model, Effects<Action>]*/ => {
+  ( zoom:boolean=true
+  , shrink:boolean=false
+  ):[Model, Effects<Action>] => {
     const flags =
       { input:
         { value: ''
@@ -195,7 +193,7 @@ export const init =
   }
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+  (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
       case "Animation":
         return updateAnimation(model, action.animation);
@@ -292,7 +290,7 @@ const updateTabs =
   (model, action) =>
   // Flow inference seems to fail here, so we just make it believe
   // that we restructured action so it will suceed inferring.
-  (/*::
+  (
     action.type === "Modify"
   ? updateDeck
     ( model
@@ -304,7 +302,7 @@ const updateTabs =
         }
       }
     )
-  :*/updateDeck(model, action)
+  :updateDeck(model, action)
   )
 
 const selectNext =
@@ -432,9 +430,9 @@ const startAnimation =
 
 
 export const render =
-  ( model/*:Model*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( model:Model
+  , address:Address<Action>
+  ):DOM =>
   html.div
   ( { className: 'navigator-deck'
     , style:
@@ -459,9 +457,9 @@ export const render =
   )
 
 export const view =
-  ( model/*:Model*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( model:Model
+  , address:Address<Action>
+  ):DOM =>
   thunk
   ( 'Browser/NavigatorDeck'
   , render

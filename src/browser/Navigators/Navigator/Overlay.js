@@ -4,18 +4,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, html, thunk, forward} from "reflex";
-import {merge, always} from "../../../common/prelude";
-import {cursor} from "../../../common/cursor";
-import * as Style from "../../../common/style";
-import * as Easing from "eased";
-import * as Animation from "../../../common/Animation"
-import * as Unknown from "../../../common/unknown";
-import * as Display from "./Overlay/Display"
-
-/*::
-import type {Address, DOM} from "reflex"
-import type {Time} from "../../../common/prelude"
+import type { Address, DOM } from 'reflex'
+import { Effects, html, thunk, forward } from 'reflex'
+import type { Time } from '../../../common/prelude'
+import { always } from '../../../common/prelude'
+import { cursor } from '../../../common/cursor'
+import * as Style from '../../../common/style'
+import * as Easing from 'eased'
+import * as Animation from '../../../common/Animation'
+import * as Unknown from '../../../common/unknown'
+import * as Display from './Overlay/Display'
 
 export type Flags = boolean
 
@@ -24,16 +22,16 @@ export type Action =
   | { type: "Show" }
   | { type: "Hide" }
   | { type: "Animation", animation: Animation.Action }
-*/
+
 
 export class Model {
-  /*::
+  
   animation: Animation.Model<Display.Model>;
   isVisible: boolean;
-  */
+  
   constructor(
-    isVisible/*:boolean*/
-  , animation/*:Animation.Model<Display.Model>*/
+    isVisible:boolean
+  , animation:Animation.Model<Display.Model>
   ) {
     this.isVisible = isVisible;
     this.animation = animation;
@@ -52,8 +50,8 @@ const tagAnimation =
   );
 
 export const init =
-  ( isVisible/*:boolean*/=false
-  )/*:[Model, Effects<Action>]*/ => {
+  ( isVisible:boolean=false
+  ):[Model, Effects<Action>] => {
     const display =
       ( isVisible
       ? Display.visible
@@ -76,7 +74,7 @@ export const init =
 
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+  (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
       case "Animation":
         return updateAnimation(model, action.animation)
@@ -158,9 +156,9 @@ const nofx =
   ]
 
 export const render =
-  ( model/*:Model*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( model:Model
+  , address:Address<Action>
+  ):DOM =>
   html.div
   ( { className: 'overlay'
     , style: Style.mix
@@ -178,9 +176,9 @@ export const render =
 
 
 export const view =
-  ( model/*:Model*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( model:Model
+  , address:Address<Action>
+  ):DOM =>
   thunk
   ( 'Browser/NavigatorDeck/Navigator/Overaly'
   , render

@@ -5,19 +5,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {merge, always, tag} from "../common/prelude"
-import {cursor} from "../common/cursor"
-import * as Unknown from "../common/unknown"
-import * as Target from "../common/target"
-import * as Focusable from "../common/focusable"
-import * as Control from "../common/control"
-import {Style} from "../common/style"
-import {html, Effects, forward} from "reflex"
+import { merge, always } from '../common/prelude'
+import { cursor } from '../common/cursor'
+import * as Unknown from '../common/unknown'
+import * as Target from '../common/target'
+import * as Focusable from '../common/focusable'
+import * as Control from '../common/control'
+import { Style } from '../common/style'
+import type { Address, DOM } from 'reflex'
+import { html, Effects, forward } from 'reflex'
+import type { Model, Action, StyleSheet, ContextStyle } from './button'
 
-/*::
-import type {Model, Action, StyleSheet, ContextStyle} from "./button"
-import type {Address, DOM} from "reflex"
-*/
 
 const TargetAction =
   action =>
@@ -73,12 +71,12 @@ const updateControl = cursor
   );
 
 export const init =
-  ( isDisabled/*:boolean*/
-  , isFocused/*:boolean*/
-  , isActive/*:boolean*/
-  , isPointerOver/*:boolean*/
-  , text/*:string*/=''
-  )/*:[Model, Effects<Action>]*/ =>
+  ( isDisabled:boolean
+  , isFocused:boolean
+  , isActive:boolean
+  , isPointerOver:boolean
+  , text:string=''
+  ):[Model, Effects<Action>] =>
   [ ({isDisabled: false
     , isFocused: false
     , isActive: false
@@ -89,7 +87,7 @@ export const init =
   ]
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === "Down"
   ? [merge(model, {isActive: true}), Effects.none]
   : action.type === "Up"
@@ -106,12 +104,12 @@ export const update =
   );
 
 
-export const view =
-  (key/*:string*/, styleSheet/*:StyleSheet*/)/*:(model:Model, address:Address<Action>, contextStyle?:ContextStyle) => DOM*/ =>
-  ( model/*:Model*/
-  , address/*:Address<Action>*/
-  , contextStyle/*?:ContextStyle*/
-  )/*:DOM*/ =>
+export function view(key:string,
+                     styleSheet:StyleSheet):(model:Model, address:Address<Action>, contextStyle?:ContextStyle) => DOM {
+  return ( model
+         , address
+         , contextStyle
+  ):DOM =>
   html.button({
     key: key,
     className: key,
@@ -147,3 +145,4 @@ export const view =
     onClick: forward(address, always(Press)),
     onMouseUp: forward(address, always(Up))
   }, [model.text || '']);
+}

@@ -41,6 +41,7 @@
   "devDependencies": {
     "babel-cli": "6.6.5",
     "babel-plugin-syntax-flow": "6.3.13",
+    "babel-plugin-transform-class-properties": "6.10.2",
     "babel-plugin-transform-es2015-modules-umd": "6.4.3",
     "babel-plugin-transform-flow-strip-types": "6.4.0",
     "babel-polyfill": "6.7.4",

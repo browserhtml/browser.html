@@ -4,19 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, html, thunk, forward} from "reflex"
-import {merge, always, tagged} from "../../../common/prelude"
-import * as Style from "../../../common/style";
-import * as Unknown from "../../../common/unknown";
+import type { Address, DOM } from 'reflex'
+import { html, forward } from 'reflex'
+import { always } from '../../../common/prelude'
+import * as Style from '../../../common/style'
+import type { Model, Action, URI, Color } from './wallpaper'
 
-import hardcodedWallpaper from "../wallpaper.json";
 
-/*::
-import type {Address, DOM} from "reflex"
-import type {Model, Action, URI, Color} from "./wallpaper"
-*/
-
-const Choose/*:Action*/ =
+const Choose:Action =
   { type: 'Choose'
   };
 
@@ -34,7 +29,7 @@ const styleSheet = Style.createSheet
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   ( html.div
     ( { className: 'wallpaper-choice'
       , onClick: forward(address, always(Choose))

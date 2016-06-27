@@ -1,15 +1,13 @@
 /* @flow */
 
-import {Effects, Task, html, thunk, forward} from "reflex"
-import {merge} from "../common/prelude"
-import {ok, error} from "../common/result"
-import * as Runtime from "../common/runtime"
-import * as Unknown from "../common/unknown"
-import * as Style from "../common/style"
-
-/*::
-import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} from "reflex"
-import type {Result} from "../common/result"
+import type { Address, Never, DOM, Init, Update, View, AdvancedConfiguration } from 'reflex'
+import { Effects, Task, html, thunk } from 'reflex'
+import { merge } from '../common/prelude'
+import type { Result } from '../common/result'
+import { ok, error } from '../common/result'
+import * as Runtime from '../common/runtime'
+import * as Unknown from '../common/unknown'
+import * as Style from '../common/style'
 
 export type Model <model, action> =
   { snapshotURI: string
@@ -27,21 +25,21 @@ type Step <model, action> =
   [ Model
   , Effects<Action<model, action>>
   ]
-*/
+
 
 
 
 const Load = { type: "Load" }
 
 const Snapshot = /*::<model, action>*/
-  (result/*:Result<Error, model>*/)/*:Action<model, action>*/ =>
+  (result:Result<Error, model>):Action<model, action> =>
   ( { type: "Snapshot"
     , result
     }
   )
 
 const Replay = /*::<model, action>*/
-  (model/*:model*/)/*:Action<model, action>*/ =>
+  (model:model):Action<model, action> =>
   ( { type: "Replay"
     , replay: model
     }
@@ -49,7 +47,7 @@ const Replay = /*::<model, action>*/
 
 
 export const init = /*::<model, action, flags>*/
-  (flags/*:flags*/)/*:Step<model, action>*/ =>
+  (flags:flags):Step<model, action> =>
   ( [ { flags
       , snapshotURI: String(Runtime.env.replay)
       , error: null
@@ -60,9 +58,9 @@ export const init = /*::<model, action, flags>*/
   )
 
 export const update = /*::<model, action>*/
-  ( model/*:Model<model, action>*/
-  , action/*:Action<model, action>*/
-  )/*:Step<model, action>*/ =>
+  ( model:Model<model, action>
+  , action:Action<model, action>
+  ):Step<model, action> =>
   ( action.type === "Load"
   ? loadSnapshot(model)
   : action.type === "Snapshot"
@@ -79,9 +77,9 @@ const nofx =
   ]
 
 const receiveSnapshot = /*::<model, action>*/
-  ( model/*:Model<model, action>*/
-  , result/*:Result<Error, model>*/
-  )/*:Step<model, action>*/ =>
+  ( model:Model<model, action>
+  , result:Result<Error, model>
+  ):Step<model, action> =>
   ( result.isOk
   ? [ merge(model, {replayed: true})
     , Effects.receive(Replay(result.value))
@@ -90,14 +88,14 @@ const receiveSnapshot = /*::<model, action>*/
   )
 
 const loadSnapshot = /*::<model, action>*/
-  (model/*:Model<model, action>*/)/*:Step<model, action>*/ =>
+  (model:Model<model, action>):Step<model, action> =>
   [ model
   , Effects.perform(fetchSnapshot(model.snapshotURI))
     .map(Snapshot)
   ]
 
 const fetchSnapshot = /*::<model>*/
-  (uri/*:string*/)/*:Task<Never, Result<Error, model>>*/ => new Task(succeed => {
+  (uri:string):Task<Never, Result<Error, model>> => new Task(succeed => {
     const request = new XMLHttpRequest({mozSystem: true});
     request.open
     ( 'GET'
@@ -124,9 +122,9 @@ const fetchSnapshot = /*::<model>*/
 
 
 export const render = /*::<model, action>*/
-  ( model/*:Model<model, action>*/
-  , address/*:Address<Action<model, action>>*/
-  )/*:DOM*/ =>
+  ( model:Model<model, action>
+  , address:Address<Action<model, action>>
+  ):DOM =>
   html.dialog
   ( { id: "replay"
     , style: Style.mix
@@ -152,9 +150,9 @@ export const render = /*::<model, action>*/
   );
 
 export const view = /*::<model, action>*/
-  ( model/*:Model<model, action>*/
-  , address/*:Address<Action<model, action>>*/
-  )/*:DOM*/ =>
+  ( model:Model<model, action>
+  , address:Address<Action<model, action>>
+  ):DOM =>
   thunk
   ( 'replay'
   , render

@@ -4,20 +4,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {html, forward, Effects} from 'reflex';
-import {on, focus, selection} from '@driver';
-import {identity} from '../../../lang/functional';
-import {always, merge} from '../../../common/prelude';
-import {cursor} from "../../../common/cursor";
-import {compose, debounce} from '../../../lang/functional';
-import * as Focusable from '../../../common/focusable';
-import * as Editable from '../../../common/editable';
-import * as Keyboard from '../../../common/keyboard';
-import * as Unknown from '../../../common/unknown';
-import * as Style from '../../../common/style';
-
-/*::
-import type {Address, DOM} from "reflex"
+import type { Address, DOM } from 'reflex'
+import { html, forward, Effects } from 'reflex'
+import { on, focus, selection } from '@driver'
+import { compose } from '../../../lang/functional'
+import { always, merge } from '../../../common/prelude'
+import { cursor } from '../../../common/cursor'
+import * as Focusable from '../../../common/focusable'
+import * as Editable from '../../../common/editable'
+import * as Keyboard from '../../../common/keyboard'
+import * as Unknown from '../../../common/unknown'
+import * as Style from '../../../common/style'
 
 export type Flags =
   { isVisible?: boolean
@@ -54,28 +51,28 @@ export type Action =
   | { type: "Change", value: string, selection: Editable.Selection }
   | { type: 'Editable', editable: Editable.Action }
   | { type: 'Focusable', focusable: Focusable.Action }
-*/
+
 
 // Create a new input submit action.
-export const Query/*:()=>Action*/ = always({ type: 'Query' });
+export const Query:()=>Action = always({ type: 'Query' });
 export const Suggest =
-  (suggestion/*:Suggestion*/)/*:Action*/ =>
+  (suggestion:Suggestion):Action =>
   ( { type: "Suggest"
     , suggest: suggestion
     }
   );
 
-export const SuggestNext/*:Action*/ = { type: 'SuggestNext' };
-export const SuggestPrevious/*:Action*/ = { type: 'SuggestPrevious' };
-export const Submit/*:Action*/ = {type: 'Submit'};
-export const Abort/*:Action*/ = {type: 'Abort'};
-export const Enter/*:Action*/ = {type: 'Enter'};
-export const Focus/*:Action*/ = {type: 'Focus', source: Focusable.Focus };
-export const Blur/*:Action*/ = {type: 'Blur', source: Focusable.Blur };
-export const Show/*:Action*/ = {type: 'Show'};
-export const Hide/*:Action*/ = {type: 'Hide'};
+export const SuggestNext:Action = { type: 'SuggestNext' };
+export const SuggestPrevious:Action = { type: 'SuggestPrevious' };
+export const Submit:Action = {type: 'Submit'};
+export const Abort:Action = {type: 'Abort'};
+export const Enter:Action = {type: 'Enter'};
+export const Focus:Action = {type: 'Focus', source: Focusable.Focus };
+export const Blur:Action = {type: 'Blur', source: Focusable.Blur };
+export const Show:Action = {type: 'Show'};
+export const Hide:Action = {type: 'Hide'};
 export const EnterSelection =
-  (value/*:string*/)/*:Action*/ =>
+  (value:string):Action =>
   ( { type: 'EnterSelection'
     , value
     }
@@ -98,7 +95,7 @@ const EditableAction =
     }
   );
 
-const Clear/*:Action*/ = EditableAction(Editable.Clear);
+const Clear:Action = EditableAction(Editable.Clear);
 
 const updateFocusable = cursor({
   tag: FocusableAction,
@@ -136,7 +133,7 @@ const defaultFlags =
   }
 
 export const init =
-  (flags/*:Flags*/=defaultFlags)/*:[Model, Effects<Action>]*/ =>
+  (flags:Flags=defaultFlags):[Model, Effects<Action>] =>
   [ ( { value: flags.value
       , isFocused: !!flags.isFocused
       , isVisible: !!flags.isVisible
@@ -158,7 +155,7 @@ const suggest = (model, {query, match, hint}) =>
   )
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+  (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
       case 'Abort':
         return [merge(model, {isVisible: false}), Effects.none];
@@ -302,7 +299,7 @@ const style = Style.createSheet({
 
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.form({
     className: 'input-combobox',
     style: Style.mix

@@ -4,16 +4,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {html, thunk, forward, Effects} from 'reflex';
-import * as Style from '../../common/style';
-import * as Toggle from "../../common/toggle";
-import * as Button from "../../common/button";
-import {merge} from "../../common/prelude";
-import {cursor} from "../../common/cursor";
-import * as Unknown from "../../common/unknown";
-
-/*::
-import type {Address, DOM} from "reflex"
+import type { Address, DOM } from 'reflex'
+import { html, thunk, forward, Effects } from 'reflex'
+import * as Style from '../../common/style'
+import * as Toggle from '../../common/toggle'
+import { cursor } from '../../common/cursor'
+import * as Unknown from '../../common/unknown'
 
 export type Context =
   { toolbarOpacity: number
@@ -24,28 +20,28 @@ export type Action =
   | { type: "Detach" }
   | { type: "CreateWebView" }
   | { type: "Toggle", toggle: Toggle.Action }
-*/
+
 
 export class Model {
-  /*::
+  
   pin: Toggle.Model;
-  */
+  
   constructor(
-    pin/*:Toggle.Model*/
+    pin:Toggle.Model
   ) {
     this.pin = pin
   }
 }
 
-export const Attach/*:Action*/ =
+export const Attach:Action =
   { type: "Attach"
   };
 
-export const Detach/*:Action*/ =
+export const Detach:Action =
   { type: "Detach"
   };
 
-export const CreateWebView/*:Action*/ =
+export const CreateWebView:Action =
   { type: "CreateWebView"
   };
 
@@ -68,7 +64,7 @@ const updateToggle = cursor({
   update: Toggle.update
 });
 
-export const init = ()/*:[Model, Effects<Action>]*/ => {
+export const init = ():[Model, Effects<Action>] => {
   const [pin, pinFX] = Toggle.init();
   return [
     new Model(pin),
@@ -81,7 +77,7 @@ export const init = ()/*:[Model, Effects<Action>]*/ => {
 }
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === "Attach"
   ? updateToggle(model, Toggle.Check)
   : action.type === "Detach"
@@ -131,7 +127,7 @@ const viewPin = Toggle.view('pin-button', Style.createSheet({
 }));
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/, display/*:Context*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>, display:Context):DOM =>
   html.div({
     key: 'sidebar-toolbar',
     className: 'sidebar-toolbar',

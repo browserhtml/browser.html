@@ -4,20 +4,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {html, thunk, forward, Effects} from 'reflex';
-import {merge, always} from "../../../common/prelude";
-import {Style, StyleSheet} from '../../../common/style';
-import * as Settings from '../../../common/settings';
-import * as Unknown from '../../../common/unknown';
-import {focus} from "@driver";
+import type { Address, DOM } from 'reflex'
+import { html, thunk, forward, Effects } from 'reflex'
+import { merge, always } from '../../../common/prelude'
+import { Style, StyleSheet } from '../../../common/style'
+import * as Unknown from '../../../common/unknown'
+import { focus } from '@driver'
+import type { Model, Action } from './input'
 
-/*::
-import type {Address, DOM} from "reflex"
-import type {Model, Action} from "./input"
-*/
 
 export const Change =
-  (value/*:string*/)/*:Action*/ =>
+  (value:string):Action =>
   ( { type: "Change"
     , source: value
     }
@@ -25,22 +22,22 @@ export const Change =
 
 
 export const Submit =
-  (model/*:Model*/)/*:Action*/ =>
+  (model:Model):Action =>
   ( { type: "Submit"
     , source: model
     }
   );
 
-export const Edit/*:Action*/ = { type: "Edit" };
+export const Edit:Action = { type: "Edit" };
 const Enter = { type: "Enter" };
 const Abort = { type: "Abort" };
 
 
 export const init =
-  ( version/*:number*/
-  , value/*:string*/
-  , isEditing/*:boolean*/
-  )/*:[Model, Effects<Action>]*/ =>
+  ( version:number
+  , value:string
+  , isEditing:boolean
+  ):[Model, Effects<Action>] =>
   [ { value
     , isEditing
     , version
@@ -93,7 +90,7 @@ const decodeChange =
   Change(event.target.value);
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === "Change"
   ? change(model, action.source)
   : action.type === "Edit"
@@ -197,5 +194,5 @@ const render =
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   thunk('input', render, model, address);

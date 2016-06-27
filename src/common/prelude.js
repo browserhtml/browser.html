@@ -5,16 +5,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {Effects} from "reflex"
+import { Effects } from 'reflex'
+import type { Tagged } from './prelude'
 
-/*::
-import type {Tagged} from "./prelude"
-*/
 
 export const merge = /*::<model:{}>*/
-  ( model/*:model*/
-  , changes/*:{[key:string]: any}*/
-  )/*:model*/ => {
+  ( model:model
+  , changes:{[key:string]: any}
+  ):model => {
   let result = model
   for (let key in changes) {
     if (changes.hasOwnProperty(key)) {
@@ -45,17 +43,17 @@ export const merge = /*::<model:{}>*/
 
 
 export const take = /*::<item>*/
-  (items/*:Array<item>*/, n/*:number*/)/*:Array<item>*/ =>
+  (items:Array<item>, n:number):Array<item> =>
   ( items.length <= n
   ? items
   : items.slice(0, n)
   )
 
 export const move = /*::<item>*/
-  ( items/*:Array<item>*/
-  , from/*:number*/
-  , to/*:number*/
-  )/*:Array<item>*/ => {
+  ( items:Array<item>
+  , from:number
+  , to:number
+  ):Array<item> => {
   const count = items.length
   if (from === to) {
     return items
@@ -72,7 +70,7 @@ export const move = /*::<item>*/
 }
 
 export const remove = /*::<item>*/
-  (items/*:Array<item>*/, index/*:number*/)/*:Array<item>*/ =>
+  (items:Array<item>, index:number):Array<item> =>
   ( index < 0
   ? items
   : index >= items.length
@@ -85,7 +83,7 @@ export const remove = /*::<item>*/
   );
 
 
-export const setIn = /*::<item>*/(items/*:Array<item>*/, index/*:number*/, item/*:item*/)/*:Array<item>*/ => {
+export const setIn = /*::<item>*/(items:Array<item>, index:number, item:item):Array<item> => {
   if (items[index] === item) {
     return items
   } else {
@@ -112,7 +110,7 @@ const Null = () => null;
 // @FlowIssue: Frow is unable to infer
 const Void = () => void(0);
 
-export const always = /*::<a>*/(a/*:a*/)/*:(...args:Array<any>)=>a*/ => {
+export const always = /*::<a>*/(a:a):(...args:Array<any>)=>a => {
   const value = a
   if (value === null) {
     return Null
@@ -143,10 +141,10 @@ export const always = /*::<a>*/(a/*:a*/)/*:(...args:Array<any>)=>a*/ => {
 // in place if `modlel` is "mutable". `batch` here wolud be able to take
 // advantage of these to update same model in place.
 export const batch = /*:: <model, action>*/
-  ( update/*:(m:model, a:action) => [model, Effects<action>]*/
-  , model/*:model*/
-  , actions/*:Array<action>*/
-  )/*:[model, Effects<action>]*/ =>
+  ( update:(m:model, a:action) => [model, Effects<action>]
+  , model:model
+  , actions:Array<action>
+  ):[model, Effects<action>] =>
 {
   let effects = [];
   let index = 0;
@@ -163,10 +161,10 @@ export const batch = /*:: <model, action>*/
 }
 
 export const tag = /*::<tag:string, kind>*/
-  (tag/*:tag*/)/*:(value:kind) => Tagged<tag, kind>*/ =>
+  (tag:tag):(value:kind) => Tagged<tag, kind> =>
   value =>
   ({ type: tag, source: value });
 
 export const tagged = /*::<tag:string, kind>*/
-  (tag/*:tag*/, value/*:kind*/)/*:Tagged<tag, kind>*/ =>
+  (tag:tag, value:kind):Tagged<tag, kind> =>
   ({ type: tag, source: value });

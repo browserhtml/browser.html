@@ -5,19 +5,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {Effects, Task, html} from 'reflex';
-import {ease, easeOutQuart, float} from 'eased';
-import * as Style from '../../../common/style';
-import {always} from '../../../common/prelude';
-import * as Unknown from '../../../common/unknown';
-import * as Runtime from '../../../common/runtime';
-import * as Ref from '../../../common/ref';
-import * as PolyfillView from './Progress/PolyfillView';
-import * as ProgressView from './Progress/ProgressView';
-
-/*::
-import type {Address, DOM} from "reflex"
-import type {Time, Float} from "../../../common/prelude"
+import type { Address, DOM } from 'reflex'
+import { Effects, Task } from 'reflex'
+import type { Time, Float } from '../../../common/prelude'
+import { always } from '../../../common/prelude'
+import * as Unknown from '../../../common/unknown'
+import * as Runtime from '../../../common/runtime'
+import * as Ref from '../../../common/ref'
+import * as PolyfillView from './Progress/PolyfillView'
+import * as ProgressView from './Progress/ProgressView'
 
 // Implied to be 0.0 - 1.0 range
 export type LoadProgress = Float
@@ -34,12 +30,12 @@ export type Action =
   | { type: "Connect", time: Time }
   | { type: "Tick", time: Time }
   | { type: "NoOp" }
-*/
+
 
 const second = 1000;
 
 export class Model {
-  /*::
+  
   ref: Ref.Model;
   value: Percentage;
 
@@ -47,15 +43,15 @@ export class Model {
   loadStart: Time;
   connectTime: Time;
   loadEnd: Time;
-  */
+  
   constructor(
-    ref/*:Ref.Model*/
-  , value/*:Percentage*/
+    ref:Ref.Model
+  , value:Percentage
 
-  , updateTime/*:Time*/
-  , loadStart/*:Time*/
-  , connectTime/*:Time*/
-  , loadEnd/*:Time*/
+  , updateTime:Time
+  , loadStart:Time
+  , connectTime:Time
+  , loadEnd:Time
   ) {
     this.ref = ref
     this.value = value
@@ -69,28 +65,28 @@ export class Model {
 const NoOp = always({ type: "NoOp" })
 
 export const LoadStart =
-  (time/*:Time*/)/*:Action*/ =>
+  (time:Time):Action =>
   ( { type: "LoadStart"
     , time
     }
   );
 
 export const Connect =
-  (time/*:Time*/)/*:Action*/ =>
+  (time:Time):Action =>
   ( { type: 'Connect'
     , time
     }
   );
 
 export const LoadEnd =
-  (time/*:Time*/)/*:Action*/ =>
+  (time:Time):Action =>
   ( { type: "LoadEnd"
     , time
     }
   );
 
 const Tick =
-  (time/*:Time*/)/*:Action*/ =>
+  (time:Time):Action =>
   ( { type: "Tick"
     , time
     }
@@ -136,7 +132,7 @@ const progress =
   , connect
   , end
   , now
-  )/*:LoadProgress*/ =>
+  ):LoadProgress =>
   ( end > 0
   ? progressLoaded(start, connect, end, now)
   : connect > 0
@@ -148,9 +144,9 @@ const progress =
 
 // Start a new progress cycle.
 export const loadStart =
-  ( model/*:Model*/
-  , time/*:Time*/
-  )/*:[Model, Effects<Action>]*/ =>
+  ( model:Model
+  , time:Time
+  ):[Model, Effects<Action>] =>
   [ new Model
     ( model.ref
     , 0
@@ -171,9 +167,9 @@ export const loadStart =
 
 
 export const connect =
-  ( model/*:Model*/
-  , time/*:Time*/
-  )/*:[Model, Effects<Action>]*/ =>
+  ( model:Model
+  , time:Time
+  ):[Model, Effects<Action>] =>
   [ new Model
     ( model.ref
     , model.value
@@ -192,9 +188,9 @@ export const connect =
 
 // Invoked on End action and returns model with updated `timeStamp`:
 export const loadEnd =
-  ( model/*:Model*/
-  , time/*:Time*/
-  )/*:[Model, Effects<Action>]*/ =>
+  ( model:Model
+  , time:Time
+  ):[Model, Effects<Action>] =>
   [ new Model
     ( model.ref
     , model.value
@@ -214,9 +210,9 @@ export const loadEnd =
 // Update the progress and request another tick.
 // Returns a new model and a tick effect.
 export const tick =
-  ( model/*:Model*/
-  , time/*:Time*/
-  )/*:[Model, Effects<Action>]*/ => {
+  ( model:Model
+  , time:Time
+  ):[Model, Effects<Action>] => {
     if (model.loadStart === 0) {
       const fx =
         Effects
@@ -267,7 +263,7 @@ export const tick =
 
 
 export const init =
-  ()/*:[Model, Effects<Action>]*/ =>
+  ():[Model, Effects<Action>] =>
   [ new Model
     ( Ref.create()
     , 0
@@ -280,7 +276,7 @@ export const init =
   ];
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+  (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
       case "LoadStart":
         return loadStart(model, action.time);
@@ -399,7 +395,7 @@ const standalone =
 
 
 export const view =
-  (model/*:Model*/)/*:DOM*/ =>
+  (model:Model):DOM =>
   ( Runtime.isServo
   ? PolyfillView.view(model.ref, model.value)
   : ProgressView.view(model.ref, model.value)

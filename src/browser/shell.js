@@ -4,26 +4,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, Task, html, thunk, forward} from "reflex";
-import {merge, always} from "../common/prelude";
-import {cursor} from "../common/cursor";
-import * as Focusable from "../common/focusable";
-import * as Target from "../common/target";
-import * as Runtime from "../common/runtime";
-import * as Controls from "./shell/controls";
-import * as Unknown from "../common/unknown";
+import type { Address, DOM } from 'reflex'
+import { Effects, Task, thunk, forward } from 'reflex'
+import { merge } from '../common/prelude'
+import { cursor } from '../common/cursor'
+import * as Runtime from '../common/runtime'
+import * as Controls from './shell/controls'
+import * as Unknown from '../common/unknown'
+import type { Model, Action } from './shell'
 
-/*::
-import type {Address, DOM} from "reflex"
-import type {Model, Action} from "./shell"
-*/
 
 // @TODO: IO stuff should probably live elsewhere.
 const fetchFocus =
   new Task((succeed, fail) => succeed(document.hasFocus()));
 
 export const init =
-  ()/*:[Model, Effects<Action>]*/ => {
+  ():[Model, Effects<Action>] => {
   const [controls, fx] = Controls.init(false, false, false);
   return [
     ( { isFocused: false
@@ -43,23 +39,23 @@ export const init =
   ]
 }
 
-export const Focus/*:Action*/ =
+export const Focus:Action =
   { type: "Focus"
   };
 
-export const Blur/*:Action*/ =
+export const Blur:Action =
   { type: "Blur"
   };
 
-export const Close/*:Action*/ =
+export const Close:Action =
   { type: "Close"
   };
 
-export const Minimize/*:Action*/ =
+export const Minimize:Action =
   { type: "Minimize"
   };
 
-export const ToggleFullscreen/*:Action*/ =
+export const ToggleFullscreen:Action =
   { type: "ToggleFullscreen"
   };
 
@@ -159,7 +155,7 @@ const toggleFullscreen = model =>
 
 
 export const update =
-  (model/*:Model*/, action/*:Action*/) =>
+  (model:Model, action:Action) =>
   ( action.type === "Focus"
   ? focus(model)
   : action.type === "Blur"
@@ -188,7 +184,7 @@ export const update =
   );
 
 export const render =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ => {
+  (model:Model, address:Address<Action>):DOM => {
     if (!Runtime.useNativeTitlebar()) {
       return Controls.view(model.controls, forward(address, ControlsAction));
     } else {
@@ -197,7 +193,7 @@ export const render =
   }
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   thunk
   ( "Browser/Shell"
   , render

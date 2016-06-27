@@ -1,16 +1,13 @@
 /* @flow */
 
-import {Effects, Task, html, thunk, forward} from "reflex"
-import {merge, always} from "../common/prelude"
-import {ok, error} from "../common/result"
-import * as Runtime from "../common/runtime"
-import * as Unknown from "../common/unknown"
-import * as Style from "../common/style"
-
-/*::
-import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} from "reflex"
-import type {Result} from "../common/result"
-import type {URI, ID} from "../common/prelude"
+import type { Address, Never, DOM, Init, Update, View, AdvancedConfiguration } from 'reflex'
+import { Effects, Task, html, thunk } from 'reflex'
+import type { URI, ID } from '../common/prelude'
+import { merge, always } from '../common/prelude'
+import type { Result } from '../common/result'
+import { ok, error } from '../common/result'
+import * as Unknown from '../common/unknown'
+import * as Style from '../common/style'
 
 
 export type Gist =
@@ -50,7 +47,7 @@ type Step <model, action> =
   [ Model<model, action>
   , Effects<Action<model, action>>
   ]
-*/
+
 
 
 
@@ -59,14 +56,14 @@ const PrintSnapshot = { type: "PrintSnapshot" };
 const PublishSnapshot = { type: "PublishSnapshot" };
 const PrintedSnapshot = always({ type: "PrintedSnapshot" });
 const PublishedSnapshot = /*::<model, action>*/
-  (result/*:Result<Error, Gist>*/)/*:Action<model, action>*/ =>
+  (result:Result<Error, Gist>):Action<model, action> =>
   ( { type: "PublishedSnapshot"
     , result
     }
   );
 
 export const init = /*::<model, action, flags>*/
-  ()/*:Step<model, action>*/ =>
+  ():Step<model, action> =>
   ( [ { status: "Idle"
       , description: ""
       }
@@ -75,9 +72,9 @@ export const init = /*::<model, action, flags>*/
   )
 
 export const update = /*::<model, action>*/
-  ( model/*:Model<model, action>*/
-  , action/*:Action<model, action>*/
-  )/*:Step<model, action>*/ =>
+  ( model:Model<model, action>
+  , action:Action<model, action>
+  ):Step<model, action> =>
   ( action.type === "NoOp"
   ? nofx(model)
   : action.type === "PrintSnapshot"
@@ -100,7 +97,7 @@ const nofx =
   ]
 
 const createSnapshot = /*::<model, action>*/
-  (model/*:Model<model, action>*/)/*:Task<Error, string>*/ =>
+  (model:Model<model, action>):Task<Error, string> =>
   new Task((succeed, fail) => {
     try {
       succeed(JSON.stringify(window.application.model.value.debuggee))
@@ -112,7 +109,7 @@ const createSnapshot = /*::<model, action>*/
 
 
 const printSnapshot = /*::<model, action>*/
-  (model/*:Model<model, action>*/)/*:Step<model, action>*/ =>
+  (model:Model<model, action>):Step<model, action> =>
   [ merge(model, { status: 'Pending', description: 'Printing...' })
   , Effects.batch
     ( [ Effects.perform
@@ -130,13 +127,13 @@ const printSnapshot = /*::<model, action>*/
   ];
 
 const printedSnapshot = /*::<model, action>*/
-  (model/*:Model<model, action>*/)/*:Step<model, action>*/ =>
+  (model:Model<model, action>):Step<model, action> =>
   [ merge(model, { status: 'Idle', description: '' })
   , Effects.none
   ];
 
 const publishSnapshot = /*::<model, action>*/
-  (model/*:Model<model, action>*/)/*:Step<model, action>*/ =>
+  (model:Model<model, action>):Step<model, action> =>
   [ merge(model, {status: "Pending", description: "Publishing..." })
   , Effects.perform
     ( createSnapshot(model)
@@ -148,9 +145,9 @@ const publishSnapshot = /*::<model, action>*/
   ]
 
 const publishedSnapshot = /*::<model, action>*/
-  ( model/*:Model<model, action>*/
-  , result/*:Result<Error, Gist>*/
-  )/*:Step<model, action>*/ =>
+  ( model:Model<model, action>
+  , result:Result<Error, Gist>
+  ):Step<model, action> =>
   [ merge(model, {status: "Idle", description: "" })
   , Effects.perform
     ( result.isError
@@ -161,7 +158,7 @@ const publishedSnapshot = /*::<model, action>*/
   ]
 
 const uploadSnapshot =
-  (snapshot/*:string*/)/*:Task<Error, Gist>*/ =>
+  (snapshot:string):Task<Error, Gist> =>
   new Task((succeed, fail) => {
     const request = new XMLHttpRequest({mozSystem: true});
     request.open('POST', 'https://api.github.com/gists', true);
@@ -186,9 +183,9 @@ const uploadSnapshot =
   });
 
 export const render = /*::<model, action>*/
-  ( model/*:Model<model, action>*/
-  , address/*:Address<Action<model, action>>*/
-  )/*:DOM*/ =>
+  ( model:Model<model, action>
+  , address:Address<Action<model, action>>
+  ):DOM =>
   html.dialog
   ( { id: "record"
     , style: Style.mix
@@ -205,9 +202,9 @@ export const render = /*::<model, action>*/
   );
 
 export const view = /*::<model, action>*/
-  ( model/*:Model<model, action>*/
-  , address/*:Address<Action<model, action>>*/
-  )/*:DOM*/ =>
+  ( model:Model<model, action>
+  , address:Address<Action<model, action>>
+  ):DOM =>
   thunk
   ( "record"
   , render
