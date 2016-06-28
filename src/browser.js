@@ -256,6 +256,12 @@ const updateSidebar = cursor({
   update: Sidebar.update
 });
 
+const closed = (model, result) =>
+  ( result.isOk
+   ? [ model, Effects.none ]
+   : [ model, Effects.perform(Unknown.error(result.error)) ]
+  );
+
 const Reloaded:Action =
   { type: "Reloaded"
   };
@@ -265,6 +271,12 @@ const Failure = error =>
     , error: error
     }
   );
+
+const Closed = result =>
+  ( { type: "Closed"
+    , result
+    }
+  )
 
 
 // ### Mode changes
@@ -321,6 +333,10 @@ export const ReloadRuntime:Action =
 
 export const BlurInput:Action =
   { type: 'BlurInput'
+  };
+
+export const CloseRuntime:Action =
+  { type: "CloseRuntime"
   };
 
 
@@ -406,6 +422,7 @@ const decodeKeyDown = Keyboard.bindings({
   'F12': always(ToggleDevtools),
   'F5': always(ReloadRuntime),
   'meta control r': always(ReloadRuntime),
+  [`${modifier} q`]: always(CloseRuntime),
   'meta alt 3': always(PrintSnapshot),
   'meta alt 4': always(PublishSnapshot)
 });
@@ -533,6 +550,13 @@ const close =
   , Navigators.Close
   )
 
+const closeRuntime = model =>
+  [ model
+  , Effects
+    .perform(Runtime.quit)
+    .map(Closed)
+  ];
+
 const SelectNextNavigator =
   { type: "Navigators"
   , navigators: Navigators.SelectNext
@@ -619,6 +643,8 @@ export const update =
         return resetZoom(model);
       case 'Close':
         return close(model);
+      case 'CloseRuntime':
+        return closeRuntime(model);
       case 'OpenNewTab':
         return openNewTab(model);
       case 'EditWebView':
@@ -659,6 +685,8 @@ export const update =
         , Effects
           .perform(Unknown.error(action.error))
         ];
+      case 'Closed':
+        return closed(model, action.result);
 
       // Ignore some actions.
       case 'Reloaded':
