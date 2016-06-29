@@ -55,12 +55,12 @@ export type Card <action, model, flags> =
 
 
 export class Model <model> {
-  
+
   nextID: Integer;
   index: Array<ID>;
   cards: Dictionary<ID, model>;
   selected: Maybe<ID>;
-  
+
   constructor(
     nextID:Integer
   , index:Array<ID>
@@ -355,7 +355,7 @@ export const selectByOffset = <action, model, flags>
   : model.selected == null
   ? [ model
     , Effects.perform
-      ( warn(Error(`Unable to change selected WebView if no WebView is seleted`))
+      ( warn(Error(`Unable to change selected WebView if no WebView is selected`))
       )
     ]
   : selectByID
@@ -377,16 +377,19 @@ export const selectPrevious = <action, model, flags>
   ):Transaction<Action<action, flags>, Model<model>> =>
   selectByOffset(api, model, -1)
 
-const relativeOf =
-  (offset, id, index) =>
-  index
-  [ indexOfOffset
-    ( index.indexOf(id)
-    , offset
-    , index.length
-    , true
-    )
-  ]
+function relativeOf(offset, id, index) {
+  let position = indexOfOffset
+                ( index.indexOf(id)
+                , offset
+                , index.length
+                , true
+                )
+  // Selecting the previous or next tab skips the New Tab page.
+  if (position === 0) {
+    position = offset === 1 ? 1 : index.length - 1;
+  }
+  return index[position]
+}
 
 // Function is used to decide which tab should get a selection if currently
 // selected tab is to be closed. The given `id` represents currently selected
