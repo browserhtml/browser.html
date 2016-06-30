@@ -55,24 +55,24 @@
     , "src": "./tiles/rust-lang.org.png"
     }
   , "8":
+    { "title": "Demo: Evil Ad"
+    , "uri": "./demos/evil_ad/physics/with-ad.html"
+    , "src": "./tiles/demo-evil-ad.png"
+    }
+  , "9":
     { "title": "Demo: Moire"
     , "uri": "./demos/moire.html"
     , "src": "./tiles/demo-moire.png"
     }
-  , "9":
+  , "10":
     { "title": "Demo: Spheres"
     , "uri": "./demos/spheres.html"
     , "src": "./tiles/demo-spheres.png"
     }
-  , "10":
+  , "11":
     { "title": "Demo: Transparent Rects"
     , "uri": "./demos/transparent_rects.html"
     , "src": "./tiles/demo-transparent_rects.png"
-    }
-  , "11":
-    { "title": "Demo: Evil Ad"
-    , "uri": "./demos/evil_ad/physics/with-ad.html"
-    , "src": "./tiles/demo-evil-ad.png"
     }
   }
 }
