@@ -1,0 +1,41 @@
+body {
+  /* @note don't use overflow:hidden on body. It hides everything in Servo.
+  Instead, we set overflow:hidden on #container */
+  background: #222;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+#container {
+  background: #222;
+  overflow: hidden;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+#fps {
+  font-family: monospace;
+  position: absolute;
+  z-index: 10;
+  left: 100px;
+  top: 100px;
+}
+
+#ad {
+  border: 0;
+  left: 50%;
+  margin-left: -364px;
+  position: absolute;
+  bottom: 0;
+}
+
+.particle {
+  background: #fff;
+  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  position: absolute;
+  transition: left 31ms linear, top 31ms linear;
+}

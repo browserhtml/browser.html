@@ -70,9 +70,9 @@
     , "src": "./tiles/demo-transparent_rects.png"
     }
   , "11":
-    { "title": "Demo: Spinning"
-    , "uri": "./demos/spinning.html"
-    , "src": "./tiles/demo-spinning.png"
+    { "title": "Demo: Evil Ad"
+    , "uri": "./demos/evil_ad/physics/with-ad.html"
+    , "src": "./tiles/demo-evil-ad.png"
     }
   }
 }
