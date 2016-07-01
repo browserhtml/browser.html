@@ -145,10 +145,10 @@ gulp.task('servo', function() {
       var app = child.spawn(settings.servoPath, [
           '-w',
           '-b',
-          '--resolution', '1024x720',
+          '--resolution', '1024x740',
           '--pref', 'dom.mozbrowser.enabled',
           '--pref', 'dom.forcetouch.enabled',
-          '--pref', 'dom.quit-on-escape.enabled=false',
+          '--pref', 'shell.builtin-key-shortcuts.enabled=false',
           'http://localhost:' + settings.port
       ], {
           stdio: 'inherit'
@@ -237,6 +237,7 @@ gulp.task('copydist', function() {
   copy_files('./src/**/*.png', path.join(dist, "components"));
   copy_files('./src/**/*.jpg', path.join(dist, "components"));
   copy_files('./src/**/*.gif', path.join(dist, "components"));
+  copy_files('./src/**/evil_ad/**/*.js', path.join(dist, "components"));
   copy_files('./*.json', path.join(dist, "components"));
 });
 

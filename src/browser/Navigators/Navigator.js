@@ -22,10 +22,12 @@ import * as Display from './Navigator/Display';
 import * as Animation from "../../common/Animation";
 import * as Easing from "eased";
 import * as Tab from "../Sidebar/Tab";
+import * as Runtime from '../../common/runtime';
+import type {Report} from "../IssueReporter";
 
 import {readTitle, isSecure, isDark, canGoBack} from './Navigator/WebView/Util';
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {URI, Time} from "./Navigator/WebView"
 
@@ -71,6 +73,7 @@ export type Action =
   | { type: "LoadStart", time: Time }
   | { type: "Connect", time: Time }
   | { type: "LoadEnd", time: Time }
+  | { type: "Crash", crash: Report }
 
   | { type: "Output", output: Output.Action }
 
@@ -95,6 +98,7 @@ export type Action =
   // Internal
   | { type: "ActivateAssistant"}
   | { type: "DeactivateAssistant" }
+  | { type: "ResetAssistant" }
   | { type: "SetSelectedInputValue", value: string }
 
   // Embedder
@@ -106,7 +110,7 @@ export type Action =
   // Animation
   | { type: "Animation", animation: Animation.Action }
   | { type: "AnimationEnd" }
-*/
+
 
 const SubmitInput = { type: "SubmitInput" }
 const EscapeInput = { type: "EscapeInput" }
@@ -176,6 +180,8 @@ const tagAssistant =
     switch (action.type) {
       case "Suggest":
         return { type: "Suggest", suggest: action.suggest }
+      case "Load":
+        return { type: "Navigate", uri: action.load }
       default:
         return { type: "Assistant", assistant: action }
     }
@@ -209,6 +215,8 @@ const tagOutput =
         return action
       case "LoadEnd":
         return action
+      case "Crash":
+        return action;
       default:
         return { type: "Output", output: action }
     }
@@ -252,7 +260,7 @@ const tagAnimation =
   };
 
 export const Navigate =
-  ( destination/*:string*/)/*:Action*/ =>
+  ( destination:string):Action =>
   ( { type: "Navigate"
     , uri: URL.read(destination)
     }
@@ -260,6 +268,7 @@ export const Navigate =
 
 const ActivateAssistant = { type: "ActivateAssistant" }
 const DeactivateAssistant = { type: "DeactivateAssistant" }
+const ResetAssistant = { type: "ResetAssistant" }
 
 const SetSelectedInputValue =
   value =>
@@ -269,7 +278,7 @@ const SetSelectedInputValue =
   )
 
 export class Model {
-  /*::
+
   isSelected: boolean;
   isClosed: boolean;
   isPinned: boolean;
@@ -280,18 +289,18 @@ export class Model {
   assistant: Assistant.Model;
   progress: Progress.Model;
   animation: Animation.Model<Display.Model>;
-  */
+
   constructor(
-    isSelected/*:boolean*/
-  , isClosed/*:boolean*/
-  , isPinned/*:boolean*/
-  , isInputEmbedded/*:boolean*/
-  , input/*:Input.Model*/
-  , output/*:Output.Model*/
-  , assistant/*:Assistant.Model*/
-  , overlay/*:Overlay.Model*/
-  , progress/*:Progress.Model*/
-  , animation/*:Animation.Model<Display.Model>*/
+    isSelected:boolean
+  , isClosed:boolean
+  , isPinned:boolean
+  , isInputEmbedded:boolean
+  , input:Input.Model
+  , output:Output.Model
+  , assistant:Assistant.Model
+  , overlay:Overlay.Model
+  , progress:Progress.Model
+  , animation:Animation.Model<Display.Model>
   ) {
     this.isSelected = isSelected
     this.isClosed = isClosed
@@ -346,7 +355,7 @@ const assemble =
 
 
 export const init =
-  (options/*:Flags*/)/*:[Model, Effects<Action>]*/ =>
+  (options:Flags):[Model, Effects<Action>] =>
   assemble
   ( options.output.disposition != 'background-tab'
   , false
@@ -365,9 +374,9 @@ export const init =
   )
 
 export const update =
-  ( model/*:Model*/
-  , action/*:Action*/
-  )/*:[Model, Effects<Action>]*/ => {
+  ( model:Model
+  , action:Action
+  ):[Model, Effects<Action>] => {
     // console.log(action)
     switch (action.type) {
       case 'NoOp':
@@ -452,6 +461,8 @@ export const update =
         return activateAssistant(model);
       case 'DeactivateAssistant':
         return deactivateAssistant(model);
+      case 'ResetAssistant':
+        return resetAssistant(model);
       case 'SetSelectedInputValue':
         return setSelectedInputValue(model, action.value);
 
@@ -466,14 +477,14 @@ export const update =
   };
 
 const nofx =
-  (model/*:Model*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model):[Model, Effects<Action>] =>
   [ model
   , Effects.none
   ];
 
 export const select =
-  ( model/*:Model*/
-  )/*:[Model, Effects<Action>]*/ =>
+  ( model:Model
+  ):[Model, Effects<Action>] =>
   ( model.isSelected
   ? nofx(model)
   : startAnimation
@@ -489,8 +500,8 @@ export const select =
   )
 
 export const deselect =
-  ( model/*:Model*/
-  )/*:[Model, Effects<Action>]*/ =>
+  ( model:Model
+  ):[Model, Effects<Action>] =>
   ( model.isSelected
   ? startAnimation
     ( model
@@ -506,8 +517,8 @@ export const deselect =
   )
 
 export const close =
-  ( model/*:Model*/
-  )/*:[Model, Effects<Action>]*/ =>
+  ( model:Model
+  ):[Model, Effects<Action>] =>
   ( model.isPinned
   ? [ model
     , Effects.receive(Select)
@@ -578,7 +589,8 @@ const submitInput =
   batch
   ( update
   , model
-  , [ FocusOutput
+  , [ ResetAssistant
+    , FocusOutput
     , Navigate(model.input.value)
     ]
   );
@@ -721,6 +733,14 @@ const deactivateAssistant =
   ( model
   , Assistant.Close
   )
+
+const resetAssistant =
+  model =>
+  updateAssistant
+  ( model
+  , Assistant.Reset
+  )
+
 
 const setSelectedInputValue =
   (model, value) =>
@@ -891,7 +911,7 @@ const endAnimation =
   )
 
 export const render =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.dialog
   ( { className: `navigator ${mode(model.output)}`
     , open: true
@@ -905,7 +925,10 @@ export const render =
         ? styleSheet.selected
         : styleSheet.unselected
         )
-      , model.animation.state
+      , ( Runtime.env.tabswitch === 'xfade'
+        ? model.animation.state
+        : null
+        )
       , styleBackground(model.output)
       )
     }
@@ -928,7 +951,7 @@ export const render =
   )
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   thunk
   ( model.output.ref.value
   , render
@@ -946,7 +969,7 @@ const styleSheet = Style.createSheet
       , overflow: 'hidden'
       , backgroundColor: 'white'
       , display: 'block'
-      , borderRadius: '4px'
+      , borderRadius: Runtime.useNativeTitlebar() ? '0' : '4px'
       , transitionProperty: 'background-color, color, border-color'
       , transitionTimingFunction: 'ease-in, ease-out, ease'
       , transitionDuration: '300ms'
@@ -954,7 +977,9 @@ const styleSheet = Style.createSheet
     , selected:
       { zIndex: 2 }
     , unselected:
-      { zIndex: 1 }
+      { zIndex: 1
+      , visibility: 'hidden'
+      }
     , dark:
       { color: 'rgba(255, 255, 255, 0.8)'
       , borderColor: 'rgba(255, 255, 255, 0.2)'

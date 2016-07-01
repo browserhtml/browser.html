@@ -8,14 +8,28 @@ import {Effects, Task} from 'reflex';
 import {merge, always} from "../common/prelude";
 import * as Unknown from "../common/unknown";
 
-/*::
-import type {Action, Model, Time} from "./stopwatch"
-*/
+import type {Time} from "../common/prelude"
+export type Idle = null
+export type Ticking =
+  { time: Time
+  , elapsed: Time
+  }
 
-export const Start/*:Action*/ = {type: "Start"};
-export const End/*:Action*/ = {type: "End"};
+export type Model =
+  | Idle
+  | Ticking
+
+export type Action =
+  | { type: "Start" }
+  | { type: "End" }
+  | { type: "Tick"
+    , time: Time
+    }
+
+export const Start:Action = {type: "Start"};
+export const End:Action = {type: "End"};
 export const Tick =
-  (time/*:Time*/)/*:Action*/ =>
+  (time:Time):Action =>
   ( { type: "Tick"
     , time
     }
@@ -23,11 +37,11 @@ export const Tick =
 
 
 export const init =
-  ()/*:[Model, Effects<Action>]*/ =>
+  ():[Model, Effects<Action>] =>
   [null, Effects.none];
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === "End"
   ? [ null, Effects.none ]
   : action.type === "Start"

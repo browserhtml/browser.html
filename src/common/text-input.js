@@ -7,8 +7,7 @@
 import {html, forward, Effects} from 'reflex';
 import {Style} from '../common/style';
 import {compose} from '../lang/functional';
-import {tag, tagged, merge, always} from '../common/prelude';
-import {cursor} from "../common/cursor"
+import {tag, tagged, mapFX, merge, always} from '../common/prelude';
 import * as Unknown from '../common/unknown';
 import * as Focusable from '../common/focusable';
 import * as Editable from '../common/editable';
@@ -16,37 +15,84 @@ import * as Control from '../common/control';
 
 import {on, focus, selection} from '@driver';
 
-/*::
+
 import type {Address, DOM} from "reflex"
-import type {Action, Model, StyleSheet, ContextStyle} from './text-input'
-*/
+import type {Rules} from "../common/style"
+import type {Tagged} from "../common/prelude"
+
+export type StyleSheet =
+  { base: Rules
+  , focused?: Rules
+  , blured?: Rules
+  , enabled?: Rules
+  , disabled?: Rules
+  , over?: Rules
+  , out?: Rules
+  , active?: Rules
+  , inactive?: Rules
+  }
+export type ContextStyle = Rules
+
+export type Model =
+  { value: string
+  , selection: ?Editable.Selection
+  , placeholder: ?string
+  , isDisabled: boolean
+  , isFocused: boolean
+  }
 
 
 
-const EditableAction = tag("Editable");
+export type Action
+  = { type: "Focusable", focusable: Focusable.Action }
+  | { type: "Editable", editable: Editable.Action }
+  | { type: "Control", control: Control.Action }
+  | { type: "Change"
+    , value: string
+    , selection: Editable.Selection
+    }
+  | { type: "Focus" }
+  | { type: "Blur" }
+
+
+
+
+const EditableAction =
+  action =>
+  ( { type: "Editable"
+    , editable: action
+    }
+  );
+
 const FocusableAction =
-  (action/*:Focusable.Action*/)/*:Action*/ =>
+  (action) =>
   ( action.type === "Focus"
   ? Focus
   : action.type === "Blur"
   ? Blur
-  : tagged("Focusable", action)
+  : { type: "Focusable", focusable: action }
   );
-const ControlAction = tag("Control");
+
+const ControlAction =
+  action =>
+  ( { type: "Control"
+    , control: action
+    }
+  )
 
 export const Change = Editable.Change;
-export const Focus/*:Action*/ = { type: "Focus" };
-export const Blur/*:Action*/ = { type: "Blur" };
-export const Enable/*:Action*/ = ControlAction(Control.Enable);
-export const Disable/*:Action*/ = ControlAction(Control.Disable);
+export const Focus:Action = { type: "Focus" };
+export const Blur:Action = { type: "Blur" };
+export const Enable:Action = ControlAction(Control.Enable);
+export const Disable:Action = ControlAction(Control.Disable);
 
 
 export const init =
-  ( value/*:string*/=''
-  , selection/*:?Editable.Selection*/=null
-  , placeholder/*:string*/=''
-  , isDisabled/*:boolean*/=false
-  )/*:[Model, Effects<Action>]*/ =>
+  ( value:string=''
+  , selection:?Editable.Selection=null
+  , placeholder:string=''
+  , isDisabled:boolean=false
+  ):[Model, Effects<Action>] =>
   [ { value
     , placeholder
     , selection
@@ -68,38 +114,21 @@ const disable =
   , Effects.none
   ];
 
-const updateEditable = cursor
-  ( { tag: EditableAction
-    , update: Editable.update
-    }
-  );
-
-const updateFocusable = cursor
-  ( { tag: FocusableAction
-    , update: Focusable.update
-    }
-  );
-
-const updateControl = cursor
-  ( { tag: ControlAction
-    , update: Control.update
-    }
-  );
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Change'
-  ? updateEditable(model, action)
+  ? mapFX(EditableAction, Editable.update(model, action))
   : action.type === 'Editable'
-  ? updateEditable(model, action.source)
+  ? mapFX(EditableAction, Editable.update(model, action.editable))
   : action.type === 'Focusable'
-  ? updateFocusable(model, action.source)
+  ? mapFX(FocusableAction, Focusable.update(model, action.focusable))
   : action.type === 'Focus'
-  ? updateFocusable(model, action)
+  ? mapFX(FocusableAction, Focusable.update(model, action))
   : action.type === 'Blur'
-  ? updateFocusable(model, action)
+  ? mapFX(FocusableAction, Focusable.update(model, action))
   : action.type === 'Control'
-  ? updateControl(model, action.source)
+  ? mapFX(ControlAction, Control.update(model, action.control))
   : Unknown.update(model, action)
   );
 
@@ -121,12 +150,12 @@ const decodeChange = compose
   );
 
 
-export const view =
-  (key/*:string*/, styleSheet/*:StyleSheet*/)/*:(model:Model, address:Address<Action>, contextStyle?:ContextStyle) => DOM*/ =>
-  ( model/*:Model*/
-  , address/*:Address<Action>*/
-  , contextStyle/*?:ContextStyle*/
-  )/*:DOM*/ =>
+export function view(key:string,
+                     styleSheet:StyleSheet):(model:Model, address:Address<Action>, contextStyle?:ContextStyle) => DOM {
+  return ( model
+         , address
+         , contextStyle
+  ):DOM =>
   html.input
   ( { key
     , type: 'input'
@@ -154,3 +183,4 @@ export const view =
       )
     }
   )
+}

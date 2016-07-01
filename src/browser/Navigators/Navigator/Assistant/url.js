@@ -10,10 +10,12 @@ import {merge, always, batch} from "../../../../common/prelude";
 import {Style, StyleSheet} from '../../../../common/style';
 import * as URL from '../../../../common/url-helper';
 
-/*::
+
 import type {Address, DOM} from "reflex";
-import type {URI} from "./url";
-*/
+import type {URI} from "../../../../common/prelude"
+
+export type {URI}
+
 
 
 const styleSheet = StyleSheet.create
@@ -35,7 +37,7 @@ const preventDefault =
   event.preventDefault();
 
 export const render =
-  (uri/*:URI*/, isSelected/*:boolean*/)/*:DOM*/ =>
+  (uri:URI, isSelected:boolean):DOM =>
   html.a
   ( { className: 'assistant url'
     , style: Style
@@ -53,7 +55,7 @@ export const render =
   );
 
 export const view =
-  (uri/*:URI*/, isSelected/*:boolean*/)/*:DOM*/ =>
+  (uri:URI, isSelected:boolean):DOM =>
   thunk
   ( uri
   , render

@@ -11,7 +11,7 @@ import {ok, error} from "../../../../common/result";
 import * as Focusable from "../../../../common/focusable";
 import * as Ref from '../../../../common/ref';
 
-/*::
+
 import type {Result} from "../../../../common/result"
 import type {Never} from "reflex"
 import type {Float} from "../../../../common/prelude"
@@ -32,20 +32,20 @@ export type Action =
     }
   | { type: "Focus" }
   | { type: "Blur" }
-*/
+
 
 export class Model {
-  /*::
+  
   ref: Ref.Model;
   zoom: Float;
   isVisible: boolean;
   isFocused: boolean;
-  */
+  
   constructor(
-    ref/*:Ref.Model*/
-  , zoom/*:Float*/
-  , isVisible/*:boolean*/
-  , isFocused/*:boolean*/
+    ref:Ref.Model
+  , zoom:Float
+  , isVisible:boolean
+  , isFocused:boolean
   ) {
     this.ref = ref
     this.zoom = zoom
@@ -54,19 +54,19 @@ export class Model {
   }
 }
 
-export const MakeVisible/*:Action*/ =
+export const MakeVisible:Action =
   ({type: "MakeVisible"});
 
-export const MakeNotVisible/*:Action*/ =
+export const MakeNotVisible:Action =
   ({type: "MakeNotVisible"});
 
-export const ZoomIn/*:Action*/ =
+export const ZoomIn:Action =
   ({type: "ZoomIn"});
 
-export const ZoomOut/*:Action*/ =
+export const ZoomOut:Action =
   ({type: "ZoomOut"});
 
-export const ResetZoom/*:Action*/ =
+export const ResetZoom:Action =
   ({type: "ResetZoom"});
 
 const FocusableAction =
@@ -80,8 +80,8 @@ const Panic =
     }
   )
 
-export const Focus/*:Action*/ = Focusable.Focus;
-export const Blur/*:Action*/ = Focusable.Blur;
+export const Focus:Action = Focusable.Focus;
+export const Blur:Action = Focusable.Blur;
 
 const NoOp = always({type: "NoOp"});
 
@@ -100,7 +100,7 @@ const ZoomChanged =
   );
 
 const setZoom =
-  (ref/*:Ref.Model*/, level/*:Float*/)/*:Task<Error, Float>*/ =>
+  (ref:Ref.Model, level:Float):Task<Error, Float> =>
   Ref
   .deref(ref)
   .chain(element => setElementZoom(element, level))
@@ -122,19 +122,19 @@ const ZOOM_MAX = 2;
 const ZOOM_STEP = 0.1;
 
 export const zoomIn =
-  (ref/*:Ref.Model*/, zoom/*:number*/)/*:Task<Error, number>*/ =>
+  (ref:Ref.Model, zoom:number):Task<Error, number> =>
   setZoom(ref, Math.min(ZOOM_MAX, zoom + ZOOM_STEP));
 
 export const zoomOut =
-  (ref/*:Ref.Model*/, zoom/*:number*/)/*:Task<Error, number>*/ =>
+  (ref:Ref.Model, zoom:number):Task<Error, number> =>
   setZoom(ref, Math.max(ZOOM_MIN, zoom - ZOOM_STEP));
 
 export const resetZoom =
-  (ref/*:Ref.Model*/)/*:Task<Error, number>*/ =>
+  (ref:Ref.Model):Task<Error, number> =>
   setZoom(ref, 1);
 
 export const setVisibility =
-  (ref/*:Ref.Model*/, isVisible/*:boolean*/)/*:Task<Error, boolean>*/ =>
+  (ref:Ref.Model, isVisible:boolean):Task<Error, boolean> =>
   Ref
   .deref(ref)
   .chain(target => setElementVisibility(target, isVisible));
@@ -151,14 +151,14 @@ const setElementVisibility =
     }
   })
 
-export const focus = /*::<value>*/
-  (ref/*:Ref.Model*/)/*:Task<Error, value>*/ =>
+export const focus = <value>
+  (ref:Ref.Model):Task<Error, value> =>
   Ref
   .deref(ref)
   .chain(focusElement);
 
-const focusElement = /*::<value>*/
-  (element/*:HTMLElement*/)/*:Task<Error, value>*/ =>
+const focusElement = <value>
+  (element:HTMLElement):Task<Error, value> =>
   new Task((succeed, fail) => {
     try {
       if (element.ownerDocument.activeElement !== element) {
@@ -170,14 +170,14 @@ const focusElement = /*::<value>*/
     }
   });
 
-export const blur = /*::<value>*/
-  (ref/*:Ref.Model*/)/*:Task<Error, value>*/ =>
+export const blur = <value>
+  (ref:Ref.Model):Task<Error, value> =>
   Ref
   .deref(ref)
   .chain(blurElement);
 
-const blurElement =/*::<value>*/
-  (element/*:HTMLElement*/)/*:Task<Error, value>*/ =>
+const blurElement =<value>
+  (element:HTMLElement):Task<Error, value> =>
   new Task((succeed, fail) => {
     try {
       if (element.ownerDocument.activeElement === element) {
@@ -192,16 +192,16 @@ const blurElement =/*::<value>*/
 
 
 // Reports error as a warning in a console.
-const warn = /*::<value>*/
-  (error/*:Error*/)/*:Task<Never, value>*/ =>
+const warn = <value>
+  (error:Error):Task<Never, value> =>
   new Task((succeed, fail) => {
     console.warn(error);
   });
 
 
 export const init =
-  ( ref/*:Ref.Model*/
-  , isFocused/*:boolean*/)/*:[Model, Effects<Action>]*/ =>
+  ( ref:Ref.Model
+  , isFocused:boolean):[Model, Effects<Action>] =>
   [ new Model
     ( ref
     , 1
@@ -253,7 +253,7 @@ const updateFocus =
 
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+  (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
       case "ZoomIn":
         return [

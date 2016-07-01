@@ -5,8 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {merge, always, tag} from "../common/prelude"
-import {cursor} from "../common/cursor"
+import {merge, always, mapFX} from "../common/prelude"
 import * as Unknown from "../common/unknown"
 import * as Target from "../common/target"
 import * as Focusable from "../common/focusable"
@@ -14,29 +13,65 @@ import * as Control from "../common/control"
 import {Style} from "../common/style"
 import {html, Effects, forward} from "reflex"
 
-/*::
-import type {Model, Action, StyleSheet, ContextStyle} from "./button"
 import type {Address, DOM} from "reflex"
-*/
+import type {Rules} from "../common/style"
+
+export type ContextStyle = Rules
+
+export type StyleSheet =
+  { base: Rules
+  , focused?: Rules
+  , blured?: Rules
+  , enabled?: Rules
+  , disabled?: Rules
+  , over?: Rules
+  , out?: Rules
+  , active?: Rules
+  , inactive?: Rules
+  }
+
+
+export type Model =
+  { isDisabled: boolean
+  , isActive: boolean
+  , isPointerOver: boolean
+  , isFocused: boolean
+  , text: string
+  }
+
+export type Action =
+  | { type: "Down" }
+  | { type: "Press" }
+  | { type: "Up" }
+  | { type: "Control"
+    , control: Control.Action
+    }
+  | { type: "Focusable"
+    , focusable: Focusable.Action
+    }
+  | { type: "Target"
+    , target: Target.Action
+    }
+
 
 const TargetAction =
   action =>
   ( { type: "Target"
-    , source: action
+    , target: action
     }
   );
 
 const FocusableAction =
   action =>
   ( { type: "Focusable"
-    , source: action
+    , focusable: action
     }
   );
 
 const ControlAction =
   action =>
   ( { type: "Control"
-    , source: action
+    , control: action
     }
   );
 
@@ -54,31 +89,13 @@ export const Blur = FocusableAction(Focusable.Blur);
 export const Over = TargetAction(Target.Over);
 export const Out = TargetAction(Target.Out);
 
-const updateFocusable = cursor
-  ( { tag: FocusableAction
-    , update: Focusable.update
-    }
-  );
-
-const updateTarget = cursor
-  ( { tag: TargetAction
-    , update: Target.update
-    }
-  );
-
-const updateControl = cursor
-  ( { tag: ControlAction
-    , update: Control.update
-    }
-  );
-
 export const init =
-  ( isDisabled/*:boolean*/
-  , isFocused/*:boolean*/
-  , isActive/*:boolean*/
-  , isPointerOver/*:boolean*/
-  , text/*:string*/=''
-  )/*:[Model, Effects<Action>]*/ =>
+  ( isDisabled:boolean
+  , isFocused:boolean
+  , isActive:boolean
+  , isPointerOver:boolean
+  , text:string=''
+  ):[Model, Effects<Action>] =>
   [ ({isDisabled: false
     , isFocused: false
     , isActive: false
@@ -88,8 +105,8 @@ export const init =
   , Effects.none
   ]
 
-export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+export const update = <model:Model>
+  (model:model, action:Action):[model, Effects<Action>] =>
   ( action.type === "Down"
   ? [merge(model, {isActive: true}), Effects.none]
   : action.type === "Up"
@@ -97,21 +114,18 @@ export const update =
   : action.type === "Press"
   ? [model, Effects.none]
   : action.type === "Control"
-  ? updateControl(model, action.source)
+  ? mapFX(ControlAction, Control.update(model, action.control))
   : action.type === "Target"
-  ? updateTarget(model, action.source)
+  ? mapFX(TargetAction, Target.update(model, action.target))
   : action.type === "Focusable"
-  ? updateFocusable(model, action.source)
+  ? mapFX(FocusableAction, Focusable.update(model, action.focusable))
   : Unknown.update(model, action)
   );
 
 
 export const view =
-  (key/*:string*/, styleSheet/*:StyleSheet*/)/*:(model:Model, address:Address<Action>, contextStyle?:ContextStyle) => DOM*/ =>
-  ( model/*:Model*/
-  , address/*:Address<Action>*/
-  , contextStyle/*?:ContextStyle*/
-  )/*:DOM*/ =>
+  (key:string, styleSheet:StyleSheet) =>
+  (model:Model, address:Address<Action>, contextStyle?:ContextStyle):DOM =>
   html.button({
     key: key,
     className: key,

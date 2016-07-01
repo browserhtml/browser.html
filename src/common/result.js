@@ -5,21 +5,33 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-/*::
-import type {Result, Ok, Error} from "./result"
-export type {Result, Ok, Error}
-*/
+export type Ok <value> =
+  { isOk: true
+  , isError: false
+  , value: value
+  }
 
-export const ok = /*::<value>*/
-  (value/*:value*/)/*:Ok<value>*/ =>
+export type Error <error> =
+  { isOk: false
+  , isError: true
+  , error:error
+  }
+
+export type Result <error, value>
+  = Ok<value>
+  | Error<error>
+
+
+export const ok = <value>
+  (value:value):Ok<value> =>
   ( { isOk: true
     , isError: false
     , value
     }
   );
 
-export const error = /*::<error>*/
-  (error/*:error*/)/*:Error<error>*/ =>
+export const error = <error>
+  (error:error):Error<error> =>
   ( { isOk: false
     , isError: true
     , error

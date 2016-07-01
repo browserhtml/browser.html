@@ -13,10 +13,20 @@ import * as Unknown from "../../common/unknown";
 import * as Tiles from './newtab/tiles';
 import * as Wallpapers from './newtab/wallpapers';
 
-/*::
+
 import type {Address, DOM} from "reflex"
-import type {Model, Action} from "./newtab"
-*/
+
+export type Model =
+  { wallpapers: Wallpapers.Model
+  , tiles: Tiles.Model
+  }
+
+
+export type Action =
+  | { type: "Wallpapers", wallpapers: Wallpapers.Action }
+  | { type: "Tiles", tiles: Tiles.Action }
+
+
 
 const WallpapersAction =
   action =>
@@ -33,7 +43,7 @@ const TilesAction =
   );
 
 export const init =
-  ()/*:[Model, Effects<Action>]*/ =>
+  ():[Model, Effects<Action>] =>
   {
     const [tiles, tilesFx] = Tiles.init();
     const [wallpapers, wallpaperFx] = Wallpapers.init();
@@ -67,7 +77,7 @@ const updateTiles = cursor
   );
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Wallpapers'
   ? updateWallpapers(model, action.wallpapers)
   : action.type === 'Tiles'
@@ -107,7 +117,7 @@ const readWallpaper = ({src, color}) =>
   );
 
 export const view =
-  ({wallpapers, tiles, help}/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ => {
+  ({wallpapers, tiles, help}:Model, address:Address<Action>):DOM => {
   const activeWallpaper = Wallpapers.active(wallpapers);
   return (
     html.div

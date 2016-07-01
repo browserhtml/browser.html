@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+    body {
+      background: url(adbg.png);
+      background-size: 728px auto;
+      color: #fff;
+      height: 90px;
+      width: 728px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .monkey {
+      background: url(monkey.png);
+      left: 50%;
+      position: absolute;
+      top: 50%;
+      height: 60px;
+      margin: -30px 0 0 -44px;
+      width: 88px;      
+    }
+
+    #monkey1 {
+      left: 260px;
+    }
+    #monkey2 {
+      left: 360px;
+    }
+    #monkey3 {
+      left: 460px;
+    }
+    #monkey4 {
+      left: 560px;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="monkey" id="monkey1"></div>
+    <div class="monkey" id="monkey2"></div>
+    <div class="monkey" id="monkey3"></div>
+    <div class="monkey" id="monkey4"></div>
+    <script type="text/javascript" src="../shared/dom.js"></script>
+    <script type="text/javascript" src="../shared/lib.js"></script>
+    <script>
+    function Matrix(ary) {
+        this.mtx = ary
+        this.height = ary.length;
+        this.width = ary[0].length;
+    }
+
+    Matrix.prototype.toString = function() {
+        var s = []
+        for (var i = 0; i < this.mtx.length; i++)
+            s.push( this.mtx[i].join(",") );
+        return s.join("\n");
+    }
+
+    Matrix.prototype.mult = function(other) {
+        if (this.width != other.height) {
+            throw "error: incompatible sizes";
+        }
+
+        var result = [];
+        for (var i = 0; i < this.height; i++) {
+            result[i] = [];
+            for (var j = 0; j < other.width; j++) {
+                var sum = 0;
+                for (var k = 0; k < this.width; k++) {
+                    sum += this.mtx[i][k] * other.mtx[k][j];
+                }
+                result[i][j] = sum;
+            }
+        }
+        return new Matrix(result);
+    }
+
+    function moveMonkey(state, counter, x, y) {
+      var mx = (counter % x);
+      state.flipx = mx === 0 ? !state.flipx : state.flipx;
+      state.x = (state.flipx ? (x - mx) : mx);
+
+      var my = (counter % y);
+      state.flipy = my === 0 ? !state.flipy : state.flipy;
+      state.y = (state.flipy ? (y - my) : my);
+
+      return state;
+    }
+
+    function renderMonkey(id, state) {
+      return edit(byId(id), {
+        style: {
+          transform: 'translate('+ state.x + 'px, '+ state.y + 'px)',
+          // For older Android builds of Webkit
+          webkitTransform: 'translate('+ state.x + 'px, '+ state.y + 'px)'
+        }
+      });
+    }
+
+    setTimeout(function forever() {
+      var elems = [];
+      for (var i = 0; i < 900; i++) {
+        elems.push(i);
+      }
+      var outer = [];
+      for (var i = 0; i < 900; i++) {
+        outer.push(elems);
+      }
+      var a = new Matrix(outer);
+      var b = new Matrix(outer);
+      var result = a.mult(b);
+      setTimeout(forever, random(300, 2000));
+    }, 1000);
+
+    var monkey1 = {flip: false, y: 0};
+    var monkey2 = {flip: false, y: 0};
+    var monkey3 = {flip: false, y: 0};
+    var monkey4 = {flip: false, y: 0};
+    var monkey4x = {flip: false, y: 0};
+    var frames = 0;
+    setTimeout(function tickMonkey() {
+      moveMonkey(monkey1, frames, 31, 10);
+      renderMonkey('monkey1', monkey1);
+
+      moveMonkey(monkey2, frames, 41, 11);
+      renderMonkey('monkey2', monkey2);
+
+      moveMonkey(monkey3, frames, 33, 13);
+      renderMonkey('monkey3', monkey3);
+
+
+      moveMonkey(monkey4, frames, 35, 9);
+      renderMonkey('monkey4', monkey4);
+
+      frames++;
+      setTimeout(tickMonkey, 16);
+    }, 0);
+    </script>
+  </body>
+</html>

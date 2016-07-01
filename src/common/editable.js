@@ -9,47 +9,74 @@ import {merge} from "../common/prelude";
 import * as Unknown from "../common/unknown";
 import {Effects} from "reflex";
 
-/*::
 import type {Address, DOM} from "reflex";
-import type {Model, Action, Selection} from "./editable"
-*/
+
+export type Direction =
+  | "forward"
+  | "backward"
+  | "none"
+
+
+export type Integer = number
+
+export type Selection =
+  { start: Integer
+  , end: Integer
+  , direction: Direction
+  }
+
+export type Model =
+  { selection: ?Selection
+  , value: string
+  }
+
+export type Action =
+  | { type: "Clear" }
+  | { type: "Select"
+    , range: Selection
+    }
+  | { type: "Change"
+    , value: string
+    , selection: Selection
+    }
+
 
 // Actions
 
-export const Clear/*:Action*/ = {type: "Clear"};
+export const Clear:Action = {type: "Clear"};
 
 export const Select =
-  (range/*:Selection*/)/*:Action*/ =>
+  (range:Selection):Action =>
   ({type: "Select", range});
 
 export const Change =
-  (value/*:string*/, selection/*:Selection*/)/*:Action*/ =>
+  (value:string, selection:Selection):Action =>
   ({type: "Change", value, selection});
 
 
 
-const select = /*::<model:Model>*/
-  (model/*:model*/, selection/*:Selection*/)/*:model*/ =>
+const select = <model:Model>
+  (model:model, selection:Selection):model =>
   merge(model, {selection});
 
-const change = /*::<model:Model>*/
-  (model/*:model*/, value/*:string*/, selection/*:Selection*/)/*:model*/ =>
+const change = <model:Model>
+  (model:model, value:string, selection:Selection):model =>
   merge(model, {selection, value});
 
-const clear = /*::<model:Model>*/
-  (model/*:model*/)/*:model*/ =>
+const clear = <model:Model>
+  (model:model):model =>
   merge(model, {value: "", selection: null});
 
 export const init =
-  (value/*:string*/, selection/*:?Selection*/=null)/*:[Model, Effects<Action>]*/ =>
+  (value:string, selection:?Selection=null):[Model, Effects<Action>] =>
   [ { value
     , selection
     }
   , Effects.none
   ]
 
-export const update = /*::<model:Model>*/
-  (model/*:model*/, action/*:Action*/)/*:[model, Effects<Action>]*/ =>
+export const update = <model:Model>
+  (model:model, action:Action):[model, Effects<Action>] =>
   ( action.type === "Clear"
   ? [clear(model), Effects.none]
   : action.type === "Select"

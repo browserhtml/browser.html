@@ -8,11 +8,11 @@ import {on} from '@driver';
 import {always} from '../../../../common/prelude';
 
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {Model, Action} from "../WebView"
 import {performance} from "../../../../common/performance"
-*/
+
 
 const Blur = always({ type: "Blur" });
 const Focus = always({ type: "Focus" });
@@ -21,10 +21,10 @@ const FirstPaint = always({ type: "FirstPaint" });
 const DocumentFirstPaint = always({ type: "DocumentFirstPaint" });
 
 export const view =
-  ( styleSheet/*:{ base: Style.Rules }*/
-  , model/*:Model*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( styleSheet:{ base: Style.Rules }
+  , model:Model
+  , address:Address<Action>
+  ):DOM =>
   html.iframe
   ( { [model.ref.name]: model.ref.value
     , src: model.navigation.src
@@ -58,7 +58,7 @@ export const view =
     , onMozBrowserOpenWindow: on(address, decodeOpenWindow)
     , onMozBrowserOpenTab: on(address, decodeOpenTab)
     , onMozBrowserContextMenu: on(address, decodeContexMenu)
-    , onMozBrowserError: on(address, decodeLoadFail)
+    , onMozBrowserError: on(address, decodeError)
     , onMozBrowserLoadStart: on(address, decodeLoadStart)
     , onMozBrowserConnected: on(address, decodeConnected)
     , onMozBrowserLoadEnd: on(address, decodeLoadEnd)
@@ -104,9 +104,27 @@ const decodeOpenTab =
     }
   );
 
+const decodeError =
+  ( event ) =>
+  ( event.detail.type === "fatal"
+  ? decodeCrash(event)
+  : decodeLoadFail(event)
+  )
+
+const decodeCrash =
+  ({ detail, target }) =>
+  ( { type: "Crash"
+    , crash:
+      { description: detail.description
+      , backtrace: detail.report
+      , url: target.dataset.currentUri
+      }
+    }
+  )
+
 // See: https://developer.mozilla.org/en-US/docs/Web/Events/mozbrowsererror
 const decodeLoadFail =
-  ( { detail } ) =>
+  ({ detail }) =>
   ( { type: "LoadFail"
     , time: performance.now()
     , reason: detail.type

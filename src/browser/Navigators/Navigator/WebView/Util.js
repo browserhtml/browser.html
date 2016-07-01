@@ -6,13 +6,10 @@
 
 import * as URI from '../../../../common/url-helper';
 import * as Favicon from '../../../../common/favicon';
-
-/*::
-import * as WebView from "../WebView"
-*/
+import type {Model as WebViewModel} from "../WebView";
 
 export const readTitle =
-  (model/*:WebView.Model*/, fallback/*:string*/)/*:string*/ =>
+  (model:WebViewModel, fallback:string):string =>
   ( ( model.page != null &&
       model.page.title != null &&
       model.page.title !== ''
@@ -24,23 +21,23 @@ export const readTitle =
   );
 
 export const readFaviconURI =
-  (model/*:WebView.Model*/)/*:string*/ =>
+  (model:WebViewModel):string =>
   ( (model.page && model.page.faviconURI)
   ? model.page.faviconURI
   : Favicon.getFallback(model.navigation.currentURI)
   );
 
 export const isDark =
-  (model/*:WebView.Model*/)/*:boolean*/ =>
+  (model:WebViewModel):boolean =>
   ( model.page != null
   ? model.page.pallet.isDark
   : false
   );
 
 export const canGoBack =
-  (model/*:WebView.Model*/)/*:boolean*/ =>
+  (model:WebViewModel):boolean =>
   model.navigation.canGoBack === true;
 
 export const isSecure =
-  (model/*:WebView.Model*/)/*:boolean*/ =>
+  (model:WebViewModel):boolean =>
   model.security.secure;

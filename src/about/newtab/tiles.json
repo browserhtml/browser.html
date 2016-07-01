@@ -16,7 +16,7 @@
 , "entries":
   { "0":
     { "title": "DuckDuckGo"
-    , "uri": "https://duckduckgo.com"
+    , "uri": "https://duckduckgo.com/html/"
     , "src": "./tiles/duckduckgo.com.png"
     }
   , "1":
@@ -30,9 +30,9 @@
     , "src": "./tiles/wikipedia.org.png"
     }
   , "3":
-    { "title": "Twitter"
-    , "uri": "https://twitter.com"
-    , "src": "./tiles/twitter.com.png"
+    { "title": "arstechnica"
+    , "uri": "http://arstechnica.com"
+    , "src": "./tiles/arstechnica.com.png"
     }
   , "4":
     { "title": "Reddit"
@@ -55,24 +55,24 @@
     , "src": "./tiles/rust-lang.org.png"
     }
   , "8":
-    { "title": "Demo: Moire"
-    , "uri": "https://servo.org/bhtml-newtab/webrender-demos/moire.html"
-    , "src": "./tiles/demo-moire.png"
+    { "title": "Demo: Evil Ad"
+    , "uri": "./demos/evil_ad/physics/with-ad.html"
+    , "src": "./tiles/demo-evil-ad.png"
     }
   , "9":
-    { "title": "Demo: Spheres"
-    , "uri": "https://servo.org/bhtml-newtab/webrender-demos/spheres.html"
-    , "src": "./tiles/demo-spheres.png"
+    { "title": "Demo: Moire"
+    , "uri": "./demos/moire.html"
+    , "src": "./tiles/demo-moire.png"
     }
   , "10":
-    { "title": "Demo: Transparent Rects"
-    , "uri": "https://servo.org/bhtml-newtab/webrender-demos/transparent_rects.html"
-    , "src": "./tiles/demo-transparent_rects.png"
+    { "title": "Demo: Spheres"
+    , "uri": "./demos/spheres.html"
+    , "src": "./tiles/demo-spheres.png"
     }
   , "11":
-    { "title": "Demo: Menus"
-    , "uri": "https://servo.org/bhtml-newtab/webrender-demos/menus.html"
-    , "src": "./tiles/demo-menus.png"
+    { "title": "Demo: Transparent Rects"
+    , "uri": "./demos/transparent_rects.html"
+    , "src": "./tiles/demo-transparent_rects.png"
     }
   }
 }

@@ -11,13 +11,40 @@ import * as Cell from './repl/cell';
 import * as Settings from '../../common/settings';
 import * as Unknown from '../../common/unknown';
 import * as Host from './repl/host';
+import * as Input from "./repl/input";
+import * as Output from "./repl/output";
+
 
 import {onWindow} from "@driver";
 
-/*::
+
 import type {Address, DOM} from "reflex"
-import type {Model, Action} from "./repl"
-*/
+import type {Integer} from "../../common/prelude"
+
+export type Model =
+  { nextID: number
+  , active: Integer
+  , order: [Cell.ID]
+  , cells: {[key:Cell.ID]: Cell.Model}
+  }
+
+export type Action =
+  | { type: "CreateCell" }
+  | { type: "Focus" }
+  | { type: "Evaluate"
+    , id: Cell.ID
+    , evaluate: Input.Model
+    }
+  | { type: "Print"
+    , id: Cell.ID
+    , print: Output.Model
+    }
+  | { type: "Cell"
+    , id: Cell.ID
+    , cell: Cell.Action
+    }
+
+
 
 
 // Actions
@@ -45,7 +72,7 @@ const Print =
   result =>
   ( { type: "Print"
     , id
-    , source:
+    , print:
       { version
       , result
       }
@@ -63,17 +90,17 @@ const CellAction =
   ( action.type === "Submit"
   ? { type: "Evaluate"
     , id
-    , source: action.source
+    , evaluate: action.submit
     }
   : { type: "Cell"
     , id
-    , source: action
+    , cell: action
     }
   );
 
 
 export const init =
-  ()/*:[Model, Effects<Action>]*/ =>
+  ():[Model, Effects<Action>] =>
   createCell
   ( { nextID: 0
     , order: []
@@ -137,7 +164,7 @@ const focus =
   );
 
 const evaluate =
-  (model, {id, source}) =>
+  (model, {id, evaluate: source}) =>
   [ model
   , Effects
     .perform(Host.evaluate(id, source.value))
@@ -164,14 +191,14 @@ const print = (model, action) =>
   : updateCell
     ( model
     , action.id
-    , Cell.Print(action.source)
+    , Cell.Print(action.print)
     )
   );
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Cell'
-  ? updateCell(model, action.id, action.source)
+  ? updateCell(model, action.id, action.cell)
   : action.type === 'Evaluate'
   ? evaluate(model, action)
   : action.type === 'Print'
@@ -202,7 +229,7 @@ const styleSheet = StyleSheet.create
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.div
   ( { style: styleSheet.base
     , id: 'repl'

@@ -15,11 +15,9 @@ import {readTitle, readFaviconURI} from '../Navigators/Navigator/WebView/Util';
 import {cursor} from '../../common/cursor';
 
 
-/*::
 import type {Address, DOM} from "reflex"
-import * as Navigator from "../Navigators/Navigator"
+import type {Model as NavigatorModel} from "../Navigators/Navigator"
 import type {ID} from "../../common/prelude"
-import * as Target from "../../common/target"
 
 export type Context =
   { tabWidth: number
@@ -30,13 +28,12 @@ export type Action =
   | { type: "Close" }
   | { type: "Select" }
   | { type: "Target", source: Target.Action }
-*/
 
 export class Model {
-  /*::
+
   isPointerOver: boolean;
-  */
-  constructor(isPointerOver/*:boolean*/) {
+
+  constructor(isPointerOver:boolean) {
     this.isPointerOver = isPointerOver
   }
 }
@@ -67,11 +64,11 @@ const Out = TargetAction(Target.Out);
 const Over = TargetAction(Target.Over);
 
 export const init =
-  ()/*:[Model, Effects<Action>]*/ =>
+  ():[Model, Effects<Action>] =>
   transactOut;
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === "Target"
   ? updateTarget(model, action.source)
   : Unknown.update(model, action)
@@ -86,7 +83,8 @@ const styleSheet = Style.createSheet({
     borderRadius: '5px',
     height: tabHeight,
     overflow: 'hidden',
-    color: '#fff'
+    color: '#fff',
+    cursor: 'pointer'
   },
 
   container: {
@@ -213,10 +211,10 @@ const viewClose = (isSelected, tab, address) =>
   );
 
 export const render =
-  ( model/*:Navigator.Model*/
-  , address/*:Address<Action>*/
-  , {tabWidth, titleOpacity}/*:Context*/
-  )/*:DOM*/ =>
+  ( model:NavigatorModel
+  , address:Address<Action>
+  , {tabWidth, titleOpacity}:Context
+  ):DOM =>
   html.div
   ( { className: 'sidebar-tab'
     , style: Style.mix
@@ -262,10 +260,10 @@ export const render =
 
 
 export const view =
-  ( model/*:Navigator.Model*/
-  , address/*:Address<Action>*/
-  , context/*:Context*/
-  )/*:DOM*/ =>
+  ( model:NavigatorModel
+  , address:Address<Action>
+  , context:Context
+  ):DOM =>
   thunk
   ( `${model.output.ref.value}`
   , render

@@ -7,7 +7,7 @@
 import {Style, StyleSheet} from '../../common/style';
 import {html, thunk, forward, Effects} from 'reflex';
 import {compose} from '../../lang/functional';
-import {merge, always, tag, tagged, batch} from "../../common/prelude"
+import {merge, always, tagged, batch} from "../../common/prelude"
 import {cursor} from "../../common/cursor"
 import {ok, error} from "../../common/result";
 import * as Unknown from '../../common/unknown';
@@ -15,37 +15,70 @@ import * as Focusable from '../../common/focusable';
 import * as Editable from '../../common/editable';
 import * as TextInput from '../../common/text-input';
 
-/*::
+
 import type {Address, DOM} from "reflex";
-import type {Value, Model, Action} from "./setting"
-*/
+import type {Value} from '../../common/settings';
+
+export type {Value}
+export type Model =
+  { value: Value
+  , input: TextInput.Model
+  , isValid: boolean
+  , isEditing: boolean
+  }
+
+export type Action =
+  | { type: "Edit" }
+  | { type: "Abort" }
+  | { type: "Submit" }
+  | { type: "Save"
+    , save: Value
+    }
+  | { type: "Change"
+    , change: Value
+    }
+  | { type: "TextInput"
+    , textInput: TextInput.Action
+    }
+
 
 const TextInputAction =
-  (action/*:TextInput.Action*/)/*:Action*/ =>
+  (action:TextInput.Action):Action =>
   ( action.type === "Blur"
   ? Abort
   : { type: "TextInput"
-    , source: action
+    , textInput: action
     }
   );
 
 
-export const Edit/*:Action*/ = { type: "Edit" };
-export const Abort/*:Action*/ = { type: "Abort" };
-export const Submit/*:Action*/ = { type: "Submit" };
+export const Edit:Action = { type: "Edit" };
+export const Abort:Action = { type: "Abort" };
+export const Submit:Action = { type: "Submit" };
 
-const Save = tag("Save");
-export const Change = tag("Change");
+const Save =
+  action =>
+  ( { type: "Save"
+    , save: action
+    }
+  );
 
-const FocusInput/*:Action*/ = TextInputAction(TextInput.Focus);
-const DisableInput/*:Action*/ = TextInputAction(TextInput.Disable);
-const EnableInput/*:Action*/ = TextInputAction(TextInput.Enable);
+export const Change =
+  (action:Value):Action =>
+  ( { type: "Change"
+    , change: action
+    }
+  );
+
+const FocusInput:Action = TextInputAction(TextInput.Focus);
+const DisableInput:Action = TextInputAction(TextInput.Disable);
+const EnableInput:Action = TextInputAction(TextInput.Enable);
 const ChangeInput = compose(TextInputAction, TextInput.Change);
 
 
 
 export const init =
-  (value/*:Value*/)/*:[Model, Effects<Action>]*/ => {
+  (value:Value):[Model, Effects<Action>] => {
     const [input, fx] = TextInput.init
       ( ( value == null
         ? ''
@@ -142,7 +175,7 @@ const parseInput =
   };
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Edit'
   ? edit(model)
   : action.type === 'Abort'
@@ -150,11 +183,11 @@ export const update =
   : action.type === 'Submit'
   ? submit(model)
   : action.type === 'Save'
-  ? change(model, action.source)
+  ? change(model, action.save)
   : action.type === 'Change'
-  ? change(model, action.source)
+  ? change(model, action.change)
   : action.type === 'TextInput'
-  ? updateTextInput(model, action.source)
+  ? updateTextInput(model, action.textInput)
   : Unknown.update(model, action)
   );
 
@@ -272,7 +305,7 @@ const viewInput = TextInput.view
 
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.form
   ( { onKeyDown:
       event => {

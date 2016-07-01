@@ -23,17 +23,15 @@ import * as Easing from "eased";
 import {always, batch, tag, tagged} from "./common/prelude";
 import {cursor} from "./common/cursor";
 import {Style, StyleSheet} from './common/style';
+import type {Result} from "./common/result"
 
 import {identity, compose} from "./lang/functional";
 
 import {onWindow, on} from "@driver";
 import * as Navigators from "./browser/Navigators";
-
-
-/*::
-
 import type {ID} from "./common/prelude"
 import * as Tabs from "./browser/Sidebar/Tabs"
+import * as IssueReporter from "./browser/IssueReporter";
 
 export type Version = string
 
@@ -81,35 +79,41 @@ export type Action =
   | { type: "Reloaded" }
   | { type: "OpenURL", uri: URI }
   | { type: "Close" }
+  | { type: "CloseRuntime" }
+  | { type: "Closed", result: Result<Error, void> }
   // @TODO: Do not use any here.
   | { type: "Modify", modify: ID, action: any }
   | { type: "Open" }
   | { type: "Tabs", tabs: Tabs.Action }
+  | { type: "Crash", crash: IssueReporter.Report }
+  | { type: "IssueReporter", issueReporter: IssueReporter.Action }
 
 
 import type {Address, DOM} from "reflex"
 import type {URI} from "./common/prelude"
-*/
 
 export class Model {
-  /*::
+
   version: Version;
   shell: Shell.Model;
   navigators: Navigators.Model;
   sidebar: Sidebar.Model;
+  issueReporter: IssueReporter.Model;
   devtools: Devtools.Model;
-  */
+
   constructor(
-    version/*:Version*/=Package.version
-  , shell/*:Shell.Model*/
-  , navigators/*:Navigators.Model*/
-  , sidebar/*:Sidebar.Model*/
-  , devtools/*:Devtools.Model*/
+    version:Version=Package.version
+  , shell:Shell.Model
+  , navigators:Navigators.Model
+  , sidebar:Sidebar.Model
+  , issueReporter:IssueReporter.Model
+  , devtools:Devtools.Model
   ) {
     this.version = version
     this.shell = shell
     this.navigators = navigators
     this.sidebar = sidebar
+    this.issueReporter = issueReporter
     this.devtools = devtools
   }
 }
@@ -123,17 +127,19 @@ const Modify =
     }
   )
 
-export const init = ()/*:[Model, Effects<Action>]*/ => {
+export const init = ():[Model, Effects<Action>] => {
   const [devtools, devtoolsFx] = Devtools.init({isActive: Config.devtools});
   const [shell, shellFx] = Shell.init();
   const [sidebar, sidebarFx] = Sidebar.init();
   const [navigators, navigatorsFx] = Navigators.init();
+  const [issueReporter, issueReporterFx] = IssueReporter.init();
 
   const model = new Model
     ( Package.version
     , shell
     , navigators
     , sidebar
+    , issueReporter
     , devtools
     );
 
@@ -143,6 +149,7 @@ export const init = ()/*:[Model, Effects<Action>]*/ => {
       , shellFx.map(ShellAction)
       , sidebarFx.map(SidebarAction)
       , navigatorsFx.map(NavigatorsAction)
+      , issueReporterFx.map(IssueReporterAction)
       , Effects
         .perform(Runtime.receive('mozbrowseropenwindow'))
         .map(OpenURL)
@@ -170,7 +177,7 @@ const SidebarAction = action =>
 
 
 const NavigatorsAction =
-  (action/*:Navigators.Action*/)/*:Action*/ => {
+  (action:Navigators.Action):Action => {
     switch (action.type) {
       case "ShowTabs":
         return ShowTabs
@@ -178,6 +185,8 @@ const NavigatorsAction =
         return ShowWebView
       case "OpenNewTab":
         return OpenNewTab
+      case "Crash":
+        return action;
       default:
         return { type: 'Navigators', navigators: action }
     }
@@ -191,6 +200,13 @@ const ShellAction = action =>
     }
   : { type: 'Shell'
     , source: action
+    }
+  );
+
+const IssueReporterAction =
+  action =>
+  ( { type: "IssueReporter"
+    , issueReporter: action
     }
   );
 
@@ -210,6 +226,7 @@ const updateNavigators = cursor({
     , model.shell
     , navigators
     , model.sidebar
+    , model.issueReporter
     , model.devtools
     ),
   update: Navigators.update,
@@ -225,6 +242,7 @@ const updateShell = cursor({
     , shell
     , model.navigators
     , model.sidebar
+    , model.issueReporter
     , model.devtools
     ),
   update: Shell.update,
@@ -240,6 +258,7 @@ const updateDevtools = cursor({
     , model.shell
     , model.navigators
     , model.sidebar
+    , model.issueReporter
     , devtools
     ),
   update: Devtools.update,
@@ -255,13 +274,37 @@ const updateSidebar = cursor({
     , model.shell
     , model.navigators
     , sidebar
+    , model.issueReporter
     , model.devtools
     ),
   tag: SidebarAction,
   update: Sidebar.update
 });
 
-const Reloaded/*:Action*/ =
+const updateIssueReporter = cursor({
+  get: model => model.issueReporter,
+  set:
+    (model, issueReporter) =>
+    new Model
+    ( model.version
+    , model.shell
+    , model.navigators
+    , model.sidebar
+    , issueReporter
+    , model.devtools
+    ),
+  tag: IssueReporterAction,
+  update: IssueReporter.update
+});
+
+
+const closed = (model, result) =>
+  ( result.isOk
+   ? [ model, Effects.none ]
+   : [ model, Effects.perform(Unknown.error(result.error)) ]
+  );
+
+const Reloaded:Action =
   { type: "Reloaded"
   };
 
@@ -271,61 +314,71 @@ const Failure = error =>
     }
   );
 
+const Closed = result =>
+  ( { type: "Closed"
+    , result
+    }
+  )
+
 
 // ### Mode changes
 
 
-export const OpenNewTab/*:Action*/ =
+export const OpenNewTab:Action =
   { type: 'OpenNewTab'
   };
 
-export const EditWebView/*:Action*/ =
+export const EditWebView:Action =
   { type: 'EditWebView'
   };
 
-export const ShowWebView/*:Action*/ =
+export const ShowWebView:Action =
   { type: 'ShowWebView'
   };
 
-export const ShowTabs/*:Action*/ =
+export const ShowTabs:Action =
   { type: 'ShowTabs'
   };
 
-export const SelectWebView/*:Action*/ =
+export const SelectWebView:Action =
   { type: 'SelectWebView'
   };
 
 // ### Actions that affect multilpe sub-components
 
-export const OpenWebView/*:Action*/ =
+export const OpenWebView:Action =
   { type: 'OpenWebView'
   };
 
-export const AttachSidebar/*:Action*/ =
+export const AttachSidebar:Action =
   { type: "AttachSidebar"
   , source: Sidebar.Attach
   };
 
-export const DetachSidebar/*:Action*/ =
+export const DetachSidebar:Action =
   { type: "DetachSidebar"
   , source: Sidebar.Detach
   };
 
-export const Escape/*:Action*/ =
+export const Escape:Action =
   { type: 'Escape'
   };
 
 
-export const Unload/*:Action*/ =
+export const Unload:Action =
   { type: 'Unload'
   };
 
-export const ReloadRuntime/*:Action*/ =
+export const ReloadRuntime:Action =
   { type: 'ReloadRuntime'
   };
 
-export const BlurInput/*:Action*/ =
+export const BlurInput:Action =
   { type: 'BlurInput'
+  };
+
+export const CloseRuntime:Action =
+  { type: "CloseRuntime"
   };
 
 
@@ -414,7 +467,7 @@ const decodeKeyDown = Keyboard.bindings({
   'F12': always(ToggleDevtools),
   'F5': always(ReloadRuntime),
   'meta control r': always(ReloadRuntime),
-
+  [`${modifier} q`]: always(CloseRuntime),
   'meta alt 2': always(PrintSnapshot),
   'meta alt 3': always(CaptureSnapshot),
   'meta alt 4': always(PublishSnapshot),
@@ -449,6 +502,7 @@ const openNewTab =
       , model.shell
       , navigators
       , sidebar
+      , model.issueReporter
       , model.devtools
       )
 
@@ -545,6 +599,13 @@ const close =
   , Navigators.Close
   )
 
+const closeRuntime = model =>
+  [ model
+  , Effects
+    .perform(Runtime.quit)
+    .map(Closed)
+  ];
+
 const SelectNextNavigator =
   { type: "Navigators"
   , navigators: Navigators.SelectNext
@@ -615,7 +676,7 @@ const reloadRuntime = model =>
 
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+  (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
       case 'GoBack':
         return goBack(model);
@@ -631,6 +692,8 @@ export const update =
         return resetZoom(model);
       case 'Close':
         return close(model);
+      case 'CloseRuntime':
+        return closeRuntime(model);
       case 'OpenNewTab':
         return openNewTab(model);
       case 'EditWebView':
@@ -670,8 +733,13 @@ export const update =
            model
         , Effects
           .perform(Unknown.error(action.error))
-          .map(NoOp)
         ];
+      case 'Crash':
+        return updateIssueReporter(model, action);
+      case 'IssueReporter':
+        return updateIssueReporter(model, action.issueReporter);
+      case 'Closed':
+        return closed(model, action.result);
 
       // Ignore some actions.
       case 'Reloaded':
@@ -719,7 +787,7 @@ const styleSheet = StyleSheet.create({
 });
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.main
   ( { className: 'root'
     , style: styleSheet.root
@@ -751,6 +819,11 @@ export const view =
     , Devtools.view
       ( model.devtools
       , forward(address, DevtoolsAction)
+      )
+
+    , IssueReporter.view
+      ( model.issueReporter
+      , forward(address, IssueReporterAction)
       )
     ]
   );

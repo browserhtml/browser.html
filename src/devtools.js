@@ -13,7 +13,7 @@ import * as Debug from "./devtools/Debug"
 import * as Console from "./common/Console"
 import * as IO from "./common/IO"
 
-/*::
+
 import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} from "reflex"
 import type {Result} from "./common/result"
 
@@ -29,13 +29,14 @@ export type Action <input, state> =
   | { type: "replay", replay: any }
   | { type: "log", log: any }
   | { type: "debug", debug: any }
+  | { type: "Persist" }
 
 type Flags <input, state, flags> =
   { Debuggee: Debuggee<input, state>
   , flags: flags
   }
-*/
 
+export const Persist = { type: "Persist" }
 
 export class Model /*::<input, state>*/ {
   /*::
@@ -335,6 +336,22 @@ export const transact = /*::<input, state>*/
   [ model
   , fx(model)
   ]
+
+
+export const persist = <input, state>
+  ( model:Model<input, state>
+  ):[Model<input, state>, Effects<Action<input, state>>] =>
+  [ model
+  , Effects.none
+  ];
+
+export const restore = <input, state, flags>
+  ({Debuggee, flags}:Flags <input, state, flags>
+  ):[Model<input, state>, Effects<Action<input, state>>] =>
+  [ merge(window.application.model.value, {Debuggee, flags})
+  , Effects.none
+  ];
+
 
 export const init = /*::<input, state, flags>*/
   (flags/*:Flags<input, state, flags>*/)/*:[Model<input, state>, Effects<Action<input, state>>]*/ =>

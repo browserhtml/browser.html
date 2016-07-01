@@ -9,9 +9,9 @@ import {Effects, html, forward, thunk} from "reflex";
 import {merge, always, batch} from "../../../../common/prelude";
 import {Style, StyleSheet} from '../../../../common/style';
 
-/*::
+
 import type {Address, DOM} from "reflex"
-*/
+
 
 
 const styleSheet = StyleSheet.create
@@ -35,7 +35,7 @@ const styleSheet = StyleSheet.create
   );
 
 export const render =
-  (content/*:string*/, isSelected/*:boolean*/)/*:DOM*/ =>
+  (content:string, isSelected:boolean):DOM =>
   html.span
   ( { className: 'assistant icon'
     , style: Style
@@ -51,7 +51,7 @@ export const render =
   );
 
 export const view =
-  (content/*:string*/, isSelected/*:boolean*/)/*:DOM*/ =>
+  (content:string, isSelected:boolean):DOM =>
   thunk
   ( `${content}`
   , render

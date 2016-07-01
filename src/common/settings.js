@@ -9,32 +9,57 @@ import * as Unknown from '../common/unknown';
 import {merge, always} from '../common/prelude';
 import {Effects, Task} from 'reflex';
 
-/*::
-import type {Model, Action, Name, Value, Settings} from "./settings"
+
 import type {Address, Never} from "reflex"
 import type {Result} from "./result"
-*/
 
+export type Name = string
+export type Value
+  = number
+  | boolean
+  | string
+  | null
+
+export type Settings =
+  { [key:Name]: Value
+  }
+
+export type Model = ?Settings
+
+export type ResultSettings =
+  Result<Error, Settings>
+
+
+export type Action =
+  | { type: "Fetched"
+    , result: ResultSettings
+    }
+  | { type: "Updated"
+    , result: ResultSettings
+    }
+  | { type: "Changed"
+    , result: ResultSettings
+    }
 
 const NotSupported =
   ReferenceError('navigator.mozSettings API is not available');
 
 export const Fetched =
-  (result/*:Result<Error, Settings>*/)/*:Action*/ =>
+  (result:Result<Error, Settings>):Action =>
   ( { type: "Fetched"
     , result
     }
   );
 
 export const Updated =
-  (result/*:Result<Error, Settings>*/)/*:Action*/ =>
+  (result:Result<Error, Settings>):Action =>
   ( { type: "Updated"
     , result
     }
   );
 
 export const Changed =
-  (result/*:Result<Error, Settings>*/)/*:Action*/ =>
+  (result:Result<Error, Settings>):Action =>
   ( { type: "Changed"
     , result
     }
@@ -57,7 +82,7 @@ const merges =
   );
 
 export const fetch =
-  (names/*:Array<Name>*/)/*:Task<Never, Result<Error, Settings>>*/ =>
+  (names:Array<Name>):Task<Never, Result<Error, Settings>> =>
   new Task((succeed, fail) => {
     if (navigator.mozSettings != null) {
       const lock = navigator.mozSettings.createLock();
@@ -76,7 +101,7 @@ export const fetch =
 
 
 export const change =
-  (settings/*:Settings*/)/*:Task<Never, Result<Error, Settings>>*/ =>
+  (settings:Settings):Task<Never, Result<Error, Settings>> =>
   new Task((succeed, fail) => {
     if (navigator.mozSettings != null) {
       const lock = navigator.mozSettings.createLock();
@@ -92,7 +117,7 @@ export const change =
   });
 
 export const observe =
-  (namePattern/*:string*/)/*:Task<Never, Result<Error, Settings>>*/=>
+  (namePattern:string):Task<Never, Result<Error, Settings>>=>
   new Task((succeed, fail) => {
     const onChange = change => {
       if (navigator.mozSettings) {
@@ -121,7 +146,7 @@ export const observe =
 
 
 export const init =
-  (names/*:Array<Name>*/)/*:[Model, Effects<Action>]*/ =>
+  (names:Array<Name>):[Model, Effects<Action>] =>
   [ null
   , Effects
     .perform(fetch(names))
@@ -148,7 +173,7 @@ const report = (model, error) => {
 
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Fetched'
   ? ( action.result.isOk
     ? updateSettings(model, action.result.value)

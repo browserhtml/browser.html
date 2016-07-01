@@ -5,32 +5,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {Effects} from "reflex";
+import type {Effects} from "reflex";
 
-/*::
-import type {Cursor} from "./cursor"
-export type {Cursor}
-*/
+type AnotateUpdate <model, tagged, message, state:model> =
+  (input:state, action:message) =>
+  [state, Effects<tagged>]
 
-export const cursor = /*::<from, to, in, out>*/
-  (config/*:Cursor*/)/*:(model:from, action:in) => [from, Effects<out>]*/ => {
-  const get = config.get;
-  const set = config.set;
-  const update = config.update;
-  const tag = config.tag;
-
-  return (model, action) => {
-    const previous
-      = get == null
-      ? model
-      : get(model, action);
-
-    const [next, fx] = update(previous, action);
-    const state
-      = set == null
-      ? next
-      : set(model, next);
-
-    return [state, tag == null ? fx : fx.map(tag)]
+export type Cursor <outer, inner, tagged, message> =
+  { get: (model:outer) => inner
+  , set: (model:outer, value:inner) => outer
+  , tag: (action:message) => tagged
+  , update: (model:inner, action:message) => [inner, Effects<message>]
   }
-}
+
+
+export const cursor = <outer, inner, tagged, message>
+  ({get, set, update, tag}:Cursor<outer, inner, tagged, message>):AnotateUpdate<outer, tagged, message, *> =>
+  (state:outer, action:message):[outer, Effects<tagged>] => {
+    const inner = get(state, action);
+    const [next, fx] = update(inner, action);
+
+    return [set(state, next), fx.map(tag)]
+  }

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <title>Animated filter</title>
+    <style>
+    html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video {
+    	margin:0;
+    	padding:0;
+    	border:0;
+    	font-size:100%;
+    }
+
+    body {
+      background-color: #e0eafd;
+    }
+
+    .filter {
+      width: 220px;
+      margin: 20px auto;
+      font-family: 'Whitney', sans-serif;
+    }
+    .filter p {
+      padding: 0 10px;
+    }
+    .filter p, .filter li {
+      font-weight: bold;
+      line-height: 35px;
+      font-size: 12px;
+    }
+    .filter .title {
+      color: #fff;
+      background-color: #1ba0eb;
+      -moz-border-radius: 3px 3px 0 0;
+      -webkit-border-radius: 3px;
+      border-radius: 3px 3px 0 0;
+    }
+    .filter .title_items {
+      color: #94a4c3;
+      cursor: pointer;
+      position: relative;
+      background-color: #fff;
+      border-bottom: 1px solid #e4effd;
+      -moz-transition: linear 0.2s background-color;
+      -o-transition: linear 0.2s background-color;
+      -webkit-transition: linear 0.2s background-color;
+      transition: linear 0.2s background-color;
+    }
+    .filter .title_items:hover {
+      background-color: #f4f4f4;
+    }
+    .filter .title_items.active + ul + .title_items {
+      border-top: 1px solid #e4effd;
+    }
+    .filter .title_items.active:after {
+      height: 5px;
+      width: 5px;
+      right: 14px;
+      margin-top: -2.5px;
+    }
+    .filter .title_items::before, .filter .title_items::after {
+      content: "";
+      position: absolute;
+      -moz-border-radius: 3px;
+      -webkit-border-radius: 3px;
+      border-radius: 3px;
+      background-color: #c3d0e8;
+      -moz-transition: linear 0.3s all;
+      -o-transition: linear 0.3s all;
+      -webkit-transition: linear 0.3s all;
+      transition: linear 0.3s all;
+    }
+    .filter .title_items::before {
+      height: 5px;
+      width: 13px;
+      top: 50%;
+      right: 10px;
+      margin-top: -2.5px;
+    }
+    .filter .title_items::after {
+      height: 13px;
+      width: 5px;
+      top: 50%;
+      right: 14px;
+      margin-top: -6.5px;
+    }
+    .filter ul {
+      -moz-transition-property: all;
+      -o-transition-property: all;
+      -webkit-transition-property: all;
+      transition-property: all;
+      -moz-transition-timing-function: linear;
+      -o-transition-timing-function: linear;
+      -webkit-transition-timing-function: linear;
+      transition-timing-function: linear;
+      list-style-type: none;
+    }
+    .filter ul li {
+      height: 0;
+      filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+      opacity: 0;
+      color: #92a5bf;
+      background-color: #f5f8fe;
+      -moz-transition: linear 0.2s all;
+      -o-transition: linear 0.2s all;
+      -webkit-transition: linear 0.2s all;
+      transition: linear 0.2s all;
+
+    }
+    .filter ul li:nth-child(odd) {
+      -moz-transform: scale(0.5) translateX(-150px);
+      -ms-transform: scale(0.5) translateX(-150px);
+      -webkit-transform: scale(0.5) translateX(-150px);
+      transform: scale(0.5) translateX(-150px);
+    }
+    .filter ul li:nth-child(even) {
+      -moz-transform: scale(0.5) translateX(150px);
+      -ms-transform: scale(0.5) translateX(150px);
+      -webkit-transform: scale(0.5) translateX(150px);
+      transform: scale(0.5) translateX(150px);
+    }
+    .filter ul li.visible {
+      height: 36px;
+      filter: progid:DXImageTransform.Microsoft.Alpha(enabled=false);
+      opacity: 1;
+      -moz-transform: scale(1) translateX(0);
+      -ms-transform: scale(1) translateX(0);
+      -webkit-transform: scale(1) translateX(0);
+      transform: scale(1) translateX(0);
+    }
+    .filter ul li:last-child label {
+      border-bottom: none;
+    }
+    .filter ul li:nth-child(1) label:before, .filter ul li:nth-child(1) label:after {
+      border-color: #5db6e2;
+    }
+    .filter ul li:nth-child(2) label:before, .filter ul li:nth-child(2) label:after {
+      border-color: #c0a2f1;
+    }
+    .filter ul li:nth-child(3) label:before, .filter ul li:nth-child(3) label:after {
+      border-color: #f7a238;
+    }
+    .filter ul li:nth-child(4) label:before, .filter ul li:nth-child(4) label:after {
+      border-color: #f6d04d;
+    }
+    .filter ul li:nth-child(5) label:before, .filter ul li:nth-child(5) label:after {
+      border-color: #40c9a1;
+    }
+    .filter ul li:nth-child(6) label:before, .filter ul li:nth-child(6) label:after {
+      border-color: #ea8b8b;
+    }
+    .filter ul li:nth-child(7) label:before, .filter ul li:nth-child(7) label:after {
+      border-color: #fe8ae0;
+    }
+    .filter ul li:nth-child(8) label:before, .filter ul li:nth-child(8) label:after {
+      border-color: #abb6d2;
+    }
+    .filter input[type="radio"] {
+      display: none;
+    }
+    .filter input[type="radio"]:checked + label:after {
+      filter: progid:DXImageTransform.Microsoft.Alpha(enabled=false);
+      opacity: 1;
+    }
+    .filter label {
+      margin: 0 15px;
+      display: block;
+      cursor: pointer;
+      position: relative;
+      padding: 0 10px 0 25px;
+      border-bottom: 1px solid #ddebfd;
+    }
+    .filter label:before {
+      content: "";
+      height: 10px;
+      width: 10px;
+      top: 50%;
+      left: 0;
+      margin-top: -9px;
+      position: absolute;
+      border-width: 3px;
+      border-style: solid;
+      -moz-border-radius: 50%;
+      -webkit-border-radius: 50%;
+      border-radius: 50%;
+    }
+    .filter label:after {
+      content: "";
+      top: 50%;
+      left: 5px;
+      margin-top: -4px;
+      position: absolute;
+      border-width: 3px;
+      border-style: solid;
+      filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+      opacity: 0;
+      -moz-border-radius: 50%;
+      -webkit-border-radius: 50%;
+      border-radius: 50%;
+      -moz-transition: linear 0.2s all;
+      -o-transition: linear 0.2s all;
+      -webkit-transition: linear 0.2s all;
+      transition: linear 0.2s all;
+    }
+    </style>
+  </head>
+
+  <body>
+
+    <div class='filter'>
+  <p class='title'>Filters</p>
+  <p class='title_items'>Type</p>
+  <ul>
+    <li>
+      <input id='all' name='type' type='radio'>
+      <label for='all'>All</label>
+    </li>
+    <li>
+      <input id='website' name='type' type='radio'>
+      <label for='website'>Website</label>
+    </li>
+    <li>
+      <input id='icon' name='type' type='radio'>
+      <label for='icon'>Icon</label>
+    </li>
+    <li>
+      <input id='mobile' name='type' type='radio'>
+      <label for='mobile'>Mobile</label>
+    </li>
+    <li>
+      <input id='logo' name='type' type='radio'>
+      <label for='logo'>Logo</label>
+    </li>
+    <li>
+      <input id='print' name='type' type='radio'>
+      <label for='print'>Print</label>
+    </li>
+    <li>
+      <input id='ui' name='type' type='radio'>
+      <label for='ui'>UI</label>
+    </li>
+    <li>
+      <input id='illustration' name='type' type='radio'>
+      <label for='illustration'>Illustration</label>
+    </li>
+  </ul>
+  <p class='title_items'>City</p>
+  <ul>
+    <li>
+      <input id='ny' name='city' type='radio'>
+      <label for='ny'>New York</label>
+    </li>
+    <li>
+      <input id='va' name='city' type='radio'>
+      <label for='va'>Vancouver</label>
+    </li>
+    <li>
+      <input id='la' name='city' type='radio'>
+      <label for='la'>Los Angeles</label>
+    </li>
+    <li>
+      <input id='ch' name='city' type='radio'>
+      <label for='ch'>Chicago</label>
+    </li>
+    <li>
+      <input id='se' name='city' type='radio'>
+      <label for='se'>Seattle</label>
+    </li>
+    <li>
+      <input id='san' name='city' type='radio'>
+      <label for='san'>San Francisco</label>
+    </li>
+    <li>
+      <input id='to' name='city' type='radio'>
+      <label for='to'>Toronto</label>
+    </li>
+  </ul>
+  <p class='title_items'>Budget</p>
+  <ul>
+    <li>
+      <input id='small' name='bonus' type='radio'>
+      <label for='small'>100 - 300</label>
+    </li>
+    <li>
+      <input id='medium' name='bonus' type='radio'>
+      <label for='medium'>300 - 1000</label>
+    </li>
+    <li>
+      <input id='big' name='bonus' type='radio'>
+      <label for='big'>1000 - 3000</label>
+    </li>
+    <li>
+      <input id='bigest' name='bonus' type='radio'>
+      <label for='bigest'>more 3000</label>
+    </li>
+  </ul>
+</div>
+    <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+    <script>
+    (function () {
+      transition_timeout = 40;
+      var tl = document.getElementsByClassName('title_items');
+      //alert("tl = " + tl.length);
+      for (var i = 0; i < tl.length; i++) {
+        //alert("i="+i);
+        var element = tl[i];
+        element.addEventListener('click', function(){
+          this.classList.toggle('active');
+          var lis = this.nextElementSibling.getElementsByTagName("li");
+          //alert( "lis="+lis.length);
+          for (var j = 0; j < lis.length; j++) {
+            //	alert("j="+j);
+            var el = lis[j];
+            el.classList.toggle('visible');
+            if( this.classList.contains( 'active' ) ){
+              el.style.transitionDelay = transition_timeout * j + 'ms';
+            }else{
+              el.style.transitionDelay = transition_timeout * (lis.length - j) + 'ms';
+            }
+          }
+        }, false);
+
+      }
+      /*$('.title_items').click(function() {
+        current = $(this).next().find('li');
+
+        //$(this).toggleClass('active');
+        //alert( $(this).classList );
+        $(this)[0].classList.toggle("active");
+        //tglClass( $(this), 'active');
+        current.toggleClass('visible');
+
+        if ($(this).hasClass('active')) {
+          for( i = 0; i <= current.length; i++ ) {
+            $(current[i]).css('transition-delay', transition_timeout * i + 'ms');
+          }
+        }
+        else {
+          for( i = current.length, j = -1; i >= 0; i--, j++) {
+            $(current[i]).css('transition-delay', transition_timeout * j + 'ms');
+          }
+        }
+
+      });*/
+    })();
+    </script>
+  </body>
+</html>

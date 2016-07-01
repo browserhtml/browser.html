@@ -56,7 +56,7 @@ npm run build-server
 Finally, in a new command line interface application (ex: Terminal), start Servo with the Browser.html flags turned on in either debug (`-d`) or release (`-r`) mode:
 
 ``` sh
-./mach run -r -- -b -w --resolution=1024x720 --pref dom.mozbrowser.enabled --pref dom.forcetouch.enabled --pref dom.quit-on-escape.enabled=false http://localhost:6060
+./mach run -r -- -b -w --resolution=1024x740 --pref dom.mozbrowser.enabled --pref dom.forcetouch.enabled --pref shell.builtin-key-shortcuts.enabled=false http://localhost:6060
 ```
 
 

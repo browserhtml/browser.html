@@ -11,7 +11,7 @@ import * as Pallet from '../../../../browser/pallet';
 import * as Unknown from '../../../../common/unknown';
 import * as Ref from '../../../../common/ref';
 
-/*::
+
 import type {URI} from "../../../../common/prelude"
 import type {Icon} from "../../../../common/favicon"
 
@@ -43,10 +43,10 @@ export type Action =
   | { type: "LocationChanged"
     , uri: URI
     }
-*/
+
 
 export class Model {
-  /*::
+  
   uri: URI;
   title: ?string;
   faviconURI: ?URI;
@@ -56,17 +56,17 @@ export class Model {
   curatedColor: ?Pallet.Theme;
 
   pallet: Pallet.Model;
-  */
+  
   constructor(
-    uri/*: URI*/
-  , title/*: ?string*/
-  , faviconURI/*: ?URI*/
-  , icon/*: ?Icon*/
+    uri: URI
+  , title: ?string
+  , faviconURI: ?URI
+  , icon: ?Icon
 
-  , themeColor/*: ?string*/
-  , curatedColor/*: ?Pallet.Theme*/
+  , themeColor: ?string
+  , curatedColor: ?Pallet.Theme
 
-  , pallet/*: Pallet.Model*/
+  , pallet: Pallet.Model
   ) {
     this.uri = uri
     this.title = title
@@ -78,48 +78,48 @@ export class Model {
   }
 }
 
-export const DocumentFirstPaint/*:Action*/ =
+export const DocumentFirstPaint:Action =
   {type: "DocumentFirstPaint"};
 
-export const FirstPaint/*:Action*/ =
+export const FirstPaint:Action =
   {type: "FirstPaint"};
 
 export const MetaChanged =
-  (name/*:string*/, content/*:string*/)/*:Action*/ =>
+  (name:string, content:string):Action =>
   ({type: "MetaChanged", name, content});
 
 
 export const TitleChanged =
-  (title/*:string*/)/*:Action*/ =>
+  (title:string):Action =>
  ({type: "TitleChanged", title});
 
 export const IconChanged =
-  (icon/*:Icon*/)/*:Action*/ =>
+  (icon:Icon):Action =>
   ({type: "IconChanged", icon});
 
 export const OverflowChanged =
-  (isOverflown/*:boolean*/)/*:Action*/ =>
+  (isOverflown:boolean):Action =>
   ({type: "OverflowChanged", isOverflown});
 
 export const Scrolled =
-  (detail/*:any*/)/*:Action*/ =>
+  (detail:any):Action =>
   ({type: "Scrolled", detail});
 
 export const CuratedColorUpdate =
-  (color/*:?Pallet.Theme*/)/*:Action*/ =>
+  (color:?Pallet.Theme):Action =>
   ({type: "CuratedColorUpdate", color});
 
-export const CreatePallet/*:Action*/ =
+export const CreatePallet:Action =
   {type: "CreatePallet"};
 
-export const LoadStart/*:Action*/ =
+export const LoadStart:Action =
   {type: "LoadStart"};
 
-export const LoadEnd/*:Action*/ =
+export const LoadEnd:Action =
   {type: "LoadEnd"};
 
 export const LocationChanged =
-  (uri/*:URI*/)/*:Action*/ =>
+  (uri:URI):Action =>
   ({type: "LocationChanged", uri});
 
 
@@ -183,7 +183,7 @@ const updatePallet = (model, _) =>
   ];
 
 export const init =
-  (uri/*:URI*/)/*:[Model, Effects<Action>]*/ =>
+  (uri:URI):[Model, Effects<Action>] =>
   [ new Model
     ( uri
     , null
@@ -268,7 +268,7 @@ const updateURI =
   );
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+  (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
       case "LoadStart":
         return loadStart(model);

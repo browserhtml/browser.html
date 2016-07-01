@@ -1,9 +1,9 @@
 /* @flow */
 
 import * as Runtime from "./runtime"
-/*::
+
 import {performance} from "./performance"
-*/
+
 
 const state =
   { requests: []
@@ -16,7 +16,7 @@ const state =
 const frameTime = 1000 / 60
 
 export const requestAnimationFrame =
-  (request/*:(time:number) => any*/)/*:number*/ => {
+  (request:(time:number) => any):number => {
     const id = ++state.nextID;
     state.ids.push(id);
     state.requests.push(request);
@@ -32,7 +32,7 @@ export const requestAnimationFrame =
   }
 
 export const cancelAnimationFrame =
-  (id/*:number*/) => {
+  (id:number) => {
     const index = state.ids.indexOf(id);
     if (index >= 0) {
       state.ids.splice(index, 1);

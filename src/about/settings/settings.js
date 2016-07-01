@@ -11,10 +11,39 @@ import * as Settings from '../../common/settings';
 import * as Unknown from '../../common/unknown';
 import * as Setting from './setting';
 
-/*::
+
 import type {Address, DOM} from "reflex";
-import type {Name, Value, Model, Action} from "./settings";
-*/
+import type {Name, Value, ResultSettings} from '../../common/settings';
+
+export type {Name, Value}
+
+export type Model =
+  { settings: {[key:Name]: Setting.Model}
+  }
+
+export type Action =
+  | { type: "NoOp" }
+  | { type: "Setting"
+    , name: Name
+    , setting: Setting.Action
+    }
+  | { type: "Observe" }
+  | { type: "Save"
+    , save: Settings.Settings
+    }
+  | { type: "Saved"
+    , saved: ResultSettings
+    }
+  | { type: "Change"
+    , change: ResultSettings
+    }
+  | { type: "Fetched"
+    , fetched: ResultSettings
+    }
+  | { type: "Changed"
+    , changed: ResultSettings
+    }
+
 
 // Actions
 
@@ -23,14 +52,14 @@ const NoOp = always({ type: "NoOp" });
 const Save =
   settings =>
   ( { type: "Save"
-    , source: settings
+    , save: settings
     }
   );
 
 const Saved =
   result =>
   ( { type: "Saved"
-    , source: result
+    , saved: result
     }
   );
 
@@ -41,40 +70,40 @@ const Observe =
 const Change =
   result =>
   ( { type: "Change"
-    , source: result
+    , change: result
     }
   );
 
 const Fetched =
   result =>
   ( { type: "Fetched"
-    , source: result
+    , fetched: result
     }
   );
 
 const Changed =
   result =>
   ( { type: "Changed"
-    , source: result
+    , changed: result
     }
   );
 
 
 const SettingAction =
-  (name/*:Name*/, action/*:Setting.Action*/)/*:Action*/ =>
+  (name:Name, action:Setting.Action):Action =>
   ( action.type === 'Save'
   ? Save
-    ( { [name]: action.source
+    ( { [name]: action.save
       }
     )
   : { type: "Setting"
     , name
-    , source: action
+    , setting: action
     }
   );
 
 const SettingActionByName =
-  (name/*:Name*/)/*:(action:Setting.Action) => Action*/ =>
+  (name:Name):(action:Setting.Action) => Action =>
   action =>
   SettingAction(name, action);
 
@@ -82,7 +111,7 @@ const ChangeSetting =
   (name, value) =>
   SettingAction(name, Setting.Change(value));
 
-export const init = ()/*:[Model, Effects<Action>]*/ => {
+export const init = ():[Model, Effects<Action>] => {
   const model =
     { settings: {}
     };
@@ -159,7 +188,6 @@ const change =
         [ model
         , Effects.perform
           (Unknown.error(result.error))
-          .map(NoOp)
         ];
 
       return output
@@ -204,27 +232,27 @@ const updateSettingByName = (model, name, action) => {
 }
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Save'
-  ? save(model, action.source)
+  ? save(model, action.save)
 
   : action.type === 'Saved'
-  ? change(model, action.source)
+  ? change(model, action.saved)
 
   : action.type === 'Fetched'
-  ? change(model, action.source)
+  ? change(model, action.fetched)
 
   : action.type === 'Changed'
-  ? changed(model, action.source)
+  ? changed(model, action.changed)
 
   : action.type === 'Change'
-  ? change(model, action.source)
+  ? change(model, action.change)
 
   : action.type === 'Observe'
   ? observe(model)
 
   : action.type === 'Setting'
-  ? updateSettingByName(model, action.name, action.source)
+  ? updateSettingByName(model, action.name, action.setting)
 
   : Unknown.update(model, action)
   );
@@ -273,7 +301,7 @@ const styleSheet = StyleSheet.create
 
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.div
   ( { key: 'settings'
     , style: styleSheet.base

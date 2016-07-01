@@ -5,11 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-/*::
+
 import type {Address, DOM} from "reflex"
-import type {Model, Action} from './devtools'
 import type {Result} from "./result"
-*/
+
 
 import * as Settings from '../common/settings';
 import * as Runtime from '../common/runtime';
@@ -19,6 +18,41 @@ import {cursor} from '../common/cursor';
 import {Effects, html, thunk, forward} from 'reflex';
 import {Style, StyleSheet} from '../common/style';
 
+export type DevtoolsSettings =
+  { 'debugger.remote-mode': 'adb-devtools' | 'disabled'
+  , 'apz.overscroll.enabled': boolean
+  , 'debug.fps.enabled': boolean
+  , 'debug.paint-flashing.enabled': boolean
+  , 'layers.low-precision': boolean
+  , 'layers.low-opacity': boolean
+  , 'layers.draw-borders': boolean
+  , 'layers.draw-tile-borders': boolean
+  , 'layers.dump': boolean
+  , 'layers.enable-tiles': boolean
+  , 'layers.async-pan-zoom.enabled': boolean
+  }
+
+export type Model =
+  { isActive: boolean
+  , settings: ?DevtoolsSettings
+  }
+
+  export type Action =
+    | { type: "Report"
+      , result: Result<any, any>
+      }
+    | { type: "NoOp" }
+    | { type: "Toggle" }
+    | { type: "Restart" }
+    | { type: "CleanRestart" }
+    | { type: "CleanReload" }
+    | { type: "Change"
+      , name: Settings.Name
+      , value: Settings.Value
+      }
+    | { type: "Settings"
+      , action: Settings.Action
+      }
 
 const descriptions =
   { 'debugger.remote-mode': 'Enable Remote DevTools'
@@ -52,11 +86,11 @@ const readValue = (key, value) =>
   : value
   );
 
-export const Toggle/*:Action*/ =
+export const Toggle:Action =
   { type: "Toggle"
   };
 
-export const Restart/*:Action*/ =
+export const Restart:Action =
   { type: "Restart"
   };
 
@@ -66,11 +100,11 @@ const Report = result =>
     }
   );
 
-export const CleanRestart/*:Action*/ =
+export const CleanRestart:Action =
   { type: "CleanRestart"
   };
 
-export const CleanReload/*:Action*/ =
+export const CleanReload:Action =
   { type: "CleanReload"
   };
 
@@ -136,19 +170,18 @@ const changeSetting = (model, {name, value}) =>
 
 
 const report =
-  (model/*:Model*/, result/*:Result<any, any>*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, result:Result<any, any>):[Model, Effects<Action>] =>
   [ model
   , ( result.isOk
     ? Effects.none
     : Effects
       .perform(Unknown.error(result.error))
-      .map(NoOP)
     )
   ];
 
 
 export const init =
-  ({isActive}/*:{isActive:boolean}*/)/*:[Model, Effects<Action>]*/ => {
+  ({isActive}:{isActive:boolean}):[Model, Effects<Action>] => {
   const [settings, fx] =
     Settings.init(Object.keys(descriptions));
 
@@ -165,7 +198,7 @@ export const init =
 
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === 'Toggle'
   ? toggle(model)
 
@@ -258,7 +291,7 @@ const viewSettings = (settings, address) =>
            .map(key => thunk(key, viewSetting, key, settings[key], address)))
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.div({
     className: 'devtools toolbox',
     key: 'devtools-toolbox',

@@ -13,16 +13,24 @@ import hardcodedTiles from '../tiles.json';
 import * as Unknown from "../../../common/unknown";
 import {cursor} from "../../../common/cursor";
 
-/*::
+
 import type {Address, DOM} from "reflex"
 import type {Tagged} from "../../../common/prelude"
-import type {Action, Model} from "./tiles"
-*/
+
+export type Model =
+  { nextIndex: number
+  , order: Array<Tile.ID>
+  , entries: {[key:Tile.ID]: Tile.Model}
+  }
+
+
+export type Action =
+  Tagged<"Tile", Tile.Action>
 
 
 
 export const init =
-  ()/*:[Model, Effects<Action>]*/ =>
+  ():[Model, Effects<Action>] =>
   [ hardcodedTiles
   , Effects.none
   ];
@@ -30,7 +38,7 @@ export const init =
 const TileAction = tag('Tile')
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   Unknown.update(model, action)
 
 const styleSheet = StyleSheet.create
@@ -49,7 +57,7 @@ const styleSheet = StyleSheet.create
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/, isDark/*:boolean*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>, isDark:boolean):DOM =>
   html.div
   ( { className: 'tiles'
     , style: styleSheet.tiles

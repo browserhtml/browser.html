@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>spheres</title>
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+}
+figure {
+    position: absolute;
+    background: linear-gradient(to bottom, black, black 50%, #202020 60%, #505050);
+    margin: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+canvas {
+    visibility: hidden;
+}
+.sphere {
+    position: absolute;
+    border-radius: 50%;
+/*    box-shadow: 0 0 5px 5px rgba(61, 178, 206, 0.2); */
+}
+.ambient, .diffuse, .specular {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+}
+.ambient {
+    background: rgba(61, 178, 206, 1.0);
+    /*background: linear-gradient(to bottom, white, rgba(0, 0, 0, 0));*/
+}
+.diffuse {
+    /*background: linear-gradient(to bottom, white, rgba(0, 0, 0, 0));*/
+}
+</style>
+</head>
+<body>
+<figure></figure>
+<script>
+var RINGS = 10;
+var NEAR_PLANE = 0.2;
+var FAR_PLANE = 5;
+var CIRCLE_RADIUS = 3;
+var SPHERE_COUNT = 900;
+var AMBIENT_LIGHT = 0.2;
+var DIFFUSE_LIGHT = 0.6;
+var SPECULAR_LIGHT = 0.5;
+var SHININESS = 20;
+var SPEED = 0.025;
+
+function vectorLength(v) {
+    return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+
+function vectorSub(a, b) {
+    return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
+}
+
+function vectorScalarMul(k, v) {
+    return { x: k * v.x, y: k * v.y, z: k * v.z };
+}
+
+function dot(a, b) {
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+function normalize(v) {
+    var length = vectorLength(v);
+    return { x: v.x / length, y: v.y / length, z: v.z / length };
+}
+
+function vectorMatrixMul(v, m) {
+    return {
+        x: m.m11 * v.x + m.m12 * v.y + m.m13 * v.z + m.m14 * v.w,
+        y: m.m21 * v.x + m.m22 * v.y + m.m23 * v.z + m.m24 * v.w,
+        z: m.m31 * v.x + m.m32 * v.y + m.m33 * v.z + m.m34 * v.w,
+        w: m.m41 * v.x + m.m42 * v.y + m.m43 * v.z + m.m44 * v.w,
+    };
+}
+
+function plot(ctx, x, y, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x - 3, y - 3, 7, 7);
+}
+
+function specularR(normal, lightVector) {
+    var r = normalize(vectorSub(vectorScalarMul(2.0, vectorScalarMul(dot(normal, lightVector),
+                                                                     normal)),
+                                lightVector));
+    if (r.z < 0.0 || normal.z < 0.0) {
+        // Light behind the surface.
+        r.x = r.y = r.z = 0.0;
+    }
+    return r;
+}
+
+function specularCosAngle(r, cameraVector) {
+    return dot(r, cameraVector);
+}
+
+function sphereNormal(x, y, r) {
+    return {
+        x: x / r,
+        y: y / r,
+        z: Math.sqrt(r * r - x * x - y * y) / r
+    };
+}
+
+function lerp(a, b, t) {
+    return (b - a) * t + a;
+}
+
+function valueToColor(value) {
+    //value = Math.round(value * 255);
+    return "rgba(255, 255, 255, " + Math.max(value, 0) + ")";
+}
+
+function computeLightVector(lightAngle, offsetX, offsetY, offsetZ) {
+    return normalize({
+        x: windowWidth / 2.0 - offsetX,
+        y: windowHeight / 2.0 - offsetY,
+        z: 1000.0 - offsetZ
+    });
+}
+
+function lightSpheres(lightAngle, sphereElements, diffuseElements, specularElements) {
+    function removeGradientStops(element) {
+        element.style.backgroundImage = 'none';
+    }
+
+    for (var sphereIndex = 0; sphereIndex < diffuseElements.length; sphereIndex++) {
+        var sphereElement = sphereElements[sphereIndex];
+        var diffuseElement = diffuseElements[sphereIndex];
+        var specularElement = specularElements[sphereIndex];
+        var sphereCenterX = sphereElement.centerX;
+        var sphereCenterY = sphereElement.centerY;
+        var sphereCenterZ = sphereElement.centerZ;
+
+        var lightVector = computeLightVector(lightAngle,
+                                             sphereCenterX,
+                                             sphereCenterY,
+                                             sphereCenterZ);
+        //console.log(lightVector.toSource());
+        if (lightVector.z <= 0.0) {
+            removeGradientStops(diffuseElement);
+            removeGradientStops(specularElement);
+            continue;
+        }
+
+        var cameraVector = normalize({ x: 0, y: 0, z: NEAR_PLANE });
+
+        var projectedCenterX = sphereCenterX / sphereCenterZ;
+        var projectedCenterY = sphereCenterY / sphereCenterZ;
+        var projectedCircleRadius = CIRCLE_RADIUS / sphereCenterZ;
+        //console.log(projectedCircleRadius);
+
+        // Find the center of the specular highlight.
+        function searchForSpecularCenter(calculateNormal, projectedCircleRadius) {
+            var min = -projectedCircleRadius, max = projectedCircleRadius;
+            while (min < max && max - min > 1) {
+                var midLeft = lerp(min, max, 0.25);
+                var mid = lerp(min, max, 0.5);
+                var midRight = lerp(min, max, 0.75);
+                var specularCosAngleMidLeft =
+                    specularCosAngle(specularR(calculateNormal(midLeft), lightVector),
+                                     cameraVector);
+                var specularCosAngleMid =
+                    specularCosAngle(specularR(calculateNormal(mid), lightVector),
+                                     cameraVector);
+                var specularCosAngleMidRight =
+                    specularCosAngle(specularR(calculateNormal(midRight), lightVector),
+                                     cameraVector);
+                if (specularCosAngleMidLeft > specularCosAngleMidRight) {
+                    max = mid;
+                } else {
+                    min = mid;
+                }
+            }
+            return lerp(min, max, 0.5);
+        }
+
+        var specularCenterX = searchForSpecularCenter(function(x) {
+            return sphereNormal(x, 0, projectedCircleRadius);
+        }, projectedCircleRadius);
+        var specularCenterY = searchForSpecularCenter(function(y) {
+            return sphereNormal(specularCenterX, y, projectedCircleRadius);
+        }, projectedCircleRadius);
+
+        var diffuseCenter = vectorScalarMul(projectedCircleRadius, lightVector);
+
+        function makeDiffuseSample(x, y) {
+            var insideSphere = x * x + y * y <= projectedCircleRadius * projectedCircleRadius;
+            if (!insideSphere)
+                return 0;
+            return DIFFUSE_LIGHT * dot(lightVector, sphereNormal(x, y, projectedCircleRadius));
+        }
+
+        var xDiffuseSamples = [];
+        for (var x = -projectedCircleRadius; x < projectedCircleRadius; x++)
+            xDiffuseSamples.push(makeDiffuseSample(x, diffuseCenter.y));
+        //console.log(diffuseCenter.toSource());
+
+        function makeSpecularSample(x, y) {
+            var insideSphere = x * x + y * y <= projectedCircleRadius * projectedCircleRadius;
+            if (!insideSphere)
+                return 0;
+            var r = specularR(sphereNormal(x, y, projectedCircleRadius), lightVector);
+            return SPECULAR_LIGHT * Math.pow(specularCosAngle(r, cameraVector), SHININESS);
+        }
+
+        var xSpecularSamples = [];
+        for (var x = -projectedCircleRadius; x < projectedCircleRadius; x++)
+            xSpecularSamples.push(makeSpecularSample(x, specularCenterY));
+        //console.log(xSpecularSamples.toSource());
+
+        var diffuseCenterX = (diffuseCenter.x + projectedCircleRadius) | 0;
+        var diffuseCenterY = (diffuseCenter.y + projectedCircleRadius) | 0;
+
+        specularCenterX = (specularCenterX + projectedCircleRadius) | 0;
+        specularCenterY = (specularCenterY + projectedCircleRadius) | 0;
+
+        function approximateSamplesWithGradient(samples, center) {
+            var direction, gradientSize;
+            if (center > projectedCircleRadius) {
+                gradientSize = center;
+                direction = -1;
+            } else {
+                gradientSize = projectedCircleRadius * 2.0 - center;
+                direction = 1;
+            }
+
+            var gradientStops = [
+                {
+                    pos: 0,
+                    value: samples[center]
+                },
+                {
+                    pos: gradientSize,
+                    value: 0.0,
+                }
+            ];
+
+            var lastTotalError = 0.0;
+            for (var iteration = 0; iteration < 100; iteration++) {
+                var totalError = 0.0;
+                var indexWithGreatestError = 0;
+                var greatestError = 0;
+
+                function sampleGradient(pos) {
+                    var min = 0, max = gradientStops.length - 1;
+                    while (max > min + 1) {
+                        var mid = lerp(min, max, 0.5) | 0;
+                        if (pos < gradientStops[mid].pos)
+                            max = mid;
+                        else if (pos > gradientStops[mid].pos)
+                            min = mid;
+                        else
+                            return gradientStops[mid].value;
+                    }
+                    var result = lerp(gradientStops[min].value,
+                                      gradientStops[max].value,
+                                      (pos - gradientStops[min].pos) /
+                                      (gradientStops[max].pos - gradientStops[min].pos));
+                    return result;
+                }
+
+                function accumulateError(samples, index) {
+                    var pos = Math.abs(center - index);
+                    //console.log("index=" + index + " pos=" + pos);
+                    var gradientValue = sampleGradient(pos);
+                    var residual = Math.abs(gradientValue - samples[index]);
+                    var error = residual * residual;
+                    if (error > greatestError) {
+                        indexWithGreatestError = index;
+                        greatestError = error;
+                    }
+                    totalError += error;
+                }
+
+                for (var i = 0; i < gradientSize; i++) {
+                    accumulateError(samples, center + direction * i);
+                }
+
+                //console.log("totalError " + totalError + " lastTotalError " + lastTotalError);
+                if (totalError < 0.01)
+                    break;
+                //if (Math.abs(lastTotalError - totalError) < 0.01)
+                //    break;
+                lastTotalError = totalError;
+
+                gradientStops.push({
+                    pos: Math.abs(indexWithGreatestError - center),
+                    value: samples[indexWithGreatestError]
+                });
+                gradientStops.sort(function(a, b) { return a.pos - b.pos; });
+                //console.log("new gradient stops: ", gradientStops.toSource());
+            }
+
+            return {
+                stops: gradientStops,
+                size: gradientSize
+            };
+        }
+
+        var diffuseGradientResult = approximateSamplesWithGradient(xDiffuseSamples,
+                                                                   diffuseCenterX);
+        var diffuseGradientStops = diffuseGradientResult.stops;
+        var diffuseGradientSize = diffuseGradientResult.size;
+
+        var specularGradientResult = approximateSamplesWithGradient(xSpecularSamples,
+                                                                    specularCenterX);
+        var specularGradientStops = specularGradientResult.stops;
+        var specularGradientSize = specularGradientResult.size;
+
+        function applyGradientStops(element, gradientStops, centerX, centerY) {
+            /*var css = "radial-gradient(circle at " + centerX + "px " + centerY + "px";*/
+            var css = "linear-gradient(to bottom";
+            for (var i = 0; i < gradientStops.length; i++) {
+                css += ", " + valueToColor(gradientStops[i].value) + " ";
+                css += gradientStops[i].pos + "px";
+            }
+            css += ")";
+            element.style.backgroundImage = css;
+        }
+
+        applyGradientStops(diffuseElement,
+                           diffuseGradientStops,
+                           diffuseCenterX,
+                           diffuseCenterY);
+        applyGradientStops(specularElement,
+                           specularGradientStops,
+                           specularCenterX,
+                           specularCenterY);
+    }
+}
+
+var windowWidth = window.innerWidth;
+var windowHeight = window.innerHeight;
+
+function positionSphere(element, centerX, centerY, centerZ) {
+    element.centerX = centerX;
+    element.centerY = centerY;
+    element.centerZ = centerZ;
+
+    centerX /= centerZ;
+    centerY /= centerZ;
+    var projectedRadius = CIRCLE_RADIUS / centerZ;
+
+    var topLeftX = centerX - projectedRadius + windowWidth / 2;
+    var topLeftY = centerY - projectedRadius + windowHeight / 2;
+    element.style.left = topLeftX + "px";
+    element.style.top = topLeftY + "px";
+    element.style.width = (projectedRadius * 2) + "px";
+    element.style.height = (projectedRadius * 2) + "px";
+}
+
+function createSphere() {
+    var figure = document.getElementsByTagName('figure')[0];
+    var x = (Math.random() * (windowWidth - CIRCLE_RADIUS * 2));
+    var y = (Math.random() * (windowHeight - CIRCLE_RADIUS * 2));
+    var centerZ = lerp(NEAR_PLANE, FAR_PLANE, Math.random());
+
+    function initElement(element) {
+        var centerX = x + CIRCLE_RADIUS - windowWidth / 2;
+        var centerY = y + CIRCLE_RADIUS - windowHeight / 2;
+        positionSphere(element, centerX, centerY, centerZ);
+        figure.appendChild(element);
+    }
+
+    var sphereElement = document.createElement("div");
+    var ambientElement = document.createElement("div");
+    var diffuseElement = document.createElement("div");
+    var specularElement = document.createElement("div");
+
+    sphereElement.setAttribute('class', 'sphere');
+    ambientElement.setAttribute('class', 'ambient');
+    diffuseElement.setAttribute('class', 'diffuse');
+    specularElement.setAttribute('class', 'specular');
+
+    initElement(sphereElement);
+    sphereElement.appendChild(ambientElement);
+    sphereElement.appendChild(diffuseElement);
+    sphereElement.appendChild(specularElement);
+
+    return {
+        sphere: sphereElement,
+        ambient: ambientElement,
+        diffuse: diffuseElement,
+        specular: specularElement
+    };
+}
+
+function updateObjects(objectAngle, heightAngle, sphereElements) {
+    var elementsPerRing = ambientElements.length / RINGS;
+    var objectDelta = Math.PI * 2.0 / elementsPerRing;
+    var heightDelta = Math.PI * 4.0 / elementsPerRing;
+
+    var ringDelta = Math.PI * 2.0 / RINGS;
+
+    var midPlane = lerp(NEAR_PLANE, FAR_PLANE, 0.5);
+
+    for (var ring = 0; ring < RINGS; ring++) {
+        var nearPlane = lerp(midPlane, NEAR_PLANE, (ring + 1) / RINGS);
+        var farPlane = lerp(midPlane, FAR_PLANE, (ring + 1) / RINGS);
+        for (var sphereIndexInRing = 0; sphereIndexInRing < elementsPerRing; sphereIndexInRing++) {
+            var sphereIndex = sphereElements.length * ring / RINGS + sphereIndexInRing;
+            var sphereElement = sphereElements[sphereIndex];
+
+            var radius = Math.min(windowWidth, windowHeight) * (0.2 + 0.1);
+            var heightScale = windowHeight * 0.1;
+            var centerX = Math.round(Math.cos(objectAngle) * radius);
+            var centerY = Math.round(Math.sin(heightAngle) * heightScale);
+            var centerZ = lerp(nearPlane, farPlane, (Math.sin(objectAngle) + 1) / 2);
+            //console.log(centerY);
+
+            positionSphere(sphereElement, centerX, centerY, centerZ);
+
+            objectAngle += objectDelta;
+            heightAngle += heightDelta;
+        }
+
+        objectAngle += ringDelta;
+    }
+}
+
+function sortObjects(sphereElements) {
+    var indices = [];
+    for (var i = 0; i < sphereElements.length; i++) {
+        indices.push(i);
+    }
+    indices.sort(function(aIndex, bIndex) {
+        return -(sphereElements[bIndex].centerZ - sphereElements[aIndex].centerZ);
+    });
+    var figure = document.getElementsByTagName("figure")[0];
+    while (figure.firstChild != null)
+        figure.removeChild(figure.firstChild);
+    for (var indexIndex = 0; indexIndex < indices.length; indexIndex++) {
+        figure.appendChild(sphereElements[indices[indexIndex]]);
+    }
+}
+
+var sphereElements = [], ambientElements = [], diffuseElements = [], specularElements = [];
+for (var i = 0; i < SPHERE_COUNT; i++) {
+    var elements = createSphere();
+    sphereElements.push(elements.sphere);
+    ambientElements.push(elements.ambient);
+    diffuseElements.push(elements.diffuse);
+    specularElements.push(elements.specular);
+}
+
+var lightAngle = 0.5;
+var objectAngle = 0, heightAngle = 0;
+var lightCount = 0;
+
+var lastFrameTime = Date.now();
+var lastObjectAngle = objectAngle;
+var lastHeightAngle = heightAngle;
+
+var log = /Servo/.test(navigator.userAgent) ? alert : console.log.bind(console);
+
+function next() {
+    var lightVector = computeLightVector(lightAngle);
+    updateObjects(objectAngle, heightAngle, sphereElements);
+    sortObjects(sphereElements);
+
+    /*if (lightCount == 0)
+        lightSpheres(lightAngle, sphereElements, diffuseElements, specularElements);
+    lightCount = (lightCount + 1) % 5;*/
+
+    var now = Date.now();
+    var idealFramesElapsed = (now - lastFrameTime) / 1000.0 * 60.0;
+    objectAngle = lastObjectAngle + SPEED * idealFramesElapsed;
+    heightAngle = lastHeightAngle + SPEED * idealFramesElapsed;
+
+    if (now >= lastFrameTime + 1000.0) {
+        lastFrameTime = now;
+        lastObjectAngle = objectAngle;
+        lastHeightAngle = heightAngle;
+    }
+
+  requestAnimationFrame(next);
+}
+requestAnimationFrame(next);
+
+
+</script>
+</body>
+</html>
+

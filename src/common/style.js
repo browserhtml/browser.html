@@ -4,9 +4,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/*::
-import type {Rules, Sheet} from "./style"
-*/
+
+export type Name = string
+
+export type Value
+  = string
+  | number
+  | boolean
+
+export type Selector = string
+
+export type Rules =
+  { [key:Name]: Value }
+
+export type Sheet =
+  {[key:Selector]: ?Rules}
+
 
 const composedStyles = Object.create(null);
 
@@ -14,7 +27,7 @@ const ID = Symbol('style-sheet/id');
 var id = 0;
 
 export const StyleSheet = {
-  create: /*::<sheet:Sheet>*/(sheet/*:sheet*/)/*:sheet*/ => {
+  create: <sheet:Sheet>(sheet:sheet):sheet => {
     const result = {}
     for (var name in sheet) {
       if (sheet.hasOwnProperty(name)) {
@@ -38,7 +51,7 @@ export const StyleSheet = {
 // Mix multiple style objects together. Will memoize the combination of styles
 // to minimize object creation. Returns style object that is the result of
 // mixing styles together.
-export const mix = (...styles/*:Array<?Rules>*/)/*:Rules*/ => {
+export function mix(...styles:Array<?Rules>):Rules {
   var length = styles.length;
   var index = 0;
   var id = null;

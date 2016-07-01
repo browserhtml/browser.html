@@ -10,10 +10,27 @@ import tinycolor from 'tinycolor2';
 import {Effects, Task} from 'reflex';
 import {getDomainName} from '../common/url-helper';
 
-/*::
+
 import type {Address, DOM, Never} from "reflex"
-import type {URI, HexColor, Color, Model, Theme} from "./pallet";
-*/
+import type {URI} from "../common/prelude"
+
+export type {URI}
+
+// Any type of valid CSS color string.
+export type Color = string;
+// A string assumed to be in hex color format.
+export type HexColor = string;
+
+export type Model =
+  { isDark: boolean
+  , foreground: ?Color
+  , background: ?Color
+  }
+
+export type Theme =
+  { foreground: Color
+  , background: Color
+  }
 
 // Hand-curated themes for popular websites.
 const curated = {
@@ -37,10 +54,10 @@ const curated = {
 // Calculate the distance from white, returning a boolean.
 // This is a pretty primitive check.
 const isHexBright =
-  (hexcolor/*:HexColor*/)/*:boolean*/ =>
+  (hexcolor:HexColor):boolean =>
   parseInt(hexcolor, 16) > 0xffffff/2;
 
-export const isDark = (color/*:Color*/)/*:boolean*/ => {
+export const isDark = (color:Color):boolean => {
   const tcolor = tinycolor(color);
   // tinycolor uses YIQ for brightness calculation, we also throw more
   // primitive hex based calculation and treat background as dark if any
@@ -48,14 +65,14 @@ export const isDark = (color/*:Color*/)/*:boolean*/ => {
   return (tcolor.isDark() || !isHexBright(tcolor.toHex()));
 }
 
-export const blank/*:Model*/ = {
+export const blank:Model = {
   isDark: false,
   foreground: null,
   background: null
 };
 
 export const create =
-  (background/*:Color*/, foreground/*:Color*/)/*:Model*/ =>
+  (background:Color, foreground:Color):Model =>
   ( { background
     , foreground
     , isDark: isDark(background)
@@ -63,7 +80,7 @@ export const create =
   );
 
 export const requestCuratedColor =
-  (uri/*:URI*/)/*:Task<Never, ?Theme>*/ =>
+  (uri:URI):Task<Never, ?Theme> =>
   new Task((succeed, fail) => {
     const hostname = getDomainName(uri);
     Promise.resolve

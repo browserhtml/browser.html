@@ -16,11 +16,55 @@ import * as Icon from "./icon";
 import * as Suggestion from "./suggestion";
 import * as Unknown from '../../../../common/unknown';
 
-/*::
+
 import type {Address, DOM, Never} from "reflex";
 import type {Result} from "../../../../common/result";
-import type {Completion, Match, Model, Action} from "./history";
-*/
+
+type URI = string
+
+export type Match =
+  { uri: URI
+  , title: string
+  }
+
+export type Completion =
+  { match: string
+  , hint: ?string
+  }
+
+export type Model =
+  { size: number
+  , limit: number
+  , queryID: number
+  , query: ?string
+  , selected: number
+  , matches: {[key:URI]: Match}
+  , items: Array<URI>
+  }
+
+
+export type Action =
+  | { type: "NoOp" }
+  | { type: "Reset" }
+  | { type: "Query", query: string }
+  | { type: "Suggest", suggest: Completion }
+  | { type: "Activate" }
+  | { type: "SelectNext" }
+  | { type: "SelectPrevious" }
+  | { type: "Unselect" }
+  | { type: "UpdateMatches"
+    , updateMatches: Result<Error, Array<Match>>
+    }
+  | { type: "ByURI"
+    , source:
+      { uri: URI
+      , action: Suggestion.Action
+      }
+    }
+  | { type: "Abort"
+    , queryID: number
+    }
+
 
 const NoOp = always({type: "NoOp"});
 
@@ -32,16 +76,16 @@ const Abort =
   );
 
 export const Query =
-  (input/*:string*/)/*:Action*/ =>
+  (input:string):Action =>
   ( { type: "Query"
-    , source: input
+    , query: input
     }
   );
 
 const UpdateMatches =
-  (result/*:Result<Error, Array<Match>>*/)/*:Action*/ =>
+  (result:Result<Error, Array<Match>>):Action =>
   ( { type: "UpdateMatches"
-    , source: result
+    , updateMatches: result
     }
   );
 
@@ -60,19 +104,19 @@ const byURI =
 const pendingRequests = Object.create(null);
 
 const abort =
-  (id/*:number*/)/*:Task<Never, number>*/ =>
+  (id:number):Task<Never, number> =>
   new Task(succeed => void(0))
 
 const search =
-  ( id/*:number*/
-  , input/*:string*/
-  , limit/*:number*/
-  )/*:Task<Never, Result<Error, Array<Match>>>*/ =>
+  ( id:number
+  , input:string
+  , limit:number
+  ):Task<Never, Result<Error, Array<Match>>> =>
   new Task(succeed => void(0))
 
 
 export const init =
-  (query/*:string*/, limit/*:number*/)/*:[Model, Effects<Action>]*/ =>
+  (query:string, limit:number):[Model, Effects<Action>] =>
   [ { query
     , size: 0
     , queryID: 0
@@ -146,7 +190,6 @@ const updateMatches = (model, result) =>
   : [ model
     , Effects
       .perform(Unknown.error(result.error))
-      .map(NoOp)
     ]
   )
 
@@ -177,9 +220,9 @@ const retainSelected = (model, {matches, items}) => {
 };
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === "Query"
-  ? updateQuery(model, action.source)
+  ? updateQuery(model, action.query)
   : action.type === "SelectNext"
   ? selectNext(model)
   : action.type === "SelectPrevious"
@@ -187,12 +230,18 @@ export const update =
   : action.type === "Unselect"
   ? unselect(model)
   : action.type === "UpdateMatches"
-  ? updateMatches(model, action.source)
+  ? updateMatches(model, action.updateMatches)
   : Unknown.update(model, action)
   )
 
+export const reset =
+  (model:Model):[Model, Effects<Action>] => {
+    return [model, Effects.none]
+  }
+
+
 const innerView =
-  (model, address, isSelected) =>
+  (model, isSelected) =>
   [ Icon.view('', isSelected)
   , Title.view(model.title, isSelected)
   , URL.view(model.uri, isSelected)
@@ -200,7 +249,7 @@ const innerView =
 
 
 export const render =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.section
   ( { style: {borderColor: 'inherit' } }
   , model.items.map
@@ -209,15 +258,15 @@ export const render =
       ( model.selected === index
       , innerView
         ( model.matches[uri]
-        , forward(address, byURI(uri))
         , model.selected === index
         )
+      , forward(address, byURI(uri))
       )
     )
   )
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   thunk
   ( 'history'
   , render

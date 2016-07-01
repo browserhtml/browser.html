@@ -5,12 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {html, thunk} from "reflex";
+import {html, forward, thunk} from "reflex";
+import {always} from "../../../../common/prelude";
 import {Style, StyleSheet} from '../../../../common/style';
 
-/*::
+
 import type {Address, DOM} from "reflex"
-*/
+
+export type Action =
+  | { type: "Select" }
+  | { type: "Activate" }
 
 
 const styleSheet = StyleSheet.create
@@ -42,7 +46,7 @@ const styleSheet = StyleSheet.create
   );
 
 export const render =
-  (isSelected/*:boolean*/, content/*:Array<DOM>*/)/*:DOM*/ =>
+  (isSelected:boolean, content:Array<DOM>, address:Address<Action>):DOM =>
   html.li
   ( { className: 'assistant suggestion'
     , style: Style
@@ -52,8 +56,13 @@ export const render =
         : styleSheet.unselected
         )
       )
+    , onMouseOver: forward(address, always(Select))
+    , onClick: forward(address, always(Activate))
     }
   , content
   );
+
+const Select = { type: "Select" }
+const Activate = { type: "Activate" }
 
 export const view = render

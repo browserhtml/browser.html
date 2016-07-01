@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0">
+<title>JS Bin</title>
+<style>
+.container div {
+display: inline-block;
+margin: 7px;
+width: 45px;
+height: 45px;
+background: red linear-gradient(to bottom, orange, transparent);
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+</div>
+<script>
+var container = document.querySelector('.container');
+container.innerHTML = Array(500).join('<div>J</div>');
+
+var els = Array.prototype.slice.call(document.querySelectorAll('.container div'));
+var start = performance.now();
+
+function loop(now) {
+
+  els.forEach(function(el, i) {
+    var dur = (now - start) + (i*50);
+    var pos = (dur % 3000) / 3000;
+    var bouncePos = Math.abs(pos * 2 - 1);
+    var r = bouncePos * 50 + 50;
+    var b = (1 - bouncePos) * 50;
+
+    var rotation = pos * 360;
+    var radius = bouncePos * 25;
+
+    el.style.transform = 'rotate(' + rotation + 'deg)';
+    //el.style.borderRadius = radius + 'px';
+    el.style.backgroundColor = 'rgb(' + r + '%, 0%, ' + b + '%)';
+  });
+
+  requestAnimationFrame(loop);
+}
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

@@ -16,7 +16,6 @@ import * as Display from "./Sidebar/Display";
 import * as Animation from "../common/Animation";
 
 
-/*::
 import type {Integer, Float} from "../common/prelude"
 import type {Address, DOM} from "reflex"
 import type {ID} from "./Sidebar/Tabs"
@@ -33,24 +32,23 @@ export type Action =
   | { type: "Animation", animation: Animation.Action }
   | { type: "Tabs", tabs: Tabs.Action }
   | { type: "Toolbar", toolbar: Toolbar.Action }
-*/
 
 
 
 
 
 export class Model {
-  /*::
+
   isAttached: boolean;
   isExpanded: boolean;
   animation: Animation.Model<Display.Model>;
   toolbar: Toolbar.Model;
-  */
+
   constructor(
-    isAttached/*: boolean*/
-  , isExpanded/*: boolean*/
-  , toolbar/*: Toolbar.Model*/
-  , animation/*: Animation.Model<Display.Model>*/
+    isAttached: boolean
+  , isExpanded: boolean
+  , toolbar: Toolbar.Model
+  , animation: Animation.Model<Display.Model>
   ) {
     this.isAttached = isAttached
     this.isExpanded = isExpanded
@@ -76,9 +74,9 @@ const styleSheet = Style.createSheet({
 
 
 export const init =
-  ( isAttached/*:boolean*/ = false
-  , isExpanded/*:boolean*/ = false
-  )/*:[Model, Effects<Action>]*/ => {
+  ( isAttached:boolean = false
+  , isExpanded:boolean = false
+  ):[Model, Effects<Action>] => {
     const display =
       ( isExpanded
       ? Display.expanded
@@ -106,21 +104,21 @@ export const init =
     return [model, fx]
   }
 
-export const CreateWebView/*:Action*/ =
+export const CreateWebView:Action =
   { type: 'CreateWebView'
   };
 
-export const Attach/*:Action*/ =
+export const Attach:Action =
   {
     type: "Attach"
   };
 
-export const Detach/*:Action*/ =
+export const Detach:Action =
   { type: "Detach"
   };
 
-export const Expand/*:Action*/ = {type: "Expand"};
-export const Collapse/*:Action*/ = {type: "Collapse"};
+export const Expand:Action = {type: "Expand"};
+export const Collapse:Action = {type: "Collapse"};
 
 const tagTabs =
   action => {
@@ -198,8 +196,8 @@ const updateAnimation = cursor
     }
   )
 
-const nofx = /*::<model, action>*/
-  (model/*:model*/)/*:[model, Effects<action>]*/ =>
+const nofx = <model, action>
+  (model:model):[model, Effects<action>] =>
   [ model
   , Effects.none
   ]
@@ -233,7 +231,7 @@ const expand =
   );
 
 const collapse =
-  (model/*:Model*/) =>
+  (model:Model) =>
   ( !model.isExpanded
   ? nofx(model)
   : startAnimation
@@ -312,7 +310,7 @@ const assemble =
   ]
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
+  (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
       case "Expand":
         return expand(model);
@@ -335,10 +333,10 @@ export const update =
 
 
 export const render =
-  ( model/*:Model*/
-  , navigators/*:Deck.Model<Navigator.Model>*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( model:Model
+  , navigators:Deck.Model<Navigator.Model>
+  , address:Address<Action>
+  ):DOM =>
   html.menu
   ( { key: 'sidebar'
     , className: 'sidebar'
@@ -363,10 +361,10 @@ export const render =
   );
 
 export const view =
-  ( model/*:Model*/
-  , navigators/*:Deck.Model<Navigator.Model>*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( model:Model
+  , navigators:Deck.Model<Navigator.Model>
+  , address:Address<Action>
+  ):DOM =>
   thunk
   ( 'Browser/Sidebar'
   , render

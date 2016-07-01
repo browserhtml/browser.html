@@ -11,36 +11,48 @@ import * as Settings from '../../../common/settings';
 import * as Unknown from '../../../common/unknown';
 import {focus} from "@driver";
 
-/*::
+
 import type {Address, DOM} from "reflex"
-import type {Model, Action} from "./input"
-*/
+
+export type Model =
+  { value: string
+  , isEditing: boolean
+  , version: number
+  }
+
+export type Action =
+  | { type: "Enter" }
+  | { type: "Edit" }
+  | { type: "Abort" }
+  | { type: "Change", change: string }
+  | { type: "Submit", submit: Model }
+
 
 export const Change =
-  (value/*:string*/)/*:Action*/ =>
+  (value:string):Action =>
   ( { type: "Change"
-    , source: value
+    , change: value
     }
   );
 
 
 export const Submit =
-  (model/*:Model*/)/*:Action*/ =>
+  (model:Model):Action =>
   ( { type: "Submit"
-    , source: model
+    , submit: model
     }
   );
 
-export const Edit/*:Action*/ = { type: "Edit" };
+export const Edit:Action = { type: "Edit" };
 const Enter = { type: "Enter" };
 const Abort = { type: "Abort" };
 
 
 export const init =
-  ( version/*:number*/
-  , value/*:string*/
-  , isEditing/*:boolean*/
-  )/*:[Model, Effects<Action>]*/ =>
+  ( version:number
+  , value:string
+  , isEditing:boolean
+  ):[Model, Effects<Action>] =>
   [ { value
     , isEditing
     , version
@@ -93,9 +105,9 @@ const decodeChange =
   Change(event.target.value);
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === "Change"
-  ? change(model, action.source)
+  ? change(model, action.change)
   : action.type === "Edit"
   ? edit(model)
   : action.type === "Abort"
@@ -197,5 +209,5 @@ const render =
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   thunk('input', render, model, address);

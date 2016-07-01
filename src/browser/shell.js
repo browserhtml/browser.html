@@ -13,17 +13,44 @@ import * as Runtime from "../common/runtime";
 import * as Controls from "./shell/controls";
 import * as Unknown from "../common/unknown";
 
-/*::
+
 import type {Address, DOM} from "reflex"
-import type {Model, Action} from "./shell"
-*/
+import type {Result} from "../common/result"
+
+export type Model =
+  { isFocused: boolean
+  , isMinimized: boolean
+  , isMaximized: boolean
+  , controls: Controls.Model
+  }
+
+export type Action =
+  | { type: "Focus" }
+  | { type: "Blur" }
+  | { type: "Close" }
+  | { type: "Minimize" }
+  | { type: "ToggleFullscreen" }
+  | { type: "Closed"
+    , result: Result<Error, void>
+    }
+  | { type: "Minimized"
+    , result: Result<Error, void>
+    }
+  | { type: "FullscreenToggled"
+    , result: Result<Error, void>
+    }
+  | { type: "Controls"
+    , source: Controls.Action
+    }
+
+
 
 // @TODO: IO stuff should probably live elsewhere.
 const fetchFocus =
   new Task((succeed, fail) => succeed(document.hasFocus()));
 
 export const init =
-  ()/*:[Model, Effects<Action>]*/ => {
+  ():[Model, Effects<Action>] => {
   const [controls, fx] = Controls.init(false, false, false);
   return [
     ( { isFocused: false
@@ -43,23 +70,23 @@ export const init =
   ]
 }
 
-export const Focus/*:Action*/ =
+export const Focus:Action =
   { type: "Focus"
   };
 
-export const Blur/*:Action*/ =
+export const Blur:Action =
   { type: "Blur"
   };
 
-export const Close/*:Action*/ =
+export const Close:Action =
   { type: "Close"
   };
 
-export const Minimize/*:Action*/ =
+export const Minimize:Action =
   { type: "Minimize"
   };
 
-export const ToggleFullscreen/*:Action*/ =
+export const ToggleFullscreen:Action =
   { type: "ToggleFullscreen"
   };
 
@@ -159,7 +186,7 @@ const toggleFullscreen = model =>
 
 
 export const update =
-  (model/*:Model*/, action/*:Action*/) =>
+  (model:Model, action:Action) =>
   ( action.type === "Focus"
   ? focus(model)
   : action.type === "Blur"
@@ -188,16 +215,16 @@ export const update =
   );
 
 export const render =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ => {
+  (model:Model, address:Address<Action>):DOM => {
     if (!Runtime.useNativeTitlebar()) {
       return Controls.view(model.controls, forward(address, ControlsAction));
     } else {
-      return "";
+      return html.noscript();
     }
   }
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   thunk
   ( "Browser/Shell"
   , render

@@ -5,15 +5,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {getOrigin} from '../common/url-helper';
+import type {URI} from "../common/prelude"
 
-/*::
-import type {Icon, URI} from "./favicon"
-*/
+export type {URI}
+
+export type Icon =
+  { href: URI
+  , sizes?: string
+  , rel: ?string
+  }
+
 
 const constructFaviconURI = (href, size) => `${href}#-moz-resolution=${size},${size}`;
 
 export const getFallback =
-  (pageURI/*:URI*/)/*:URI*/ =>
+  (pageURI:URI):URI =>
   constructFaviconURI(getOrigin(pageURI) + '/favicon.ico', FAVICON_SIZE);
 
 // Ideal size for a favicon.
@@ -28,7 +34,7 @@ const FAVICON_SIZE = 16 * window.devicePixelRatio;
  * }
  */
 export const getBestIcon =
-  (icons/*:Array<Icon>*/)/*:{ bestIcon: ?Icon, faviconURI: ?URI}*/ => {
+  (icons:Array<Icon>):{ bestIcon: ?Icon, faviconURI: ?URI} => {
 
   const allSizes = new Map(); // store icons per size
   const others = new Set();   // store icons without sizes or non-shortcut icons

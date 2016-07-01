@@ -50,7 +50,7 @@ var onReady = function() {
   // Create the browser window.
   mainWindow = new BrowserWindow
   ( { width: 1024
-    , height: 720
+    , height: 740
     , frame: false
     , webPreferences:
       { nodeIntegration: false

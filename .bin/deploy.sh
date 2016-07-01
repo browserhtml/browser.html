@@ -5,7 +5,7 @@ set -e
 git config --global user.email "travis@browser.html"
 git config --global user.name "travis"
 
-TAG=`git tag -l | sort -g | tail -n 1`
+TAG=`git describe --abbrev=0 --tags`
 LATEST_REV=`git rev-parse $TAG`
 REPO_URL=`git config --get remote.origin.url`
 HEAD=`git rev-parse HEAD`

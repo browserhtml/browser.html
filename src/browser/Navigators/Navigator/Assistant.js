@@ -12,7 +12,7 @@ import {StyleSheet, Style} from '../../../common/style';
 import {cursor} from '../../../common/cursor';
 import * as Unknown from '../../../common/unknown';
 
-/*::
+
 import type {Address, DOM} from "reflex";
 
 export type Flags = boolean
@@ -43,25 +43,26 @@ export type Action =
   | { type: "Suggest", suggest: Suggestion }
   | { type: "Search", search: Search.Action }
   | { type: "History", history: History.Action }
-*/
+  | { type: "Load", load: string }
 
 
-export const Open/*:Action*/ = { type: "Open" };
-export const Close/*:Action*/ = { type: "Close" };
-export const Expand/*:Action*/ = { type: "Expand" };
-export const Unselect/*:Action*/ = { type: "Unselect" };
-export const Reset/*:Action*/ = { type: "Reset" };
-export const SuggestNext/*:Action*/ = { type: "SuggestNext" };
-export const SuggestPrevious/*:Action*/ = { type: "SuggestPrevious" };
+
+export const Open:Action = { type: "Open" };
+export const Close:Action = { type: "Close" };
+export const Expand:Action = { type: "Expand" };
+export const Unselect:Action = { type: "Unselect" };
+export const Reset:Action = { type: "Reset" };
+export const SuggestNext:Action = { type: "SuggestNext" };
+export const SuggestPrevious:Action = { type: "SuggestPrevious" };
 export const Suggest =
-  (suggestion/*:Suggestion*/)/*:Action*/ =>
+  (suggestion:Suggestion):Action =>
   ( { type: "Suggest"
     , suggest: suggestion
     }
   )
 
 export const Query =
-  (input/*:string*/)/*:Action*/ =>
+  (input:string):Action =>
   ( { type: "Query"
     , query: input
     }
@@ -71,7 +72,9 @@ export const Query =
 const SearchAction =
   action =>
   ( action.type === "Suggest"
-  ? Suggest(action.source)
+  ? Suggest(action.suggest)
+  : action.type === "Load"
+  ? action
   : { type: "Search"
     , search: action
     }
@@ -85,9 +88,9 @@ const HistoryAction =
   );
 
 export const init =
-  ( isOpen/*:boolean*/=false
-  , isExpanded/*:boolean*/=false
-  )/*:[Model, Effects<Action>]*/ => {
+  ( isOpen:boolean=false
+  , isExpanded:boolean=false
+  ):[Model, Effects<Action>] => {
     const query = ''
     const [search, fx1] = Search.init(query, 5);
     const [history, fx2] = History.init(query, 5);
@@ -110,8 +113,27 @@ export const init =
   };
 
 const reset =
-  model =>
-  init();
+  state => {
+    const [search, search$] = Search.reset(state.search);
+    const [history, history$] = History.reset(state.history);
+
+    const model = {
+      isOpen: false,
+      isExpanded: false,
+      query: "",
+      selected: -1,
+      search,
+      history
+    }
+
+    const fx = Effects.batch
+      ( [ search$.map(SearchAction)
+        , history$.map(HistoryAction)
+        ]
+      )
+
+    return [model, fx]
+  }
 
 const clear =
   model =>
@@ -203,9 +225,9 @@ const suggestPrevious =
   updateSearch(model, Search.SelectPrevious);
 
 export const update =
-  ( model/*:Model*/
-  , action/*:Action*/
-  )/*:[Model, Effects<Action>]*/ => {
+  ( model:Model
+  , action:Action
+  ):[Model, Effects<Action>] => {
     switch (action.type) {
       case "Open":
         return open(model)
@@ -269,7 +291,7 @@ const styleSheet = StyleSheet.create
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.div
   ( { className: 'assistant'
     , style: Style
