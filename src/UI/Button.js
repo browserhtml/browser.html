@@ -42,13 +42,13 @@ export class Model {
   ref: Ref.Model;
   io: IO.Model;
   constructor(
-    text/*:string*/
-  , disabled/*:Disabled.Model*/
-  , focused/*:Focused.Model*/
-  , active/*:Active.Model*/
-  , pointer/*:Pointer.Model*/
-  , ref/*:Ref.Model*/
-  , io/*:IO.Model*/
+    text:string
+  , disabled:Disabled.Model
+  , focused:Focused.Model
+  , active:Active.Model
+  , pointer:Pointer.Model
+  , ref:Ref.Model
+  , io:IO.Model
   ) {
     this.text = text
     this.disabled = disabled
@@ -81,13 +81,13 @@ export const Blur = Focused.Blur;
 export const Focus = Focused.Focus;
 
 export const init =
-  ( text/*:string*/=""
-  , disabled/*:boolean*/=false
-  , focused/*:boolean*/=false
-  , active/*:boolean*/=false
-  , pointer/*:boolean*/=false
-  , ref/*:Ref.Model*/=Ref.init()
-  , io/*:IO.Model*/=IO.init()
+  ( text:string=""
+  , disabled:boolean=false
+  , focused:boolean=false
+  , active:boolean=false
+  , pointer:boolean=false
+  , ref:Ref.Model=Ref.init()
+  , io:IO.Model=IO.init()
   ) =>
   new Model
   ( text
@@ -100,9 +100,9 @@ export const init =
   )
 
 export const update =
-  ( model/*:Model*/
-  , action/*:Action*/
-  )/*:Model*/ =>
+  ( model:Model
+  , action:Action
+  ):Model =>
   ( action.type === "NoOp"
   ? model
 
@@ -132,7 +132,7 @@ export const update =
   )
 
 export const press =
-  ( model/*:Model*/ ) => {
+  ( model:Model ) => {
     const active = Active.activate(model.active)
     const next =
       ( model.active === active
@@ -151,7 +151,7 @@ export const press =
   }
 
 export const release =
-  ( model/*:Model*/ )/*:Model*/ => {
+  ( model:Model ):Model => {
     const active = Active.deactivate(model.active)
     const next =
       ( model.active === active
@@ -170,11 +170,11 @@ export const release =
   }
 
 export const click =
-  ( model/*:Model*/ ) =>
+  ( model:Model ) =>
   ( model )
 
 export const updateDisabled =
-  ( model/*:Model*/, action/*:Disabled.Action*/) => {
+  ( model:Model, action:Disabled.Action) => {
     const disabled = Disabled.update(model.disabled, action)
     const next =
       ( model.disabled === disabled
@@ -199,7 +199,7 @@ export const updateDisabled =
   }
 
 export const updateFocus =
-  ( model/*:Model*/, action/*:Focused.Action*/ ) => {
+  ( model:Model, action:Focused.Action ) => {
     const focused = Focused.update(model.focused, action)
     const next =
       ( model.focused === focused
@@ -218,7 +218,7 @@ export const updateFocus =
   }
 
 export const updatePointer =
-  ( model/*:Model*/, action/*:Pointer.Action*/ ) => {
+  ( model:Model, action:Pointer.Action ) => {
     const pointer = Pointer.update(model.pointer, action)
     const next =
       ( model.pointer === pointer
@@ -237,7 +237,7 @@ export const updatePointer =
   }
 
 export const panic = <action>
-  (model/*:Model*/, action/*:action*/)/*:Model*/ =>
+  (model:Model, action:action):Model =>
   new Model
   ( model.text
   , model.disabled
@@ -252,15 +252,15 @@ export const panic = <action>
   )
 
 export const fx =
-  (model/*:Model*/)/*:Effects<Action>*/ =>
+  (model:Model):Effects<Action> =>
   model.io
 
 export const renderStyled =
-  ( rules/*:?Style.Rules*/
-  , styleSheet/*:StyleSheet*/
-  , model/*:Model*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( rules:?Style.Rules
+  , styleSheet:StyleSheet
+  , model:Model
+  , address:Address<Action>
+  ):DOM =>
   html.button
   ( { style: Style.mix
         ( styleSheet.base
@@ -301,8 +301,8 @@ export const renderStyled =
   );
 
 export const render =
-  ( styleSheet/*:StyleSheet*/
-  , model/*:Model*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( styleSheet:StyleSheet
+  , model:Model
+  , address:Address<Action>
+  ):DOM =>
   renderStyled(null, styleSheet, model, address);

@@ -10,13 +10,13 @@ export const Check = { type: "Check" }
 export const Uncheck = { type: "Uncheck" }
 
 export const init =
-  (toggle/*:boolean*/=false)/*:Model*/ =>
+  (toggle:boolean=false):Model =>
   toggle
 
 export const update =
-  ( model/*:Model*/
-  , action/*:Action*/
-  )/*:Model*/ =>
+  ( model:Model
+  , action:Action
+  ):Model =>
   ( action.type === "Check"
   ? check(model)
   : action.type === "Uncheck"
@@ -27,13 +27,13 @@ export const update =
   )
 
 export const toggle =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   !model
 
 export const check =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   true
 
 export const uncheck =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   false

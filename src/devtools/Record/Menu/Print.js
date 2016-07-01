@@ -16,7 +16,7 @@ export const uncheck = ToggleButton.uncheck
 export const fx = ToggleButton.fx
 
 export const render =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.li
   ( null
   , [ ToggleButton.render
@@ -28,7 +28,7 @@ export const render =
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   thunk
   ( "Devtools/Record/Menu/Print"
   , render

@@ -9,7 +9,7 @@ export type Command <input, state> =
 
 
 export const send = <input, state>
-  (message/*:input*/)/*:Task<Never, Command<input, state>>*/ =>
+  (message:input):Task<Never, Command<input, state>> =>
   Task.succeed
   ( { type: "send"
     , send: message
@@ -17,7 +17,7 @@ export const send = <input, state>
   )
 
 export const reset = <input, state>
-  (state/*:state*/)/*:Task<Never, Command<input, state>>*/ =>
+  (state:state):Task<Never, Command<input, state>> =>
   Task.succeed
   ( { type: "reset"
     , reset: state

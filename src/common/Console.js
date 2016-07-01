@@ -8,25 +8,25 @@ import {Effects, Task} from "reflex";
 import type {Never} from "reflex";
 
 export const warn =
-  (...params/*:Array<any>*/)/*:Task<Never, any>*/ =>
+  (...params:Array<any>):Task<Never, any> =>
   new Task((succeed, fail) => {
     console.warn(...params);
   });
 
 export const log =
-  (...params/*:Array<any>*/)/*:Task<Never, any>*/ =>
+  (...params:Array<any>):Task<Never, any> =>
   new Task((succeed, fail) => {
     console.log(...params);
   });
 
 export const info =
-  (...params/*:Array<any>*/)/*:Task<Never, any>*/ =>
+  (...params:Array<any>):Task<Never, any> =>
   new Task((succeed, fail) => {
     console.info(...params);
   });
 
 export const error =
-  (...params/*:Array<any>*/)/*:Task<Never, any>*/ =>
+  (...params:Array<any>):Task<Never, any> =>
   new Task((succeed, fail) => {
     console.error(...params);
   });

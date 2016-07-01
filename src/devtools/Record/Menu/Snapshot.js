@@ -15,7 +15,7 @@ export const release = Button.release
 export const fx = Button.fx
 
 export const render =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.li
   ( null
   , [ Button.render
@@ -27,7 +27,7 @@ export const render =
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   thunk
   ( "Devtools/Record/Menu/SnapshotButton"
   , render

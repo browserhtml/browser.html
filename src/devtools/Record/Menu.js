@@ -48,10 +48,10 @@ export class Model {
     this.io = io
   }
   swap <state, input> (
-    lens/*:Lens<Model, state>*/
+    lens:Lens<Model, state>
   , modify/*:(state:state, input:input) => state*/
-  , input/*:input*/
-  )/*:Model*/ {
+  , input:input
+  ):Model {
     return lens.swap(modify, this, input)
   }
 }
@@ -165,7 +165,7 @@ const Published = { type: "Published" }
 
 
 export const init =
-  ()/*:Model*/ =>
+  ():Model =>
   new Model
   ( Clip.init("\uf03d")
   , Snapshot.init("\uf030")
@@ -175,9 +175,9 @@ export const init =
   )
 
 export const update =
-  ( model/*:Model*/
-  , action/*:Action*/
-  )/*:Model*/ => {
+  ( model:Model
+  , action:Action
+  ):Model => {
     switch (action.type) {
       case "CaptureSnapshot":
         return captureSnapshot(model)
@@ -211,7 +211,7 @@ export const update =
   }
 
 export const panic = <action>
-  (model/*:Model*/, action/*:action*/)/*:Model*/ =>
+  (model:Model, action:action):Model =>
   new Model
   ( model.clip
   , model.snapshot
@@ -224,19 +224,19 @@ export const panic = <action>
   )
 
 export const startRecording =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   model.swap(clip, Clip.check)
 
 export const stopRecording =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   model.swap(clip, Clip.uncheck)
 
 export const toggleRecording =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   model.swap(clip, Clip.toggle)
 
 export const captureSnapshot =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   new Model
   ( model.clip
   , Snapshot.press(model.snapshot)
@@ -249,7 +249,7 @@ export const captureSnapshot =
   )
 
 export const capturedSnapshot =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   new Model
   ( model.clip
   , Snapshot.release(model.snapshot)
@@ -259,23 +259,23 @@ export const capturedSnapshot =
   )
 
 export const printing =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   model.swap(print, Print.check)
 
 export const printed =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   model.swap(print, Print.uncheck)
 
 export const publishing =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   model.swap(publish, Publish.check)
 
 export const published =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   model.swap(publish, Publish.uncheck)
 
 export const fx =
-  (model/*:Model*/)/*:Effects<Action>*/ =>
+  (model:Model):Effects<Action> =>
   Effects.batch
   ( [ model.io
     , Clip.fx(model.clip).map(tagClip)
@@ -287,9 +287,9 @@ export const fx =
 
 
 export const render =
-  ( model/*:Model*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( model:Model
+  , address:Address<Action>
+  ):DOM =>
   html.menu
   ( { style: styleSheet.base }
   , [ Snapshot.view(model.snapshot, forward(address, tagSnapshot))
@@ -300,9 +300,9 @@ export const render =
   );
 
 export const view =
-  ( model/*:Model*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( model:Model
+  , address:Address<Action>
+  ):DOM =>
   thunk
   ( "Devtools/Record/Menu"
   , render

@@ -35,10 +35,10 @@ export class Model <input, state> {
   io: IO.Model;
   
   constructor(
-    clip/*:Clip.Model<input, state>*/
-  , position/*:number*/
-  , zoom/*:number*/
-  , io/*:IO.Model*/
+    clip:Clip.Model<input, state>
+  , position:number
+  , zoom:number
+  , io:IO.Model
   ) {
     this.clip = clip
     this.position = position
@@ -48,11 +48,11 @@ export class Model <input, state> {
 }
 
 export const init = <input, state>
-  ( clip/*:Clip.Model<input, state>*/
-  , position/*:Time*/=clip.duration
-  , zoom/*:number*/=1
-  , io/*:IO.Model*/=IO.init()
-  )/*:Model<input, state>*/ =>
+  ( clip:Clip.Model<input, state>
+  , position:Time=clip.duration
+  , zoom:number=1
+  , io:IO.Model=IO.init()
+  ):Model<input, state> =>
   new Model
   ( clip
   , position
@@ -61,9 +61,9 @@ export const init = <input, state>
   )
 
 export const update = <input, state>
-  ( model/*:Model<input, state>*/
-  , action/*:Action<input, state>*/
-  )/*:Model<input, state>*/ => {
+  ( model:Model<input, state>
+  , action:Action<input, state>
+  ):Model<input, state> => {
     switch (action.type) {
       case "Zoom":
         return updateZoom(model, action.zoom)
@@ -81,18 +81,18 @@ const MAX_ZOOM = 10;
 const MIN_DURATION = 1 * 1000;
 
 export const updatePosition = <input, state>
-  ( model/*:Model<input, state>*/
-  , delta/*:number*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , delta:number
+  ):Model<input, state> =>
   setPosition
   ( model
   , Math.max(0, Math.min(model.clip.duration, model.position + (delta / model.zoom)))
   )
 
 export const setPosition = <input, state>
-  ( model/*:Model<input, state>*/
-  , position/*:Time*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , position:Time
+  ):Model<input, state> =>
   ( model.position === position
   ? model
   : new Model
@@ -104,9 +104,9 @@ export const setPosition = <input, state>
   )
 
 export const updateZoom = <input, state>
-  ( model/*:Model<input, state>*/
-  , delta/*:number*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , delta:number
+  ):Model<input, state> =>
   setZoom
   ( model
   , Math.max
@@ -119,9 +119,9 @@ export const updateZoom = <input, state>
   )
 
 const setZoom = <input, state>
-  ( model/*:Model<input, state>*/
-  , zoom/*:number*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , zoom:number
+  ):Model<input, state> =>
   ( model.zoom === zoom
   ? model
   : new Model
@@ -133,9 +133,9 @@ const setZoom = <input, state>
   )
 
 export const updateClip = <input, state>
-  ( model/*:Model<input, state>*/
-  , clip/*:Clip.Model<input, state>*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , clip:Clip.Model<input, state>
+  ):Model<input, state> =>
   new Model
   ( clip
   , ( model.position === model.clip.duration
@@ -147,7 +147,7 @@ export const updateClip = <input, state>
   )
 
 const panic = <message, input, state>
-  (model/*:Model<input, state>*/, message/*:message*/)/*:Model<input, state>*/ =>
+  (model:Model<input, state>, message:message):Model<input, state> =>
   new Model
   ( model.clip
   , model.position
@@ -162,7 +162,7 @@ const panic = <message, input, state>
 const MS2PX = 1
 
 const renderTimeFrame =
-  (index/*:number*/, time/*:number*/, size/*:number*/)/*:DOM*/ =>
+  (index:number, time:number, size:number):DOM =>
   html.div
   ( { style:
       { height: '100%'
@@ -185,7 +185,7 @@ const renderTimeFrame =
   )
 
 const viewTimeFrame =
-  (index/*:number*/, time/*:number*/, size/*:number*/)/*:DOM*/ =>
+  (index:number, time:number, size:number):DOM =>
   thunk
   ( `${index}`
   , renderTimeFrame
@@ -215,7 +215,7 @@ const closest = (n, step) => {
 }
 
 export const renderTimeline =
-  (duration/*:Time*/, zoom/*:number*/)/*:DOM*/ => {
+  (duration:Time, zoom:number):DOM => {
     const width = duration * zoom * MS2PX
 
     const frameCount = closest(width / 200, 2)
@@ -392,7 +392,7 @@ const viewClip =
   }
 
 const viewCaret =
-  (position/*:Time*/)/*:DOM*/ =>
+  (position:Time):DOM =>
   thunk
   ( "caret"
   , renderCaret
@@ -401,7 +401,7 @@ const viewCaret =
 
 
 const viewTimeline =
-  (duration/*:Time*/, zoom/*:number*/)/*:DOM*/ =>
+  (duration:Time, zoom:number):DOM =>
   thunk
   ( "timeline"
   , renderTimeline
@@ -410,9 +410,9 @@ const viewTimeline =
   )
 
 export const render = <input, state>
-  ( model/*:Model<input, state>*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( model:Model<input, state>
+  , address:Address<Action>
+  ):DOM =>
   html.div
   ( { className: "clip"
     , style:
@@ -449,9 +449,9 @@ const decodePosition =
   }
 
 export const view = <input, state>
-  ( model/*:Model<input, state>*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( model:Model<input, state>
+  , address:Address<Action>
+  ):DOM =>
   thunk
   ( 'player'
   , render

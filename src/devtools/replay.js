@@ -27,10 +27,10 @@ export class Model <input, state> {
   io: IO.Model<Action<input, state>>;
 
   constructor(
-    clipURI/*:string*/
-  , error/*:?Error*/
-  , clip/*:?Clip.Model<input, state>*/
-  , io/*:IO.Model<Action<input, state>>*/
+    clipURI:string
+  , error:?Error
+  , clip:?Clip.Model<input, state>
+  , io:IO.Model<Action<input, state>>
   ) {
     this.clipURI = clipURI
     this.error = error
@@ -40,7 +40,7 @@ export class Model <input, state> {
 }
 
 const tagDebug = <input, state>
-  (command/*:Debug.Command<input, state>*/)/*:Action<input, state>*/ =>
+  (command:Debug.Command<input, state>):Action<input, state> =>
   ( { type: "Debug"
     , debug: command
     }
@@ -48,21 +48,21 @@ const tagDebug = <input, state>
 
 const Fetch = { type: "Fetch" }
 const Fetched = <input, state>
-  ( clip/*:Clip.EncodedClip<input, state>*/ )/*:Action<input, state>*/ =>
+  ( clip:Clip.EncodedClip<input, state> ):Action<input, state> =>
   ( { type: "Fetched"
     , fetched: clip
     }
   )
 
 const Failure = <input, state>
-  ( error/*:Error*/)/*:Action<input, state>*/ =>
+  ( error:Error):Action<input, state> =>
   ( { type: "Failure"
     , failure: error
     }
   )
 
 export const init = <input, state, flags>
-  (flags/*:flags*/)/*:Model<input, state>*/ =>
+  (flags:flags):Model<input, state> =>
   new Model
   ( String(Runtime.env.replay)
   , null
@@ -74,9 +74,9 @@ export const init = <input, state, flags>
   )
 
 export const update = <input, state>
-  ( model/*:Model<input, state>*/
-  , action/*:Action<input, state>*/
-  )/*:Model<input, state>*/ => {
+  ( model:Model<input, state>
+  , action:Action<input, state>
+  ):Model<input, state> => {
     switch (action.type) {
       case "Fetch":
         return fetch(model);
@@ -93,18 +93,18 @@ export const update = <input, state>
 
 
 const fetched = <input, state>
-  ( model/*:Model<input, state>*/
-  , clip/*:Clip.EncodedClip<input, state>*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , clip:Clip.EncodedClip<input, state>
+  ):Model<input, state> =>
   load
   ( model
   , Clip.decode(clip)
   )
 
 const load = <input, state>
-  ( model/*:Model<input, state>*/
-  , clip/*:Clip.Model<input, state>*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , clip:Clip.Model<input, state>
+  ):Model<input, state> =>
   new Model
   ( model.clipURI
   , null
@@ -112,15 +112,15 @@ const load = <input, state>
   , IO.perform
     ( model.io
     , Debug
-      .reset((clip.state/*:state*/))
+      .reset((clip.state:state))
       .map(tagDebug)
     )
   )
 
 const failure = <input, state>
-  ( model/*:Model<input, state>*/
-  , error/*:Error*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , error:Error
+  ):Model<input, state> =>
   new Model
   ( model.clipURI
   , error
@@ -129,7 +129,7 @@ const failure = <input, state>
   )
 
 const panic = <message, input, state>
-  (model/*:Model<input, state>*/, message/*:message*/)/*:Model<input, state>*/ =>
+  (model:Model<input, state>, message:message):Model<input, state> =>
   new Model
   ( model.clipURI
   , model.error
@@ -141,7 +141,7 @@ const panic = <message, input, state>
   )
 
 const fetch = <input, state>
-  ( model/*:Model<input, state>*/ )/*:Model<input, state>*/ =>
+  ( model:Model<input, state> ):Model<input, state> =>
   new Model
   ( model.clipURI
   , model.error
@@ -155,7 +155,7 @@ const fetch = <input, state>
   );
 
 const fetchJSON = <input, state>
-  (uri/*:string*/)/*:Task<Error, Clip.EncodedClip<input, state>>*/ =>
+  (uri:string):Task<Error, Clip.EncodedClip<input, state>> =>
   new Task((succeed, fail) => {
     const request = new XMLHttpRequest({mozSystem: true});
     request.open
@@ -186,19 +186,19 @@ const fetchJSON = <input, state>
   });
 
 export const fx = <input, state>
-  (model/*:Model<input, state>*/)/*:Effects<Action<input, state>>*/ =>
+  (model:Model<input, state>):Effects<Action<input, state>> =>
   model.io
 
 export const transact = <input, state>
-  ( model/*:Model<input, state>*/
-  )/*:[Model<input, state>, Effects<Action<input, state>>]*/ =>
+  ( model:Model<input, state>
+  ):[Model<input, state>, Effects<Action<input, state>>] =>
   [ model, fx(model) ]
 
 
 export const render = <model, action>
-  ( model/*:Model<model, action>*/
-  , address/*:Address<Action<model, action>>*/
-  )/*:DOM*/ =>
+  ( model:Model<model, action>
+  , address:Address<Action<model, action>>
+  ):DOM =>
   html.dialog
   ( { id: "replay"
     , style: Style.mix
@@ -224,9 +224,9 @@ export const render = <model, action>
   );
 
 export const view = <model, action>
-  ( model/*:Model<model, action>*/
-  , address/*:Address<Action<model, action>>*/
-  )/*:DOM*/ =>
+  ( model:Model<model, action>
+  , address:Address<Action<model, action>>
+  ):DOM =>
   thunk
   ( 'replay'
   , render

@@ -10,13 +10,13 @@ export const Activate = { type: "Activate" }
 export const Deactivate = { type: "Deactivate" }
 
 export const init =
-  (active/*:boolean*/=false)/*:Model*/ =>
+  (active:boolean=false):Model =>
   active
 
 export const update =
-  ( model/*:Model*/
-  , action/*:Action*/
-  )/*:Model*/ =>
+  ( model:Model
+  , action:Action
+  ):Model =>
   ( action.type === "Activate"
   ? activate(model)
   : action.type === "Deactivate"
@@ -25,9 +25,9 @@ export const update =
   )
 
 export const activate =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   true
 
 export const deactivate =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   false

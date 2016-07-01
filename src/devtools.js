@@ -49,13 +49,13 @@ export class Model <input, state> {
   fx: Effects<input>;
 
   constructor(
-    Debuggee/*:Debuggee<input, state>*/
-  , debuggee/*:state*/
-  , io/*:IO.Model<Action<input, state>>*/
-  , fx/*:Effects<input>*/
-  , record/*:?Record.Model<input, state>*/
-  , replay/*:?Replay.Model<input, state>*/
-  , log/*:?Log.Model<input, state>*/
+    Debuggee:Debuggee<input, state>
+  , debuggee:state
+  , io:IO.Model<Action<input, state>>
+  , fx:Effects<input>
+  , record:?Record.Model<input, state>
+  , replay:?Replay.Model<input, state>
+  , log:?Log.Model<input, state>
   ) {
     this.Debuggee = Debuggee
     this.debuggee = debuggee
@@ -68,21 +68,21 @@ export class Model <input, state> {
 }
 
 const tagRecord = <input, state>
-  ( action/*:Record.Action<input, state>*/ )/*:Action<input, state>*/ =>
+  ( action:Record.Action<input, state> ):Action<input, state> =>
   ( { type: "record"
     , record: action
     }
   );
 
 const tagLog = <input, state>
-  ( action/*:Log.Action<input, state>*/ )/*:Action<input, state>*/ =>
+  ( action:Log.Action<input, state> ):Action<input, state> =>
   ( { type: "log"
     , log: action
     }
   );
 
 const tagReplay = <input, state>
-  ( action/*:Replay.Action<input, state>*/)/*:Action<input, state>*/ =>
+  ( action:Replay.Action<input, state>):Action<input, state> =>
   ( action.type === "Debug"
   ? { type: "debug"
     , debug: action.debug
@@ -93,7 +93,7 @@ const tagReplay = <input, state>
   );
 
 const tagDebuggee = <input, state>
-  ( action/*:input*/ )/*:Action<input, state>*/ =>
+  ( action:input ):Action<input, state> =>
   ( action == null
   ? { type: "debuggee"
     , debuggee: action
@@ -119,7 +119,7 @@ const tagDebuggee = <input, state>
   )
 
 export const initTools = <input, state, flags>
-  ({Debuggee, flags}/*:Flags<input, state, flags>*/)/*:Model<input, state>*/ => {
+  ({Debuggee, flags}:Flags<input, state, flags>):Model<input, state> => {
     const record =
       ( Runtime.env.record == null
       ? null
@@ -152,9 +152,9 @@ export const initTools = <input, state, flags>
   }
 
 export const updateTools = <input, state, flags>
-  ( model/*:Model<input, state>*/
-  , action/*:Action<input, state>*/
-  )/*:Model<input, state>*/ => {
+  ( model:Model<input, state>
+  , action:Action<input, state>
+  ):Model<input, state> => {
     switch (action.type) {
       case "record":
         return (
@@ -188,7 +188,7 @@ export const updateTools = <input, state, flags>
   }
 
 const panic = <message, input, state>
-  (model/*:Model<input, state>*/, message/*:message*/)/*:Model<input, state>*/ =>
+  (model:Model<input, state>, message:message):Model<input, state> =>
   new Model
   ( model.Debuggee
   , model.debuggee
@@ -203,10 +203,10 @@ const panic = <message, input, state>
   )
 
 const updateRecord = <input, state>
-  ( model/*:Model<input, state>*/
-  , record/*:Record.Model<input, state>*/
-  , action/*:Record.Action<input, state>*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , record:Record.Model<input, state>
+  , action:Record.Action<input, state>
+  ):Model<input, state> =>
   new Model
   ( model.Debuggee
   , model.debuggee
@@ -218,10 +218,10 @@ const updateRecord = <input, state>
   )
 
 const updateReply = <input, state>
-  ( model/*:Model<input, state>*/
-  , replay/*:Replay.Model<input, state>*/
-  , action/*:Replay.Action<input, state>*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , replay:Replay.Model<input, state>
+  , action:Replay.Action<input, state>
+  ):Model<input, state> =>
   new Model
   ( model.Debuggee
   , model.debuggee
@@ -233,10 +233,10 @@ const updateReply = <input, state>
   )
 
 const updateLog = <input, state>
-  ( model/*:Model<input, state>*/
-  , log/*:Log.Model<input, state>*/
-  , action/*:Log.Action<input, state>*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , log:Log.Model<input, state>
+  , action:Log.Action<input, state>
+  ):Model<input, state> =>
   new Model
   ( model.Debuggee
   , model.debuggee
@@ -249,9 +249,9 @@ const updateLog = <input, state>
 
 
 const updateDebuggee = <input, state>
-  ( model/*:Model<input, state>*/
-  , input/*:input*/
-  )/*:Model<input, state>*/ => {
+  ( model:Model<input, state>
+  , input:input
+  ):Model<input, state> => {
     const [debuggee, fx] = model.Debuggee.update(model.debuggee, input);
     const next = new Model
     ( model.Debuggee
@@ -277,9 +277,9 @@ const updateDebuggee = <input, state>
 
 
 const debug = <input, state>
-  ( model/*:Model<input, state>*/
-  , command/*:Debug.Command<input, state>*/
-  )/*:Model<input, state>*/ => {
+  ( model:Model<input, state>
+  , command:Debug.Command<input, state>
+  ):Model<input, state> => {
     switch(command.type) {
       case "send":
         const [debuggee, fx] = model.Debuggee.update
@@ -295,10 +295,10 @@ const debug = <input, state>
   }
 
 const setDebuggee = <input, state>
-  ( model/*:Model<input, state>*/
-  , debuggee/*:state*/
-  , fx/*:Effects<input>*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , debuggee:state
+  , fx:Effects<input>
+  ):Model<input, state> =>
   new Model
   ( model.Debuggee
   , debuggee
@@ -310,7 +310,7 @@ const setDebuggee = <input, state>
   )
 
 const fx = <input, state>
-  (model/*:Model<input, state>*/)/*:Effects<Action<input, state>>*/ =>
+  (model:Model<input, state>):Effects<Action<input, state>> =>
   Effects.batch
   ( [ model.io
     , model.fx.map(tagDebuggee)
@@ -330,8 +330,8 @@ const fx = <input, state>
   )
 
 export const transact = <input, state>
-  ( model/*:Model<input, state>*/
-  )/*:[Model<input, state>, Effects<Action<input, state>>]*/ =>
+  ( model:Model<input, state>
+  ):[Model<input, state>, Effects<Action<input, state>>] =>
   [ model
   , fx(model)
   ]
@@ -353,20 +353,20 @@ export const restore = <input, state, flags>
 
 
 export const init = <input, state, flags>
-  (flags/*:Flags<input, state, flags>*/)/*:[Model<input, state>, Effects<Action<input, state>>]*/ =>
+  (flags:Flags<input, state, flags>):[Model<input, state>, Effects<Action<input, state>>] =>
   transact(initTools(flags));
 
 export const update = <input, state>
-  ( model/*:Model<input, state>*/
-  , action/*:Action<input, state>*/
-  )/*:[Model<input, state>, Effects<Action<input, state>>]*/ =>
+  ( model:Model<input, state>
+  , action:Action<input, state>
+  ):[Model<input, state>, Effects<Action<input, state>>] =>
   transact(updateTools(model, action));
 
 
 export const render = <model, action>
-  ( model/*:Model<model, action>*/
-  , address/*:Address<Action<model, action>>*/
-  )/*:DOM*/ =>
+  ( model:Model<model, action>
+  , address:Address<Action<model, action>>
+  ):DOM =>
   html.main
   ( { className: "devtools"
     }
@@ -390,9 +390,9 @@ export const render = <model, action>
   )
 
 export const view = <model, action>
-  ( model/*:Model<model, action>*/
-  , address/*:Address<Action<model, action>>*/
-  )/*:DOM*/ =>
+  ( model:Model<model, action>
+  , address:Address<Action<model, action>>
+  ):DOM =>
   thunk
   ( 'Devtools'
   , render

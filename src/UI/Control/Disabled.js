@@ -10,12 +10,12 @@ export const Enable = { type: "Enable" }
 export const Disable = { type: "Disable" }
 
 export const init =
-  (disabled/*:boolean*/=false)/*:Model*/ =>
+  (disabled:boolean=false):Model =>
   disabled
 
 export const update =
-  ( model/*:Model*/
-  , action/*:Action*/
+  ( model:Model
+  , action:Action
   ) =>
   ( action.type === "Enable"
   ? enable(model)
@@ -25,9 +25,9 @@ export const update =
   )
 
 export const enable =
-  (model/*:Model*/) =>
+  (model:Model) =>
   true
 
 export const disable =
-  (model/*:Model*/) =>
+  (model:Model) =>
   false

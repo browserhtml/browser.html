@@ -38,10 +38,10 @@ export class Model {
   ref: Ref.Model;
   io: IO.Model;
   constructor(
-    checked/*:Toggle.Model*/
-  , button/*:Button.Model*/
-  , ref/*:Ref.Model*/=Ref.init()
-  , io/*:IO.Model*/=IO.init()
+    checked:Toggle.Model
+  , button:Button.Model
+  , ref:Ref.Model=Ref.init()
+  , io:IO.Model=IO.init()
   ) {
     this.checked = checked
     this.button = button
@@ -99,14 +99,14 @@ export const Check = { type: "Check" }
 export const Uncheck = { type: "Uncheck" }
 
 export const init =
-  ( text/*:string*/=""
-  , checked/*:boolean*/=false
-  , disabled/*:boolean*/=false
-  , focused/*:boolean*/=false
-  , active/*:boolean*/=false
-  , pointer/*:boolean*/=false
-  , ref/*:Ref.Model*/=Ref.init()
-  , fx/*:IO.Model*/=IO.init()
+  ( text:string=""
+  , checked:boolean=false
+  , disabled:boolean=false
+  , focused:boolean=false
+  , active:boolean=false
+  , pointer:boolean=false
+  , ref:Ref.Model=Ref.init()
+  , fx:IO.Model=IO.init()
   ) =>
   new Model
   ( Toggle.init(checked)
@@ -123,9 +123,9 @@ export const init =
   )
 
 export const update =
-  ( model/*:Model*/
-  , action/*:Action*/
-  )/*:Model*/ =>
+  ( model:Model
+  , action:Action
+  ):Model =>
   ( action.type === "NoOp"
   ? model
 
@@ -144,15 +144,15 @@ export const update =
   )
 
 export const check =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   checked.swap(Toggle.check, model)
 
 export const uncheck =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   checked.swap(Toggle.uncheck, model)
 
 export const toggle =
-  ( model/*:Model*/ )/*:Model*/ => {
+  ( model:Model ):Model => {
     const checked = Toggle.toggle(model.checked)
     const button = Button.click(model.button)
     const next =
@@ -172,7 +172,7 @@ export const toggle =
 
 
 export const panic = <action>
-  (model/*:Model*/, action/*:action*/)/*:Model*/ =>
+  (model:Model, action:action):Model =>
   new Model
   ( model.checked
   , model.button
@@ -184,7 +184,7 @@ export const panic = <action>
   )
 
 export const fx =
-  (model/*:Model*/)/*:Effects<Action>*/ =>
+  (model:Model):Effects<Action> =>
   Effects.batch
   ( [ model.io
     , Button.fx(model.button).map(Tag.button)
@@ -193,11 +193,11 @@ export const fx =
 
 
 export const renderStyled =
-  ( rules/*:?Style.Rules*/
-  , styleSheet/*:StyleSheet*/
-  , model/*:Model*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( rules:?Style.Rules
+  , styleSheet:StyleSheet
+  , model:Model
+  , address:Address<Action>
+  ):DOM =>
   html.button
   ( { style: Style.mix
         ( styleSheet.base
@@ -243,8 +243,8 @@ export const renderStyled =
   );
 
 export const render =
-  ( styleSheet/*:StyleSheet*/
-  , model/*:Model*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( styleSheet:StyleSheet
+  , model:Model
+  , address:Address<Action>
+  ):DOM =>
   renderStyled(null, styleSheet, model, address);

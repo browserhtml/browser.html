@@ -10,13 +10,13 @@ export const Over = { type: "Over" }
 export const Out = { type: "Out" }
 
 export const init =
-  (isPointerOver/*:boolean*/=false)/*:Model*/ =>
+  (isPointerOver:boolean=false):Model =>
   isPointerOver
 
 export const update =
-  ( model/*:Model*/
-  , action/*:Action*/
-  )/*:Model*/ =>
+  ( model:Model
+  , action:Action
+  ):Model =>
   ( action.type === "Over"
   ? over(model)
   : action.type === "Out"
@@ -25,9 +25,9 @@ export const update =
   )
 
 export const over =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   true
 
 export const out =
-  (model/*:Model*/)/*:Model*/ =>
+  (model:Model):Model =>
   false

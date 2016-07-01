@@ -23,8 +23,8 @@ export class Model <input, state> {
   mode: Mode;
   io: IO.Model<Action<input, state>>;
   constructor(
-    mode/*:Mode*/
-  , io/*:IO.Model<Action<input, state>>*/
+    mode:Mode
+  , io:IO.Model<Action<input, state>>
   ) {
     this.mode = mode
     this.io = io
@@ -35,7 +35,7 @@ export class Model <input, state> {
 const NoOp = always({ type: "NoOp" });
 
 export const init = <input, state, flags>
-  ()/*:Model<input, state>*/ =>
+  ():Model<input, state> =>
   new Model
   ( ( Runtime.env.log === 'json'
     ? 'json'
@@ -47,9 +47,9 @@ export const init = <input, state, flags>
   )
 
 export const update = <input, state>
-  ( model/*:Model<input, state>*/
-  , action/*:Action<input, state>*/
-  )/*:Model<input, state>*/ => {
+  ( model:Model<input, state>
+  , action:Action<input, state>
+  ):Model<input, state> => {
     switch (action.type) {
       case "NoOp":
         return model;
@@ -62,9 +62,9 @@ export const update = <input, state>
 
 
 const log = <input, state>
-  ( model/*:Model<input, state>*/
-  , action/*:input*/
-  )/*:Model<input, state>*/ => {
+  ( model:Model<input, state>
+  , action:input
+  ):Model<input, state> => {
     ( model.mode === 'raw'
     ? console.log('Action >>', action)
     : model.mode === 'json'
@@ -76,9 +76,9 @@ const log = <input, state>
   }
 
 export const panic = <message, input, state>
-  ( model/*:Model<input, state>*/
-  , message/*:message*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , message:message
+  ):Model<input, state> =>
   new Model
   ( model.mode
   , IO.perform
@@ -88,11 +88,11 @@ export const panic = <message, input, state>
   )
 
 export const fx = <input, state>
-  (model/*:Model<input, state>*/)/*:Effects<Action<input, state>>*/ =>
+  (model:Model<input, state>):Effects<Action<input, state>> =>
   model.io
 
 export const view = <input, state>
-  ( model/*:Model<input, state>*/
-  , address/*:Address<Action<input, state>>*/
-  )/*:DOM*/ =>
+  ( model:Model<input, state>
+  , address:Address<Action<input, state>>
+  ):DOM =>
   ""

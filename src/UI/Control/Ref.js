@@ -7,7 +7,7 @@ export class Model {
   name: string;
   value: string;
   static nextID: number;
-  constructor(value/*:string*/) {
+  constructor(value:string) {
     this.name = 'data-ref'
     this.value = value
   }
@@ -19,7 +19,7 @@ export const init =
   new Model(`ref-${++Model.nextID}`)
 
 export const deref =
-  (ref/*:Model*/)/*:Task<Error, HTMLElement>*/ =>
+  (ref:Model):Task<Error, HTMLElement> =>
   new Task
   ( (succeed, fail) => {
       const element = document.querySelector(`[${ref.name}='${ref.value}']`);

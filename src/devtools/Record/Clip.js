@@ -31,12 +31,12 @@ export class Model <input, state> {
   input: Array<input>;
   
   constructor(
-    state/*:state*/
-  , time/*:Time*/
-  , duration/*:Time*/
-  , version/*:Version*/
-  , timeline/*:Array<Time>*/
-  , input/*:Array<input>*/
+    state:state
+  , time:Time
+  , duration:Time
+  , version:Version
+  , timeline:Array<Time>
+  , input:Array<input>
   ) {
     this.version = version;
     this.time = time;
@@ -49,11 +49,11 @@ export class Model <input, state> {
 }
 
 export const init = <input, state>
-  ( state/*:state*/
-  , time/*:Time*/=performance.now()
-  , duration/*:Time*/=0
-  , version/*:Version*/=0.1
-  )/*:Model<input, state>*/ =>
+  ( state:state
+  , time:Time=performance.now()
+  , duration:Time=0
+  , version:Version=0.1
+  ):Model<input, state> =>
   new Model
   ( state
   , time
@@ -64,10 +64,10 @@ export const init = <input, state>
   )
 
 export const write = <input, state>
-  ( model/*:Model<input, state>*/
-  , input/*:input*/
-  , time/*:Time*/=performance.now()
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , input:input
+  , time:Time=performance.now()
+  ):Model<input, state> =>
   new Model
   ( model.state
   , model.time
@@ -78,9 +78,9 @@ export const write = <input, state>
   );
 
 export const updateDuration = <input, state>
-  ( model/*:Model<input, state>*/
-  , time/*:Time*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , time:Time
+  ):Model<input, state> =>
   new Model
   ( model.state
   , model.time
@@ -91,7 +91,7 @@ export const updateDuration = <input, state>
   );
 
 export const encode = <input, state>
-  ( model/*:Model<input, state>*/ )/*:EncodedClip<input, state>*/ => {
+  ( model:Model<input, state> ):EncodedClip<input, state> => {
     const index = [];
     const input = [];
     const lookup = new Map();
@@ -125,7 +125,7 @@ export const encode = <input, state>
   }
 
 export const decode = <input, state>
-  ( clip/*:EncodedClip<input, state>*/ )/*:Model<input, state>*/ => {
+  ( clip:EncodedClip<input, state> ):Model<input, state> => {
     const input = []
     for (let address of clip.input) {
       input.push(clip.index[address]);
@@ -145,9 +145,9 @@ export const decode = <input, state>
 
 const MS2PX = 1
 export const render = <input, state>
-  ( model/*:Model<input, state>*/
-  , address/*:Address<Action>*/
-  )/*:DOM*/ =>
+  ( model:Model<input, state>
+  , address:Address<Action>
+  ):DOM =>
   html.div
   ( { className: "clip"
     , style:

@@ -71,21 +71,21 @@ const Printed = { type: "Printed" }
 export const Publish = { type: "Publish" }
 
 const UploadFailed = <input, state>
-  ( error/*:Error*/ )/*:Action<input, state>*/ =>
+  ( error:Error ):Action<input, state> =>
   ( { type: "UploadFailed"
     , uploadFailed: error
     }
   );
 
 const UploadedClip = <input, state>
-  ( gist/*:Gist*/ )/*:Action<input, state>*/ =>
+  ( gist:Gist ):Action<input, state> =>
   ( { type: "UploadedClip"
     , uploadedClip: gist
     }
   );
 
 const AnimationFrame = <input, state>
-  ( time/*:Time*/ )/*:Action<input, state>*/ =>
+  ( time:Time ):Action<input, state> =>
   ( { type: "AnimationFrame"
     , time
     }
@@ -102,13 +102,13 @@ export class Model <input, state> {
   isMutable: boolean;
   
   constructor(
-    isUploading/*:boolean*/
-  , isRecording/*:boolean*/
-  , clip/*:?Clip.Model<input, state>*/
-  , player/*:?Player.Model<input, state>*/
-  , menu/*:Menu.Model*/
-  , io/*:IO.Model*/
-  , isMutable/*:boolean*/
+    isUploading:boolean
+  , isRecording:boolean
+  , clip:?Clip.Model<input, state>
+  , player:?Player.Model<input, state>
+  , menu:Menu.Model
+  , io:IO.Model
+  , isMutable:boolean
   ) {
     this.isUploading = isUploading
     this.isRecording = isRecording
@@ -119,13 +119,13 @@ export class Model <input, state> {
     this.isMutable = isMutable
   }
   modify(
-    isUploading/*:boolean*/
-  , isRecording/*:boolean*/
-  , clip/*:?Clip.Model<input, state>*/
-  , player/*:?Player.Model<input, state>*/
-  , menu/*:Menu.Model*/
-  , io/*:IO.Model*/
-  )/*:Model<input, state>*/ {
+    isUploading:boolean
+  , isRecording:boolean
+  , clip:?Clip.Model<input, state>
+  , player:?Player.Model<input, state>
+  , menu:Menu.Model
+  , io:IO.Model
+  ):Model<input, state> {
     if (this.isMutable) {
       this.isUploading = isUploading
       this.isRecording = isRecording
@@ -149,7 +149,7 @@ export class Model <input, state> {
       return model
     }
   }
-  asMutable()/*:Model<input, state>*/ {
+  asMutable():Model<input, state> {
     const model =
       ( this.isMutable
       ? this
@@ -167,7 +167,7 @@ export class Model <input, state> {
     return model
   }
 
-  asImmutable()/*:Model<input, state>*/ {
+  asImmutable():Model<input, state> {
     this.isMutable = false
     return this
   }
@@ -175,29 +175,29 @@ export class Model <input, state> {
   swap <inner, context>(
     lens/*:Lens<*, inner>*/
   , f/*:(value:inner, context:context) => inner*/
-  , context/*:context*/
-  )/*:Model<input, state>*/ {
+  , context:context
+  ):Model<input, state> {
     return lens.set(this, f(lens.get(this), context))
   }
 
   set <inner>(
     lens/*:Lens<*, *>*/
-  , value/*:inner*/
-  )/*:Model<input, state>*/ {
+  , value:inner
+  ):Model<input, state> {
     return lens.set(this, value)
   }
 }
 
 
 export const init = <input, state>
-  ( isUploading/*:boolean*/=false
-  , isRecording/*:boolean*/=false
-  , clip/*:?Clip.Model<input, state>*/=null
-  , player/*:?Player.Model<input, state>*/=null
-  , menu/*:Menu.Model*/=Menu.init()
-  , io/*:IO.Model*/=IO.init()
-  , isMutable/*:boolean*/=false
-  )/*:Model<input, state>*/ =>
+  ( isUploading:boolean=false
+  , isRecording:boolean=false
+  , clip:?Clip.Model<input, state>=null
+  , player:?Player.Model<input, state>=null
+  , menu:Menu.Model=Menu.init()
+  , io:IO.Model=IO.init()
+  , isMutable:boolean=false
+  ):Model<input, state> =>
   new Model
   ( isUploading
   , isRecording
@@ -210,7 +210,7 @@ export const init = <input, state>
 
 
 const createClip = <input, state>
-  (time/*:Time*/)/*:Clip.Model<input, state>*/ =>
+  (time:Time):Clip.Model<input, state> =>
   Clip.init
   ( window.application.model.value.debuggee
   , time
@@ -218,7 +218,7 @@ const createClip = <input, state>
 
 
 export const captureSnapshot = <input, state>
-  ( model/*:Model<input, state>*/ )/*:Model<input, state>*/ =>
+  ( model:Model<input, state> ):Model<input, state> =>
   new Model
   ( model.isUploading
   , model.isRecording
@@ -230,16 +230,16 @@ export const captureSnapshot = <input, state>
   )
 
 const updateMenu = <input, state>
-  ( model/*:Model<input, state>*/
-  , action/*:Menu.Action*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , action:Menu.Action
+  ):Model<input, state> =>
   model.swap(menu, Menu.update, action)
 
 
 const updatePlayer = <input, state>
-  ( model/*:Model<input, state>*/
-  , action/*:Player.Action<input, state>*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , action:Player.Action<input, state>
+  ):Model<input, state> =>
   ( model.player == null
   ? model
   : model.set(player, Player.update(model.player, action))
@@ -248,7 +248,7 @@ const updatePlayer = <input, state>
 
 
 const publish = <input, state>
-  ( model/*:Model<input, state>*/ )/*:Model<input, state>*/ =>
+  ( model:Model<input, state> ):Model<input, state> =>
   ( model.clip == null
   ? model
   : model.isPublishing
@@ -258,9 +258,9 @@ const publish = <input, state>
 
 
 const publishClip = <input, state>
-  ( model/*:Model<input, state>*/
-  , clip/*:Clip.Model<input, state>*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , clip:Clip.Model<input, state>
+  ):Model<input, state> =>
   model
   .asMutable()
   .set(isUploading, true)
@@ -275,7 +275,7 @@ const publishClip = <input, state>
   .asImmutable()
 
 const published = <input, state>
-  ( model/*:Model<input, state>*/, gist/*:Gist*/ )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>, gist:Gist ):Model<input, state> =>
   model
   .asMutable()
   .swap(menu, Menu.published)
@@ -284,7 +284,7 @@ const published = <input, state>
 
 
 const print = <input, state>
-  (model/*:Model<input, state>*/)/*:Model<input, state>*/ =>
+  (model:Model<input, state>):Model<input, state> =>
   ( model.clip == null
   ? model
   : model
@@ -301,11 +301,11 @@ const print = <input, state>
 
 
 const printed = <input, state>
-  (model/*:Model<input, state>*/)/*:Model<input, state>*/ =>
+  (model:Model<input, state>):Model<input, state> =>
   model.swap(menu, Menu.printed)
 
 const panic = <message, input, state>
-  (model/*:Model<input, state>*/, message/*:message*/)/*:Model<input, state>*/ =>
+  (model:Model<input, state>, message:message):Model<input, state> =>
   model.swap
   ( io
   , IO.perform
@@ -314,7 +314,7 @@ const panic = <message, input, state>
 
 
 const failure = <message, input, state>
-  (model/*:Model<input, state>*/, message/*:message*/)/*:Model<input, state>*/ =>
+  (model:Model<input, state>, message:message):Model<input, state> =>
   model.swap
   ( io
   , IO.perform
@@ -323,8 +323,8 @@ const failure = <message, input, state>
 
 
 const startRecording = <input, state>
-  ( model/*:Model<input, state>*/
-  )/*:Model<input, state>*/ => {
+  ( model:Model<input, state>
+  ):Model<input, state> => {
     const value = createClip(performance.now())
     const result =
     ( model.isRecording
@@ -344,7 +344,7 @@ const startRecording = <input, state>
 
 
 const stopRecording = <input, state>
-  (model/*:Model<input, state>*/)/*:Model<input, state>*/ =>
+  (model:Model<input, state>):Model<input, state> =>
   ( model.isRecording
   ? model
     .asMutable()
@@ -356,7 +356,7 @@ const stopRecording = <input, state>
 
 
 const updateRecording = <input, state>
-  (model/*:Model<input, state>*/, time/*:Time*/)/*:Model<input, state>*/ =>
+  (model:Model<input, state>, time:Time):Model<input, state> =>
   ( !model.isRecording
   ? model
   : model.clip == null
@@ -376,7 +376,7 @@ const updateRecording = <input, state>
 
 
 const toggleRecording = <input, state>
-  ( model/*:Model<input, state>*/)/*:Model<input, state>*/ =>
+  ( model:Model<input, state>):Model<input, state> =>
   ( model.isRecording
   ? stopRecording(model)
   : startRecording(model)
@@ -384,9 +384,9 @@ const toggleRecording = <input, state>
 
 
 const writeInput = <input, state>
-  ( model/*:Model<input, state>*/
-  , input/*:input*/
-  )/*:Model<input, state>*/ =>
+  ( model:Model<input, state>
+  , input:input
+  ):Model<input, state> =>
   ( !model.isRecording
   ? model
   : model.set
@@ -403,12 +403,12 @@ const writeInput = <input, state>
 
 const clip = lens
   ( <input, state>
-    (model/*:Model<input, state>*/)/*:?Clip.Model<input, state>*/ =>
+    (model:Model<input, state>):?Clip.Model<input, state> =>
       model.clip
   , <input, state>
-    ( model/*:Model<input, state>*/
-    , clip/*:?Clip.Model<input, state>*/
-    )/*:Model<input, state>*/ =>
+    ( model:Model<input, state>
+    , clip:?Clip.Model<input, state>
+    ):Model<input, state> =>
     model.modify
     ( model.isUploading
     , model.isRecording
@@ -502,7 +502,7 @@ const isRecording = lens
 
 
 export const fx = <input, state>
-  (model/*:Model<input, state>*/)/*:Effects<Action<input, state>>*/ =>
+  (model:Model<input, state>):Effects<Action<input, state>> =>
   Effects.batch
   ( [ model.io
     , Menu.fx(model.menu).map(tagMenu)
@@ -543,7 +543,7 @@ const tagPlayer =
 
 
 const upload =
-  (content/*:string*/)/*:Task<Error, Gist>*/ =>
+  (content:string):Task<Error, Gist> =>
   new Task((succeed, fail) => {
     const request = new XMLHttpRequest({mozSystem: true});
     request.open('POST', 'https://api.github.com/gists', true);
@@ -562,22 +562,22 @@ const upload =
     request.onload =
       () =>
       ( request.status === 201
-      ? succeed((request.response/*:Gist*/))
+      ? succeed((request.response:Gist))
       : fail(Error(`Failed to upload snapshot : ${request.statusText}`))
       )
   })
 
 
 export const requestFrame = <input, state>
-  ()/*:Task<Never, Action<input, state>>*/ =>
+  ():Task<Never, Action<input, state>> =>
   Task
   .requestAnimationFrame()
   .map(AnimationFrame)
 
 export const update = <action, model>
-  ( model/*:Model<action, model>*/
-  , action/*:Action<action, model>*/
-  )/*:Model<action, model>*/ => {
+  ( model:Model<action, model>
+  , action:Action<action, model>
+  ):Model<action, model> => {
     switch (action.type) {
       case "NoOp":
         return model
@@ -614,9 +614,9 @@ export const update = <action, model>
 
 
 export const render = <model, action>
-  ( model/*:Model<model, action>*/
-  , address/*:Address<Action<model, action>>*/
-  )/*:DOM*/ =>
+  ( model:Model<model, action>
+  , address:Address<Action<model, action>>
+  ):DOM =>
   html.dialog
   ( { id: "record"
     , style: Style.mix
@@ -645,9 +645,9 @@ export const render = <model, action>
   )
 
 export const view = <input, state>
-  ( model/*:Model<input, state>*/
-  , address/*:Address<Action<input, state>>*/
-  )/*:DOM*/ =>
+  ( model:Model<input, state>
+  , address:Address<Action<input, state>>
+  ):DOM =>
   thunk
   ( "record"
   , render

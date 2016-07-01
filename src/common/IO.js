@@ -11,21 +11,21 @@ const raise =
     throw Error(`Task performed with IO should never fail but it did with error ${error}`)
   }
 const None = Effects.none.constructor
-const never/*:Task<Never, any>*/ = new Task((succeed, fail) => void(0))
+const never:Task<Never, any> = new Task((succeed, fail) => void(0))
 
 
 class IO <a> extends Effects <a> {
   queue: Array<Task<Never, a>>;
   tag: ?<b> (input:b) => a;
 
-  constructor(queue/*:Array<Task<Never, a>>*/) {
+  constructor(queue:Array<Task<Never, a>>) {
     super(never)
     this.queue = queue
   }
-  map<b>(f/*:(a:a)=>b*/)/*:Effects<b>*/ {
+  map<b>(f/*:(a:a)=>b*/):Effects<b> {
     return new Lift(this, f)
   }
-  send(address/*:Address<a>*/)/*:Task<Never, void>*/ {
+  send(address:Address<a>):Task<Never, void> {
     return new Task((succeed, fail) => {
       const queue = this.queue.splice(0)
       const count = queue.length
@@ -38,10 +38,10 @@ class IO <a> extends Effects <a> {
       succeed(void(0))
     })
   }
-  perform(task/*:Task<Never, a>*/)/*:IO<a>*/ {
+  perform(task:Task<Never, a>):IO<a> {
     return new IO(this.queue.concat(task))
   }
-  toJSON()/*:{}*/ {
+  toJSON():{} {
     return { queue: [] }
   }
 }
@@ -50,15 +50,15 @@ class IO <a> extends Effects <a> {
 export class Lift <a, b> extends Effects<b> {
   source: Effects<a>;
   f: (input:a) => b;
-  constructor(source/*:Effects<a>*/, f/*:(input:a) => b*/) {
+  constructor(source:Effects<a>, f/*:(input:a) => b*/) {
     super(never)
     this.source = source
     this.f = f
   }
-  map<c>(f/*:(a:b)=>c*/)/*:Effects<c>*/ {
+  map<c>(f/*:(a:b)=>c*/):Effects<c> {
     return new Lift(this, f)
   }
-  send(address/*:Address<b>*/)/*:Task<Never, void>*/ {
+  send(address:Address<b>):Task<Never, void> {
     return this.source.send(forward(address, this.f))
   }
 }
@@ -66,9 +66,9 @@ export class Lift <a, b> extends Effects<b> {
 export const Model = IO
 
 export const init = <a>
-  (tasks/*:Array<Task<Never, a>>*/=[])/*:IO<a>*/ =>
+  (tasks:Array<Task<Never, a>>=[]):IO<a> =>
   new IO(tasks)
 
 export const perform = <a>
-  (io/*:IO<a>*/, task/*:Task<Never, a>*/)/*:IO<a>*/ =>
+  (io:IO<a>, task:Task<Never, a>):IO<a> =>
   new IO(io.queue.concat(task))
