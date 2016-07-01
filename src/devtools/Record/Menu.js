@@ -39,7 +39,7 @@ export class Model {
   print: Print.Model;
   publish: Publish.Model;
   io: IO.Model;
-  
+
   constructor(clip, snapshot, print, publish, io) {
     this.clip = clip
     this.snapshot = snapshot
@@ -49,7 +49,7 @@ export class Model {
   }
   swap <state, input> (
     lens:Lens<Model, state>
-  , modify/*:(state:state, input:input) => state*/
+  , modify:(state:state, input:input) => state
   , input:input
   ):Model {
     return lens.swap(modify, this, input)

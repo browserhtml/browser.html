@@ -100,7 +100,7 @@ export class Model <input, state> {
   menu: Menu.Model;
   io: IO.Model;
   isMutable: boolean;
-  
+
   constructor(
     isUploading:boolean
   , isRecording:boolean
@@ -173,15 +173,15 @@ export class Model <input, state> {
   }
 
   swap <inner, context>(
-    lens/*:Lens<*, inner>*/
-  , f/*:(value:inner, context:context) => inner*/
+    lens:Lens<*, inner>
+  , f:(value:inner, context:context) => inner
   , context:context
   ):Model<input, state> {
     return lens.set(this, f(lens.get(this), context))
   }
 
   set <inner>(
-    lens/*:Lens<*, *>*/
+    lens:Lens<*, *>
   , value:inner
   ):Model<input, state> {
     return lens.set(this, value)

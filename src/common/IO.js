@@ -22,7 +22,7 @@ class IO <a> extends Effects <a> {
     super(never)
     this.queue = queue
   }
-  map<b>(f/*:(a:a)=>b*/):Effects<b> {
+  map<b>(f:(a:a)=>b):Effects<b> {
     return new Lift(this, f)
   }
   send(address:Address<a>):Task<Never, void> {
@@ -50,12 +50,12 @@ class IO <a> extends Effects <a> {
 export class Lift <a, b> extends Effects<b> {
   source: Effects<a>;
   f: (input:a) => b;
-  constructor(source:Effects<a>, f/*:(input:a) => b*/) {
+  constructor(source:Effects<a>, f:(input:a) => b) {
     super(never)
     this.source = source
     this.f = f
   }
-  map<c>(f/*:(a:b)=>c*/):Effects<c> {
+  map<c>(f:(a:b)=>c):Effects<c> {
     return new Lift(this, f)
   }
   send(address:Address<b>):Task<Never, void> {
