@@ -93,30 +93,24 @@ const tagReplay = <input, state>
   );
 
 const tagDebuggee = <input, state>
-  ( action:input ):Action<input, state> =>
-  ( action == null
-  ? { type: "debuggee"
-    , debuggee: action
+  ( action:input ):Action<input, state> => {
+    if (action != null && typeof(action) === "object") {
+      switch (action.type) {
+        case "PrintSnapshot":
+          return tagRecord(Record.Print)
+        case "CaptureSnapshot":
+          return tagRecord(Record.CaptureSnapshot);
+        case "PublishSnapshot":
+          return tagRecord(Record.Publish);
+        case "StartRecording":
+          return tagRecord(Record.StartRecording);
+        case "StopRecording":
+          return tagRecord(Record.StopRecording);
+      }
     }
-  : /*::typeof(action) === "object" && action != null && */
-    action.type === "PrintSnapshot"
-  ? tagRecord(Record.Print)
-  : /*::typeof(action) === "object" && action != null && */
-    action.type === "CaptureSnapshot"
-  ? tagRecord(Record.CaptureSnapshot)
-  : /*::typeof(action) === "object" && action != null && */
-    action.type === "PublishSnapshot"
-  ? tagRecord(Record.Publish)
-  : /*::typeof(action) === "object" && action != null && */
-    action.type === "StartRecording"
-  ? tagRecord(Record.StartRecording)
-  : /*::typeof(action) === "object" && action != null && */
-    action.type === "StopRecording"
-  ? tagRecord(Record.StopRecording)
-  : { type: "debuggee"
-    , debuggee: action
-    }
-  )
+
+    return { type: "debuggee", debuggee: action }
+  }
 
 export const initTools = <input, state, flags>
   ({Debuggee, flags}:Flags<input, state, flags>):Model<input, state> => {
