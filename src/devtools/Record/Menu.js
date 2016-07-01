@@ -11,8 +11,6 @@ import * as Clip from "./Menu/Clip"
 import * as Snapshot from "./Menu/Snapshot"
 import * as Publish from "./Menu/Publish"
 import * as Print from "./Menu/Print"
-
-/*::
 export type Time = number
 export type Version = number
 
@@ -33,16 +31,15 @@ export type Action =
   | { type: "StopRecording" }
   | { type: "CaptureSnapshot" }
   | { type: "CapturedSnapshot" }
-*/
+
 
 export class Model {
-  /*::
   clip: Clip.Model;
   snapshot: Snapshot.Model;
   print: Print.Model;
   publish: Publish.Model;
   io: IO.Model;
-  */
+  
   constructor(clip, snapshot, print, publish, io) {
     this.clip = clip
     this.snapshot = snapshot

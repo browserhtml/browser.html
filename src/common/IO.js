@@ -3,9 +3,8 @@
 import {Effects, Task, forward} from "reflex"
 import {remove} from "./prelude"
 
-/*::
 import type {Never, Address} from "reflex"
-*/
+
 
 const raise =
   error => {
@@ -16,10 +15,9 @@ const never/*:Task<Never, any>*/ = new Task((succeed, fail) => void(0))
 
 
 class IO <a> extends Effects <a> {
-  /*::
   queue: Array<Task<Never, a>>;
   tag: ?<b> (input:b) => a;
-  */
+
   constructor(queue/*:Array<Task<Never, a>>*/) {
     super(never)
     this.queue = queue
@@ -50,10 +48,8 @@ class IO <a> extends Effects <a> {
 
 
 export class Lift <a, b> extends Effects<b> {
-  /*::
   source: Effects<a>;
   f: (input:a) => b;
-  */
   constructor(source/*:Effects<a>*/, f/*:(input:a) => b*/) {
     super(never)
     this.source = source

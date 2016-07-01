@@ -5,9 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects, Task} from "reflex";
-/*::
 import type {Never} from "reflex";
-*/
 
 export const warn =
   (...params/*:Array<any>*/)/*:Task<Never, any>*/ =>

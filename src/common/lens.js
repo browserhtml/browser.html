@@ -1,6 +1,5 @@
 /* @flow */
 
-/*::
 type Get <from, to> =
   (target:from) => to
 
@@ -8,13 +7,10 @@ type Set <from, to> =
   (target:from, value:to) => from
 
 export type {Lens}
-*/
 
 class Lens <from, to> {
-  /*::
   get: Get<from, to>;
   set: Set<from, to>;
-  */
   constructor(get/*:Get<from, to>*/, set/*:Set<from, to>*/) {
     this.get = get
     this.set = set

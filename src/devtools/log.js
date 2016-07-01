@@ -5,8 +5,6 @@ import {merge, always} from "../common/prelude"
 import * as Runtime from "../common/runtime"
 import * as Console from "../common/Console"
 import * as IO from "../common/IO"
-
-/*::
 import type {Address, Never, DOM,} from "reflex"
 import type {URI, ID} from "../common/prelude"
 
@@ -19,13 +17,11 @@ export type Mode =
 export type Action <input, state> =
   | { type: "NoOp" }
   | { type: "Debuggee", debuggee: input }
-*/
+
 
 export class Model <input, state> {
-  /*::
   mode: Mode;
   io: IO.Model<Action<input, state>>;
-  */
   constructor(
     mode/*:Mode*/
   , io/*:IO.Model<Action<input, state>>*/

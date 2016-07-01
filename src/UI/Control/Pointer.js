@@ -1,12 +1,10 @@
 /* @flow */
 
-/*::
 export type Model = boolean
 
 export type Action =
   | { type: "Over" }
   | { type: "Out" }
-*/
 
 export const Over = { type: "Over" }
 export const Out = { type: "Out" }

@@ -39,7 +39,6 @@ type Flags <input, state, flags> =
 export const Persist = { type: "Persist" }
 
 export class Model <input, state> {
-  /*::
   record: ?Record.Model<input, state>;
   replay: ?Replay.Model<input, state>;
   log: ?Log.Model<input, state>;
@@ -48,7 +47,7 @@ export class Model <input, state> {
   debuggee: state;
   io: IO.Model<Action<input, state>>;
   fx: Effects<input>;
-  */
+
   constructor(
     Debuggee/*:Debuggee<input, state>*/
   , debuggee/*:state*/

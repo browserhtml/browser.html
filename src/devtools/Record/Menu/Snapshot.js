@@ -3,12 +3,10 @@
 import {html, thunk} from "reflex"
 import * as Style from "../../../common/style"
 import * as Button from "../../../UI/Button"
-
-/*::
 import type {Address, DOM} from "reflex"
 export type Model = Button.Model
 export type Action = Button.Action
-*/
+
 
 export const init = Button.init
 export const update = Button.update

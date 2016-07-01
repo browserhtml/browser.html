@@ -16,7 +16,6 @@ import * as Ref from "./Control/Ref";
 import * as Toggle from "./Control/Toggle";
 import * as Button from "./Button";
 
-/*::
 import type {Address, DOM} from "reflex"
 
 export type StyleSheet =
@@ -32,16 +31,12 @@ export type StyleSheet =
   , active?: Style.Rules
   , inactive?: Style.Rules
   }
-*/
-
 
 export class Model {
-  /*::
   button: Button.Model;
   checked: Toggle.Model;
   ref: Ref.Model;
   io: IO.Model;
-  */
   constructor(
     checked/*:Toggle.Model*/
   , button/*:Button.Model*/
@@ -55,14 +50,12 @@ export class Model {
   }
 }
 
-/*::
 export type Action =
   | { type: "NoOp" }
   | { type: "Button", button: Button.Action }
   | { type: "Toggle" }
   | { type: "Check" }
   | { type: "Uncheck" }
-*/
 
 const Tag =
   { button:

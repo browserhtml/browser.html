@@ -18,7 +18,6 @@ import * as Disabled from "./Control/Disabled";
 import * as Focused from "./Control/Focus";
 import * as Style from "../common/style"
 
-/*::
 import type {Address, DOM} from "reflex"
 
 export type StyleSheet =
@@ -32,11 +31,9 @@ export type StyleSheet =
   , active?: Style.Rules
   , inactive?: Style.Rules
   }
-*/
 
 
 export class Model {
-  /*::
   text: string;
   disabled: Disabled.Model;
   focused: Focused.Model;
@@ -44,7 +41,6 @@ export class Model {
   pointer: Pointer.Model;
   ref: Ref.Model;
   io: IO.Model;
-  */
   constructor(
     text/*:string*/
   , disabled/*:Disabled.Model*/
@@ -64,7 +60,6 @@ export class Model {
   }
 }
 
-/*::
 export type Action =
   | { type: "NoOp" }
   | { type: "Press" }
@@ -76,7 +71,6 @@ export type Action =
   | { type: "Blur" }
   | { type: "Over" }
   | { type: "Out" }
-*/
 
 export const Press = { type: "Press" }
 export const Click = { type: "Click" }

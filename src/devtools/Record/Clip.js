@@ -1,8 +1,6 @@
 /* @flow */
 
 import {html, thunk, forward} from "reflex"
-
-/*::
 export type Time = number
 export type Version = number
 
@@ -21,10 +19,9 @@ export type EncodedClip <input, model> =
 
 export type Action =
   | { type: "NoOp" }
-*/
+
 
 export class Model <input, state> {
-  /*::
   version: Version;
   time: Time;
   duration: Time;
@@ -32,7 +29,7 @@ export class Model <input, state> {
 
   timeline: Array<Time>;
   input: Array<input>;
-  */
+  
   constructor(
     state/*:state*/
   , time/*:Time*/

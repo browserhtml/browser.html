@@ -4,11 +4,9 @@ import {Task} from "reflex"
 
 
 export class Model {
-  /*::
   name: string;
   value: string;
   static nextID: number;
-  */
   constructor(value/*:string*/) {
     this.name = 'data-ref'
     this.value = value

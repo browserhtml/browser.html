@@ -3,13 +3,11 @@
 import {Task} from "reflex"
 import * as Ref from "./Ref"
 
-/*::
 export type Model = boolean
 
 export type Action =
   | { type: "Focus" }
   | { type: "Blur" }
-*/
 
 export const Focus = { type: "Focus" }
 export const Blur = { type: "Blur" }

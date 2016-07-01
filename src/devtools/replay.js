@@ -9,8 +9,6 @@ import * as Clip from "./Record/Clip"
 import * as Debug from "./Debug"
 import * as IO from "../common/IO"
 import * as Console from "../common/Console"
-
-/*::
 import type {Address, DOM} from "reflex"
 
 
@@ -20,16 +18,14 @@ export type Action <input, state> =
   | { type: "Failure", failure: Error }
   | { type: "Fetched", fetched: Clip.EncodedClip<input, state> }
   | { type: "Debug", debug: Debug.Command<input, state> }
-*/
 
 
 export class Model <input, state> {
-  /*::
   clipURI: string;
   error: ?Error;
   clip: ?Clip.Model<input, state>;
   io: IO.Model<Action<input, state>>;
-  */
+
   constructor(
     clipURI/*:string*/
   , error/*:?Error*/

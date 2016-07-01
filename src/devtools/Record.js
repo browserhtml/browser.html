@@ -12,8 +12,6 @@ import * as Style from "../common/style"
 import * as Clip from "./Record/Clip"
 import * as Menu from "./Record/Menu"
 import * as Player from "./Replay/Player"
-
-/*::
 import {performance} from "../common/performance"
 import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} from "reflex"
 import type {Result} from "../common/result"
@@ -61,7 +59,7 @@ export type Action <input, state> =
   | { type: "UploadFailed", uploadFailed: Error }
   | { type: "menu", menu: Menu.Action }
   | { type: "player", player: Player.Action<input, state>}
-*/
+
 
 const NoOp = always({type: "NoOp"})
 export const CaptureSnapshot = { type: "CaptureSnapshot" }
@@ -95,7 +93,6 @@ const AnimationFrame = <input, state>
 
 
 export class Model <input, state> {
-  /*::
   isUploading: boolean;
   isRecording: boolean;
   clip: ?Clip.Model<input, state>;
@@ -103,7 +100,7 @@ export class Model <input, state> {
   menu: Menu.Model;
   io: IO.Model;
   isMutable: boolean;
-  */
+  
   constructor(
     isUploading/*:boolean*/
   , isRecording/*:boolean*/

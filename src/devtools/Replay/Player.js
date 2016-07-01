@@ -4,8 +4,6 @@ import {html, thunk, forward} from "reflex"
 import * as Clip from "../Record/Clip"
 import * as IO from "../../common/IO"
 import * as Console from "../../common/Console"
-
-/*::
 import type { Time, Version } from "../Record/Clip"
 import type {DOM, Address} from "reflex"
 
@@ -14,7 +12,7 @@ export type Action <input, state> =
   | { type: "Zoom", zoom: number }
   | { type: "Slide", slide: number }
   | { type: "UpdataClip", clip: Clip.Model<input, state> }
-*/
+
 
 const NoOp = { type: "NoOp" }
 const Zoom =
@@ -31,12 +29,11 @@ const Slide =
   );
 
 export class Model <input, state> {
-  /*::
   clip: Clip.Model<input, state>;
   position: Time;
   zoom: number;
   io: IO.Model;
-  */
+  
   constructor(
     clip/*:Clip.Model<input, state>*/
   , position/*:number*/

@@ -3,12 +3,10 @@
 import {html, thunk} from "reflex"
 import * as Style from "../../../common/style"
 import * as ToggleButton from "../../../UI/ToggleButton"
-
-/*::
 import type {Address, DOM} from "reflex"
 export type Model = ToggleButton.Model
 export type Action = ToggleButton.Action
-*/
+
 
 export const init = ToggleButton.init
 export const update = ToggleButton.update

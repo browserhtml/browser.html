@@ -1,12 +1,10 @@
 /* @flow */
 
-/*::
 export type Model = boolean
 
 export type Action =
   | { type: "Enable" }
   | { type: "Disable" }
-*/
 
 export const Enable = { type: "Enable" }
 export const Disable = { type: "Disable" }
