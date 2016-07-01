@@ -279,7 +279,7 @@ const published = <input, state>
   model
   .asMutable()
   .swap(menu, Menu.published)
-  .swap(io, IO.perform, Console.log(`Record was published to  ${gist.url}`))
+  .swap(io, IO.perform, Console.log(`Record was published to  ${gist.files["snapshot.json"].raw_url}`))
   .asImmutable()
 
 
