@@ -660,8 +660,7 @@ const styleSheet = Style.createSheet
   ( { base:
       { position: "absolute"
       , pointerEvents: "none"
-      , backgroundColor: "rgba(255, 255, 255, 0.1)"
-      // , opacity: 0
+      , backgroundColor: "transparent"
       , height: "100%"
       , width: "100%"
       , transitionDuration: "50ms"
@@ -671,6 +670,7 @@ const styleSheet = Style.createSheet
       }
     , flash:
       { opacity: 0.9
+      , backgroundColor: "rgba(255, 255, 255, 0.7)"
       }
 
     , noflash: null

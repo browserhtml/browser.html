@@ -33,7 +33,7 @@ export class Model <input, state> {
   position: Time;
   zoom: number;
   io: IO.Model;
-  
+
   constructor(
     clip:Clip.Model<input, state>
   , position:number
@@ -315,8 +315,6 @@ const renderTimestamp =
       , width: '8px'
       , height: '8px'
       , top: 'calc(50% - 4px)'
-      , overflow: 'hidden'
-      , display: 'inline-block'
       , background: 'gray'
       , borderRadius: '25px'
       , position: 'absolute'
@@ -373,14 +371,13 @@ const viewClip =
         , style:
           { height: '100px'
           , position: 'absolute'
-          , display: 'inline'
+          // , display: 'inline'
           , background: 'rgba(0, 0, 0, 0.1)'
+          // , background: 'red'
           , transform: `translateX(${-offset}px)`
           , width: `${width}px`
           , left: `50%`
-          , overflow: 'hidden'
-          // , padding: '0 200px'
-          // , marginLeft: '-200px'
+          // , overflow: 'hidden'
           }
         }
       , [ viewTimeline(duration, zoom)
