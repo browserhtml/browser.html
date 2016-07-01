@@ -30,7 +30,7 @@ const Slide =
     }
   );
 
-export class Model /*::<input, state>*/ {
+export class Model <input, state> {
   /*::
   clip: Clip.Model<input, state>;
   position: Time;
@@ -50,7 +50,7 @@ export class Model /*::<input, state>*/ {
   }
 }
 
-export const init = /*::<input, state>*/
+export const init = <input, state>
   ( clip/*:Clip.Model<input, state>*/
   , position/*:Time*/=clip.duration
   , zoom/*:number*/=1
@@ -63,7 +63,7 @@ export const init = /*::<input, state>*/
   , io
   )
 
-export const update = /*::<input, state>*/
+export const update = <input, state>
   ( model/*:Model<input, state>*/
   , action/*:Action<input, state>*/
   )/*:Model<input, state>*/ => {
@@ -83,7 +83,7 @@ const MIN_ZOOM = 0.001;
 const MAX_ZOOM = 10;
 const MIN_DURATION = 1 * 1000;
 
-export const updatePosition = /*::<input, state>*/
+export const updatePosition = <input, state>
   ( model/*:Model<input, state>*/
   , delta/*:number*/
   )/*:Model<input, state>*/ =>
@@ -92,7 +92,7 @@ export const updatePosition = /*::<input, state>*/
   , Math.max(0, Math.min(model.clip.duration, model.position + (delta / model.zoom)))
   )
 
-export const setPosition = /*::<input, state>*/
+export const setPosition = <input, state>
   ( model/*:Model<input, state>*/
   , position/*:Time*/
   )/*:Model<input, state>*/ =>
@@ -106,7 +106,7 @@ export const setPosition = /*::<input, state>*/
     )
   )
 
-export const updateZoom = /*::<input, state>*/
+export const updateZoom = <input, state>
   ( model/*:Model<input, state>*/
   , delta/*:number*/
   )/*:Model<input, state>*/ =>
@@ -121,7 +121,7 @@ export const updateZoom = /*::<input, state>*/
     )
   )
 
-const setZoom = /*::<input, state>*/
+const setZoom = <input, state>
   ( model/*:Model<input, state>*/
   , zoom/*:number*/
   )/*:Model<input, state>*/ =>
@@ -135,7 +135,7 @@ const setZoom = /*::<input, state>*/
     )
   )
 
-export const updateClip = /*::<input, state>*/
+export const updateClip = <input, state>
   ( model/*:Model<input, state>*/
   , clip/*:Clip.Model<input, state>*/
   )/*:Model<input, state>*/ =>
@@ -149,7 +149,7 @@ export const updateClip = /*::<input, state>*/
   , model.io
   )
 
-const panic = /*::<message, input, state>*/
+const panic = <message, input, state>
   (model/*:Model<input, state>*/, message/*:message*/)/*:Model<input, state>*/ =>
   new Model
   ( model.clip
@@ -412,7 +412,7 @@ const viewTimeline =
   , zoom
   )
 
-export const render = /*::<input, state>*/
+export const render = <input, state>
   ( model/*:Model<input, state>*/
   , address/*:Address<Action>*/
   )/*:DOM*/ =>
@@ -451,7 +451,7 @@ const decodePosition =
     return position
   }
 
-export const view = /*::<input, state>*/
+export const view = <input, state>
   ( model/*:Model<input, state>*/
   , address/*:Address<Action>*/
   )/*:DOM*/ =>

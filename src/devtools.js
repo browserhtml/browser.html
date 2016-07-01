@@ -38,7 +38,7 @@ type Flags <input, state, flags> =
 
 export const Persist = { type: "Persist" }
 
-export class Model /*::<input, state>*/ {
+export class Model <input, state> {
   /*::
   record: ?Record.Model<input, state>;
   replay: ?Replay.Model<input, state>;
@@ -68,21 +68,21 @@ export class Model /*::<input, state>*/ {
   }
 }
 
-const tagRecord = /*::<input, state>*/
+const tagRecord = <input, state>
   ( action/*:Record.Action<input, state>*/ )/*:Action<input, state>*/ =>
   ( { type: "record"
     , record: action
     }
   );
 
-const tagLog = /*::<input, state>*/
+const tagLog = <input, state>
   ( action/*:Log.Action<input, state>*/ )/*:Action<input, state>*/ =>
   ( { type: "log"
     , log: action
     }
   );
 
-const tagReplay = /*::<input, state>*/
+const tagReplay = <input, state>
   ( action/*:Replay.Action<input, state>*/)/*:Action<input, state>*/ =>
   ( action.type === "Debug"
   ? { type: "debug"
@@ -93,7 +93,7 @@ const tagReplay = /*::<input, state>*/
     }
   );
 
-const tagDebuggee = /*::<input, state>*/
+const tagDebuggee = <input, state>
   ( action/*:input*/ )/*:Action<input, state>*/ =>
   ( action == null
   ? { type: "debuggee"
@@ -119,7 +119,7 @@ const tagDebuggee = /*::<input, state>*/
     }
   )
 
-export const initTools = /*::<input, state, flags>*/
+export const initTools = <input, state, flags>
   ({Debuggee, flags}/*:Flags<input, state, flags>*/)/*:Model<input, state>*/ => {
     const record =
       ( Runtime.env.record == null
@@ -152,7 +152,7 @@ export const initTools = /*::<input, state, flags>*/
     )
   }
 
-export const updateTools = /*::<input, state, flags>*/
+export const updateTools = <input, state, flags>
   ( model/*:Model<input, state>*/
   , action/*:Action<input, state>*/
   )/*:Model<input, state>*/ => {
@@ -188,7 +188,7 @@ export const updateTools = /*::<input, state, flags>*/
     }
   }
 
-const panic = /*::<message, input, state>*/
+const panic = <message, input, state>
   (model/*:Model<input, state>*/, message/*:message*/)/*:Model<input, state>*/ =>
   new Model
   ( model.Debuggee
@@ -203,7 +203,7 @@ const panic = /*::<message, input, state>*/
   , model.log
   )
 
-const updateRecord = /*::<input, state>*/
+const updateRecord = <input, state>
   ( model/*:Model<input, state>*/
   , record/*:Record.Model<input, state>*/
   , action/*:Record.Action<input, state>*/
@@ -218,7 +218,7 @@ const updateRecord = /*::<input, state>*/
   , model.log
   )
 
-const updateReply = /*::<input, state>*/
+const updateReply = <input, state>
   ( model/*:Model<input, state>*/
   , replay/*:Replay.Model<input, state>*/
   , action/*:Replay.Action<input, state>*/
@@ -233,7 +233,7 @@ const updateReply = /*::<input, state>*/
   , model.log
   )
 
-const updateLog = /*::<input, state>*/
+const updateLog = <input, state>
   ( model/*:Model<input, state>*/
   , log/*:Log.Model<input, state>*/
   , action/*:Log.Action<input, state>*/
@@ -249,7 +249,7 @@ const updateLog = /*::<input, state>*/
   )
 
 
-const updateDebuggee = /*::<input, state>*/
+const updateDebuggee = <input, state>
   ( model/*:Model<input, state>*/
   , input/*:input*/
   )/*:Model<input, state>*/ => {
@@ -277,7 +277,7 @@ const updateDebuggee = /*::<input, state>*/
   }
 
 
-const debug = /*::<input, state>*/
+const debug = <input, state>
   ( model/*:Model<input, state>*/
   , command/*:Debug.Command<input, state>*/
   )/*:Model<input, state>*/ => {
@@ -295,7 +295,7 @@ const debug = /*::<input, state>*/
     }
   }
 
-const setDebuggee = /*::<input, state>*/
+const setDebuggee = <input, state>
   ( model/*:Model<input, state>*/
   , debuggee/*:state*/
   , fx/*:Effects<input>*/
@@ -310,7 +310,7 @@ const setDebuggee = /*::<input, state>*/
   , model.log
   )
 
-const fx = /*::<input, state>*/
+const fx = <input, state>
   (model/*:Model<input, state>*/)/*:Effects<Action<input, state>>*/ =>
   Effects.batch
   ( [ model.io
@@ -330,7 +330,7 @@ const fx = /*::<input, state>*/
     ]
   )
 
-export const transact = /*::<input, state>*/
+export const transact = <input, state>
   ( model/*:Model<input, state>*/
   )/*:[Model<input, state>, Effects<Action<input, state>>]*/ =>
   [ model
@@ -353,18 +353,18 @@ export const restore = <input, state, flags>
   ];
 
 
-export const init = /*::<input, state, flags>*/
+export const init = <input, state, flags>
   (flags/*:Flags<input, state, flags>*/)/*:[Model<input, state>, Effects<Action<input, state>>]*/ =>
   transact(initTools(flags));
 
-export const update = /*::<input, state>*/
+export const update = <input, state>
   ( model/*:Model<input, state>*/
   , action/*:Action<input, state>*/
   )/*:[Model<input, state>, Effects<Action<input, state>>]*/ =>
   transact(updateTools(model, action));
 
 
-export const render = /*::<model, action>*/
+export const render = <model, action>
   ( model/*:Model<model, action>*/
   , address/*:Address<Action<model, action>>*/
   )/*:DOM*/ =>
@@ -390,7 +390,7 @@ export const render = /*::<model, action>*/
     ]
   )
 
-export const view = /*::<model, action>*/
+export const view = <model, action>
   ( model/*:Model<model, action>*/
   , address/*:Address<Action<model, action>>*/
   )/*:DOM*/ =>

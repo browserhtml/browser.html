@@ -10,7 +10,7 @@ type Set <from, to> =
 export type {Lens}
 */
 
-class Lens /*::<from, to>*/ {
+class Lens <from, to> {
   /*::
   get: Get<from, to>;
   set: Set<from, to>;
@@ -22,24 +22,24 @@ class Lens /*::<from, to>*/ {
   view(target/*:from*/)/*:to*/ {
     return this.get(target)
   }
-  swap /*::<context>*/ (f/*:(value:to, context:context) => to*/, target/*:from*/, context/*:context*/)/*:from*/ {
+  swap <context> (f/*:(value:to, context:context) => to*/, target/*:from*/, context/*:context*/)/*:from*/ {
     return this.set(target, f(this.get(target), context))
   }
 }
 
-export const lens = /*::<from, to>*/
+export const lens = <from, to>
   ( get/*:Get<from, to>*/
   , set/*:Set<from, to>*/
   )/*:Lens<from, to>*/ =>
   new Lens(get, set)
 
-export const view = /*::<from, to>*/
+export const view = <from, to>
   ( lens/*:Lens<from, to>*/
   , target/*:from*/
   )/*:to*/ =>
   lens.get(target)
 
-export const swap = /*::<from, to, context>*/
+export const swap = <from, to, context>
   ( lens/*:Lens<from, to>*/
   , f/*:(value:to, context:context) => to*/
   , target/*:from*/

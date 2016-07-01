@@ -15,7 +15,7 @@ const None = Effects.none.constructor
 const never/*:Task<Never, any>*/ = new Task((succeed, fail) => void(0))
 
 
-class IO /*::<a>*/ extends Effects /*::<a>*/ {
+class IO <a> extends Effects <a> {
   /*::
   queue: Array<Task<Never, a>>;
   tag: ?<b> (input:b) => a;
@@ -24,7 +24,7 @@ class IO /*::<a>*/ extends Effects /*::<a>*/ {
     super(never)
     this.queue = queue
   }
-  map/*::<b>*/(f/*:(a:a)=>b*/)/*:Effects<b>*/ {
+  map<b>(f/*:(a:a)=>b*/)/*:Effects<b>*/ {
     return new Lift(this, f)
   }
   send(address/*:Address<a>*/)/*:Task<Never, void>*/ {
@@ -49,7 +49,7 @@ class IO /*::<a>*/ extends Effects /*::<a>*/ {
 }
 
 
-export class Lift /*::<a, b>*/ extends Effects/*::<b>*/ {
+export class Lift <a, b> extends Effects<b> {
   /*::
   source: Effects<a>;
   f: (input:a) => b;
@@ -59,7 +59,7 @@ export class Lift /*::<a, b>*/ extends Effects/*::<b>*/ {
     this.source = source
     this.f = f
   }
-  map/*::<c>*/(f/*:(a:b)=>c*/)/*:Effects<c>*/ {
+  map<c>(f/*:(a:b)=>c*/)/*:Effects<c>*/ {
     return new Lift(this, f)
   }
   send(address/*:Address<b>*/)/*:Task<Never, void>*/ {
@@ -69,10 +69,10 @@ export class Lift /*::<a, b>*/ extends Effects/*::<b>*/ {
 
 export const Model = IO
 
-export const init = /*::<a>*/
+export const init = <a>
   (tasks/*:Array<Task<Never, a>>*/=[])/*:IO<a>*/ =>
   new IO(tasks)
 
-export const perform = /*::<a>*/
+export const perform = <a>
   (io/*:IO<a>*/, task/*:Task<Never, a>*/)/*:IO<a>*/ =>
   new IO(io.queue.concat(task))

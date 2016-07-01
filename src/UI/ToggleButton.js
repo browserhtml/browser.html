@@ -178,7 +178,7 @@ export const toggle =
   }
 
 
-export const panic = /*::<action>*/
+export const panic = <action>
   (model/*:Model*/, action/*:action*/)/*:Model*/ =>
   new Model
   ( model.checked

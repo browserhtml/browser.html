@@ -50,7 +50,7 @@ export class Model {
     this.publish = publish
     this.io = io
   }
-  swap /*::<state, input>*/ (
+  swap <state, input> (
     lens/*:Lens<Model, state>*/
   , modify/*:(state:state, input:input) => state*/
   , input/*:input*/
@@ -213,7 +213,7 @@ export const update =
     }
   }
 
-export const panic = /*::<action>*/
+export const panic = <action>
   (model/*:Model*/, action/*:action*/)/*:Model*/ =>
   new Model
   ( model.clip

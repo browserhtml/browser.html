@@ -72,21 +72,21 @@ export const Print = { type: "Print" }
 const Printed = { type: "Printed" }
 export const Publish = { type: "Publish" }
 
-const UploadFailed = /*::<input, state>*/
+const UploadFailed = <input, state>
   ( error/*:Error*/ )/*:Action<input, state>*/ =>
   ( { type: "UploadFailed"
     , uploadFailed: error
     }
   );
 
-const UploadedClip = /*::<input, state>*/
+const UploadedClip = <input, state>
   ( gist/*:Gist*/ )/*:Action<input, state>*/ =>
   ( { type: "UploadedClip"
     , uploadedClip: gist
     }
   );
 
-const AnimationFrame = /*::<input, state>*/
+const AnimationFrame = <input, state>
   ( time/*:Time*/ )/*:Action<input, state>*/ =>
   ( { type: "AnimationFrame"
     , time
@@ -94,7 +94,7 @@ const AnimationFrame = /*::<input, state>*/
   );
 
 
-export class Model /*::<input, state>*/ {
+export class Model <input, state> {
   /*::
   isUploading: boolean;
   isRecording: boolean;
@@ -175,7 +175,7 @@ export class Model /*::<input, state>*/ {
     return this
   }
 
-  swap /*::<inner, context>*/(
+  swap <inner, context>(
     lens/*:Lens<*, inner>*/
   , f/*:(value:inner, context:context) => inner*/
   , context/*:context*/
@@ -183,7 +183,7 @@ export class Model /*::<input, state>*/ {
     return lens.set(this, f(lens.get(this), context))
   }
 
-  set /*::<inner>*/(
+  set <inner>(
     lens/*:Lens<*, *>*/
   , value/*:inner*/
   )/*:Model<input, state>*/ {
@@ -192,7 +192,7 @@ export class Model /*::<input, state>*/ {
 }
 
 
-export const init = /*::<input, state>*/
+export const init = <input, state>
   ( isUploading/*:boolean*/=false
   , isRecording/*:boolean*/=false
   , clip/*:?Clip.Model<input, state>*/=null
@@ -212,7 +212,7 @@ export const init = /*::<input, state>*/
   )
 
 
-const createClip = /*::<input, state>*/
+const createClip = <input, state>
   (time/*:Time*/)/*:Clip.Model<input, state>*/ =>
   Clip.init
   ( window.application.model.value.debuggee
@@ -220,7 +220,7 @@ const createClip = /*::<input, state>*/
   )
 
 
-export const captureSnapshot = /*::<input, state>*/
+export const captureSnapshot = <input, state>
   ( model/*:Model<input, state>*/ )/*:Model<input, state>*/ =>
   new Model
   ( model.isUploading
@@ -232,14 +232,14 @@ export const captureSnapshot = /*::<input, state>*/
   , model.isMutable
   )
 
-const updateMenu = /*::<input, state>*/
+const updateMenu = <input, state>
   ( model/*:Model<input, state>*/
   , action/*:Menu.Action*/
   )/*:Model<input, state>*/ =>
   model.swap(menu, Menu.update, action)
 
 
-const updatePlayer = /*::<input, state>*/
+const updatePlayer = <input, state>
   ( model/*:Model<input, state>*/
   , action/*:Player.Action<input, state>*/
   )/*:Model<input, state>*/ =>
@@ -250,7 +250,7 @@ const updatePlayer = /*::<input, state>*/
 
 
 
-const publish = /*::<input, state>*/
+const publish = <input, state>
   ( model/*:Model<input, state>*/ )/*:Model<input, state>*/ =>
   ( model.clip == null
   ? model
@@ -260,7 +260,7 @@ const publish = /*::<input, state>*/
   )
 
 
-const publishClip = /*::<input, state>*/
+const publishClip = <input, state>
   ( model/*:Model<input, state>*/
   , clip/*:Clip.Model<input, state>*/
   )/*:Model<input, state>*/ =>
@@ -277,7 +277,7 @@ const publishClip = /*::<input, state>*/
     )
   .asImmutable()
 
-const published = /*::<input, state>*/
+const published = <input, state>
   ( model/*:Model<input, state>*/, gist/*:Gist*/ )/*:Model<input, state>*/ =>
   model
   .asMutable()
@@ -286,7 +286,7 @@ const published = /*::<input, state>*/
   .asImmutable()
 
 
-const print = /*::<input, state>*/
+const print = <input, state>
   (model/*:Model<input, state>*/)/*:Model<input, state>*/ =>
   ( model.clip == null
   ? model
@@ -303,11 +303,11 @@ const print = /*::<input, state>*/
   )
 
 
-const printed = /*::<input, state>*/
+const printed = <input, state>
   (model/*:Model<input, state>*/)/*:Model<input, state>*/ =>
   model.swap(menu, Menu.printed)
 
-const panic = /*::<message, input, state>*/
+const panic = <message, input, state>
   (model/*:Model<input, state>*/, message/*:message*/)/*:Model<input, state>*/ =>
   model.swap
   ( io
@@ -316,7 +316,7 @@ const panic = /*::<message, input, state>*/
   )
 
 
-const failure = /*::<message, input, state>*/
+const failure = <message, input, state>
   (model/*:Model<input, state>*/, message/*:message*/)/*:Model<input, state>*/ =>
   model.swap
   ( io
@@ -325,7 +325,7 @@ const failure = /*::<message, input, state>*/
   )
 
 
-const startRecording = /*::<input, state>*/
+const startRecording = <input, state>
   ( model/*:Model<input, state>*/
   )/*:Model<input, state>*/ => {
     const value = createClip(performance.now())
@@ -346,7 +346,7 @@ const startRecording = /*::<input, state>*/
   }
 
 
-const stopRecording = /*::<input, state>*/
+const stopRecording = <input, state>
   (model/*:Model<input, state>*/)/*:Model<input, state>*/ =>
   ( model.isRecording
   ? model
@@ -358,7 +358,7 @@ const stopRecording = /*::<input, state>*/
   )
 
 
-const updateRecording = /*::<input, state>*/
+const updateRecording = <input, state>
   (model/*:Model<input, state>*/, time/*:Time*/)/*:Model<input, state>*/ =>
   ( !model.isRecording
   ? model
@@ -378,7 +378,7 @@ const updateRecording = /*::<input, state>*/
   )
 
 
-const toggleRecording = /*::<input, state>*/
+const toggleRecording = <input, state>
   ( model/*:Model<input, state>*/)/*:Model<input, state>*/ =>
   ( model.isRecording
   ? stopRecording(model)
@@ -386,7 +386,7 @@ const toggleRecording = /*::<input, state>*/
   )
 
 
-const writeInput = /*::<input, state>*/
+const writeInput = <input, state>
   ( model/*:Model<input, state>*/
   , input/*:input*/
   )/*:Model<input, state>*/ =>
@@ -405,10 +405,10 @@ const writeInput = /*::<input, state>*/
 // Lens
 
 const clip = lens
-  ( /*::<input, state>*/
+  ( <input, state>
     (model/*:Model<input, state>*/)/*:?Clip.Model<input, state>*/ =>
       model.clip
-  , /*::<input, state>*/
+  , <input, state>
     ( model/*:Model<input, state>*/
     , clip/*:?Clip.Model<input, state>*/
     )/*:Model<input, state>*/ =>
@@ -504,7 +504,7 @@ const isRecording = lens
   )
 
 
-export const fx = /*::<input, state>*/
+export const fx = <input, state>
   (model/*:Model<input, state>*/)/*:Effects<Action<input, state>>*/ =>
   Effects.batch
   ( [ model.io
@@ -571,13 +571,13 @@ const upload =
   })
 
 
-export const requestFrame = /*::<input, state>*/
+export const requestFrame = <input, state>
   ()/*:Task<Never, Action<input, state>>*/ =>
   Task
   .requestAnimationFrame()
   .map(AnimationFrame)
 
-export const update = /*::<action, model>*/
+export const update = <action, model>
   ( model/*:Model<action, model>*/
   , action/*:Action<action, model>*/
   )/*:Model<action, model>*/ => {
@@ -616,7 +616,7 @@ export const update = /*::<action, model>*/
   }
 
 
-export const render = /*::<model, action>*/
+export const render = <model, action>
   ( model/*:Model<model, action>*/
   , address/*:Address<Action<model, action>>*/
   )/*:DOM*/ =>
@@ -647,7 +647,7 @@ export const render = /*::<model, action>*/
     ]
   )
 
-export const view = /*::<input, state>*/
+export const view = <input, state>
   ( model/*:Model<input, state>*/
   , address/*:Address<Action<input, state>>*/
   )/*:DOM*/ =>

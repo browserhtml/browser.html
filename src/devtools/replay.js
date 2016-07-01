@@ -22,7 +22,8 @@ export type Action <input, state> =
   | { type: "Debug", debug: Debug.Command<input, state> }
 */
 
-export class Model /*::<input, state>*/ {
+
+export class Model <input, state> {
   /*::
   clipURI: string;
   error: ?Error;
@@ -42,7 +43,7 @@ export class Model /*::<input, state>*/ {
   }
 }
 
-const tagDebug = /*::<input, state>*/
+const tagDebug = <input, state>
   (command/*:Debug.Command<input, state>*/)/*:Action<input, state>*/ =>
   ( { type: "Debug"
     , debug: command
@@ -50,21 +51,21 @@ const tagDebug = /*::<input, state>*/
   )
 
 const Fetch = { type: "Fetch" }
-const Fetched = /*::<input, state>*/
+const Fetched = <input, state>
   ( clip/*:Clip.EncodedClip<input, state>*/ )/*:Action<input, state>*/ =>
   ( { type: "Fetched"
     , fetched: clip
     }
   )
 
-const Failure = /*::<input, state>*/
+const Failure = <input, state>
   ( error/*:Error*/)/*:Action<input, state>*/ =>
   ( { type: "Failure"
     , failure: error
     }
   )
 
-export const init = /*::<input, state, flags>*/
+export const init = <input, state, flags>
   (flags/*:flags*/)/*:Model<input, state>*/ =>
   new Model
   ( String(Runtime.env.replay)
@@ -76,7 +77,7 @@ export const init = /*::<input, state, flags>*/
     )
   )
 
-export const update = /*::<input, state>*/
+export const update = <input, state>
   ( model/*:Model<input, state>*/
   , action/*:Action<input, state>*/
   )/*:Model<input, state>*/ => {
@@ -95,7 +96,7 @@ export const update = /*::<input, state>*/
   }
 
 
-const fetched = /*::<input, state>*/
+const fetched = <input, state>
   ( model/*:Model<input, state>*/
   , clip/*:Clip.EncodedClip<input, state>*/
   )/*:Model<input, state>*/ =>
@@ -104,7 +105,7 @@ const fetched = /*::<input, state>*/
   , Clip.decode(clip)
   )
 
-const load = /*::<input, state>*/
+const load = <input, state>
   ( model/*:Model<input, state>*/
   , clip/*:Clip.Model<input, state>*/
   )/*:Model<input, state>*/ =>
@@ -120,7 +121,7 @@ const load = /*::<input, state>*/
     )
   )
 
-const failure = /*::<input, state>*/
+const failure = <input, state>
   ( model/*:Model<input, state>*/
   , error/*:Error*/
   )/*:Model<input, state>*/ =>
@@ -131,7 +132,7 @@ const failure = /*::<input, state>*/
   , model.io
   )
 
-const panic = /*::<message, input, state>*/
+const panic = <message, input, state>
   (model/*:Model<input, state>*/, message/*:message*/)/*:Model<input, state>*/ =>
   new Model
   ( model.clipURI
@@ -143,7 +144,7 @@ const panic = /*::<message, input, state>*/
     )
   )
 
-const fetch = /*::<input, state>*/
+const fetch = <input, state>
   ( model/*:Model<input, state>*/ )/*:Model<input, state>*/ =>
   new Model
   ( model.clipURI
@@ -157,7 +158,7 @@ const fetch = /*::<input, state>*/
     )
   );
 
-const fetchJSON = /*::<input, state>*/
+const fetchJSON = <input, state>
   (uri/*:string*/)/*:Task<Error, Clip.EncodedClip<input, state>>*/ =>
   new Task((succeed, fail) => {
     const request = new XMLHttpRequest({mozSystem: true});
@@ -188,17 +189,17 @@ const fetchJSON = /*::<input, state>*/
 
   });
 
-export const fx = /*::<input, state>*/
+export const fx = <input, state>
   (model/*:Model<input, state>*/)/*:Effects<Action<input, state>>*/ =>
   model.io
 
-export const transact = /*::<input, state>*/
+export const transact = <input, state>
   ( model/*:Model<input, state>*/
   )/*:[Model<input, state>, Effects<Action<input, state>>]*/ =>
   [ model, fx(model) ]
 
 
-export const render = /*::<model, action>*/
+export const render = <model, action>
   ( model/*:Model<model, action>*/
   , address/*:Address<Action<model, action>>*/
   )/*:DOM*/ =>
@@ -226,7 +227,7 @@ export const render = /*::<model, action>*/
     ]
   );
 
-export const view = /*::<model, action>*/
+export const view = <model, action>
   ( model/*:Model<model, action>*/
   , address/*:Address<Action<model, action>>*/
   )/*:DOM*/ =>

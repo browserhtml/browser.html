@@ -21,7 +21,7 @@ export type Action <input, state> =
   | { type: "Debuggee", debuggee: input }
 */
 
-export class Model /*::<input, state>*/ {
+export class Model <input, state> {
   /*::
   mode: Mode;
   io: IO.Model<Action<input, state>>;
@@ -38,7 +38,7 @@ export class Model /*::<input, state>*/ {
 
 const NoOp = always({ type: "NoOp" });
 
-export const init = /*::<input, state, flags>*/
+export const init = <input, state, flags>
   ()/*:Model<input, state>*/ =>
   new Model
   ( ( Runtime.env.log === 'json'
@@ -50,7 +50,7 @@ export const init = /*::<input, state, flags>*/
   , IO.init()
   )
 
-export const update = /*::<input, state>*/
+export const update = <input, state>
   ( model/*:Model<input, state>*/
   , action/*:Action<input, state>*/
   )/*:Model<input, state>*/ => {
@@ -65,7 +65,7 @@ export const update = /*::<input, state>*/
   }
 
 
-const log = /*::<input, state>*/
+const log = <input, state>
   ( model/*:Model<input, state>*/
   , action/*:input*/
   )/*:Model<input, state>*/ => {
@@ -79,7 +79,7 @@ const log = /*::<input, state>*/
     return model
   }
 
-export const panic = /*::<message, input, state>*/
+export const panic = <message, input, state>
   ( model/*:Model<input, state>*/
   , message/*:message*/
   )/*:Model<input, state>*/ =>
@@ -91,11 +91,11 @@ export const panic = /*::<message, input, state>*/
     )
   )
 
-export const fx = /*::<input, state>*/
+export const fx = <input, state>
   (model/*:Model<input, state>*/)/*:Effects<Action<input, state>>*/ =>
   model.io
 
-export const view = /*::<input, state>*/
+export const view = <input, state>
   ( model/*:Model<input, state>*/
   , address/*:Address<Action<input, state>>*/
   )/*:DOM*/ =>

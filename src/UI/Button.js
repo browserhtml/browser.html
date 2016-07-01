@@ -242,7 +242,7 @@ export const updatePointer =
     return next
   }
 
-export const panic = /*::<action>*/
+export const panic = <action>
   (model/*:Model*/, action/*:action*/)/*:Model*/ =>
   new Model
   ( model.text

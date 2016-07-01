@@ -23,7 +23,7 @@ export type Action =
   | { type: "NoOp" }
 */
 
-export class Model /*::<input, state>*/ {
+export class Model <input, state> {
   /*::
   version: Version;
   time: Time;
@@ -51,7 +51,7 @@ export class Model /*::<input, state>*/ {
   }
 }
 
-export const init = /*::<input, state>*/
+export const init = <input, state>
   ( state/*:state*/
   , time/*:Time*/=performance.now()
   , duration/*:Time*/=0
@@ -66,7 +66,7 @@ export const init = /*::<input, state>*/
   , []
   )
 
-export const write = /*::<input, state>*/
+export const write = <input, state>
   ( model/*:Model<input, state>*/
   , input/*:input*/
   , time/*:Time*/=performance.now()
@@ -80,7 +80,7 @@ export const write = /*::<input, state>*/
   , [...model.input, input]
   );
 
-export const updateDuration = /*::<input, state>*/
+export const updateDuration = <input, state>
   ( model/*:Model<input, state>*/
   , time/*:Time*/
   )/*:Model<input, state>*/ =>
@@ -93,7 +93,7 @@ export const updateDuration = /*::<input, state>*/
   , model.input
   );
 
-export const encode = /*::<input, state>*/
+export const encode = <input, state>
   ( model/*:Model<input, state>*/ )/*:EncodedClip<input, state>*/ => {
     const index = [];
     const input = [];
@@ -127,7 +127,7 @@ export const encode = /*::<input, state>*/
     return clip
   }
 
-export const decode = /*::<input, state>*/
+export const decode = <input, state>
   ( clip/*:EncodedClip<input, state>*/ )/*:Model<input, state>*/ => {
     const input = []
     for (let address of clip.input) {
@@ -147,7 +147,7 @@ export const decode = /*::<input, state>*/
   }
 
 const MS2PX = 1
-export const render = /*::<input, state>*/
+export const render = <input, state>
   ( model/*:Model<input, state>*/
   , address/*:Address<Action>*/
   )/*:DOM*/ =>
