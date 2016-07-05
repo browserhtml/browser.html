@@ -176,13 +176,21 @@ const metaBooleanProperty = update => {
 
 export const focus = metaBooleanProperty((node, next, previous) => {
   if (next != previous) {
-    Promise.resolve().then(() => {
-      if (next) {
-        node.focus();
-      } else {
-        node.blur();
+    if (next) {
+      node.focus();
+      // If node did not get focused, it is because this is initial render and
+      // in such case VirtualDOM library calls hooks before nodes are actualy
+      // part of document and there for `.focus()` has no effect. In this case
+      // we just repeat `.focus()` on next tick, as by then node will be part
+      // of the document.
+      if (node.ownerDocument.activeElement !== node) {
+        Promise.resolve().then(() => {
+          node.focus();
+        })
       }
-    })
+    } else {
+      node.blur();
+    }
   }
 });
 
@@ -194,11 +202,9 @@ const isSameSelection = (a, b) =>
 export const selection = metaProperty((node, next, previous) => {
   if (next != null && !isSameSelection(next, previous)) {
     const {start, end, direction} = next;
-    Promise.resolve().then(() => {
-      node.setSelectionRange(start === Infinity ? node.value.length : start,
-                             end === Infinity ? node.value.length : end,
-                             direction);
-    })
+    node.setSelectionRange(start === Infinity ? node.value.length : start,
+                           end === Infinity ? node.value.length : end,
+                           direction);
   }
 });
 
