@@ -140,14 +140,17 @@ export const init =
   ];
 
 const suggest = (model, {query, match, hint}) =>
-  enterSelectionRange
-  ( model
-  , match
-  , ( match.toLowerCase().startsWith(query.toLowerCase())
-    ? query.length
-    : match.length
+  ( model.value !== query
+  ? [model, Effects.none]
+  : enterSelectionRange
+    ( model
+    , match
+    , ( match.toLowerCase().startsWith(query.toLowerCase())
+      ? query.length
+      : match.length
+      )
+    , match.length
     )
-  , match.length
   )
 
 export const update =
@@ -187,8 +190,10 @@ export const update =
         return [model, Effects.none];
       case 'Suggest':
         return suggest(model, action.suggest);
+      case 'Query':
+        return [model, Effects.none];
       default:
-        return Unknown.update(model, action)
+        return Unknown.update(model, action);
     }
   };
 

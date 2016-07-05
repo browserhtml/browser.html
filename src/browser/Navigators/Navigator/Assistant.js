@@ -20,6 +20,7 @@ export type Flags = boolean
 export type Suggestion =
   { match: string
   , hint: string
+  , query: string
   }
 
 export type Model =

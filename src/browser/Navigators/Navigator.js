@@ -712,12 +712,7 @@ const suggest =
   (model, suggestion) =>
   updateInput
   ( model
-  , Input.Suggest
-    ( { query: model.assistant.query
-      , match: suggestion.match
-      , hint: suggestion.hint
-      }
-    )
+  , Input.Suggest(suggestion)
   )
 
 const activateAssistant =
