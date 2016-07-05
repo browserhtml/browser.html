@@ -30,6 +30,7 @@ export type Match =
 export type Completion =
   { match: string
   , hint: string
+  , query: string
   }
 
 export type Model =
@@ -42,6 +43,10 @@ export type Model =
   , items: Array<URI>
   }
 
+type SearchResult =
+  { queryID: number
+  , matches: Array<Match>
+  }
 
 export type Action =
   | { type: "NoOp" }
@@ -54,18 +59,15 @@ export type Action =
   | { type: "SelectPrevious" }
   | { type: "Select", select: URI }
   | { type: "Unselect" }
-  | { type: "UpdateMatches"
-    , updateMatches: Result<Error, Array<Match>>
-    }
+  | { type: "UpdateMatches", updateMatches: SearchResult }
+  | { type: "SearchError", searchError: Error }
   | { type: "ByURI"
     , source:
       { uri: URI
       , action: Suggestion.Action
       }
     }
-  | { type: "Abort"
-    , abort: number
-    }
+  | { type: "Abort", abort: number }
 
 
 
@@ -103,10 +105,18 @@ const Load =
     }
   );
 
+const SearchError =
+  error =>
+  ( { type: "SearchError"
+    , searchError: error
+    }
+  )
+
+
 const UpdateMatches =
-  (result:Result<Error, Array<Match>>):Action =>
+  (searchResult) =>
   ( { type: "UpdateMatches"
-    , updateMatches: result
+    , updateMatches: searchResult
     }
   );
 
@@ -128,11 +138,6 @@ const byURI =
         }
     }
   };
-
-const decodeFailure = ({target: request}) =>
-  error
-  // @FlowIssue: Flow does not know about `request.url`
-  (Error(`Network request to ${request.url} has failed: ${request.statusText}`));
 
 const decodeResponseFailure =
   request =>
@@ -180,7 +185,7 @@ const search =
   ( id:number
   , input:string
   , limit:number
-  ):Task<Never, Result<Error, Array<Match>>> =>
+  ):Task<Error, SearchResult> =>
   new Task((succeed, fail) => {
     const request = new XMLHttpRequest({ mozSystem: true });
     pendingRequests[id] = request;
@@ -196,11 +201,16 @@ const search =
 
     request.onerror = event => {
       delete pendingRequests[id];
-      succeed(decodeFailure(event));
+      fail(Error(`Network request to ${uri} has failed: ${request.statusText}`))
     };
     request.onload = event => {
       delete pendingRequests[id];
-      succeed(decodeResponse(event));
+      const result = decodeResponse(event);
+      if (result.isOk) {
+        succeed({ queryID: id, matches: result.value });
+      } else {
+        fail(result.error);
+      }
     };
 
     request.send();
@@ -227,15 +237,21 @@ const unselect =
   ]
 
 const suggest = model =>
-  [ model
-  , Effects.receive
-    ( Suggest
-      ( { match: model.matches[model.items[model.selected]].title
-        , hint: ''
-        }
+  ( model.query == null
+  ? [ model, Effects.none ]
+  : model.items.length === 0
+  ? [ model, Effects.none ]
+  : [ model
+    , Effects.receive
+      ( Suggest
+        ( { query: model.query
+          , match: model.matches[model.items[model.selected]].title
+          , hint: ''
+          }
+        )
       )
-    )
-  ]
+    ]
+  );
 
 const selectNext =
   model =>
@@ -305,20 +321,19 @@ const updateQuery =
           .map(Abort)
 
         , Effects.perform
-          (search(model.queryID + 1, query, model.limit))
-          .map(UpdateMatches)
+          ( search(model.queryID + 1, query, model.limit)
+            .map(UpdateMatches)
+            .recover(SearchError)
+          )
         ]
       )
     ]
   );
 
-
 const updateMatches = (model, result) =>
-  ( result.isOk
-  ? replaceMatches(model, result.value)
-  : [ model
-    , Effects.perform(Unknown.error(result.error))
-    ]
+  ( result.queryID !== model.queryID
+  ? [ model, Effects.none ]
+  : replaceMatches(model, result.matches)
   );
 
 const replaceMatches = (model, results) => {
@@ -376,27 +391,32 @@ const activate =
   ]
 
 export const update =
-  (model:Model, action:Action):[Model, Effects<Action>] =>
-  ( action.type === "Query"
-  ? updateQuery(model, action.query)
-  : action.type === "Reset"
-  ? reset(model)
-  : action.type === "SelectNext"
-  ? selectNext(model)
-  : action.type === "SelectPrevious"
-  ? selectPrevious(model)
-  : action.type === "Select"
-  ? select(model, action.select)
-  : action.type === "Unselect"
-  ? unselect(model)
-  : action.type === "UpdateMatches"
-  ? updateMatches(model, action.updateMatches)
-  : action.type === "ByURI"
-  ? updateByURI(model, action.source)
-  : action.type === "Activate"
-  ? activate(model)
-  : Unknown.update(model, action)
-  )
+  (model:Model, action:Action):[Model, Effects<Action>] => {
+    switch (action.type) {
+      case "Query":
+        return updateQuery(model, action.query);
+      case "Reset":
+        return reset(model);
+      case "SelectNext":
+        return selectNext(model);
+      case "SelectPrevious":
+        return selectPrevious(model);
+      case "Select":
+        return select(model, action.select);
+      case "Unselect":
+        return unselect(model);
+      case "UpdateMatches":
+        return updateMatches(model, action.updateMatches);
+      case "SearchError":
+        return reportError(model, action.searchError);
+      case "ByURI":
+        return updateByURI(model, action.source);
+      case "Activate":
+        return activate(model);
+      default:
+        return Unknown.update(model, action);
+    }
+  }
 
 export const reset =
   (state:Model):[Model, Effects<Action>] => {
@@ -416,6 +436,12 @@ export const reset =
 
     return [model, fx]
   }
+
+const reportError =
+  (model, error) =>
+  [ model
+  , Effects.perform(Unknown.error('Search error occured', error))
+  ]
 
 
 const innerView =
