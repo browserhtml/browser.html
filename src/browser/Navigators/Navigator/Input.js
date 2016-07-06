@@ -107,16 +107,16 @@ const enter = (model) => {
   return [result, Effects.batch([focusFx, editFx])];
 }
 
-const enterSelection = (model, value) =>
-  enterSelectionRange(model, value, 0, value.length);
+const enterSelection = (model, value, direction='forward') =>
+  enterSelectionRange(model, value, 0, value.length, direction);
 
-const enterSelectionRange = (model, value, start, end) => {
+const enterSelectionRange = (model, value, start, end, direction) => {
   const [next, focusFx] =
     mapFX(FocusableAction, Focusable.update(model, Focusable.Focus));
 
   const [result, editFx] =
     mapFX(EditableAction, Editable.update(next, Editable.Change(value, {
-      start, end, direction: 'forward'
+      start, end, direction
     })));
 
   return [result, Effects.batch([focusFx, editFx])];
@@ -150,6 +150,7 @@ const suggest = (model, {query, match, hint}) =>
       : match.length
       )
     , match.length
+    , 'backward'
     )
   )
 
