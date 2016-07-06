@@ -37,7 +37,8 @@ const styleSheet = Style.createSheet({
     height: `calc(100% - ${Toolbar.height})`,
     // This padding matches title bar height.
     paddingTop: '32px',
-    overflowY: 'scroll',
+    overflowX: 'hidden',
+    overflowY: 'auto',
     boxSizing: 'border-box'
   }
 });
