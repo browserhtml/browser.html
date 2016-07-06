@@ -134,10 +134,38 @@ const updateSettings = cursor
     }
   );
 
-const toggle = model =>
-  [ merge(model, {isActive: !model.isActive})
+const toggle =
+  model =>
+  ( model.isActive
+  ? deactivate(model)
+  : activate(model)
+  )
+
+const deactivate =
+  model =>
+  [ merge(model, {isActive: false})
   , Effects.none
-  ];
+  ]
+
+const activate =
+  model =>
+  ( model.settings == null
+  ? initSettings(merge(model, {isActive: true}))
+  : [ merge(model, {isActive: true})
+    , Effects.none
+    ]
+  )
+
+const initSettings =
+  model => {
+    const [settings, fx] = Settings.init(Object.keys(descriptions));
+    const result =
+      [ merge(model, {settings})
+      , fx.map(SettingsAction)
+      ]
+    return result
+  }
+
 
 const restart = model =>
   [ model
@@ -182,18 +210,19 @@ const report =
 
 export const init =
   ({isActive}:{isActive:boolean}):[Model, Effects<Action>] => {
-  const [settings, fx] =
-    Settings.init(Object.keys(descriptions));
-
-  const result =
-    [ { isActive
-      , settings
+    const model =
+      { isActive
+      , settings: null
       }
-    , fx.map(SettingsAction)
-    ];
 
-  return result;
-};
+    const result =
+      ( isActive
+      ? initSettings(model)
+      : [ model, Effects.none ]
+      );
+
+    return result;
+  };
 
 
 
