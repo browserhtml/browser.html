@@ -179,7 +179,7 @@ export const update =
       case 'Editable':
         return mapFX(EditableAction, Editable.update(model, action.editable));
       case 'Change':
-        return mapFX(EditableAction, Editable.update(model, Editable.Change(action.value, action.selection)));
+        return change(model, action.value, action.selection);
       case 'Show':
         return [merge(model, {isVisible: true}), Effects.none];
       case 'Hide':
@@ -197,6 +197,26 @@ export const update =
     }
   };
 
+const change =
+  (model, value, selection) => {
+    const [edit, editFX] =
+      Editable.update(model, Editable.Change(value, selection));
+
+    const fx =
+      ( model.value.includes(edit.value)
+      ? editFX.map(EditableAction)
+      // Only submit a query if new value is not contained by previous value,
+      // as we don't want to keep providing suggestions while user is deleting
+      // input. Once new character is added we'll start suggesting again.
+      : Effects.batch
+        ( [ editFX.map(EditableAction)
+          , Effects.receive(Query())
+          ]
+        )
+      );
+
+    return [edit, fx]
+  }
 
 const decodeKeyDown = Keyboard.bindings({
   'up': always(SuggestPrevious),
@@ -309,9 +329,7 @@ export const view =
       ? style.visible
       : style.hidden
       )
-    ),
-    // Note we submit new query only on `onInput` that's when we expect
-    onInput: forward(address, Query)
+    )
   }, [
     html.figure({
       className: 'input-search-icon',
