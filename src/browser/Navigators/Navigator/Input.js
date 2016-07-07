@@ -28,7 +28,7 @@ export type Model =
   { isVisible: boolean
   , isFocused: boolean
   , value: string
-  , selection: ?Editable.Selection
+  , selection: Editable.Selection
   }
 
 export type Suggestion =
@@ -133,7 +133,11 @@ export const init =
   [ ( { value: flags.value
       , isFocused: !!flags.isFocused
       , isVisible: !!flags.isVisible
-      , selection: null
+      , selection:
+        { start: flags.value.length
+        , end: flags.value.length
+        , direction: 'none'
+        }
       }
     )
   , Effects.none
