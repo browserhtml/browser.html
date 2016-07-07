@@ -26,7 +26,7 @@ export type Selection =
   }
 
 export type Model =
-  { selection: ?Selection
+  { selection: Selection
   , value: string
   }
 
@@ -68,7 +68,7 @@ const clear = <model:Model>
   merge(model, {value: "", selection: null});
 
 export const init =
-  (value:string, selection:?Selection=null):[Model, Effects<Action>] =>
+  (value:string, selection:Selection):[Model, Effects<Action>] =>
   [ { value
     , selection
     }

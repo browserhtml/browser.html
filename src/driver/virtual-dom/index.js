@@ -195,16 +195,30 @@ export const focus = metaBooleanProperty((node, next, previous) => {
 });
 
 
-// Equality checking for selections.
-const isSameSelection = (a, b) =>
-  (a && b && a.start === b.start && a.end === b.end && a.direction === b.direction);
-
 export const selection = metaProperty((node, next, previous) => {
-  if (next != null && !isSameSelection(next, previous)) {
-    const {start, end, direction} = next;
-    node.setSelectionRange(start === Infinity ? node.value.length : start,
-                           end === Infinity ? node.value.length : end,
-                           direction);
+  const {direction} = next
+  const start =
+    ( next.start === Infinity
+    ? node.value.length
+    : next.start
+    );
+  const end =
+    ( next.end === Infinity
+    ? node.value.length
+    : next.end
+    );
+
+  // Note that call to `node.setSelectionRange` triggers `select` event
+  // regardless of whether there was a change in selection. In order to avoid
+  // potential inifinite selection change loop we check if call will actually
+  // change a selection & only perform call if it will.
+  const isUpdateRequired =
+    node.selectionStart !== start ||
+    node.selectionEnd !== end ||
+    node.selectionDirection !== direction
+
+  if (isUpdateRequired) {
+    node.setSelectionRange(start, end, direction);
   }
 });
 

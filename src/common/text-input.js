@@ -35,7 +35,7 @@ export type ContextStyle = Rules
 
 export type Model =
   { value: string
-  , selection: ?Editable.Selection
+  , selection: Editable.Selection
   , placeholder: ?string
   , isDisabled: boolean
   , isFocused: boolean
@@ -95,7 +95,14 @@ export const init =
   ):[Model, Effects<Action>] =>
   [ { value
     , placeholder
-    , selection
+    , selection:
+      ( selection == null
+      ? { start: value.length
+        , end: value.length
+        , direction: 'none'
+        }
+      : selection
+      )
     , isDisabled
     , isFocused: false
     }
