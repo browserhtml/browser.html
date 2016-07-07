@@ -140,7 +140,7 @@ export const init =
   ];
 
 const suggest = (model, {query, match, hint}) =>
-  ( model.value !== query
+  ( getUnselectedValue(model) !== query
   ? [model, Effects.none]
   : enterSelectionRange
     ( model
@@ -152,6 +152,13 @@ const suggest = (model, {query, match, hint}) =>
     , match.length
     , 'backward'
     )
+  )
+
+const getUnselectedValue
+  = model =>
+  ( model.selection == null
+  ? model.value
+  : model.value.substr(0, model.selection.start)
   )
 
 export const update =
