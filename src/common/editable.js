@@ -63,9 +63,18 @@ const change = <model:Model>
   (model:model, value:string, selection:Selection):model =>
   merge(model, {selection, value});
 
+const empty =
+  { value: ""
+  , selection:
+    { start: 0
+    , end: 0
+    , direction: "none"
+    }
+  }
+
 const clear = <model:Model>
   (model:model):model =>
-  merge(model, {value: "", selection: null});
+  merge(model, empty);
 
 export const init =
   (value:string, selection:Selection):[Model, Effects<Action>] =>
