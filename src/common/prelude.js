@@ -19,9 +19,15 @@ export type Tagged <tag, kind>
     , source: kind
     }
 
-export const merge = <model:{}>
+// Misterious `$Shape` polymorphic type is an experimental flow feature that
+// will likely be replaced in the future with something more generally useful.
+// Type `$Shape<t>` is the type of the objects which include all or a part of
+// the fields of `t` type. In this context this will tell flow to make sure
+// that fields of `patch` are type compatible with a corresponding fields of
+// a `model`.
+export const merge = <model:{}, patch:$Shape<model>>
   ( model:model
-  , changes:{[key:string]: any}
+  , changes:patch
   ):model => {
   let result = model
   for (let key in changes) {
