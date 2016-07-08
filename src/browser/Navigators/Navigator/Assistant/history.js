@@ -130,7 +130,7 @@ export const init =
 
 const unselect =
   model =>
-  [ merge(model, {selected: null})
+  [ merge(model, {selected: -1})
   , Effects.none
   ]
 

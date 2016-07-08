@@ -22,7 +22,7 @@ import type {Address, DOM} from "reflex"
 import type {Integer} from "../../common/prelude"
 
 export type Model =
-  { nextID: number
+  { nextID: Integer
   , active: Integer
   , order: [Cell.ID]
   , cells: {[key:Cell.ID]: Cell.Model}
@@ -117,7 +117,7 @@ const createCell =
       ( model
       , { nextID: model.nextID + 1
         , order: [...model.order, id]
-        , active: id
+        , active: model.nextID
         , cells: merge
           ( model.cells
           , {[id]: cell}
