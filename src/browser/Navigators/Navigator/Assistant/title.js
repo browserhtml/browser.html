@@ -50,7 +50,10 @@ export const render =
 export const view =
   (title:?string, isSelected:boolean):DOM =>
   thunk
-  ( `${title}`
+  ( ( title == null
+    ? ""
+    : title
+    )
   , render
   , title
   , isSelected

@@ -581,7 +581,7 @@ const commitInput =
   model =>
   updateAssistant
   ( model
-  , Assistant.Query(model.input.value)
+  , Assistant.Query(model.input.query)
   )
 
 const submitInput =
@@ -591,7 +591,7 @@ const submitInput =
   , model
   , [ ResetAssistant
     , FocusOutput
-    , Navigate(model.input.value)
+    , Navigate(model.input.edit.value)
     ]
   );
 

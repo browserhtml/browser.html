@@ -60,7 +60,8 @@ export function mix(...styles:Array<?Rules>):Rules {
     if (style) {
       // @FlowIssue: Flow isn't very friendly with symbols.
       if (style[ID]) {
-        id = id ? `${id}+${style[ID]}` : style[ID];
+        // @FlowIssue: Flow isn't very friendly with symbols.
+        id = id ? `${String(id)}+${String(style[ID])}` : style[ID];
       } else if (typeof(style) === "object") {
         id = null;
       } else {

@@ -12,7 +12,6 @@ import {cursor} from "../../common/cursor"
 import {ok, error} from "../../common/result";
 import * as Unknown from '../../common/unknown';
 import * as Focusable from '../../common/focusable';
-import * as Editable from '../../common/editable';
 import * as TextInput from '../../common/text-input';
 
 
@@ -31,15 +30,9 @@ export type Action =
   | { type: "Edit" }
   | { type: "Abort" }
   | { type: "Submit" }
-  | { type: "Save"
-    , save: Value
-    }
-  | { type: "Change"
-    , change: Value
-    }
-  | { type: "TextInput"
-    , textInput: TextInput.Action
-    }
+  | { type: "Save", save: Value }
+  | { type: "Change", change: Value }
+  | { type: "TextInput", textInput: TextInput.Action }
 
 
 const TextInputAction =
@@ -70,7 +63,7 @@ export const Change =
     }
   );
 
-const FocusInput:Action = TextInputAction(TextInput.Focus);
+const FocusInput:Action = TextInputAction(TextInput.Activate);
 const DisableInput:Action = TextInputAction(TextInput.Disable);
 const EnableInput:Action = TextInputAction(TextInput.Enable);
 const ChangeInput = compose(TextInputAction, TextInput.Change);
@@ -122,7 +115,7 @@ const abort = model =>
   );
 
 const submit = model => {
-  const change = parseInput(model.input.value);
+  const change = parseInput(model.input.edit.value);
   const result =
     ( change.isOk
     ? [ merge(model, {isEditing: false})
@@ -230,7 +223,7 @@ const viewNumber = (value, address, contextStyle) =>
     }
   );
 
-const viewString = (value, address, contextStyle) =>
+const viewString = (value:string, address, contextStyle) =>
   html.code
   ( { style: Style(styleSheet.string, contextStyle)
     , onClick: forward(address, always(Edit))
@@ -239,7 +232,7 @@ const viewString = (value, address, contextStyle) =>
     ]
   );
 
-const viewBoolean = (value, address, contextStyle) =>
+const viewBoolean = (value:boolean, address, contextStyle) =>
   html.code
   ( { style: Style(styleSheet.boolean, contextStyle)
     , onClick:
@@ -249,7 +242,7 @@ const viewBoolean = (value, address, contextStyle) =>
         : address(Save(!value))
         )
     }
-  , [ `${value}`
+  , [ value.toString()
     ]
   );
 
@@ -263,20 +256,17 @@ const viewJSON = (value, address, contextStyle) =>
   );
 
 const viewValue = (value, address, contextStyle) => {
-  const type = typeof(value)
-
-  const view =
-    ( type === "number"
-    ? viewNumber(value, address, contextStyle)
-    : type === "string"
-    ? viewString(value, address, contextStyle)
-    : type === "boolean"
-    ? viewBoolean(value, address, contextStyle)
-    : viewJSON(value, address, contextStyle)
-    );
-
-  return view
-};
+  switch (typeof(value)) {
+    case "number":
+      return viewNumber(value, address, contextStyle)
+    case "string":
+      return viewString(value, address, contextStyle)
+    case "boolean":
+      return viewBoolean(value, address, contextStyle)
+    default:
+      return viewJSON(value, address, contextStyle)
+  }
+}
 
 const viewInput = TextInput.view
   ( "input"

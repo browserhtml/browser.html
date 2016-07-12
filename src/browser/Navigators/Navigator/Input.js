@@ -1,14 +1,15 @@
-/* @flow */
+/* @noflow */
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {html, forward, Effects} from 'reflex';
-import {on, focus, selection} from '@driver';
+import {on, focus as isFocused, selection} from '@driver';
 import {identity} from '../../../lang/functional';
-import {always, merge, mapFX} from '../../../common/prelude';
+import {always, merge, mapFX, appendFX} from '../../../common/prelude';
 import {compose, debounce} from '../../../lang/functional';
+import {cursor} from '../../../common/cursor';
 import * as Focusable from '../../../common/focusable';
 import * as Editable from '../../../common/editable';
 import * as Keyboard from '../../../common/keyboard';
@@ -24,12 +25,19 @@ export type Flags =
   , value: string
   }
 
-export type Model =
-  { isVisible: boolean
-  , isFocused: boolean
-  , value: string
-  , selection: Editable.Selection
+export class Model {
+  isVisible: boolean;
+  edit: Editable.Model;
+  focus: Focusable.Model;
+  query: string;
+  constructor(query:string, isVisible:boolean, edit:Editable.Model, focus:Focusable.Model) {
+    this.query = query
+    this.isVisible = isVisible
+    this.edit = edit
+    this.focus = focus
   }
+}
+
 
 export type Suggestion =
   { query: string
@@ -99,28 +107,6 @@ const EditableAction =
 
 const Clear:Action = EditableAction(Editable.Clear);
 
-const enter = (model) => {
-  const [next, focusFx] =
-    mapFX(FocusableAction, Focusable.update(model, Focusable.Focus));
-  const [result, editFx] =
-    mapFX(EditableAction, Editable.update(next, Editable.Clear));
-  return [result, Effects.batch([focusFx, editFx])];
-}
-
-const enterSelection = (model, value, direction='forward') =>
-  enterSelectionRange(model, value, 0, value.length, direction);
-
-const enterSelectionRange = (model, value, start, end, direction) => {
-  const [next, focusFx] =
-    mapFX(FocusableAction, Focusable.update(model, Focusable.Focus));
-
-  const [result, editFx] =
-    mapFX(EditableAction, Editable.update(next, Editable.Change(value, {
-      start, end, direction
-    })));
-
-  return [result, Effects.batch([focusFx, editFx])];
-}
 
 const defaultFlags =
   { isFocused: false
@@ -128,24 +114,39 @@ const defaultFlags =
   , value: ""
   }
 
+const assemble =
+  ( query
+  , isVisible
+  , [edit, edit$]
+  , [focus, focus$]
+  ) =>
+  [ new Model(query, isVisible, edit, focus)
+  , Effects.batch
+    ( [ focus$.map(FocusableAction)
+      , edit$.map(EditableAction)
+      ]
+    )
+  ]
+
 export const init =
   (flags:Flags=defaultFlags):[Model, Effects<Action>] =>
-  [ ( { value: flags.value
-      , isFocused: !!flags.isFocused
-      , isVisible: !!flags.isVisible
-      , selection:
-        { start: flags.value.length
-        , end: flags.value.length
-        , direction: 'none'
-        }
+  assemble
+  ( flags.value
+  , !!flags.isVisible
+  , Editable.init
+    ( flags.value
+    , { start: flags.value.length
+      , end: flags.value.length
+      , direction: 'none'
       }
     )
-  , Effects.none
-  ];
+  , Focusable.init(!!flags.isFocused)
+  )
+
 
 const suggest = (model, {query, match, hint}) =>
-  ( getUnselectedValue(model) !== query
-  ? [model, Effects.none]
+  ( model.query !== query
+  ? nofx(model)
   : enterSelectionRange
     ( model
     , match
@@ -158,77 +159,204 @@ const suggest = (model, {query, match, hint}) =>
     )
   )
 
-const getUnselectedValue
-  = model =>
-  ( model.selection == null
-  ? model.value
-  : model.value.substr(0, model.selection.start)
-  )
-
 export const update =
   (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
       case 'Abort':
-        return [merge(model, {isVisible: false}), Effects.none];
+        return abort(model);
       // We don't really do anything on submit action for now
       // although in a future we may clear the value or do blur
       // the input.
       case 'Submit':
-        return [model, Effects.none];
+        return submit(model);
       case 'Enter':
-        return enter(merge(model, {isVisible: true}));
+        return enter(model);
       case 'Focus':
-        return mapFX(FocusableAction, Focusable.update
-        ( merge(model, {isFocused: true, isVisible: true})
-        , Focusable.Focus
-        ));
+        return focus(model);
       case 'Blur':
-        return mapFX(FocusableAction, Focusable.update(model, Focusable.Blur));
+        return blur(model);
       case 'EnterSelection':
-        return enterSelection(merge(model, {isVisible: true}), action.value);
+        return enterSelection(model, action.value);
       case 'Focusable':
-        return mapFX(FocusableAction, Focusable.update(model, action.focusable));
+        return delegateFocusUpdate(model, action.focusable);
       case 'Editable':
-        return mapFX(EditableAction, Editable.update(model, action.editable));
+        return delegateEditUpdate(model, action.editable);
       case 'Change':
         return change(model, action.value, action.selection);
       case 'Show':
-        return [merge(model, {isVisible: true}), Effects.none];
+        return show(model);
       case 'Hide':
-        return [merge(model, {isVisible: false}), Effects.none];
+        return hide(model);
       case 'SuggestNext':
-        return [model, Effects.none];
+        return suggestNext(model);
       case 'SuggestPrevious':
-        return [model, Effects.none];
+        return suggestPrevious(model);
       case 'Suggest':
         return suggest(model, action.suggest);
       case 'Query':
-        return [model, Effects.none];
+        return query(model);
       default:
         return Unknown.update(model, action);
     }
   };
 
+const setVisibility =
+  (model, isVisible) =>
+  nofx
+  ( new Model
+    ( model.query
+    , false
+    , model.edit
+    , model.focus
+    )
+  )
+
+const updateFocus =
+  (query, isVisible, edit, [focus, fx]) =>
+  [ new Model
+    ( query
+    , isVisible
+    , edit
+    , focus
+    )
+  , fx.map(FocusableAction)
+  ]
+
+const updateEdit =
+  (query, isVisible, [edit, fx], focus) =>
+  [ new Model
+    ( query
+    , isVisible
+    , edit
+    , focus
+    )
+  , fx.map(EditableAction)
+  ]
+
+const delegateFocusUpdate =
+  (model, action) =>
+  updateFocus
+  ( model.query
+  , model.isVisible
+  , model.edit
+  , Focusable.update(model.focus, action)
+  )
+
+const delegateEditUpdate =
+  (model, action) =>
+  updateEdit
+  ( model.query
+  , model.isVisible
+  , Editable.update(model.edit, action)
+  , model.focus
+  )
+
+const abort =
+  (model) =>
+  setVisibility(model, false)
+
+const show =
+  model =>
+  setVisibility(model, true);
+
+const hide =
+  model =>
+  setVisibility(model, true);
+
+const nofx =
+  model =>
+  [model, Effects.none];
+
+const submit = nofx;
+const suggestNext = nofx;
+const suggestPrevious = nofx;
+const query = nofx;
+
+const blur =
+  model =>
+  updateFocus
+  ( model.query
+  , model.isVisible
+  , model.edit
+  , Focusable.update(model.focus, Focusable.Blur)
+  );
+
+const focus =
+  model =>
+  updateFocus
+  ( model.query
+  , true
+  , model.edit
+  , Focusable.update(model.focus, Focusable.Focus)
+  )
+
+const enter =
+  model =>
+  assemble
+  ( ""
+  , true
+  , Editable.update(model.edit, Editable.Clear)
+  , Focusable.update(model.focus, Focusable.Focus)
+  )
+
+const enterSelectionRange =
+  (model, value, start, end, direction) =>
+  assemble
+  ( model.query
+  , true
+  , Editable.update(model.edit, Editable.Change(model.query, {
+      start, end, direction
+    }))
+  , Focusable.update(model.focus, Focusable.Focus)
+);
+
+const enterSelection =
+  (model, value, direction='backward') =>
+  enterSelectionRange(model, value, 0, value.length, direction);
+
 const change =
-  (model, value, selection) => {
-    const [edit, editFX] =
-      Editable.update(model, Editable.Change(value, selection));
+  (model, value, selection) =>
+  // If new value isn't contained by the former one, just update input &
+  // submit new query.
+  ( !model.edit.value.startsWith(value)
+  ? appendFX
+    ( Effects.receive(Query())
+    , updateValueAndSelection(model, value, selection)
+    )
+  : model.query === value
+  ? delegateEditUpdate(model, Editable.change(model.edit, action.edit.value, action.edit.selection))
+  // If former query value contains new value then user performed a delete
+  // (of the value or selection). In this case we update
+  : model.query.includes(value)
+  ? editAndQuery(model, value, value, selection)
+  // Otherwise user typed whatever was already in selection, in which case
+  // we just update selection.
+  : editAndQuery
+    ( model
+    , value
+    , model.edit.value
+    , { start: value.length
+      , end: model.edit.value.length
+      , direction: 'backward'
+      }
+    )
+  );
 
-    const fx =
-      ( model.value.includes(edit.value)
-      ? editFX.map(EditableAction)
-      // Only submit a query if new value is not contained by previous value,
-      // as we don't want to keep providing suggestions while user is deleting
-      // input. Once new character is added we'll start suggesting again.
-      : Effects.batch
-        ( [ editFX.map(EditableAction)
-          , Effects.receive(Query())
-          ]
-        )
-      );
+const editAndQuery =
+  (model, query, value) =>
+  appendFX
+  ( Effects.receive(Query())
+  , updateEdit
+    ( query
+    , model.isVisible
+    , Editable.update(model.edit, Editable.Change(value, selection))
+    , model.focus
+    )
+  )
 
-    return [edit, fx]
-  }
+const updateValueAndSelection =
+  (model, value, selection) =>
+  delegateEditUpdate(model, Editable.Change(value, selection))
 
 const decodeKeyDown = Keyboard.bindings({
   'up': always(SuggestPrevious),
@@ -356,15 +484,15 @@ export const view =
           ? style.fieldFocused
           : style.fieldBlured
           )
-        , ( model.value.length == 0
+        , ( model.edit.value.length == 0
           ? style.fieldEmpty
           : style.fieldNotEmpty
           )
         ),
       type: 'text',
-      value: model.value,
-      isFocused: focus(model.isFocused),
-      selection: selection(model.selection),
+      value: model.edit.value,
+      isFocused: isFocused(model.focus.isFocused),
+      selection: selection(model.edit.selection),
       onInput: on(address, readChange),
       onSelect: on(address, readSelect),
       onFocus: on(address, always(Focus)),
