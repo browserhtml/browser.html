@@ -35,7 +35,7 @@
     "pouchdb": "4.0.0",
     "querystring": "0.2.0",
     "reflex": "0.4.1",
-    "reflex-virtual-dom-driver": "0.2.1",
+    "reflex-virtual-dom-driver": "0.2.3",
     "tinycolor2": "1.1.2"
   },
   "devDependencies": {
@@ -52,7 +52,7 @@
     "browserify": "13.0.0",
     "browserify-hmr": "0.3.1",
     "ecstatic": "0.8.0",
-    "flow-bin": "0.27.0",
+    "flow-bin": "0.28.0",
     "gulp": "3.9.1",
     "gulp-sequence": "0.4.5",
     "gulp-sourcemaps": "1.6.0",
