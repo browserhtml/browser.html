@@ -19,6 +19,8 @@ export class Model {
     this.isFocused = isFocused
   }
 }
+Model.focused = new Model(true)
+Model.blured = new Model(false)
 
 export type Action =
   | { type: "Focus" }
