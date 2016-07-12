@@ -9,8 +9,8 @@ import {Style} from '../common/style';
 import {compose} from '../lang/functional';
 import {tag, tagged, anotate, mapFX, always} from '../common/prelude';
 import * as Unknown from '../common/unknown';
-import * as Focus from '../common/Focusable';
-import * as Edit from '../common/Editable';
+import * as Focus from '../common/focusable';
+import * as Edit from '../common/editable';
 import * as Control from '../common/control';
 
 import {on, focus, selection} from '@driver';
