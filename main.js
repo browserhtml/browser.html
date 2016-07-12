@@ -53,7 +53,8 @@ var onReady = function() {
     , height: 740
     , frame: false
     , webPreferences:
-      { nodeIntegration: false
+      { nodeIntegration: true
+      , preload: path.resolve(path.join('.'), 'electron-preload.js')
       }
     }
   );
