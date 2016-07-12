@@ -23,17 +23,20 @@ export type Sheet =
 
 const composedStyles = Object.create(null);
 
-const ID = Symbol('style-sheet/id');
+// Flow's support for computed properties is weak, especially for symbols.
+// There for we trick flow into thinking that `ID` is a string.
+// See: https://github.com/facebook/flow/issues/252
+const ID = Symbol('style-sheet/id')/*::.toString()*/;
 var id = 0;
 
 export const StyleSheet = {
   create: <sheet:Sheet>(sheet:sheet):sheet => {
-    const result = {}
+    // @FlowIssue: Flow does not seem to get it's same type.
+    const result:sheet = {}
     for (var name in sheet) {
       if (sheet.hasOwnProperty(name)) {
         const style = sheet[name]
         if (typeof(style) === 'object' && style != null) {
-          // @FlowIssue: Flow does not work with symbols
           style[ID] = ++id;
           result[name] = style;
         }
@@ -43,7 +46,6 @@ export const StyleSheet = {
       }
     }
 
-    // @FlowIssue: Flow does not seem to get it's same type.
     return result
   }
 }
@@ -54,13 +56,12 @@ export const StyleSheet = {
 export function mix(...styles:Array<?Rules>):Rules {
   var length = styles.length;
   var index = 0;
-  var id = null;
+  var id:?string = null;
   while (index < length) {
     const style = styles[index];
     if (style) {
-      // @FlowIssue: Flow isn't very friendly with symbols.
       if (style[ID]) {
-        id = id ? `${id}+${style[ID]}` : style[ID];
+        id = id ? `${String(id)}+${String(style[ID])}` : String(style[ID]);
       } else if (typeof(style) === "object") {
         id = null;
       } else {
@@ -73,23 +74,23 @@ export function mix(...styles:Array<?Rules>):Rules {
     }
   }
 
-  const composedStyle = id !== null ?
-    composedStyles[id/*::.toString()*/] :
-    null;
+  const composedStyle:?Rules =
+    ( id != null
+    ? composedStyles[id]
+    : null
+    );
 
   if (composedStyle != null) {
     return composedStyle
   }
   else if (id != null) {
     const composedStyle = Object.assign({}, ...styles);
-    // @FlowIssue: Flow does not get spread here.
     composedStyle[ID] = id;
-    composedStyles[id/*::.toString()*/] = composedStyle;
+    composedStyles[id] = composedStyle;
     return composedStyle;
   }
   else {
     const composedStyle = Object.assign({}, ...styles);
-    // @FlowIssue: Flow does not get spread here.
     composedStyle[ID] = null;
     return composedStyle;
   }

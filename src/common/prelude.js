@@ -121,9 +121,9 @@ const alwaysSymbol =
   : Symbol('always')
   )
 
-// @FlowIssue: Frow is unable to infer
+// @FlowIssue: #2071
 const Null = () => null;
-// @FlowIssue: Frow is unable to infer
+// @FlowIssue: #2071
 const Void = () => void(0);
 
 export const always = <a> (a:a):(...args:Array<any>)=>a => {
@@ -141,7 +141,7 @@ export const always = <a> (a:a):(...args:Array<any>)=>a => {
     const f = () => value
     f.value = value
     f.toString = Always.toString
-    // @FlowIssue: Flow guards against primitives but we don't care if they're dropped.
+    // @FlowIssue: Flow guards against property assignements on primitives, we know they're ignored and it's fine.
     value[alwaysSymbol] = f
     return f
   }

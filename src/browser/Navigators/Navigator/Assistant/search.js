@@ -141,8 +141,7 @@ const byURI =
 
 const decodeResponseFailure =
   request =>
-  // @FlowIssue: Flow does not know about `request.response`
-  error(Error(`Can not decode ${request.respose} received from ${request.url}`))
+  error(Error(`Can not decode ${request.response} received from ${request.url || ""}`))
 
 const decodeMatches =
   matches =>
@@ -158,11 +157,9 @@ const decodeMatch =
     }
   );
 
-const decodeResponse = ({target: request}) =>
-  // @FlowIssue: Flow does not know about `request.responseType`
+const decodeResponse = (request) =>
   ( request.responseType !== 'json'
-  // @FlowIssue: Flow does not know about `request.url`
-  ? error(Error(`Can not decode ${request.responseType} type response from ${request.url}`))
+  ? error(Error(`Can not decode ${request.responseType} type response from ${request.url || ""}`))
   : request.response == null
   ? decodeResponseFailure(request)
   : request.response[1] == null
@@ -205,7 +202,7 @@ const search =
     };
     request.onload = event => {
       delete pendingRequests[id];
-      const result = decodeResponse(event);
+      const result = decodeResponse(request);
       if (result.isOk) {
         succeed({ queryID: id, matches: result.value });
       } else {

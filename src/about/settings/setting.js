@@ -249,7 +249,7 @@ const viewBoolean = (value, address, contextStyle) =>
         : address(Save(!value))
         )
     }
-  , [ `${value}`
+  , [ value.toString()
     ]
   );
 
@@ -263,20 +263,17 @@ const viewJSON = (value, address, contextStyle) =>
   );
 
 const viewValue = (value, address, contextStyle) => {
-  const type = typeof(value)
-
-  const view =
-    ( type === "number"
-    ? viewNumber(value, address, contextStyle)
-    : type === "string"
-    ? viewString(value, address, contextStyle)
-    : type === "boolean"
-    ? viewBoolean(value, address, contextStyle)
-    : viewJSON(value, address, contextStyle)
-    );
-
-  return view
-};
+  switch (typeof(value)) {
+    case "number":
+      return viewNumber(value, address, contextStyle)
+    case "string":
+      return viewString(value, address, contextStyle)
+    case "boolean":
+      return viewBoolean(value, address, contextStyle)
+    default:
+      return viewJSON(value, address, contextStyle)
+  }
+}
 
 const viewInput = TextInput.view
   ( "input"

@@ -139,8 +139,7 @@ const readModifiers = ({type, metaKey, shiftKey, altKey, ctrlKey}) => {
 
 
 const readKey = key => readKey.table[key] || key;
-// @FlowIssue: Sigh..
-readKey.table = Object.assign(Object.create(null), {
+readKey.table = Object.assign((Object.create(null):{[key:string]: string}), {
   'ctrl': 'Control',
   'accel': platform == 'darwin' ? 'meta' : 'control',
   'ArrowLeft': 'Left',

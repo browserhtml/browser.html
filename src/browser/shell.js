@@ -186,7 +186,7 @@ const toggleFullscreen = model =>
 
 
 export const update =
-  (model:Model, action:Action) =>
+  (model:Model, action:Action):[Model, Effects<Action>] =>
   ( action.type === "Focus"
   ? focus(model)
   : action.type === "Blur"
