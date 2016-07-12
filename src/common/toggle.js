@@ -183,10 +183,10 @@ export const view =
     onMouseUp: onMouseUp(address)
   });
 
-export const onFocus:(a:Address<Action>) => Address<*> = anotate(Button.onFocus, ButtonAction)
-export const onBlur:(a:Address<Action>) => Address<*> = anotate(Button.onBlur, ButtonAction)
-export const onMouseOver:(a:Address<Action>) => Address<*> = anotate(Button.onMouseOver, ButtonAction)
-export const onMouseOut:(a:Address<Action>) => Address<*> = anotate(Button.onMouseOut, ButtonAction)
-export const onClick:(a:Address<Action>) => Address<*> = anotate(Button.onClick, ButtonAction)
-export const onMouseDown:(a:Address<Action>) => Address<*> = anotate(Button.onMouseDown, ButtonAction)
-export const onMouseUp:(a:Address<Action>) => Address<*> = anotate(Button.onMouseUp, ButtonAction)
+export const onFocus = anotate(Button.onFocus, ButtonAction)
+export const onBlur = anotate(Button.onBlur, ButtonAction)
+export const onMouseOver = anotate(Button.onMouseOver, ButtonAction)
+export const onMouseOut = anotate(Button.onMouseOut, ButtonAction)
+export const onClick = anotate(Button.onClick, ButtonAction)
+export const onMouseDown = anotate(Button.onMouseDown, ButtonAction)
+export const onMouseUp = anotate(Button.onMouseUp, ButtonAction)
