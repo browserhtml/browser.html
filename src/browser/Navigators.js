@@ -185,15 +185,13 @@ export const init =
         ( Card
         , deck2
         , { output:
-            { uri: Runtime.env.url
+            { uri: URI.read(String(Runtime.env.url))
             , disposition: 'default'
+            , name: ''
             , features: ''
             , ref: null
             , guestInstanceId: null
             }
-          , overlay: true
-          , isPinned: true
-          , isInputEmbedded: true
           }
         )
       : [deck2, $deck2]
