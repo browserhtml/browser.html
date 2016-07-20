@@ -13,6 +13,7 @@ import * as Config from "../browserhtml.json";
 import * as Runtime from "./common/runtime";
 import {Renderer} from "@driver";
 import * as Devtools from "./devtools"
+import type {Address} from "reflex"
 
 const isReload = window.application != null;
 console.timeStamp =
@@ -24,7 +25,10 @@ console.timeStamp =
 // If hotswap change address so it points to a new mailbox &r
 // re-render.
 if (isReload) {
-  window.application.address(Devtools.Persist);
+  // Note: We type anotatet `window.application.address` because flow treats
+  // anything on window as `any` type, in other words it is not going to type
+  // infer this call otherwise.
+  (window.application.address:Address<Devtools.Action>)(Devtools.Persist);
 }
 
 document.body.classList.toggle('use-native-titlebar',

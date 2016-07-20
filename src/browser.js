@@ -409,8 +409,11 @@ const OpenURL = ({url}) =>
 // there for we define them by just wrapping actions from that module to avoid
 // additional wiring (which is implementation detail that may change).
 export const ToggleDevtools = DevtoolsAction(Devtools.Toggle);
+const CaptureSnapshot = { type: "CaptureSnapshot" };
 const PrintSnapshot = { type: "PrintSnapshot" };
 const PublishSnapshot = { type: "PublishSnapshot" };
+const StartRecording = { type: "StartRecording" };
+const StopRecording = { type: "StopRecording" };
 export const Blur = ShellAction(Shell.Blur);
 export const Focus = ShellAction(Shell.Focus);
 const ExpandSidebar = SidebarAction(Sidebar.Expand);
@@ -465,8 +468,11 @@ const decodeKeyDown = Keyboard.bindings({
   'F5': always(ReloadRuntime),
   'meta control r': always(ReloadRuntime),
   [`${modifier} q`]: always(CloseRuntime),
-  'meta alt 3': always(PrintSnapshot),
-  'meta alt 4': always(PublishSnapshot)
+  'meta alt 2': always(PrintSnapshot),
+  'meta alt 3': always(CaptureSnapshot),
+  'meta alt 4': always(PublishSnapshot),
+  'meta alt 5': always(StartRecording),
+  'meta alt 6': always(StopRecording)
 });
 
 const decodeKeyUp = Keyboard.bindings({
@@ -744,6 +750,14 @@ export const update =
         return [model, Effects.none];
       // TODO: Delegate to modules that need to do cleanup.
       case 'LiveReload':
+        return [model, Effects.none];
+      case 'PrintSnapshot':
+        return [model, Effects.none];
+      case 'UploadSnapshot':
+        return [model, Effects.none];
+      case 'StopRecording':
+        return [model, Effects.none];
+      case 'StartRecording':
         return [model, Effects.none];
 
       default:
