@@ -9,7 +9,7 @@ import {merge, always, batch} from "../../common/prelude";
 import {cursor} from "../../common/cursor";
 import * as Style from "../../common/style";
 
-import * as Assistant from "./Navigator/Assistant";
+import * as Assistant from "./Navigator/Assist";
 import * as Overlay from "./Navigator/Overlay";
 import * as Input from "./Navigator/Input";
 import * as Output from "./Navigator/WebView";
@@ -60,6 +60,7 @@ export type Action =
   | { type: "AbortInput" }
   | { type: "SuggestNext" }
   | { type: "SuggestPrevious" }
+  | { type: "CancelSuggestion" }
   | { type: "Input", input: Input.Action }
 
   // Output
@@ -78,7 +79,7 @@ export type Action =
   | { type: "Output", output: Output.Action }
 
   // Assistant
-  | { type: "Suggest", suggest: Assistant.Suggestion }
+  | { type: "Suggest", suggest: Assistant.Match }
   | { type: "Assistant", assistant: Assistant.Action }
 
   // Overlay
@@ -118,6 +119,7 @@ const ActivateInput = { type: "ActivateInput" }
 const CommitInput = { type: "CommitInput" }
 const SuggestNext = { type: "SuggestNext" }
 const SuggestPrevious = { type: "SuggestPrevious" }
+const CancelSuggestion = { type: "CancelSuggestion" }
 export const GoBack = { type: "GoBack" }
 export const GoForward = { type: "GoForward" }
 export const Reload = { type: "Reload" }
@@ -159,6 +161,8 @@ const tagInput =
         return SuggestNext
       case "SuggestPrevious":
         return SuggestPrevious
+      case "CancelSuggestion":
+        return CancelSuggestion;
       default:
         return { type: 'Input', input: action }
     }
@@ -396,6 +400,8 @@ export const update =
         return suggestNext(model);
       case 'SuggestPrevious':
         return suggestPrevious(model);
+      case 'CancelSuggestion':
+        return cancelSuggestion(model);
       case 'Input':
         return updateInput(model, action.input);
       case 'Tab':
@@ -637,6 +643,10 @@ const abortInput =
 const suggestNext =
   model =>
   updateAssistant(model, Assistant.SuggestNext);
+
+const cancelSuggestion =
+  model =>
+  updateAssistant(model, Assistant.Unselect);
 
 const suggestPrevious =
   model =>

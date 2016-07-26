@@ -198,6 +198,10 @@ export const appendFX = <model, action>
   ):[model, Effects<action>] =>
   [model, Effects.batch([fx, extraFX])];
 
+export const nofx = <model, action>
+  (state:model):[model, Effects<action>] =>
+  [ state, Effects.none ]
+
 type Port <event, message> =
   (address:Address<message>) =>
   Address<event>
