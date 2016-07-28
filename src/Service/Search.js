@@ -6,7 +6,7 @@
 
 import {Task} from "reflex";
 import {ok, error} from "../common/result";
-import * as Search from "../browser/Navigators/Navigator/Assist/Search"
+import * as Search from "../browser/Navigators/Navigator/Assistant/Search"
 
 const pendingRequests = Object.create(null);
 

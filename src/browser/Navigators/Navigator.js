@@ -9,7 +9,7 @@ import {merge, always, batch} from "../../common/prelude";
 import {cursor} from "../../common/cursor";
 import * as Style from "../../common/style";
 
-import * as Assistant from "./Navigator/Assist/Suggestions";
+import * as Assistant from "./Navigator/Assistant";
 import * as Overlay from "./Navigator/Overlay";
 import * as Input from "./Navigator/Input";
 import * as Output from "./Navigator/WebView";

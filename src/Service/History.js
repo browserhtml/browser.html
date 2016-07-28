@@ -6,7 +6,7 @@
 
 import {Task} from "reflex"
 import {ok, error} from "../common/result"
-import * as History from "../browser/Navigators/Navigator/Assist/History"
+import * as History from "../browser/Navigators/Navigator/Assistant/History"
 import type {Result} from "../common/result"
 
 export const decode =
