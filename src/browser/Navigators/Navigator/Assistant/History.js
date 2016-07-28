@@ -10,10 +10,10 @@ import {merge, always, batch} from "../../../../common/prelude";
 import {Style, StyleSheet} from '../../../../common/style';
 import {ok, error} from '../../../../common/result';
 
-import * as Title from "./title";
+import * as Title from "./Title";
 import * as URL from "./url";
-import * as Icon from "./icon";
-import * as Suggestion from "./suggestion";
+import * as Icon from "./Icon";
+import * as Suggestion from "./Suggestion";
 import * as Unknown from '../../../../common/unknown';
 
 

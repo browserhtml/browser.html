@@ -11,9 +11,9 @@ import {Style, StyleSheet} from '../../../../common/style';
 import {indexOfOffset} from "../../../../common/selector";
 import {ok, error} from '../../../../common/result';
 
-import * as Title from "./title";
-import * as Icon from "./icon";
-import * as Suggestion from "./suggestion";
+import * as Title from "./Title";
+import * as Icon from "./Icon";
+import * as Suggestion from "./Suggestion";
 import * as Unknown from '../../../../common/unknown';
 
 

@@ -6,8 +6,8 @@
 
 import {always, batch, merge, take, move} from "../../../common/prelude"
 import {Effects, html, thunk, forward} from "reflex"
-import * as History from "./Assistant/history"
-import * as Search from "./Assistant/search"
+import * as History from "./Assistant/History"
+import * as Search from "./Assistant/Search"
 import {StyleSheet, Style} from '../../../common/style';
 import {cursor} from '../../../common/cursor';
 import * as Unknown from '../../../common/unknown';
