@@ -15,6 +15,7 @@ import * as Title from "./Title";
 import * as Icon from "./Icon";
 import * as Suggestion from "./Suggestion";
 import * as Unknown from '../../../../common/unknown';
+import * as Service from '../../../../Service/Search';
 
 
 import type {Address, DOM, Never} from "reflex";
@@ -37,15 +38,10 @@ export type Model =
   { size: number
   , limit: number
   , queryID: number
-  , query: ?string
+  , query: string
   , selected: number
   , matches: {[key:URI]: Match}
   , items: Array<URI>
-  }
-
-type SearchResult =
-  { queryID: number
-  , matches: Array<Match>
   }
 
 export type Action =
@@ -59,7 +55,7 @@ export type Action =
   | { type: "SelectPrevious" }
   | { type: "Select", select: URI }
   | { type: "Unselect" }
-  | { type: "UpdateMatches", updateMatches: SearchResult }
+  | { type: "UpdateMatches", updateMatches: Array<Match> }
   | { type: "SearchError", searchError: Error }
   | { type: "ByURI"
     , source:
@@ -139,79 +135,6 @@ const byURI =
     }
   };
 
-const decodeResponseFailure =
-  request =>
-  error(Error(`Can not decode ${request.response} received from ${request.url || ""}`))
-
-const decodeMatches =
-  matches =>
-  ( Array.isArray(matches)
-  ? ok(matches.map(decodeMatch))
-  : error(Error(`Can not decode non array matches ${matches}`))
-  );
-
-const decodeMatch =
-  match =>
-  ( { title: match
-    , uri: `https://duckduckgo.com/html/?q=${encodeURIComponent(match)}`
-    }
-  );
-
-const decodeResponse = (request) =>
-  ( request.responseType !== 'json'
-  ? error(Error(`Can not decode ${request.responseType} type response from ${request.url || ""}`))
-  : request.response == null
-  ? decodeResponseFailure(request)
-  : request.response[1] == null
-  ? decodeResponseFailure(request)
-  : decodeMatches(request.response[1])
-  );
-
-const pendingRequests = Object.create(null);
-
-const abort =
-  id =>
-  new Task((succeed, fail) => {
-    if (pendingRequests[id] != null) {
-      pendingRequests[id].abort();
-      delete pendingRequests[id];
-    }
-  })
-
-const search =
-  ( id:number
-  , input:string
-  , limit:number
-  ):Task<Error, SearchResult> =>
-  new Task((succeed, fail) => {
-    const request = new XMLHttpRequest({ mozSystem: true });
-    pendingRequests[id] = request;
-    const uri = `https://ac.duckduckgo.com/ac/?q=${input}&type=list`
-    request.open
-    ( 'GET'
-    , uri
-    , true
-    );
-    request.responseType = 'json';
-    // @FlowIgnore: We need this property
-    request.url = uri;
-
-    request.onerror = event => {
-      delete pendingRequests[id];
-      fail(Error(`Network request to ${uri} has failed: ${request.statusText}`))
-    };
-    request.onload = event => {
-      delete pendingRequests[id];
-      const result = decodeResponse(request);
-      if (result.isOk) {
-        succeed({ queryID: id, matches: result.value });
-      } else {
-        fail(result.error);
-      }
-    };
-
-    request.send();
-  });
 
 
 export const init =
@@ -308,17 +231,17 @@ const updateQuery =
         }
       )
     , Effects.perform
-      (abort(model.queryID))
+      (Service.abort(model.query))
       .map(Abort)
     ]
   : [ merge(model, {query, queryID: model.queryID + 1 })
     , Effects.batch
       ( [ Effects.perform
-          (abort(model.queryID))
+          (Service.abort(model.query))
           .map(Abort)
 
         , Effects.perform
-          ( search(model.queryID + 1, query, model.limit)
+          ( Service.query(query, model.limit)
             .map(UpdateMatches)
             .recover(SearchError)
           )
@@ -327,21 +250,12 @@ const updateQuery =
     ]
   );
 
-const updateMatches = (model, result) =>
-  ( result.queryID !== model.queryID
-  ? [ model, Effects.none ]
-  : replaceMatches(model, result.matches)
-  );
+const updateMatches =
+  (model, result) =>
+  replaceMatches(model, result)
 
 const replaceMatches = (model, results) => {
-  const top = results[0]
   const query = model.query
-  if (top != null && query != null) {
-    if (!top.title.toLowerCase().startsWith(query.toLowerCase())) {
-      results.unshift(decodeMatch(query))
-    }
-  }
-
   const items = results.map(match => match.uri);
   const matches = {};
   results.forEach(match => matches[match.uri] = match);
@@ -428,7 +342,7 @@ export const reset =
       }
 
     const fx =
-      Effects.perform(abort(state.queryID))
+      Effects.perform(Service.abort(state.query))
       .map(Abort)
 
     return [model, fx]
