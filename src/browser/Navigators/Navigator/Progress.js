@@ -8,7 +8,7 @@
 import {Effects, Task, html} from 'reflex';
 import {ease, easeOutQuart, float} from 'eased';
 import * as Style from '../../../common/style';
-import {always} from '../../../common/prelude';
+import {always, nofx} from '../../../common/prelude';
 import * as Unknown from '../../../common/unknown';
 import * as Runtime from '../../../common/runtime';
 import * as Ref from '../../../common/ref';
@@ -295,14 +295,6 @@ export const update =
         return Unknown.update(model, action);
     }
   };
-
-const nofx =
-  model =>
-  [ model
-  , Effects.none
-  ]
-
-
 
 const standalone =
   { loadStart:

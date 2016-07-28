@@ -1,7 +1,7 @@
 /* @flow */
 
 import {Effects, Task, html, thunk, forward} from "reflex"
-import {merge, always} from "../common/prelude"
+import {merge, always, nofx} from "../common/prelude"
 import {ok, error} from "../common/result"
 import * as Runtime from "../common/runtime"
 import * as Unknown from "../common/unknown"
@@ -92,12 +92,6 @@ export const update = <model, action>
   ? nofx(model)
   : Unknown.update(model, action)
   )
-
-const nofx =
-  model =>
-  [ model
-  , Effects.none
-  ]
 
 const createSnapshot = <model, action>
   (model:Model<model, action>):Task<Error, string> =>

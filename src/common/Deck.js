@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects, Task, html, forward, thunk} from "reflex"
-import {merge} from "../common/prelude"
+import {merge, nofx} from "../common/prelude"
 import * as Unknown from "../common/unknown"
 import {indexOfOffset} from "../common/selector"
 
@@ -111,13 +111,6 @@ export const update = <action, model, flags>
         return Unknown.update(model, action);
     }
   }
-
-const nofx = <model, action>
-  ( model:model ):[model, Effects<action>] =>
-  [ model
-  , Effects.none
-  ]
-
 
 const updateByID = <model, action, flags>
   ( api:Card<action, model, flags>

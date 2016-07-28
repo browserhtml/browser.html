@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects, html, forward, thunk} from "reflex"
-import {merge, always, batch} from "../../common/prelude";
+import {merge, always, batch, nofx} from "../../common/prelude";
 import {cursor} from "../../common/cursor";
 import * as Style from "../../common/style";
 
@@ -475,12 +475,6 @@ export const update =
         return Unknown.update(model, action);
     }
   };
-
-const nofx =
-  (model:Model):[Model, Effects<Action>] =>
-  [ model
-  , Effects.none
-  ];
 
 export const select =
   ( model:Model

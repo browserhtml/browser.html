@@ -8,7 +8,7 @@ import {html, thunk, forward, Effects} from 'reflex';
 import * as Style from '../common/style';
 import * as Toolbar from "./Sidebar/Toolbar";
 import * as Tabs from "./Sidebar/Tabs";
-import {merge, always} from "../common/prelude";
+import {merge, always, nofx} from "../common/prelude";
 import {cursor} from "../common/cursor";
 import * as Unknown from "../common/unknown";
 import * as Easing from "eased";
@@ -195,12 +195,6 @@ const updateAnimation = cursor
     , update: animate
     }
   )
-
-const nofx = <model, action>
-  (model:model):[model, Effects<action>] =>
-  [ model
-  , Effects.none
-  ]
 
 const startAnimation =
   (isAttached, isExpanded, toolbar, [animation, fx]) =>

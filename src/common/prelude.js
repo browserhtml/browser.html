@@ -190,3 +190,7 @@ export const mapFX = <model, from, to>
   , [state, fx]:[model, Effects<from>]
   ):[model, Effects<to>] =>
   [state, fx.map(f)]
+
+export const nofx = <model, action>
+  (state:model):[model, Effects<action>] =>
+  [ state, Effects.none ]

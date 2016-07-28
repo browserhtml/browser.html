@@ -6,7 +6,7 @@ import * as Unknown from "../common/unknown"
 import * as Display from "./Navigators/Display"
 import {Effects, html, forward, thunk} from "reflex"
 import {cursor} from "../common/cursor"
-import {always} from "../common/prelude"
+import {always, nofx} from "../common/prelude"
 import * as Style from "../common/style"
 import * as Easing from "eased"
 import * as Overlay from "./Navigators/Overlay"
@@ -82,12 +82,6 @@ export class Model {
     this.animation = animation;
   }
 }
-
-const nofx =
-  model =>
-  [ model
-  , Effects.none
-  ]
 
 const Card =
   { init: Navigator.init

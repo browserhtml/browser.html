@@ -6,7 +6,7 @@
 
 
 import {Effects, html, forward} from 'reflex';
-import {merge, always, batch} from '../../../common/prelude';
+import {merge, always, nofx, batch} from '../../../common/prelude';
 import {cursor} from '../../../common/cursor';
 import {compose} from '../../../lang/functional';
 import {on} from '@driver';
@@ -394,10 +394,6 @@ const endLoad = (model, time) =>
   , [ PageAction(Page.LoadEnd)
     ]
   );
-
-const nofx = <model, action>
-  (model:model):[model, Effects<action>] =>
-  [ model, Effects.none ]
 
 const connect = nofx;
 

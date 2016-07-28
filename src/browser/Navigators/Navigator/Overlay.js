@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects, html, thunk, forward} from "reflex";
-import {merge, always} from "../../../common/prelude";
+import {merge, always, nofx} from "../../../common/prelude";
 import {cursor} from "../../../common/cursor";
 import * as Style from "../../../common/style";
 import * as Easing from "eased";
@@ -149,12 +149,6 @@ const startAnimation =
     , animation
     )
   , fx.map(tagAnimation)
-  ]
-
-const nofx =
-  model =>
-  [ model
-  , Effects.none
   ]
 
 export const render =

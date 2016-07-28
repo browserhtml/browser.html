@@ -2,6 +2,7 @@
 
 import * as Unknown from "./unknown"
 import {Task, Effects} from "reflex"
+import {nofx} from "./prelude"
 import {ease} from "eased"
 
 
@@ -71,10 +72,6 @@ export const transition = <action, model>
     , duration
     )
   )
-
-const nofx = <model, action>
-  (model:model):[model, Effects<action>] =>
-  [model, Effects.none]
 
 const Tick =
   time =>
