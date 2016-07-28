@@ -200,7 +200,7 @@ export const update =
   : action.type === 'Disable'
   ? updateButtons(model, Button.Disable)
   : action.type === 'FullscreenToggled'
-  ? updateToggle(model, Toggle.Press)
+  ? updateToggle(model, Toggle.Toggle)
   : action.type === 'Ignore'
   ? [model, Effects.none]
   : action.type === 'CloseButton'

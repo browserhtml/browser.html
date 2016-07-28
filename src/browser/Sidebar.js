@@ -145,7 +145,6 @@ const tagToolbar =
         return {
           type: "Toolbar"
         , toolbar: action
-        , action
         }
     }
   };

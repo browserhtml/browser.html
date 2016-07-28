@@ -4,7 +4,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects} from "reflex"
+import {Effects, forward} from "reflex"
+import type {Address} from "reflex"
 
 
 export type ID = string
@@ -194,3 +195,26 @@ export const mapFX = <model, from, to>
 export const nofx = <model, action>
   (state:model):[model, Effects<action>] =>
   [ state, Effects.none ]
+
+export const appendFX = <model, action>
+  ( extraFX: Effects<action>
+  , [model, fx]:[model, Effects<action>]
+  ):[model, Effects<action>] =>
+  [model, Effects.batch([fx, extraFX])];
+
+type Port <event, message> =
+  (address:Address<message>) =>
+  Address<event>
+
+
+export const anotate = <tagged, message, event>
+  ( port: Port<event, message>
+  , tag: (input:message) => tagged
+  ):Port<event, tagged> =>
+  (address:Address<tagged>):Address<event> =>
+  port(forward(address, tag))
+
+export const port = <input, message>
+  (decoder: (incoming:input) => message):Port<input, message> =>
+  (address: Address<message>) =>
+  forward(address, decoder)

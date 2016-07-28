@@ -27,10 +27,10 @@ export type Action =
 
 
 export class Model {
-  
+
   animation: Animation.Model<Display.Model>;
   isVisible: boolean;
-  
+
   constructor(
     isVisible:boolean
   , animation:Animation.Model<Display.Model>

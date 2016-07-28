@@ -60,6 +60,7 @@ export type Action =
   | { type: "AbortInput" }
   | { type: "SuggestNext" }
   | { type: "SuggestPrevious" }
+  | { type: "CancelSuggestion" }
   | { type: "Input", input: Input.Action }
 
   // Output
@@ -78,7 +79,7 @@ export type Action =
   | { type: "Output", output: Output.Action }
 
   // Assistant
-  | { type: "Suggest", suggest: Assistant.Suggestion }
+  | { type: "Suggest", suggest: Assistant.Match }
   | { type: "Assistant", assistant: Assistant.Action }
 
   // Overlay
@@ -118,6 +119,7 @@ const ActivateInput = { type: "ActivateInput" }
 const CommitInput = { type: "CommitInput" }
 const SuggestNext = { type: "SuggestNext" }
 const SuggestPrevious = { type: "SuggestPrevious" }
+const CancelSuggestion = { type: "CancelSuggestion" }
 export const GoBack = { type: "GoBack" }
 export const GoForward = { type: "GoForward" }
 export const Reload = { type: "Reload" }
@@ -139,21 +141,10 @@ export const Deactivate = { type: "Deactivate" }
 export const Activate = { type: "Activate" }
 export const Deselect = { type: "Deselect" }
 export const Select = { type: "Select" }
-export const FocusInput = { type: "Input", input: Input.Focus }
+export const FocusInput = { type: "Input", input: Input.Activate }
 export const HideInput = { type: "Input", input: Input.Hide }
 export const FocusOutput = { type: "Output", output: Output.Focus }
-export const ClearInput =
-  { type: "Input"
-  , input:
-    { type: "Change"
-    , value: ""
-    , selection:
-      { start: 0
-      , end: 0
-      , direction: "none"
-      }
-    }
-  }
+export const ClearInput = { type: "Input", input: Input.Clear }
 
 const tagInput =
   action => {
@@ -162,7 +153,7 @@ const tagInput =
         return SubmitInput
       case "Abort":
         return EscapeInput
-      case "Focus":
+      case "Activate":
         return ActivateInput
       case "Query":
         return CommitInput
@@ -170,6 +161,8 @@ const tagInput =
         return SuggestNext
       case "SuggestPrevious":
         return SuggestPrevious
+      case "CancelSuggestion":
+        return CancelSuggestion;
       default:
         return { type: 'Input', input: action }
     }
@@ -377,7 +370,6 @@ export const update =
   ( model:Model
   , action:Action
   ):[Model, Effects<Action>] => {
-    // console.log(action)
     switch (action.type) {
       case 'NoOp':
         return nofx(model);
@@ -407,6 +399,8 @@ export const update =
         return suggestNext(model);
       case 'SuggestPrevious':
         return suggestPrevious(model);
+      case 'CancelSuggestion':
+        return cancelSuggestion(model);
       case 'Input':
         return updateInput(model, action.input);
       case 'Tab':
@@ -575,7 +569,10 @@ const commitInput =
   model =>
   updateAssistant
   ( model
-  , Assistant.Query(model.input.value)
+  , ( model.input.query === ""
+    ? Assistant.Clear
+    : Assistant.Query(model.input.query, !model.input.deleting)
+    )
   )
 
 const submitInput =
@@ -585,7 +582,7 @@ const submitInput =
   , model
   , [ ResetAssistant
     , FocusOutput
-    , Navigate(model.input.value)
+    , Navigate(model.input.edit.value)
     ]
   );
 
@@ -596,9 +593,9 @@ const escapeInput =
     ( update
     , model
     , [ DeactivateAssistant
-      , FocusOutput
       , HideOverlay
       , ClearInput
+      , FocusOutput
       ]
     )
   : batch
@@ -642,6 +639,10 @@ const abortInput =
 const suggestNext =
   model =>
   updateAssistant(model, Assistant.SuggestNext);
+
+const cancelSuggestion =
+  model =>
+  updateAssistant(model, Assistant.Deselect);
 
 const suggestPrevious =
   model =>
