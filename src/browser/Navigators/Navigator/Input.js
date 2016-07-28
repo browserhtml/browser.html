@@ -56,6 +56,7 @@ export type Suggestion =
 export type Action =
   | { type: 'Submit' }
   | { type: 'Query' }
+  | { type: "Activate" }
   | { type: 'Abort' }
   | { type: 'Enter' }
   | { type: 'EnterSelection', value: string }
@@ -70,8 +71,7 @@ export type Action =
   | { type: 'Focus', focus: Focus.Action }
 
 
-// Create a new input submit action.
-export const Query:()=>Action = always({ type: 'Query' });
+export const Query = { type: 'Query' };
 export const Suggest =
   (suggestion:Suggestion):Action =>
   ( { type: "Suggest"
@@ -79,11 +79,15 @@ export const Suggest =
     }
   );
 
-const FocusAction = action =>
-  ( { type: 'Focus'
-    , focus: action
+const FocusAction =
+  ( action ) => {
+    switch (action.type) {
+      case 'Focus':
+        return Activate;
+      default:
+        return { type: 'Focus', focus: action }
     }
-  );
+  }
 
 const EditAction =
   (action:Edit.Action):Action =>
@@ -100,7 +104,7 @@ export const SuggestPrevious = {type: 'SuggestPrevious'}
 export const Submit = {type: 'Submit'}
 export const Abort = {type: 'Abort'}
 export const Enter = {type: 'Enter'}
-export const Activate = FocusAction(Focus.Focus)
+export const Activate = {type: 'Activate'}
 export const Blur = FocusAction(Focus.Blur)
 export const Show = {type: 'Show'};
 export const Hide = {type: 'Hide'};
@@ -148,9 +152,7 @@ export const init =
 
 
 const suggest = (model, {query, match, hint}) =>
-  ( model.deleting
-  ? nofx(model)
-  : model.query !== query
+  ( model.query !== query
   ? nofx(model)
   : enterSelectionRange
     ( model
@@ -169,15 +171,14 @@ export const update =
     switch (action.type) {
       case 'Abort':
         return abort(model);
-      // We don't really do anything on submit action for now
-      // although in a future we may clear the value or do blur
-      // the input.
       case 'Submit':
         return submit(model);
       case 'Enter':
         return enter(model);
       case 'EnterSelection':
         return enterSelection(model, action.value);
+      case 'Activate':
+        return activate(model);
       case 'Focus':
         return delegateFocusUpdate(model, action.focus);
       case 'Edit':
@@ -215,7 +216,7 @@ const setVisibility =
 
 const delegateFocusUpdate =
   ( model, action ) =>
-  swapFocus(model, Focus.update(model.focus, action))
+  swapFocus(model, model.isVisible, Focus.update(model.focus, action))
 
 const delegateEditUpdate =
   ( model, action ) =>
@@ -240,12 +241,13 @@ const swapEditAndQuery =
 
 const swapFocus =
   ( model
+  , isVisible
   , [focus, fx]
   ) =>
   [ new Model
     ( model.query
     , model.deleting
-    , model.isVisible
+    , isVisible
     , model.edit
     , focus
     )
@@ -254,8 +256,9 @@ const swapFocus =
 
 
 const abort =
-  (model) =>
-  setVisibility(model, false)
+  (model) => {
+    return swapFocus(model, false, Focus.blur(model.focus))
+  }
 
 const show =
   model =>
@@ -269,6 +272,9 @@ const nofx =
   model =>
   [model, Effects.none];
 
+// We don't really do anything on submit action for now
+// although in a future we may clear the value or do blur
+// the input.
 const submit = nofx;
 const suggestNext = nofx;
 const suggestPrevious = nofx;
@@ -276,11 +282,15 @@ const query = nofx;
 
 const blur =
   model =>
-  swapFocus(model, Focus.blur(model.focus))
+  swapFocus(model, model.isVisible, Focus.blur(model.focus))
 
 const focus =
   model =>
-  swapFocus(model, Focus.focus(model.focus))
+  swapFocus(model, model.isVisible, Focus.focus(model.focus))
+
+const activate =
+  model =>
+  swapFocus(model, true, Focus.focus(model.focus))
 
 const enter =
   model =>
@@ -339,7 +349,7 @@ const change =
 const editAndQuery =
   (model, query, editing, value, selection) =>
   appendFX
-  ( Effects.receive(Query())
+  ( Effects.receive(Query)
   , swapEditAndQuery(model, query, editing, Edit.change(model.edit, value, selection))
   )
 

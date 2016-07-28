@@ -9,7 +9,7 @@ import {merge, always, batch} from "../../common/prelude";
 import {cursor} from "../../common/cursor";
 import * as Style from "../../common/style";
 
-import * as Assistant from "./Navigator/Assist";
+import * as Assistant from "./Navigator/Assist/Suggestions";
 import * as Overlay from "./Navigator/Overlay";
 import * as Input from "./Navigator/Input";
 import * as Output from "./Navigator/WebView";
@@ -153,7 +153,7 @@ const tagInput =
         return SubmitInput
       case "Abort":
         return EscapeInput
-      case "Focus":
+      case "Activate":
         return ActivateInput
       case "Query":
         return CommitInput
@@ -370,7 +370,6 @@ export const update =
   ( model:Model
   , action:Action
   ):[Model, Effects<Action>] => {
-    // console.log(action)
     switch (action.type) {
       case 'NoOp':
         return nofx(model);
@@ -576,7 +575,10 @@ const commitInput =
   model =>
   updateAssistant
   ( model
-  , Assistant.Query(model.input.query)
+  , ( model.input.query === ""
+    ? Assistant.Clear
+    : Assistant.Query(model.input.query, !model.input.deleting)
+    )
   )
 
 const submitInput =
@@ -597,9 +599,9 @@ const escapeInput =
     ( update
     , model
     , [ DeactivateAssistant
-      , FocusOutput
       , HideOverlay
       , ClearInput
+      , FocusOutput
       ]
     )
   : batch
@@ -646,7 +648,7 @@ const suggestNext =
 
 const cancelSuggestion =
   model =>
-  updateAssistant(model, Assistant.Unselect);
+  updateAssistant(model, Assistant.Deselect);
 
 const suggestPrevious =
   model =>

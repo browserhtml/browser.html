@@ -103,10 +103,10 @@ export const toggle =
   (model:Model):[Model, Effects<Action>] =>
   ( model.isChecked
   ? [ new Model(false, model.button)
-    , Effects.perform(Task.succeed(Check))
+    , Effects.perform(Task.succeed(Uncheck))
     ]
   : [ new Model(true, model.button)
-    , Effects.perform(Task.succeed(Uncheck))
+    , Effects.perform(Task.succeed(Check))
     ]
   )
 

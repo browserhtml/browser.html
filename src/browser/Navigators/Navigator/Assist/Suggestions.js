@@ -6,183 +6,597 @@
 
 import {Effects, Task, html, forward, thunk} from "reflex"
 import * as Unknown from "../../../../common/unknown"
-import {merge, nofx} from "../../../../common/prelude"
+import {merge, setIn, nofx, appendFX} from "../../../../common/prelude"
 import * as Suggestion from "./Suggestion"
-
+import * as Selector from "./Selector"
+import * as Search from "./Search"
+import * as History from "./History"
+import * as HistoryService from "../../../../Service/History"
+import * as SearchService from "../../../../Service/Search"
+import * as Style from '../../../../common/style';
 import type {DOM, Address} from "reflex"
 
-// WARNING: Flow's handling of polymorphism is little unreliable
-// (For details see: https://github.com/facebook/flow/issues/2105)
-// There for intuitively NoOp changes like hoisting type usend in
-// `{ type: "To" }` or hoisting type parameters of `tagTo` function
-// may introduce strange errors that could be hard to pin down, so
-// keep that in mind when changing this code.
+// # Model
 
-export type Action <message> =
-  | { type: "Reset" }
-  | { type: "NoOp" }
-  | { type: "Select", select: string }
-  | { type: "Deselect", deselect: string }
-  | { type: "Activate", activate: string }
-  | { type: "To", to: { index: string, message: Suggestion.Action<message> } }
+export type Match = Suggestion.Completion
+export type Action = Message
+export type Flags = boolean
 
-
-export type Dictionary <key, value> =
-  {[key:key]: value}
-
-export class Model <model> {
-  index: Array<string>;
-  values: Dictionary<string, model>;
-  constructor(index:Array<string>, values:Dictionary<string, model>) {
-    this.index = index;
-    this.values = values;
+export class Model {
+  isOpen: boolean;
+  isExpanded: boolean;
+  query: string;
+  selector: Selector.Model;
+  suggestions: Array<Suggestion.Model>;
+  constructor(
+    isOpen: boolean
+  , isExpanded: boolean
+  , query: string
+  , suggestions: Array<Suggestion.Model>
+  , selector: Selector.Model
+  ) {
+    this.isOpen = isOpen
+    this.isExpanded = isExpanded
+    this.query = query
+    this.suggestions = suggestions
+    this.selector = selector
   }
 }
 
-const tagTo =
-  (index:string) =>
-  <message> (message:Suggestion.Action<message>):Action<message> => {
-    switch (message.type) {
-      case "Select":
-        return { type: "Select", select: index }
-      case "Unselect":
-        return { type: "Deselect", deselect: index }
-      case "Activate":
-        return { type: "Activate", activate: index }
-      case "Receive":
-        return { type: "To", to: { index, message: message } }
-      default:
-        return { type: "NoOp" }
+
+export type Message =
+  | { type: "Open" }
+  | { type: "Close" }
+  | { type: "Expand" }
+  | { type: "Reset" }
+  | { type: "Clear" }
+  | { type: "Deselect" }
+  | { type: "SuggestNext" }
+  | { type: "SuggestPrevious" }
+  | { type: "Select", id: string }
+  | { type: "Activate", id: string }
+  | { type: "Selector", selector: Selector.Model }
+  | { type: "Query", query: string, suggest: boolean }
+  | { type: "Load", load: string }
+  | { type: "Suggest", suggest: Suggestion.Completion }
+  | { type: "SelectSearch", selectSearch: string }
+  | { type: "SearchResult", searchResult: Array<Search.Model>, suggest: boolean }
+  | { type: "SearchError", searchError: Error }
+  | { type: "HistoryResult", historyResult: Array<History.Model>, suggest: boolean }
+  | { type: "HistoryError", historyError: Error }
+  | { type: "Suggestion", suggestion: { to: string, message: Suggestion.Message } }
+
+const tagSelector =
+  (state:Selector.Model):Message =>
+  ( { type: "Selector"
+    , selector: state
     }
-  }
-
-export const initWith = <message, model>
-  ( id:(input:model) => string
-  , matches:Array<model>
-  ):[Model<model>, Effects<Action<message>>] => {
-    const index = []
-    const values = {}
-    for (let model of matches) {
-      const key = id(model)
-      index.push(key)
-      values[key] = model
-    }
-    return nofx(new Model(index, values))
-  }
-
-export const init = <message, model>
-  ():[Model<model>, Effects<Action<message>>] =>
-  nofx(new Model([], {}))
+  )
 
 
-export const reset = <message, model>
-  ():[Model<model>, Effects<Action<message>>] =>
-  nofx(new Model([], {}))
 
-export const query = <message, model>
-  ( model:Model<model>
-  , query:string
-  , isMatch:(query:string, input:model) => boolean
-  ):[Model<model>, Effects<Action<message>>] => {
-    const index = []
-    const values = {}
-    for (let key of model.index) {
-      const value = model.values[key]
-      if (isMatch(query, value)) {
-        index.push(key)
-        values[key] = value
+const config = Selector.configure
+  ( { toID: Suggestion.toID
+    , toView: Suggestion.view
+    , receiveUpdate: tagSelector
+    , sendTo:
+        (id, message) =>
+        ( { type: "Suggestion"
+          , suggestion: { to: id, message }
+          }
+        )
+    , onSelect: (id:string):Message => ({ type: "Select", id })
+    , onActivate: (id:string):Message => ({ type: "Activate", id })
+    , style:
+      { listStyle: 'none'
+      , borderColor: 'inherit'
+      , margin: '90px auto 40px'
+      , padding: '0px'
+      , width: '480px'
       }
     }
-    return nofx(new Model(index, values))
-  }
+  )
 
-export const update = <message, model>
-  ( update:Suggestion.Update<message, model>
-  , model:Model<model>
-  , action:Action<message>
-  ):[Model<model>, Effects<Action<message>>] => {
+// # Update
+
+export const update =
+  ( model:Model
+  , action:Message
+  ):[Model, Effects<Message>] => {
     switch (action.type) {
-      case "To":
-        return receive(update, model, action.to.index, action.to.message)
-      case "Select":
-        return select(update, model, action.select)
+      case "Open":
+        return open(model)
+      case "Close":
+        return close(model)
+      case "Expand":
+        return expand(model)
+      case "Reset":
+        return reset(model)
+      case "Clear":
+        return clear(model)
       case "Deselect":
-        return deselect(update, model, action.deselect)
-      case "Activate":
-        return activate(update, model, action.activate)
+        return deselect(model)
+      case "SuggestNext":
+        return suggestNext(model)
+      case "SuggestPrevious":
+        return suggestPrevious(model)
+      case "Select":
+        return suggest(model, action.id)
+      case "Query":
+        return query(model, action.query, action.suggest)
+      case "HistoryResult":
+        return updateHistoryResult(model, action.historyResult, action.suggest)
+      case "SearchResult":
+        return updateSearchResult(model, action.searchResult, action.suggest)
       default:
         return Unknown.update(model, action)
     }
   }
 
-const delegate = <message, model>
-  ( update:Suggestion.Update<message, model>
-  , state:Model<model>
-  , index:string
-  , command:Suggestion.Action<message>
-  ):[Model<model>, Effects<Action<message>>] => {
-    const value = state.values[index]
-    if (value == null) {
-      return [state, Effects.perform(Unknown.error(`Item with index ${index} is not found`))]
+
+export const init =
+  ( isOpen:boolean=false
+  , isExpanded:boolean=false
+  ):[Model, Effects<Message>] =>
+  assemble
+  ( isOpen
+  , isExpanded
+  , ''
+  , []
+  , Selector.init()
+  )
+
+const assemble =
+  ( isOpen: boolean
+  , isExpanded: boolean
+  , query: string
+  , suggestions:Array<Suggestion.Model>
+  , selector: Selector.Model
+  ) =>
+  nofx
+  ( new Model
+    ( isOpen
+    , isExpanded
+    , query
+    , suggestions
+    , selector
+    )
+  )
+
+export const clear =
+  (state:Model) =>
+  init(state.isOpen, state.isExpanded)
+
+export const reset =
+  (state:Model) =>
+  init(false, false)
+
+export const expand =
+  (state:Model) =>
+  assemble
+  ( true
+  , true
+  , state.query
+  , state.suggestions
+  , state.selector
+  )
+
+export const open =
+  (state:Model) =>
+  assemble
+  ( true
+  , false
+  , state.query
+  , state.suggestions
+  , state.selector
+  )
+
+export const close =
+  (state:Model) =>
+  init(false, false)
+
+
+export const selectNext =
+  (state:Model):[Model, Effects<Message>] =>
+  swapSelector
+  ( state
+  , Selector.selectNext(config, state.selector, state.suggestions)
+  )
+
+export const selectPrevious =
+  (state:Model):[Model, Effects<Message>] =>
+  swapSelector
+  ( state
+  , Selector.selectPrevious(config, state.selector, state.suggestions)
+  )
+
+export const select =
+  (state:Model, id:string):[Model, Effects<Message>] =>
+  swapSelector(state, Selector.select(state.selector, id))
+
+export const deselect =
+  (state:Model) =>
+  swapSelector(state, Selector.deselect(state.selector))
+
+export const swapSelector =
+  (state:Model, selector:Selector.Model):[Model, Effects<Message>] =>
+  nofx
+  ( new Model
+    ( state.isOpen
+    , state.isExpanded
+    , state.query
+    , state.suggestions
+    , selector
+    )
+  )
+
+export const suggestPrevious =
+  (state:Model):[Model, Effects<Message>] =>
+  swapSelectorAndSuggest
+  ( state
+  , Selector.selectPrevious(config, state.selector, state.suggestions)
+  )
+
+export const suggestNext =
+  (state:Model):[Model, Effects<Message>] =>
+  swapSelectorAndSuggest
+  ( state
+  , Selector.selectNext(config, state.selector, state.suggestions)
+  )
+
+export const suggest =
+  (state:Model, id:string):[Model, Effects<Message>] =>
+  swapSelectorAndSuggest(state, Selector.select(state.selector, id))
+
+export const swapSelectorAndSuggest =
+  (state:Model, selector:Selector.Model):[Model, Effects<Message>] =>
+  suggestSelected
+  ( new Model
+    ( state.isOpen
+    , state.isExpanded
+    , state.query
+    , state.suggestions
+    , selector
+    )
+  )
+
+
+
+const suggestSelected =
+  (state:Model):[Model, Effects<Message>] =>
+  [ state
+  , fxForSuggestion(state.query, getSelectedSuggestion(state))
+  ]
+
+const fxForSuggestion =
+  (query:string, suggestion:?Suggestion.Model):Effects<Message> =>
+  ( suggestion == null
+  ? Effects.none
+  : Effects.receive(Suggest(Suggestion.completion(query, suggestion)))
+  )
+
+export const Suggest =
+  (suggestion:Suggestion.Completion):Message =>
+  ( { type: "Suggest"
+    , suggest: suggestion
+    }
+  )
+
+
+
+export const updateSuggestion =
+  (state:Model, id:string, message:Suggestion.Message):[Model, Effects<Message>] => {
+    const index = state.suggestions.findIndex(item => config.toID(item) === id)
+    if (index > -1) {
+      return swapSuggestion(
+        state
+      , index
+      , Suggestion.update(state.suggestions[index], message)
+      )
     }
     else {
-      const [next, fx] = Suggestion.update(update, value, command);
-      const values = merge(state.values, {[index]: next})
-      const model = new Model
-        ( state.index
-        , values
-        )
-      return [model, fx.map(tagTo(index))]
+      return [
+        state
+      , Effects.perform(Unknown.warn(`Suggestion with id ${id} does not exist`))
+      ]
     }
   }
 
+export const swapSuggestion =
+  ( state:Model
+  , index:number
+  , [suggestion, fx]:[Suggestion.Model, Effects<Suggestion.Message>]):[Model, Effects<Message>] =>
+  [ new Model
+    ( state.isOpen
+    , state.isExpanded
+    , state.query
+    , setIn(state.suggestions, index, suggestion)
+    , state.selector
+    )
+  , fx.map(message => config.sendTo(config.toID(suggestion), message))
+  ]
 
-const receive = <message, model>
-  ( update:Suggestion.Update<message, model>
-  , state:Model<model>
-  , index:string
-  , command:Suggestion.Action<message>
-  ):[Model<model>, Effects<Action<message>>] =>
-  delegate(update, state, index, command)
-
-const select = <message, model>
-  ( update:Suggestion.Update<message, model>
-  , state:Model<model>
-  , index:string
-  ):[Model<model>, Effects<Action<message>>] =>
-  delegate(update, state, index, Suggestion.Select)
-
-const deselect = <message, model>
-  ( update:Suggestion.Update<message, model>
-  , state:Model<model>
-  , index:string
-  ):[Model<model>, Effects<Action<message>>] =>
-  delegate(update, state, index, Suggestion.Deselect)
-
-const activate = <message, model>
-  ( update:Suggestion.Update<message, model>
-  , state:Model<model>
-  , index:string
-  ):[Model<model>, Effects<Action<message>>] =>
-  delegate(update, state, index, Suggestion.Activate)
-
-export const render = <message, model>
-  ( view:(state:model, address:Address<message>) => DOM
-  , selected:string
-  , model:Model<model>
-  , address:Address<Action<message>>
-  ):DOM =>
-  html.section
-  ( { style: {borderColor: 'inherit' } }
-  , model
-    .index
-    .map
-    ( (index) =>
-      Suggestion.render
-      ( view
-      , selected === index
-      , model.values[index]
-      , forward(address, tagTo(index))
+export const query =
+  (state:Model, query:string, suggest:boolean):[Model, Effects<Message>] =>
+  ( state.query === query
+  ? nofx(state)
+  : appendFX
+    ( Effects.batch
+      ( [ Effects.perform
+          ( SearchService
+              .query(query, 5)
+              .map
+                ( suggest
+                ? UpdateSearchAndSuggest
+                : UpdateSearch
+                )
+              .recover(SearchError)
+          )
+        , Effects.perform
+          ( HistoryService
+              .query(query, 5)
+              .map
+                ( suggest
+                ? UpdateHistoryAndSuggest
+                : UpdateHistory
+                )
+              .recover(HistoryError)
+          )
+        ]
+      )
+    , assemble
+      ( state.isOpen
+      , state.isExpanded
+      , query
+      , state.suggestions
+      , ( isQueryMatchingSelectedSuggestion(state, query)
+        ? state.selector
+        : Selector.deselect(state.selector)
+        )
       )
     )
   )
+
+const getSuggestionByID =
+  (id:string, suggestions:Array<Suggestion.Model>):?Suggestion.Model =>
+  suggestions.find(item => config.toID(item) === id)
+
+const getSelectedSuggestion =
+  ({selector, suggestions}:Model):?Suggestion.Model =>
+  ( selector.selected == null
+  ? null
+  : getSuggestionByID(selector.selected, suggestions)
+  )
+
+const isQueryMatchingSelectedSuggestion =
+  (state:Model, query:string):boolean => {
+    const suggestion = getSelectedSuggestion(state)
+    if (suggestion == null) {
+      return false
+    }
+    else {
+      return Suggestion.isMatch(query, suggestion)
+    }
+  }
+
+const updateSearchResult =
+  (state:Model, results:Array<Search.Model>, suggest:boolean):[Model, Effects<Message>] => {
+    const selectedID = state.selector.selected
+    const selected = getSelectedSuggestion(state)
+    const suggestions =
+      ( selected == null
+      ? []
+      : Suggestion.isSearch(selected)
+      ? [selected]
+      : []
+      )
+
+    for (let result of results) {
+      const suggestion = Suggestion.tagSearch(result)
+      const id = config.toID(suggestion)
+      if (id !== selectedID) {
+        suggestions.push(suggestion)
+      }
+    }
+
+    for (let suggestion of state.suggestions) {
+      if (!Suggestion.isSearch(suggestion)) {
+        suggestions.push(suggestion)
+      }
+    }
+
+    return updateSuggestions(state, suggestions, suggest)
+  }
+
+const updateHistoryResult =
+  (state:Model, results:Array<History.Model>, suggest:boolean):[Model, Effects<Message>] => {
+    const selectedID = state.selector.selected
+    const selected = getSelectedSuggestion(state)
+    const suggestions =
+      ( selected == null
+      ? []
+      : Suggestion.isHistory(selected)
+      ? [selected]
+      : []
+      )
+
+    for (let result of results) {
+      const suggestion = Suggestion.tagHistory(result)
+      const id = config.toID(suggestion)
+      if (id !== selectedID) {
+        suggestions.push(suggestion)
+      }
+    }
+
+    for (let suggestion of state.suggestions) {
+      if (!Suggestion.isHistory(suggestion)) {
+        suggestions.unshift(suggestion)
+      }
+    }
+
+    return updateSuggestions(state, suggestions, suggest)
+  }
+
+export const swapSuggestions =
+  (state:Model, suggestions:Array<Suggestion.Model>):[Model, Effects<Message>] =>
+  nofx
+  ( new Model
+    ( state.isOpen
+    , state.isExpanded
+    , state.query
+    , suggestions
+    , state.selector
+    )
+  )
+
+export const updateSuggestions =
+  (state:Model, suggestions:Array<Suggestion.Model>, suggest:boolean):[Model, Effects<Message>] =>
+  ( ( suggest && state.selector.selected == null )
+  ? suggestTop(state, suggestions, suggestions[0])
+  : swapSuggestions(state, suggestions)
+  )
+
+export const suggestTop =
+  ( state:Model
+  , suggestions:Array<Suggestion.Model>
+  , top:?Suggestion.Model
+  ):[Model, Effects<Message>] =>
+  ( top == null
+  ? swapSuggestions(state, suggestions)
+  : Suggestion.isMatch(state.query, top)
+  ? suggestSelected
+    ( new Model
+      ( state.isOpen
+      , state.isExpanded
+      , state.query
+      , suggestions
+      , Selector.select(state.selector, config.toID(top))
+      )
+    )
+  : swapSuggestions(state, suggestions)
+  )
+
+const UpdateSearch =
+  matches =>
+  ( { type: "SearchResult"
+    , searchResult: matches
+    , suggest: false
+    }
+  )
+
+const UpdateSearchAndSuggest =
+  matches =>
+  ( { type: "SearchResult"
+    , searchResult: matches
+    , suggest: true
+    }
+  )
+
+const SearchError =
+  error =>
+  ( { type: "SearchError"
+    , searchError: error
+    }
+  )
+
+const UpdateHistory =
+  matches =>
+  ( { type: "HistoryResult"
+    , historyResult: matches
+    , suggest: false
+    }
+  )
+
+const UpdateHistoryAndSuggest =
+  matches =>
+  ( { type: "HistoryResult"
+    , historyResult: matches
+    , suggest: true
+    }
+  )
+
+const HistoryError =
+  error =>
+  ( { type: "HistoryError"
+    , historyError: error
+    }
+  )
+
+export const Query =
+  (query:string, suggest:boolean):Action =>
+  ( { type: "Query"
+    , query
+    , suggest
+    }
+  )
+
+export const Open = { type: "Open" }
+export const Close = { type: "Close" }
+export const Expand = { type: "Expand" }
+export const Deselect:Action = { type: "Deselect" }
+export const Reset = { type: "Reset" }
+export const Clear = { type: "Clear" }
+export const SuggestNext = { type: "SuggestNext" }
+export const SuggestPrevious = { type: "SuggestPrevious" }
+
+
+
+export const render =
+  (state:Model, address:Address<Message>):DOM =>
+  html.div
+  ( { className: 'assistant'
+    , style: Style.mix
+      ( styleSheet.base
+      , ( state.isExpanded
+        ? styleSheet.expanded
+        : styleSheet.shrinked
+        )
+      , ( state.isOpen
+        ? styleSheet.open
+        : styleSheet.closed
+        )
+      )
+    }
+  , [ Selector.view
+      ( config
+      , state.selector
+      , state.suggestions
+      , address
+      )
+    ]
+  )
+
+export const view =
+  (state:Model, address:Address<Message>):DOM =>
+  thunk
+  ( 'Browser/Navigators/Navigator/Assist/Suggestions'
+  , render
+  , state
+  , address
+  )
+
+const styleSheet = Style.createSheet
+  ( { base:
+      { background: 'inherit'
+      , borderColor: 'inherit'
+      , left: '0px'
+      , position: 'absolute'
+      , top: '0px'
+      , width: '100%'
+      }
+    , expanded:
+      { height: '100%'
+      }
+    , shrinked:
+      { minHeight: '110px'
+      }
+
+    , open:
+      {
+      }
+
+    , closed:
+      { display: 'none'
+      }
+    }
+  );

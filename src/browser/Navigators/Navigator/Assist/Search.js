@@ -28,20 +28,41 @@ export const id =
 
 export const isMatch =
   (query:string, model:Model):boolean =>
-  model.title.includes(query)
+  model.title.toLowerCase().startsWith(query.toLowerCase())
+
+export const getMatch =
+  (query:string, model:Model):string =>
+  model.title
+
+export const getHint =
+  (query:string, model:Model):string =>
+  ""
 
 export type Message =
   | { type: "NoOp" }
+  | { type: "Select" }
+  | { type: "Deselect" }
+  | { type: "Activate" }
 
 export const update =
   (model:Model, action:Message) => {
     switch (action.type) {
+      case 'Select':
+        return select(model)
+      case 'Deselect':
+        return deselect(model)
+      case 'Activate':
+        return activate(model)
       case 'NoOp':
         return nofx(model)
       default:
         return Unknown.update(model, action)
     }
   }
+
+const select = nofx
+const deselect = nofx
+const activate = nofx
 
 export const render =
   (model:Model, address:Address<Message>) =>

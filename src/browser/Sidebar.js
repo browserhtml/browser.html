@@ -145,7 +145,6 @@ const tagToolbar =
         return {
           type: "Toolbar"
         , toolbar: action
-        , action
         }
     }
   };
@@ -311,6 +310,10 @@ const assemble =
 
 export const update =
   (model:Model, action:Action):[Model, Effects<Action>] => {
+    if (action.type !== "Animation") {
+      console.log(action)
+    }
+
     switch (action.type) {
       case "Expand":
         return expand(model);

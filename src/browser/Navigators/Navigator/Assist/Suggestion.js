@@ -10,79 +10,126 @@ import {port, always, mapFX, nofx} from "../../../../common/prelude"
 import * as StyleSheet from "./Suggestion/StyleSheet"
 import type {Address, DOM} from "reflex"
 
-export type Action <message> =
-  | { type: "Select" }
-  | { type: "Deselect" }
-  | { type: "Activate" }
-  | { type: "Receive", receive: message }
+import * as History from "./History"
+import * as Search from "./Search"
 
-export type Update <message, model> =
-  (state:model, action:message) =>
-  [model, Effects<message>]
+export type Completion =
+  { match: string
+  , hint: string
+  , query: string
+  }
 
-export type View <message, model> =
-  (state:model, action:Address<message>) =>
-  DOM
+export type Model =
+  | { type: "History", history: History.Model }
+  | { type: "Search", search: Search.Model }
 
+export type Message =
+  | { type: "History", history: History.Message }
+  | { type: "Search", search: Search.Message }
 
-export const Select = { type: "Select" }
-export const Deselect = { type: "Deselect" }
-export const Activate = { type: "Activate" }
-export const Receive = <message> (action:message):Action<message> =>
-  ( { type: "Receive"
-    , receive: action
-    }
-  )
+export const isSearch =
+  (model:Model):boolean =>
+  model.type === "Search"
 
-export const update = <message, model>
-  ( update:Update<message, model>
-  , state:model
-  , action:Action<message>
-  ):[model, Effects<Action<message>>] => {
-    switch (action.type) {
-      case "Select":
-        return select(state)
-      case "Deselect":
-        return deselect(state)
-      case "Activate":
-        return activate(state)
-      case "Receive":
-        return receive(update, state, action.receive)
+export const isHistory =
+  (model:Model):boolean =>
+  model.type === "History"
+
+export const toID =
+  (model:Model):string => {
+    switch (model.type) {
+      case "Search":
+        return `?${model.search.url}`
+      case "History":
       default:
-        return Unknown.update(state, action)
+        return `^${model.history.url}`
     }
   }
 
-export const select = nofx
-export const deselect = nofx
-export const activate = nofx
-export const receive = <message, model>
-  ( update:Update<message, model>
-  , state:model
-  , action:message
-  ):[model, Effects<Action<message>>] =>
-  mapFX(Receive, update(state, action))
-
-
-export const render = <message, model>
-  ( view:View<message, model>
-  , isSelected:boolean
-  , state:model
-  , address:Address<Action<message>>
-  ) =>
-  html.li
-  ( { className: 'assistant suggestion'
-    , style:
-        ( isSelected
-        ? StyleSheet.selected
-        : StyleSheet.deselected
-        )
-    , onMouseOver: onMouseOver(address)
-    , onClick: onClick(address)
+export const isMatch =
+  (query:string, model:Model):boolean => {
+    switch (model.type) {
+      case "Search":
+        return Search.isMatch(query, model.search)
+      case "History":
+      default:
+        return History.isMatch(query, model.history)
     }
-  , [ view(state, forward(address, Receive))
-    ]
+  }
+
+export const completion =
+  (query:string, model:Model):Completion => {
+    switch (model.type) {
+      case "Search":
+        return {
+          query
+        , match: Search.getMatch(query, model.search)
+        , hint: Search.getHint(query, model.search)
+        }
+      case "History":
+      default:
+        return {
+          query
+        , match: History.getMatch(query, model.history)
+        , hint: History.getHint(query, model.history)
+        }
+    }
+  }
+
+export const update =
+  (model:Model, message:Message):[Model, Effects<Message>] => {
+    switch (model.type) {
+      case "Search":
+        return updateSearch(model.search, message)
+      case "History":
+      default:
+        return updateHistory(model.history, message)
+    }
+  }
+
+const updateHistory =
+  (model:History.Model, message:Message) => {
+    switch (message.type) {
+      case "History":
+        const [history, fx] = History.update(model, message.history)
+        return [tagHistory(history), fx.map(tagHistory)]
+      default:
+        return nofx(model)
+    }
+  }
+
+const updateSearch =
+  (model:Search.Model, message:Message) => {
+    switch (message.type) {
+      case "Search":
+        const [search, fx] = Search.update(model, message.search)
+        return [tagSearch(history), fx.map(tagSearch)]
+      default:
+        return nofx(model)
+    }
+  }
+
+export const view =
+  (model:Model, address:Address<Message>):DOM => {
+    switch (model.type) {
+      case "Search":
+        return Search.render(model.search, forward(address, tagSearch))
+      case "History":
+      default:
+        return History.render(model.history, forward(address, tagHistory))
+    }
+  }
+
+export const tagSearch = <value>
+  (search:value):{type: "Search", search:value} =>
+  ( { type: "Search"
+    , search
+    }
   )
 
-const onMouseOver = port(always(Select))
-const onClick = port(always(Activate))
+export const tagHistory = <value>
+  (history:value):{type: "History", history:value} =>
+  ( { type: "History"
+    , history
+    }
+  )

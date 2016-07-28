@@ -1,4 +1,4 @@
-/* @flow */
+/* @noflow */
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,6 @@ import {Effects, html, thunk, forward} from "reflex"
 import * as History from "./Assist/History"
 import * as Search from "./Assist/Search"
 import * as Suggestions from "./Assist/Suggestions"
-import * as Suggestion from "./Assist/Suggestion"
 import * as HistoryService from "../../../Service/History"
 import * as SearchService from "../../../Service/Search"
 import * as Unknown from '../../../common/unknown'
@@ -28,48 +27,56 @@ export type Match =
   , query: string
   }
 
+export type Suggestion =
+  | { tag: "history", history: History.Model }
+  | { tag: "search", search: Search.Model }
+
+type SuggestionAction =
+  | { tag: "history", history: History.Message }
+  | { tag: "search", search: Search.Message }
+
 export class Model {
   isOpen: boolean;
   isExpanded: boolean;
   query: string;
-  selected: number
-  search: Suggestions.Model<Search.Model>;
-  history: Suggestions.Model<History.Model>;
+  suggestions: Suggestions.Model<Suggestion>;
   constructor(
     isOpen: boolean
   , isExpanded: boolean
   , query: string
-  , selected: number
-  , search: Suggestions.Model<Search.Model>
-  , history: Suggestions.Model<History.Model>
+  , suggestions: Suggestions.Model<Suggestion>
   ) {
     this.isOpen = isOpen
     this.isExpanded = isExpanded
     this.query = query
-    this.selected = selected
-    this.search = search
-    this.history = history
+    this.suggestions = suggestions
   }
 }
 
-const getActiveSuggestion =
-  ({selected, search, history}:Model):?Search.Model|History.Model =>
-  ( selected === -1
+const getSelectedSuggestion =
+  ({suggestions}:Model):?Suggestion =>
+  ( suggestions.selected == null
   ? null
-  : selected < search.index.length
-  ? search.values[search.index[selected]]
-  : history.values[history.index[search.index.length + selected]]
+  : suggestions.values[suggestions.selected]
   )
 
 
 const isQueryCompatible =
-  ({selected, search, history}:Model, query:string):boolean =>
-  ( selected === -1
-  ? false
-  : selected < search.index.length
-  ? Search.isMatch(query, search.values[search.index[selected]])
-  : History.isMatch(query, history.values[history.index[search.index.length + selected]])
-  )
+  (state:Model, query:string):boolean => {
+    const suggestion = getSelectedSuggestion(state)
+    if (suggestion == null) {
+      return false
+    }
+    else {
+      switch (suggestion.tag) {
+        case "history":
+          return History.isMatch(query, suggestion.history)
+        case "search":
+        default:
+          return Search.isMatch(query, suggestion.search)
+      }
+    }
+  }
 
 export type Action =
   | { type: "Open" }
@@ -168,21 +175,16 @@ const assemble =
   ( isOpen: boolean
   , isExpanded: boolean
   , query: string
-  , selected: number
-  , [search, search$]
-  , [history, history$]
+  , [suggestions, suggestions$]
   ) =>
   [ new Model
     ( isOpen
     , isExpanded
     , query
-    , selected
-    , search
-    , history
+    , suggestions
     )
   , Effects.batch
-    ( [ search$.map(SearchAction)
-      , history$.map(HistoryAction)
+    ( [ suggestions$.map(SuggestionsAction)
       ]
     )
   ]
@@ -195,8 +197,6 @@ export const init =
   ( isOpen
   , isExpanded
   , ''
-  , -1
-  , Suggestions.init()
   , Suggestions.init()
   )
 
@@ -208,9 +208,7 @@ export const reset =
   ( false
   , false
   , ""
-  , -1
-  , Suggestions.reset(state.search)
-  , Suggestions.reset(state.history)
+  , Suggestions.reset(state.suggestions)
   )
 
 export const clear =
@@ -224,7 +222,6 @@ export const expand =
   , true
   , true
   , state.query
-  , state.selected
   )
 
 export const open =
@@ -234,7 +231,6 @@ export const open =
   , true
   , false
   , state.query
-  , state.selected
   )
 
 export const close =
@@ -242,26 +238,23 @@ export const close =
   init(false, false)
 
 const setOptions =
-  (state, isOpen, isExpanded, query, selected) =>
+  (state, isOpen, isExpanded, query) =>
   nofx
   ( new Model
     ( isOpen
     , isExpanded
     , query
-    , selected
-    , state.search
-    , state.history
+    , state.suggestions
     )
   )
 
 export const unselect =
   (state:Model) =>
-  setOptions
-  ( state
-  , state.isOpen
+  assemble
+  ( state.isOpen
   , state.isExpanded
   , state.query
-  , -1
+  , Suggestions.deselect(updateSuggestion, state.suggestions)
   )
 
 export const query =
@@ -289,14 +282,39 @@ export const query =
       , state.isExpanded
       , query
       , ( isQueryCompatible(state, query)
-        ? state.selected
-        : -1
+        ? nofx(state.suggestions)
+        : Suggestions.deselect(updateSuggestion, state.suggestions)
         )
-      , nofx(state.search)
-      , nofx(state.history)
       )
     )
   )
+
+const updateSuggestion =
+  (suggestion:Suggestion, action:SuggestionAction) => {
+    switch (suggestion.tag) {
+      case "search":
+        const [search, search$] = Search.update(suggestion.search, action.search)
+        return [
+          { tag: "search", search }
+        , search$.map(tagSearch)
+        ]
+      case "history":
+      default:
+        const [history, history$] = History.update(suggestion.history, action.history)
+        return [
+          { tag: "history", history }
+        , history$.map(tagHistory)
+        ]
+    }
+  }
+
+const tagSearch =
+  search =>
+  ({ tag: "search", search })
+
+const tagHistory =
+  history =>
+  ({ tag: "history", history })
 
 const updateSearch =
   (state, [search, fx]) =>

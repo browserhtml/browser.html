@@ -26,7 +26,7 @@ export const query =
 
     request.onload = event => {
       delete pendingRequests[query]
-      const result = decode(request, limit);
+      const result = decode(request, query, limit);
       if (result.isOk) {
         succeed(result.value)
       }
@@ -64,23 +64,34 @@ const fail =
   error(Error('Can not decode ${JSON.stringify(request.response))} from ${requestURL(request)} '))
 
 const decode =
-  ( request, limit ) =>
+  ( request, query, limit ) =>
   ( request.responseType !== 'json'
   ? fail(request)
   : request.response == null
   ? fail(request)
   : request.response[1] == null
   ? fail(request)
-  : decodeMatches(request.response[1], limit)
+  : decodeMatches(request.response[1], query, limit)
   )
 
 const decodeMatches =
-  ( matches, limit) =>
+  ( matches, query, limit) =>
   ( Array.isArray(matches)
-  ? ok(matches.slice(0, limit).map(decodeMatch))
+  ? ok(ensureIncludes(query, matches).slice(0, limit).map(decodeMatch))
   : error(Error(`Can not decode non array matches ${matches}`))
   )
 
 const decodeMatch =
   match =>
   new Search.Model(`https://duckduckgo.com/html/?q=${encodeURIComponent(match)}`, match)
+
+const ensureIncludes =
+  (query, matches) =>
+  ( ( matches.length > 0 &&
+      matches[0].toLowerCase().startsWith(query.toLowerCase())
+    )
+  ? matches
+  : ( matches.unshift(query)
+    , matches
+    )
+  )
