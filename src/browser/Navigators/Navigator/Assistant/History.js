@@ -14,6 +14,7 @@ import * as Title from "./Title";
 import * as URL from "./url";
 import * as Icon from "./Icon";
 import * as Suggestion from "./Suggestion";
+import * as Service from "../../../../Service/History";
 import * as Unknown from '../../../../common/unknown';
 
 
@@ -23,7 +24,8 @@ import type {Result} from "../../../../common/result";
 type URI = string
 
 export type Match =
-  { uri: URI
+  { url: URI
+  , uri: URI
   , title: string
   }
 
@@ -36,7 +38,7 @@ export type Model =
   { size: number
   , limit: number
   , queryID: number
-  , query: ?string
+  , query: string
   , selected: number
   , matches: {[key:URI]: Match}
   , items: Array<URI>
@@ -53,8 +55,9 @@ export type Action =
   | { type: "SelectPrevious" }
   | { type: "Unselect" }
   | { type: "UpdateMatches"
-    , updateMatches: Result<Error, Array<Match>>
+    , updateMatches: Array<Match>
     }
+  | { type: "HistoryError", historyError: Error }
   | { type: "ByURI"
     , source:
       { uri: URI
@@ -82,8 +85,16 @@ export const Query =
     }
   );
 
+const HistoryError =
+  error =>
+  ( { type: "HistoryError"
+    , historyError: error
+    }
+  )
+
+
 const UpdateMatches =
-  (result:Result<Error, Array<Match>>):Action =>
+  (result:Array<Match>):Action =>
   ( { type: "UpdateMatches"
     , updateMatches: result
     }
@@ -99,20 +110,6 @@ const byURI =
       }
     }
   );
-
-
-const pendingRequests = Object.create(null);
-
-const abort =
-  (id:number):Task<Never, number> =>
-  new Task(succeed => void(0))
-
-const search =
-  ( id:number
-  , input:string
-  , limit:number
-  ):Task<Never, Result<Error, Array<Match>>> =>
-  new Task(succeed => void(0))
 
 
 export const init =
@@ -172,12 +169,15 @@ const updateQuery =
   ? [ model, Effects.none ]
   : [ merge(model, {query, queryID: model.queryID + 1 })
     , Effects.batch
-      ( [ Effects.perform(abort(model.queryID))
+      ( [ Effects.perform(Service.abort(model.query))
           .map(Abort)
 
         , Effects.perform
-          (search(model.queryID + 1, query, model.limit))
-          .map(UpdateMatches)
+          ( Service
+            .query(query, model.limit)
+            .map(UpdateMatches)
+            .recover(HistoryError)
+          )
         ]
       )
     ]
@@ -185,13 +185,7 @@ const updateQuery =
 
 
 const updateMatches = (model, result) =>
-  ( result.isOk
-  ? replaceMatches(model, result.value)
-  : [ model
-    , Effects
-      .perform(Unknown.error(result.error))
-    ]
-  )
+  replaceMatches(model, result)
 
 const replaceMatches = (model, results) => {
   const items = results.map(match => match.uri)
