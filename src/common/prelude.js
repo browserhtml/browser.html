@@ -206,6 +206,14 @@ type Port <event, message> =
   (address:Address<message>) =>
   Address<event>
 
+
+export const anotate = <tagged, message, event>
+  ( port: Port<event, message>
+  , tag: (input:message) => tagged
+  ):Port<event, tagged> =>
+  (address:Address<tagged>):Address<event> =>
+  port(forward(address, tag))
+
 export const port = <input, message>
   (decoder: (incoming:input) => message):Port<input, message> =>
   (address: Address<message>) =>
