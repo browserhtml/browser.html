@@ -2,6 +2,7 @@
 
 import * as Unknown from "./unknown"
 import {Task, Effects} from "reflex"
+import {nofx} from "./prelude"
 import {ease} from "eased"
 
 
@@ -14,13 +15,13 @@ import type {Interpolation, Easing} from "eased"
 
 
 class Transition <model> {
-  
+
   duration: Time;
   now: Time;
   elapsed: Time;
   from: model;
   to: model;
-  
+
   constructor(
     from:model
   , to:model
@@ -37,10 +38,10 @@ class Transition <model> {
 }
 
 export class Model <model> {
-  
+
   state: model;
   transition: ?Transition<model>;
-  
+
   constructor(
     state:model
   , transition:?Transition<model>
@@ -71,10 +72,6 @@ export const transition = <action, model>
     , duration
     )
   )
-
-const nofx = <model, action>
-  (model:model):[model, Effects<action>] =>
-  [model, Effects.none]
 
 const Tick =
   time =>

@@ -7,7 +7,7 @@
 import {html, forward, Effects} from 'reflex';
 import {on, focus as isFocused, selection} from '@driver';
 import {identity} from '../../../lang/functional';
-import {always, merge, mapFX, appendFX, anotate} from '../../../common/prelude';
+import {always, merge, nofx, mapFX, appendFX, anotate} from '../../../common/prelude';
 import {compose, debounce} from '../../../lang/functional';
 import {cursor} from '../../../common/cursor';
 import * as Focus from '../../../common/focusable';
@@ -267,10 +267,6 @@ const show =
 const hide =
   model =>
   setVisibility(model, true);
-
-const nofx =
-  model =>
-  [model, Effects.none];
 
 // We don't really do anything on submit action for now
 // although in a future we may clear the value or do blur

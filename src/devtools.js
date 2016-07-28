@@ -1,7 +1,7 @@
 /* @flow */
 
 import {Effects, Task, thunk, html, forward} from "reflex"
-import {merge} from "./common/prelude"
+import {merge, nofx} from "./common/prelude"
 import {cursor} from "./common/cursor"
 import {ok, error} from "./common/result"
 import * as Runtime from "./common/runtime"
@@ -179,15 +179,9 @@ export const update = <model, action, flags>
 
   : action.type === "Persist"
   ? persist(model)
-  
+
   : Unknown.update(model, action)
   )
-
-const nofx = <model, action>
-  (model:model):[model, Effects<action>] =>
-  [ model
-  , Effects.none
-  ]
 
 const updateRecord = <model, action>
   ( model:Model<model, action>

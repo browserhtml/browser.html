@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {merge, always, anotate, mapFX} from "../common/prelude"
+import {merge, always, anotate, nofx, mapFX} from "../common/prelude"
 import * as Unknown from "../common/unknown"
 import * as Target from "../common/target"
 import * as Focus from "../common/focusable"
@@ -125,12 +125,6 @@ export const uncheck =
   ? nofx(new Model(false, model.button))
   : nofx(model)
   )
-
-const nofx =
-  model =>
-  [ model
-  , Effects.none
-  ]
 
 const delegateButtonUpdate =
   (model, action) =>
