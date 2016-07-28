@@ -194,3 +194,10 @@ export const mapFX = <model, from, to>
 export const nofx = <model, action>
   (state:model):[model, Effects<action>] =>
   [ state, Effects.none ]
+
+export const appendFX = <model, action>
+  ( extraFX: Effects<action>
+  , [model, fx]:[model, Effects<action>]
+  ):[model, Effects<action>] =>
+  [model, Effects.batch([fx, extraFX])];
+
