@@ -10,9 +10,9 @@ import {merge, always, batch} from "../../../../common/prelude";
 import {Style, StyleSheet} from '../../../../common/style';
 import {ok, error} from '../../../../common/result';
 
-import * as Title from "./Title";
-import * as URL from "./url";
-import * as Icon from "./Icon";
+import * as Title from "./Suggestion/Title";
+import * as URL from "./Suggestion/Location";
+import * as Icon from "./Suggestion/Icon";
 import * as Suggestion from "./Suggestion";
 import * as Service from "../../../../Service/History";
 import * as Unknown from '../../../../common/unknown';
