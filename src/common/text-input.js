@@ -82,7 +82,7 @@ const ControlAction =
 
 export const Change =
   (value:string, selection:Edit.Selection):Action =>
-  EditAction(Edit.Change(value, selection));
+  EditAction(Edit.Change(Edit.readChange(value, selection)));
 export const Activate:Action = FocusAction(Focus.Focus);
 export const Deactivate:Action = FocusAction(Focus.Blur);
 export const Enable:Action = ControlAction(Control.Enable);
@@ -97,8 +97,8 @@ export const init =
   , isFocused:boolean=false
   ):[Model, Effects<Action>] => {
     const [edit, edit$] = Edit.init(value, selection);
-    const [focus, focus$] = Focus.init(isFocused);
     const [control, control$] = Control.init(isDisabled);
+    const [focus, focus$] = Focus.init(isFocused);
     const model = new Model
       ( edit
       , focus
@@ -181,30 +181,10 @@ const swapControl =
   , fx.map(ControlAction)
   ]
 
-const decodeSelection =
-  ({target}) =>
-  ( { start: target.selectionStart
-    , end: target.selectionEnd
-    , direction: target.selectionDirection
-    }
-  );
 
-const decodeSelect =
-  compose(EditAction, Edit.Select, decodeSelection);
-
-const decodeChange = compose
-  ( EditAction
-  , event =>
-    Change(event.target.value, decodeSelection(event))
-  );
-
-
-export function view(key:string,
-                     styleSheet:StyleSheet):(model:Model, address:Address<Action>, contextStyle?:ContextStyle) => DOM {
-  return ( model
-         , address
-         , contextStyle
-  ):DOM =>
+export const view =
+  ( key:string, styleSheet:StyleSheet) =>
+  ( model:Model, address:Address<Action>, contextStyle?:ContextStyle):DOM =>
   html.input
   ( { key
     , type: 'input'
@@ -217,9 +197,9 @@ export function view(key:string,
       )
     , isFocused: focus(model.focus.isFocused)
     , selection: selection(model.edit.selection)
-    , onInput: on(address, decodeChange)
-    , onKeyUp: on(address, decodeSelect)
-    , onSelect: on(address, decodeSelect)
+    , onInput: onChange(address)
+    , onKeyUp: onSelect(address)
+    , onSelect: onSelect(address)
     , onFocus: onFocus(address)
     , onBlur: onBlur(address)
     , style: Style
@@ -232,7 +212,8 @@ export function view(key:string,
       )
     }
   )
-}
 
+export const onChange = anotate(Edit.onChange, EditAction)
+export const onSelect = anotate(Edit.onSelect, EditAction)
 export const onFocus = anotate(Focus.onFocus, FocusAction)
 export const onBlur = anotate(Focus.onBlur, FocusAction)

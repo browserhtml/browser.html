@@ -16,6 +16,7 @@ import * as Keyboard from '../../../common/keyboard';
 import * as Unknown from '../../../common/unknown';
 import * as Style from '../../../common/style';
 
+
 import type {Address, DOM} from "reflex"
 
 export type Flags =
@@ -39,6 +40,7 @@ export class Model {
     this.focus = focus
   }
 }
+
 
 export type Suggestion =
   { query: string
@@ -84,9 +86,7 @@ const FocusAction =
 const EditAction =
   (action:Edit.Action):Action =>
   ( action.type === 'Change'
-  ? { type: "Change"
-    , change: action
-    }
+  ? action
   : { type: 'Edit'
     , edit: action
     }
@@ -110,6 +110,7 @@ export const EnterSelection =
 
 
 export const Clear = EditAction(Edit.Clear);
+
 
 const defaultFlags =
   { isFocused: false
@@ -264,7 +265,6 @@ const activate =
   model =>
   swapFocus(model, true, Focus.focus(model.focus))
 
-
 const enter =
   model =>
   assemble
@@ -280,7 +280,7 @@ const enterSelectionRange =
   , Edit.change
     ( model.edit
     , value
-    , {start, end, direction}
+    , new Edit.Selection(start, end, direction)
     )
   , Focus.focus(model.focus)
   );
@@ -301,7 +301,7 @@ const getUnselectedValue
 const change =
   (model, value, selection) => {
     const [edit, editFX] =
-      delegateEditUpdate(model, Edit.Change(value, selection))
+      delegateEditUpdate(model, Edit.Change(Edit.readChange(value, selection)))
 
     const fx =
       ( model.edit.value.includes(value)
@@ -332,33 +332,6 @@ const decodeKeyDown = Keyboard.bindings({
   'escape': always(Abort)
 });
 
-// Read a selection model from an event target.
-// @TODO type signature
-const readSelection = target => ({
-  start: target.selectionStart,
-  end: target.selectionEnd,
-  direction: target.selectionDirection
-});
-
-// Read change action from a dom event.
-// @TODO type signature
-const readChange =
-  ({target}):Action =>
-  ( { type: "Change"
-    , change:
-      { value: target.value
-      , selection: readSelection(target)
-      }
-    }
-  );
-
-// Read select action from a dom event.
-// @TODO type signature
-const readSelect = compose
-  ( EditAction
-  , ({target}) =>
-      Edit.Select(readSelection(target))
-  );
 
 const inputWidth = 480;
 const inputHeight = 40;
@@ -460,8 +433,8 @@ export const view =
       value: model.edit.value,
       isFocused: isFocused(model.focus.isFocused),
       selection: selection(model.edit.selection),
-      onInput: on(address, readChange),
-      onSelect: on(address, readSelect),
+      onInput: onChange(address),
+      onSelect: onSelect(address),
       onFocus: onFocus(address),
       onBlur: onBlur(address),
       onKeyDown: on(address, decodeKeyDown)
@@ -471,3 +444,5 @@ export const view =
 
 const onFocus = anotate(Focus.onFocus, FocusAction)
 const onBlur = anotate(Focus.onBlur, FocusAction)
+const onSelect = anotate(Edit.onSelect, EditAction)
+const onChange = anotate(Edit.onChange, EditAction)
