@@ -139,21 +139,10 @@ export const Deactivate = { type: "Deactivate" }
 export const Activate = { type: "Activate" }
 export const Deselect = { type: "Deselect" }
 export const Select = { type: "Select" }
-export const FocusInput = { type: "Input", input: Input.Focus }
+export const FocusInput = { type: "Input", input: Input.Activate }
 export const HideInput = { type: "Input", input: Input.Hide }
 export const FocusOutput = { type: "Output", output: Output.Focus }
-export const ClearInput =
-  { type: "Input"
-  , input:
-    { type: "Change"
-    , value: ""
-    , selection:
-      { start: 0
-      , end: 0
-      , direction: "none"
-      }
-    }
-  }
+export const ClearInput = { type: "Input", input: Input.Clear }
 
 const tagInput =
   action => {
@@ -162,7 +151,7 @@ const tagInput =
         return SubmitInput
       case "Abort":
         return EscapeInput
-      case "Focus":
+      case "Activate":
         return ActivateInput
       case "Query":
         return CommitInput
@@ -575,7 +564,7 @@ const commitInput =
   model =>
   updateAssistant
   ( model
-  , Assistant.Query(model.input.value)
+  , Assistant.Query(model.input.edit.value)
   )
 
 const submitInput =
@@ -585,7 +574,7 @@ const submitInput =
   , model
   , [ ResetAssistant
     , FocusOutput
-    , Navigate(model.input.value)
+    , Navigate(model.input.edit.value)
     ]
   );
 
