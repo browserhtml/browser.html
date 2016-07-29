@@ -7,50 +7,69 @@
 
 import {merge, always} from "../common/prelude"
 import * as Unknown from "../common/unknown"
-import * as Target from "../common/target"
-import * as Focusable from "../common/focusable"
 import {Style} from "../common/style"
 import {html, Effects, forward} from "reflex"
 
-export type Model =
-  { isDisabled: boolean
+export class Model {
+  isDisabled: boolean;
+  static enabled: Model;
+  static disabled: Model;
+  constructor(isDisabled:boolean) {
+    this.isDisabled = isDisabled
   }
+}
+Model.enabled = new Model(false)
+Model.disabled = new Model(true)
 
 export type Action =
   | { type: "Disable" }
   | { type: "Enable" }
 
-export const Disable:Action =
-  { type: "Disable"
-  };
+export const Disable = { type: "Disable" }
+export const Enable = { type: "Enable" }
 
-export const Enable:Action =
-  { type: "Enable"
-  };
-
-const enable = <model:Model>
-  (model:model):[model, Effects<Action>] =>
-  [ merge(model, {isDisabled: false})
-  , Effects.none
-  ];
-
-const disable = <model:Model>
-  (model:model):[model, Effects<Action>] =>
-  [ merge(model, {isDisabled: true})
-  , Effects.none
-  ];
 
 export const init =
-  (isDisabled:boolean=false):[Model, Effects<Action>] =>
-  [ {isDisabled}
+  (isDisable:boolean=false):[Model, Effects<Action>] =>
+  [ ( isDisable
+    ? Model.disabled
+    : Model.enabled
+    )
   , Effects.none
-  ];
+  ]
 
-export const update = <model:Model>
-  (model:model, action:Action):[model, Effects<Action>] =>
-  ( action.type === "Enable"
-  ? enable(model)
-  : action.type === "Disable"
-  ? disable(model)
-  : Unknown.update(model, action)
-  );
+export const update =
+  (model:Model, action:Action):[Model, Effects<Action>] => {
+    switch (action.type) {
+      case "Enable":
+        return enable(model)
+      case "Disable":
+        return disable(model)
+      case "Toggle":
+        return toggle(model)
+      default:
+        return Unknown.update(model, action)
+    }
+  }
+
+
+export const enable =
+  (model:Model):[Model, Effects<Action>] =>
+  [ Model.enabled
+  , Effects.none
+  ]
+
+export const disable =
+  (model:Model):[Model, Effects<Action>] =>
+  [ Model.disabled
+  , Effects.none
+  ]
+
+export const toggle =
+  (model:Model):[Model, Effects<Action>] =>
+  [ ( model.isDisabled
+    ? Model.enabled
+    : Model.disabled
+    )
+  , Effects.none
+  ]

@@ -98,15 +98,17 @@ export const init =
   ):[Model, Effects<Action>] => {
     const [edit, edit$] = Edit.init(value, selection);
     const [focus, focus$] = Focus.init(isFocused);
+    const [control, control$] = Control.init(isDisabled);
     const model = new Model
       ( edit
       , focus
-      , {isDisabled}
+      , control
       , placeholder
       )
     const fx = Effects.batch
       ( [ edit$.map(EditAction)
         , focus$.map(FocusAction)
+        , control$.map(ControlAction)
         ]
       )
 
