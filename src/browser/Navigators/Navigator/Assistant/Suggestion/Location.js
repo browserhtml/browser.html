@@ -6,59 +6,38 @@
 
 
 import {Effects, html, forward, thunk} from "reflex";
-import {merge, always, batch} from "../../../../../common/prelude";
-import {Style, StyleSheet} from '../../../../../common/style';
 import * as URL from '../../../../../common/url-helper';
+import type {Address, DOM} from "reflex"
 
 
-import type {Address, DOM} from "reflex";
-import type {URI} from "../../../../../common/prelude"
+const style =
+  { fontSize: '14px'
+  }
 
-export type {URI}
+const properties =
+  { className: 'assistant title'
+  , style
+  }
 
-
-
-const styleSheet = StyleSheet.create
-  ( { base:
-      { fontSize: '14px'
-      }
-    , selected:
-      { color: 'rgba(255,255,255,0.7)'
-      }
-    , unselected:
-      {
-
-      }
+export const render =
+  (url:string):DOM =>
+  html.a
+  ( { className: 'assistant location'
+    , style
+    , href: url
+    , onClick: preventDefault
     }
-  );
+  , [ ` - ${URL.prettify(url)}` ]
+  )
 
 const preventDefault =
   event =>
   event.preventDefault();
 
-export const render =
-  (uri:URI, isSelected:boolean):DOM =>
-  html.a
-  ( { className: 'assistant url'
-    , style: Style
-      ( styleSheet.base
-      , ( isSelected
-        ? styleSheet.selected
-        : styleSheet.unselected
-        )
-      )
-    , href: uri
-    , onClick: preventDefault
-    }
-  , [ ` - ${URL.prettify(uri)}`
-    ]
-  );
-
 export const view =
-  (uri:URI, isSelected:boolean):DOM =>
+  (url:string):DOM =>
   thunk
-  ( uri
+  ( url
   , render
-  , uri
-  , isSelected
-  );
+  , url
+  )

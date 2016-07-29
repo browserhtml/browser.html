@@ -6,49 +6,33 @@
 
 
 import {Effects, html, forward, thunk} from "reflex";
-import {merge, always, batch} from "../../../../../common/prelude";
-import {Style, StyleSheet} from '../../../../../common/style';
-
 
 import type {Address, DOM} from "reflex"
 
 
 
-const styleSheet = StyleSheet.create
-  ( { base:
-      { fontSize: '14px'
-      }
-    , selected:
-      { color: '#fff'
-      }
-    , unselected:
-      {
+const style =
+  { fontSize: '14px'
+  }
 
-      }
-    }
-  );
+const properties =
+  { className: 'assistant title'
+  , style
+  }
 
 export const render =
-  (title:?string, isSelected:boolean):DOM =>
+  (title:?string):DOM =>
   html.span
-  ( { className: 'assistant title'
-    , style: Style
-      ( styleSheet.base
-      , ( isSelected
-        ? styleSheet.selected
-        : styleSheet.unselected
-        )
-      )
-    }
+  ( properties
   , [ ( title == null
       ? 'Untitled'
       : `${title}`
       )
     ]
-  );
+  )
 
 export const view =
-  (title:?string, isSelected:boolean):DOM =>
+  (title:?string):DOM =>
   thunk
   ( ( title == null
     ? ""
@@ -56,5 +40,4 @@ export const view =
     )
   , render
   , title
-  , isSelected
-  );
+  )
