@@ -59,7 +59,7 @@ const select = <model:Model>
   (model:model, selection:Selection):model =>
   merge(model, {selection});
 
-const change = <model:Model>
+export const change = <model:Model>
   (model:model, value:string, selection:Selection):model =>
   merge(model, {selection, value});
 
@@ -72,14 +72,21 @@ const empty =
     }
   }
 
-const clear = <model:Model>
+export const clear = <model:Model>
   (model:model):model =>
   merge(model, empty);
 
 export const init =
-  (value:string, selection:Selection):[Model, Effects<Action>] =>
+  (value:string, selection:?Selection=null):[Model, Effects<Action>] =>
   [ { value
-    , selection
+    , selection:
+      ( selection == null
+      ? { start: value.length
+        , end: value.length
+        , direction: "none"
+        }
+      : selection
+      )
     }
   , Effects.none
   ]

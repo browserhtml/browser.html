@@ -26,24 +26,37 @@ export const Blur:Action =
   { type: "Blur"
   };
 
+export const init =
+  (isFocused:boolean=false):[Model, Effects<Action>] =>
+  [ { isFocused }
+  , Effects.none
+  ]
 
 export const update = <model:Model>
   ( model:model, action:Action):[model, Effects<Action>] =>
   ( action.type === "Focus"
-  ? [ merge
-      ( model
-      , { isFocused: true
-        }
-      )
-    , Effects.none
-    ]
+  ? focus(model)
   : action.type === "Blur"
-  ? [ merge
-      ( model
-      , { isFocused: false
-        }
-      )
-    , Effects.none
-    ]
+  ? blur(model)
   : Unknown.update(model, action)
   );
+
+export const focus = <model:Model>
+  ( model:model ):[model, Effects<Action>] =>
+  [ merge
+    ( model
+    , { isFocused: true
+      }
+    )
+  , Effects.none
+  ]
+
+export const blur = <model:Model>
+  ( model:model ):[model, Effects<Action>] =>
+  [ merge
+    ( model
+    , { isFocused: false
+      }
+    )
+  , Effects.none
+  ]
