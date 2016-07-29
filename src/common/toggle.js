@@ -5,10 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {merge, always, mapFX} from "../common/prelude"
+import {merge, always, nofx, mapFX} from "../common/prelude"
 import * as Unknown from "../common/unknown"
 import * as Target from "../common/target"
-import * as Focusable from "../common/focusable"
+import * as Focus from "../common/focusable"
 import * as Button from "../common/button"
 import {Style} from "../common/style"
 import {html, Effects, forward, Task} from "reflex"
@@ -33,28 +33,20 @@ export type StyleSheet =
 
 export type ContextStyle = Rules
 
-export type Model =
-  { isDisabled: boolean
-  , isFocused: boolean
-  , isActive: boolean
-  , isPointerOver: boolean
-  , isChecked: boolean
-  , text: string
+export class Model {
+  button: Button.Model;
+  isChecked: boolean;
+  constructor(isChecked:boolean, button:Button.Model) {
+    this.isChecked = isChecked
+    this.button = button
   }
+}
 
 export type Action =
-  | { type: "Press" }
+  | { type: "Toggle" }
   | { type: "Check" }
   | { type: "Uncheck" }
-  | { type: "Focusable"
-    , focusable: Focusable.Action
-    }
-  | { type: "Target"
-    , target: Target.Action
-    }
-  | { type: "Button"
-    , button: Button.Action
-    }
+  | { type: "Button", button: Button.Action }
 
 
 export const init =
@@ -63,118 +55,132 @@ export const init =
   , isActive:boolean=false
   , isPointerOver:boolean=false
   , isChecked:boolean=false
-  , text:string=""
+  , label:string=""
   ):[Model, Effects<Action>] =>
-  [
-    { isDisabled,
-      isFocused,
-      isActive,
-      isPointerOver,
-      isChecked,
-      text
-    }
-  , Effects.none
-  ];
+  assemble
+  ( isChecked
+  , Button.init(isDisabled, isFocused, isActive, isPointerOver, label)
+  )
 
-export const Press:Action = {type: "Press"};
-export const Check:Action = {type: "Check"};
-export const Uncheck:Action = {type: "Uncheck"};
+const assemble =
+  ( isDisabled
+  , [button, fx]
+  ) =>
+  [ new Model(isDisabled, button)
+  , fx.map(ButtonAction)
+  ]
 
-const TargetAction =
-  (action:Target.Action):Action =>
-  ({type: "Target", target: action});
-
-const FocusableAction =
-  (action:Focusable.Action):Action =>
-  ({type: "Focusable", focusable: action});
+export const Toggle = {type: "Toggle"}
+export const Check = {type: "Check"}
+export const Uncheck = {type: "Uncheck"}
 
 const ButtonAction =
   (action:Button.Action):Action =>
-  ({type: "Button", button: action });
-
-export const Focus:Action = FocusableAction(Focusable.Focus);
-export const Blur:Action = FocusableAction(Focusable.Blur);
-
-export const Over:Action = TargetAction(Target.Over);
-export const Out:Action = TargetAction(Target.Out);
-
-export const Down:Action = ButtonAction(Button.Down);
-export const Up:Action = ButtonAction(Button.Up);
-
+  ( action.type === "Press"
+  ? Toggle
+  : { type: "Button"
+    , button: action
+    }
+  )
 
 export const update =
-  (model:Model, action:Action):[Model, Effects<Action>] =>
-  ( action.type === "Press"
-  ? [ merge(model, {isChecked: !model.isChecked})
-    , ( model.isChecked
-      ? Effects.perform(Task.succeed(Uncheck))
-      : Effects.perform(Task.succeed(Check))
-      )
-    ]
+  (model:Model, action:Action):[Model, Effects<Action>] => {
+    switch (action.type) {
+      case "Check":
+        return check(model)
+      case "Uncheck":
+        return uncheck(model)
+      case "Toggle":
+        return toggle(model)
+      case "Button":
+        return delegateButtonUpdate(model, action.button)
+      default:
+        return Unknown.update(model, action)
+    }
+  }
 
-  : action.type === "Check"
-  ? [ merge(model, {isChecked: true })
-    , Effects.none
+export const toggle =
+  (model:Model):[Model, Effects<Action>] =>
+  ( model.isChecked
+  ? [ new Model(false, model.button)
+    , Effects.perform(Task.succeed(Uncheck))
     ]
-  : action.type === "Uncheck"
-  ? [ merge(model, {isChecked: false })
-    , Effects.none
+  : [ new Model(true, model.button)
+    , Effects.perform(Task.succeed(Check))
     ]
-  : action.type === "Button"
-  ? mapFX(ButtonAction, Button.update(model, action.button))
-  : action.type === "Target"
-  ? mapFX(TargetAction, Target.update(model, action.target))
-  : action.type === "Focusable"
-  ? mapFX(FocusableAction, Focusable.update(model, action.focusable))
-  : Unknown.update(model, action)
-  );
+  )
+
+export const press = toggle
+
+export const check =
+  (model:Model):[Model, Effects<Action>] =>
+  ( model.isChecked
+  ? nofx(model)
+  : nofx(new Model(true, model.button))
+  )
+
+export const uncheck =
+  (model:Model):[Model, Effects<Action>] =>
+  ( model.isChecked
+  ? nofx(new Model(false, model.button))
+  : nofx(model)
+  )
+
+const delegateButtonUpdate =
+  (model, action) =>
+  swapButton(model, Button.update(model.button, action))
+
+const swapButton =
+  (model, [button, fx]) =>
+  [ new Model(model.isChecked, button)
+  , fx.map(ButtonAction)
+  ]
 
 
-export function view(key:string,
-                     styleSheet:StyleSheet):(model:Model, address:Address<Action>, contextStyle?:ContextStyle) => DOM {
-  return ( model
-         , address
-         , contextStyle
-  ):DOM =>
+export const view =
+  (key:string, styleSheet:StyleSheet) =>
+  (model:Model, address:Address<Action>, contextStyle?:ContextStyle):DOM =>
   html.button({
     key: key,
     className: key,
     style: Style
       ( styleSheet.base
-
-      ,   model.isFocused
+      , ( model.isFocused
         ? styleSheet.focused
         : styleSheet.blured
-
-      ,   model.isDisabled
+        )
+      , ( model.isDisabled
         ? styleSheet.disabled
         : styleSheet.enabled
-
-
-      ,  model.isPointerOver
+        )
+      , ( model.isPointerOver
         ? styleSheet.over
         : styleSheet.out
-
-      ,  model.isActive
+        )
+      , ( model.isActive
         ? styleSheet.active
         : styleSheet.inactive
-
-      ,   model.isChecked
+        )
+      , ( model.isChecked
         ? styleSheet.checked
         : styleSheet.unchecked
-
+        )
       , contextStyle
-    ),
+      ),
 
-    onFocus: forward(address, always(Focus)),
+    onFocus: forward(address, always(Activate)),
     onBlur: forward(address, always(Blur)),
-
     onMouseOver: forward(address, always(Over)),
     onMouseOut: forward(address, always(Out)),
-
+    onClick: forward(address, always(Click)),
     onMouseDown: forward(address, always(Down)),
-    onMouseUp: forward(address, always(Up)),
-
-    onClick: forward(address, always(Press))
+    onMouseUp: forward(address, always(Up))
   });
-}
+
+export const Activate = ButtonAction(Button.Focus)
+export const Blur = ButtonAction(Button.Blur)
+export const Over = ButtonAction(Button.Over)
+export const Out = ButtonAction(Button.Out)
+export const Click = ButtonAction(Button.Press)
+export const Down = ButtonAction(Button.Down)
+export const Up = ButtonAction(Button.Up)
