@@ -356,9 +356,9 @@ const reportError =
 
 
 const innerView =
-  (model, isSelected) =>
-  [ Icon.view('', isSelected)
-  , Title.view(model.title, isSelected)
+  (model) =>
+  [ Icon.view('')
+  , Title.view(model.title)
   ];
 
 export const render =
@@ -372,10 +372,7 @@ export const render =
     ( (uri, index) =>
       Suggestion.view
       ( model.selected === index
-      , innerView
-        ( model.matches[uri]
-        , model.selected === index
-        )
+      , innerView(model.matches[uri])
       , forward(address, byURI(uri))
       )
     )
