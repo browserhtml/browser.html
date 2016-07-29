@@ -274,3 +274,5 @@ export const view =
 
 export const onFocus = anotate(Focus.onFocus, FocusAction)
 export const onBlur = anotate(Focus.onBlur, FocusAction)
+export const onMouseOver = anotate(Target.onMouseOver, TargetAction)
+export const onMouseOut = anotate(Target.onMouseOut, TargetAction)

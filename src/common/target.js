@@ -5,34 +5,64 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {Effects} from "reflex";
-import {merge} from "../common/prelude";
+import {Effects, forward} from "reflex";
+import {always, port} from "../common/prelude";
 import * as Unknown from "../common/unknown";
 
+import type {Address} from "reflex";
 
-export type Model = {
-  isPointerOver: boolean
+export class Model {
+  isPointerOver: boolean;
+  static over: Model;
+  static out: Model;
+  constructor(isPointerOver:boolean) {
+    this.isPointerOver = isPointerOver
+  }
 }
+Model.over = new Model(true)
+Model.out = new Model(false)
 
 export type Action
   = { type: "Over" }
   | { type: "Out" }
 
 
-export const Over:Action = {type: "Over"};
-export const Out:Action = {type: "Out"};
+export const Over = { type: "Over" };
+export const Out = { type: "Out" };
 
 export const init =
   (isPointerOver:boolean=false):[Model, Effects<Action>] =>
-  [ {isPointerOver}
+  [ ( isPointerOver
+    ? Model.over
+    : Model.out
+    )
   , Effects.none
   ]
 
-export const update = <model:Model>
-  (model:model, action:Action):[model, Effects<Action>] =>
-  ( action.type == "Over"
-  ? [merge(model, {isPointerOver: true}), Effects.none]
-  : action.type == "Out"
-  ? [merge(model, {isPointerOver: false}), Effects.none]
-  : Unknown.update(model, action)
-  );
+export const update =
+  (model:Model, action:Action):[Model, Effects<Action>] => {
+    switch (action.type) {
+      case "Over":
+        return over(model);
+      case "Out":
+        return out(model);
+      default:
+        return Unknown.update(model, action);
+    }
+  }
+
+export const over =
+  (model:Model):[Model, Effects<Action>] =>
+  [ Model.over
+  , Effects.none
+  ];
+
+export const out =
+  (model:Model):[Model, Effects<Action>] =>
+  [ Model.out
+  , Effects.none
+  ];
+
+
+export const onMouseOver = port(always(Over));
+export const onMouseOut = port(always(Out));

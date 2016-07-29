@@ -170,8 +170,8 @@ export const view =
 
     onFocus: onFocus(address),
     onBlur: onBlur(address),
-    onMouseOver: forward(address, always(Over)),
-    onMouseOut: forward(address, always(Out)),
+    onMouseOver: onMouseOver(address),
+    onMouseOut: onMouseOut(address),
     onClick: forward(address, always(Click)),
     onMouseDown: forward(address, always(Down)),
     onMouseUp: forward(address, always(Up))
@@ -187,3 +187,5 @@ export const Up = ButtonAction(Button.Up)
 
 export const onFocus = anotate(Focus.onFocus, ButtonAction)
 export const onBlur = anotate(Focus.onBlur, ButtonAction)
+export const onMouseOver = anotate(Button.onMouseOver, ButtonAction)
+export const onMouseOut = anotate(Button.onMouseOut, ButtonAction)
