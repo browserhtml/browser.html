@@ -6,13 +6,13 @@
 
 
 import {Effects, html, forward, thunk} from "reflex";
-import {merge, always, batch} from "../../../../common/prelude";
-import {Style, StyleSheet} from '../../../../common/style';
-import * as URL from '../../../../common/url-helper';
+import {merge, always, batch} from "../../../../../common/prelude";
+import {Style, StyleSheet} from '../../../../../common/style';
+import * as URL from '../../../../../common/url-helper';
 
 
 import type {Address, DOM} from "reflex";
-import type {URI} from "../../../../common/prelude"
+import type {URI} from "../../../../../common/prelude"
 
 export type {URI}
 
