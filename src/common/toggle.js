@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {merge, always, nofx, mapFX} from "../common/prelude"
+import {tag, tagged, anotate, nofx, mapFX, always} from '../common/prelude';
 import * as Unknown from "../common/unknown"
 import * as Target from "../common/target"
 import * as Focus from "../common/focusable"
@@ -168,8 +168,8 @@ export const view =
       , contextStyle
       ),
 
-    onFocus: forward(address, always(Activate)),
-    onBlur: forward(address, always(Blur)),
+    onFocus: onFocus(address),
+    onBlur: onBlur(address),
     onMouseOver: forward(address, always(Over)),
     onMouseOut: forward(address, always(Out)),
     onClick: forward(address, always(Click)),
@@ -184,3 +184,6 @@ export const Out = ButtonAction(Button.Out)
 export const Click = ButtonAction(Button.Press)
 export const Down = ButtonAction(Button.Down)
 export const Up = ButtonAction(Button.Up)
+
+export const onFocus = anotate(Focus.onFocus, ButtonAction)
+export const onBlur = anotate(Focus.onBlur, ButtonAction)

@@ -7,7 +7,7 @@
 import {html, forward, Effects} from 'reflex';
 import {on, focus as isFocused, selection} from '@driver';
 import {identity} from '../../../lang/functional';
-import {always, merge, nofx, mapFX} from '../../../common/prelude';
+import {always, merge, nofx, mapFX, appendFX, anotate} from '../../../common/prelude';
 import {compose, debounce} from '../../../lang/functional';
 import {cursor} from '../../../common/cursor';
 import * as Focus from '../../../common/focusable';
@@ -462,8 +462,12 @@ export const view =
       selection: selection(model.edit.selection),
       onInput: on(address, readChange),
       onSelect: on(address, readSelect),
-      onFocus: forward(address, always(Activate)),
-      onBlur: forward(address, always(Blur)),
+      onFocus: onFocus(address),
+      onBlur: onBlur(address),
       onKeyDown: on(address, decodeKeyDown)
     })
   ]);
+
+
+const onFocus = anotate(Focus.onFocus, FocusAction)
+const onBlur = anotate(Focus.onBlur, FocusAction)

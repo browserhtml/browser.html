@@ -7,7 +7,7 @@
 import {html, forward, Effects} from 'reflex';
 import {Style} from '../common/style';
 import {compose} from '../lang/functional';
-import {tag, tagged, mapFX, merge, always} from '../common/prelude';
+import {tag, tagged, anotate, mapFX, always} from '../common/prelude';
 import * as Unknown from '../common/unknown';
 import * as Focus from '../common/focusable';
 import * as Edit from '../common/editable';
@@ -218,8 +218,8 @@ export function view(key:string,
     , onInput: on(address, decodeChange)
     , onKeyUp: on(address, decodeSelect)
     , onSelect: on(address, decodeSelect)
-    , onFocus: forward(address, always(Activate))
-    , onBlur: forward(address, always(Deactivate))
+    , onFocus: onFocus(address)
+    , onBlur: onBlur(address)
     , style: Style
       ( styleSheet.base
       , ( model.isDisabled
@@ -231,3 +231,6 @@ export function view(key:string,
     }
   )
 }
+
+export const onFocus = anotate(Focus.onFocus, FocusAction)
+export const onBlur = anotate(Focus.onBlur, FocusAction)
