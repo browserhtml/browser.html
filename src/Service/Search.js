@@ -4,11 +4,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Task} from "reflex";
-import {ok, error} from "../common/result";
+import {Task} from "reflex"
+import {ok, error} from "../common/result"
 import * as Search from "../browser/Navigators/Navigator/Assistant/Search"
 
-const pendingRequests = Object.create(null);
+const pendingRequests = Object.create(null)
 
 export const query =
   (query:string, limit:number=100):Task<Error, Array<Search.Model>> =>
@@ -24,9 +24,18 @@ export const query =
       fail(Error(`Network request to ${url} has failed: ${request.statusText}`))
     }
 
+    request.onabort = event => {
+      delete pendingRequests[query]
+    }
+
+    request.ontimeout = event => {
+      delete pendingRequests[query]
+      fail(Error(`Network request to ${url} timed out`))
+    }
+
     request.onload = event => {
       delete pendingRequests[query]
-      const result = decode(request, query, limit);
+      const result = decode(request, query, limit)
       if (result.isOk) {
         succeed(result.value)
       }
@@ -44,7 +53,6 @@ export const abort = <never>
     const request = pendingRequests[query]
     if (request != null) {
       request.abort()
-      delete pendingRequests[query]
     }
   })
 
@@ -61,7 +69,7 @@ const requestURL =
 
 const fail =
   request =>
-  error(Error('Can not decode ${JSON.stringify(request.response))} from ${requestURL(request)} '))
+  error(Error(`Can not decode ${JSON.stringify(request.response)} from ${requestURL(request)} `))
 
 const decode =
   ( request, query, limit ) =>

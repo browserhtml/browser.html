@@ -191,7 +191,7 @@ export const view =
     , placeholder: model.placeholder
     , value: model.edit.value
     , disabled:
-      ( model.isDisabled
+      ( model.control.isDisabled
       ? true
       : void(0)
       )
