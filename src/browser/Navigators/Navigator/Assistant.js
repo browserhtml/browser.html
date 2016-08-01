@@ -8,6 +8,7 @@ import {Effects, Task, html, forward, thunk} from "reflex"
 import * as Unknown from "../../../common/unknown"
 import {merge, setIn, nofx, appendFX} from "../../../common/prelude"
 import * as Suggestion from "./Assistant/Suggestion"
+import * as SuggestionStyle from "./Assistant/Suggestion/StyleSheet"
 import * as Selector from "./Assistant/Selector"
 import * as Search from "./Assistant/Search"
 import * as History from "./Assistant/History"
@@ -77,23 +78,24 @@ const tagSelector =
 
 const config = Selector.configure
   ( { toID: Suggestion.toID
-    , toView: Suggestion.view
-    , receiveUpdate: tagSelector
-    , sendTo:
-        (id, message) =>
+    , viewOption: Suggestion.view
+    , onOptionMessage:
+        (id, message):Message =>
         ( { type: "Suggestion"
           , suggestion: { to: id, message }
           }
         )
     , onSelect: (id:string):Message => ({ type: "Select", id })
     , onActivate: (id:string):Message => ({ type: "Activate", id })
-    , style:
+    , selectorStyle:
       { listStyle: 'none'
       , borderColor: 'inherit'
       , margin: '90px auto 40px'
       , padding: '0px'
       , width: '480px'
       }
+    , deselectedOptionStyle: SuggestionStyle.deselected
+    , selectedOptionStyle: SuggestionStyle.selected
     }
   )
 
@@ -313,7 +315,7 @@ export const swapSuggestion =
     , setIn(state.suggestions, index, suggestion)
     , state.selector
     )
-  , fx.map(message => config.sendTo(config.toID(suggestion), message))
+  , fx.map(message => config.onOptionMessage(config.toID(suggestion), message))
   ]
 
 export const query =

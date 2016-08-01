@@ -9,6 +9,55 @@ import type {Address, DOM} from "reflex";
 import {always, nofx, appendFX, port, merge} from "../../../../common/prelude"
 import * as Style from "../../../../common/style"
 
+// This module helps you create selectors similar to HTML `<select>` but without
+// restrictions of `<select>` and `<option>` and in particlura to the way they
+// are displayed. The crucial feature is that it lets you own your data
+// separately and keep it in whatever format is best for you. This way you are
+// free to change your data without worrying about the table
+// “getting out of sync” with the data. Having a single source of truth is
+// pretty great!
+
+
+// ## Configuration
+
+// Function is used to create a `Configuration` for your selectors `view`
+// function. It constains details on how you want to render your options,
+// how seleced / deselected options should be styled etc...
+
+export const configure = <option, outerMessage, innerMessage>
+  (settings:Configuration<option, outerMessage, innerMessage>):Configuration<option, outerMessage, innerMessage> =>
+  settings
+
+// You must provide the following information to configure selector:
+export type Configuration <option, outerMessage, innerMessage> =
+  // Turn an `option` into unique `ID`, so we can efficiently figure out updates.
+  { toID: (item:option) => string
+  // Turn an `option` into Virtual DOM (it will be wrapped in `<li>`).
+  , viewOption: (item:option, address:Address<innerMessage>) => DOM
+
+  // Style of the selector which will be an `<ul>` element.
+  , selectorStyle: Style.Rules
+  // Style of the option `<li>` element that isn't selected.
+  , deselectedOptionStyle: Style.Rules
+  // Style of the option `<li>` element that is selected.
+  , selectedOptionStyle: Style.Rules
+
+  // Message to send into update when option with the given `id` gets selected.
+  , onSelect: (id:string) => outerMessage
+  // Message to send into update when option with the given `id` gets activated
+  // (more specifically clicked).
+  , onActivate: (id:string) => outerMessage
+  // Message to send into update when message in the option with given `id` occurs.
+  // Since selector itself has no idea what childrens or what kind of messages
+  // they produce it's needs this option to know how to translate child messages
+  // to parent messages.
+  , onOptionMessage: (id:string, input:innerMessage) => outerMessage
+  }
+
+
+// # Model
+
+// Model just tracks which option is currently selected if any.
 export class Model {
   selected: ?string;
   static deselected: Model;
@@ -18,61 +67,52 @@ export class Model {
 }
 Model.deselected = new Model(null)
 
-
-export type Configuration <data, outerMessage, innerMessage> =
- { toID: (item:data) => string
- , toView: (item:data, address:Address<innerMessage>) => DOM
- , receiveUpdate: (state:Model) => outerMessage
- , sendTo: (id:string, input:innerMessage) => outerMessage
- , onSelect: (id:string) => outerMessage
- , onActivate: (id:string) => outerMessage
- , style: ?Style.Rules
- }
-
-export const configure = <data, outerMessage, innerMessage>
-  (options:Configuration<data, outerMessage, innerMessage>):Configuration<data, outerMessage, innerMessage> =>
-  options
-
+// Creates a Selector with  given `id` selected.
 export const initSelected =
  (id:string):Model =>
  new Model(id)
 
+// Create a Selector where option with given `id` selected, or if `id` is
+// ommitted  a Selector where no option is selected.
 export const init =
-  (selected:?string):Model =>
-  ( selected == null
+  (id:?string=null):Model =>
+  ( id == null
   ? Model.deselected
-  : new Model(selected)
+  : new Model(id)
   )
 
-
-export const selectNext = <data, message, inner>
-  (config:Configuration<data, message, inner>, state:Model, items:Array<data>):Model =>
+// Selects next option.
+export const selectNext = <option, message, inner>
+  (config:Configuration<option, message, inner>, state:Model, items:Array<option>):Model =>
   init
   ( nthFrom
     ( items
     , state.selected
-    , config.toID
     , 1
+    , config.toID
     )
   )
 
-export const selectPrevious = <data, message, inner>
-  (config:Configuration<data, message, inner>, state:Model, items:Array<data>):Model =>
+// Selects previous option.
+export const selectPrevious = <option, message, inner>
+  (config:Configuration<option, message, inner>, state:Model, items:Array<option>):Model =>
   init
   ( nthFrom
     ( items
     , state.selected
-    , config.toID
     , -1
+    , config.toID
    )
   )
 
-
-const nthFrom = <data>
-  ( items:Array<data>
+// Figures out which option if any should be selected give the array of options,
+// id of currently selected option, an offset from currently selected option to
+// be selected & function to identify `option`.
+const nthFrom = <option>
+  ( items:Array<option>
   , id:?string
-  , toID: (item:data) => string
-  , offset
+  , offset:number
+  , toID:(item:option) => string
   ):?string => {
     const index = items.findIndex(item => toID(item) == id) + offset
     const position = index - Math.trunc(index / items.length) * items.length
@@ -89,29 +129,27 @@ const nthFrom = <data>
     return result
   }
 
-export const deselect = <data>
+
+// Deselects all options.
+export const deselect =
   (state:Model):Model =>
   ( state.selected == null
   ? state
   : Model.deselected
   )
 
-export const select = <data>
+// Selects an option with a given `id`.
+export const select =
   (state:Model, id:string):Model =>
   ( state.selected === id
   ? state
   : init(id)
   )
 
-type MessageTo <message> =
-  { id: string
-  , message: message
-  }
-
-export const viewOption = <data, outer, inner>
-  ( config:Configuration<data, outer, inner>
+export const viewOption = <option, outer, inner>
+  ( config:Configuration<option, outer, inner>
   , selected: boolean
-  , item: data
+  , item: option
   , address: Address<outer>
   ):DOM =>
   thunk
@@ -123,75 +161,46 @@ export const viewOption = <data, outer, inner>
   , address
   )
 
-export const renderOption = <data, outer, inner>
-  ( config:Configuration<data, outer, inner>
+export const renderOption = <option, outer, inner>
+  ( config:Configuration<option, outer, inner>
   , selected: boolean
-  , item: data
+  , item: option
   , address: Address<outer>
   ):DOM =>
   html.li
   ( { style:
         ( selected
-        ? selectedStyle
-        : deselectedStyle
+        ? config.selectedOptionStyle
+        : config.deselectedOptionStyle
         )
     , onMouseOver: forward(address, () => config.onSelect(config.toID(item)))
     , onClick: forward(address, () => config.onActivate(config.toID(item)))
     }
-  , [ config.toView(item, forward(address, inner => config.sendTo(config.toID(item), inner)))
+  , [ config.viewOption(item, forward(address, inner => config.onOptionMessage(config.toID(item), inner)))
     ]
   )
 
-export const view = <data, message, inner>
-  ( config:Configuration<data, message, inner>
+// Turns given options into a selector. Extra arguments are required to describe
+// selector configuration, state describing which option is currently selected &
+// address to send messages to.
+// Note: The `state` and `items` should live in your `Model`. Selector
+// configuration on the other hand should not, it is a just `view` configuration
+// and should be defined statically similar to how your styles are defined.
+export const view = <option, message, inner>
+  ( config:Configuration<option, message, inner>
   , state: Model
-  , items: Array<data>
+  , options: Array<option>
   , address: Address<message>
   ):DOM =>
   html.ul
-  ( {style: config.style}
-  , items.map
-    ( item =>
+  ( {style: config.selectorStyle}
+  , options.map
+    ( option =>
       viewOption
         ( config
-        , config.toID(item) === state.selected
-        , item
+        , config.toID(option) === state.selected
+        , option
         , address
         )
     )
-  )
-
-const baseStyle =
-  { lineHeight: '40px'
-  , overflow: 'hidden'
-  , paddingLeft: '35px'
-  , paddingRight: '10px'
-  // Contains absolute elements.
-  , position: 'relative'
-  , whiteSpace: 'nowrap'
-  , textOverflow: 'ellipsis'
-  , borderLeft: 'none'
-  , borderRight: 'none'
-  , borderTop: 'none'
-  , borderBottom: '1px solid'
-  , color: 'inherit'
-  , borderColor: 'inherit'
-  , marginTop: '-3px'
-  , borderRadius: '0px'
-  , background: 'none'
-  , opacity: 1
-  }
-
-const deselectedStyle = merge
-  ( baseStyle
-  , { opacity: 0.7 }
-  )
-
-const selectedStyle = merge
-  ( baseStyle
-  , { background: '#4A90E2'
-    , color: '#fff'
-    , borderRadius: '3px'
-    , borderColor: 'transparent'
-    }
   )
