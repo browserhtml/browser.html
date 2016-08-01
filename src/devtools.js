@@ -179,7 +179,7 @@ export const update = <model, action, flags>
 
   : action.type === "Persist"
   ? persist(model)
-
+  
   : Unknown.update(model, action)
   )
 

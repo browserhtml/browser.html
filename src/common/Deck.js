@@ -55,12 +55,12 @@ export type Card <action, model, flags> =
 
 
 export class Model <model> {
-
+  
   nextID: Integer;
   index: Array<ID>;
   cards: Dictionary<ID, model>;
   selected: Maybe<ID>;
-
+  
   constructor(
     nextID:Integer
   , index:Array<ID>
