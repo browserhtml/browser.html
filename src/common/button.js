@@ -53,7 +53,7 @@ export class Model {
 
 export type Action =
   | { type: "Down" }
-  | { type: "Press" }
+  | { type: "Click" }
   | { type: "Up" }
   | { type: "Control", control: Control.Action }
   | { type: "Focus" , focus: Focus.Action }
@@ -82,7 +82,7 @@ const ControlAction =
   );
 
 export const Down = { type: "Down" };
-export const Press = { type: "Press" };
+export const Click = { type: "Click" };
 export const Up = { type: "Up" };
 export const Disable = ControlAction(Control.Disable);
 export const Enable = ControlAction(Control.Enable);
@@ -90,8 +90,6 @@ export const Activate = FocusAction(Focus.Focus);
 export const Deactivate = FocusAction(Focus.Blur);
 export const Over = TargetAction(Target.Over);
 export const Out = TargetAction(Target.Out);
-export const Focused = FocusAction(Focus.Focus);
-export const Blur = FocusAction(Focus.Blur);
 
 export const init =
   ( isDisabled:boolean
@@ -138,7 +136,7 @@ export const update =
         return down(model)
       case "Up":
         return up(model)
-      case "Press":
+      case "Click":
         return press(model)
       case "Control":
         return delegateControlUpdate(model, action.control)
@@ -262,12 +260,12 @@ export const view =
     onFocus: onFocus(address),
     onBlur: onBlur(address),
 
-    onMouseOver: forward(address, always(Over)),
-    onMouseOut: forward(address, always(Out)),
+    onMouseOver: onMouseOver(address),
+    onMouseOut: onMouseOut(address),
 
-    onMouseDown: forward(address, always(Down)),
-    onClick: forward(address, always(Press)),
-    onMouseUp: forward(address, always(Up))
+    onMouseDown: onMouseDown(address),
+    onClick: onClick(address),
+    onMouseUp: onMouseUp(address)
   }, [
     model.label
   ]);
@@ -276,3 +274,6 @@ export const onFocus = anotate(Focus.onFocus, FocusAction)
 export const onBlur = anotate(Focus.onBlur, FocusAction)
 export const onMouseOver = anotate(Target.onMouseOver, TargetAction)
 export const onMouseOut = anotate(Target.onMouseOut, TargetAction)
+export const onMouseDown = port(always(Down))
+export const onMouseUp = port(always(Up))
+export const onClick = port(always(Click))

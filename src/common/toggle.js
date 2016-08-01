@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {tag, tagged, anotate, nofx, mapFX, always} from '../common/prelude';
+import {merge, always, anotate, nofx, mapFX} from "../common/prelude"
 import * as Unknown from "../common/unknown"
 import * as Target from "../common/target"
 import * as Focus from "../common/focusable"
@@ -76,7 +76,7 @@ export const Uncheck = {type: "Uncheck"}
 
 const ButtonAction =
   (action:Button.Action):Action =>
-  ( action.type === "Press"
+  ( action.type === "Click"
   ? Toggle
   : { type: "Button"
     , button: action
@@ -172,20 +172,15 @@ export const view =
     onBlur: onBlur(address),
     onMouseOver: onMouseOver(address),
     onMouseOut: onMouseOut(address),
-    onClick: forward(address, always(Click)),
-    onMouseDown: forward(address, always(Down)),
-    onMouseUp: forward(address, always(Up))
+    onClick: onClick(address),
+    onMouseDown: onMouseDown(address),
+    onMouseUp: onMouseUp(address)
   });
 
-export const Activate = ButtonAction(Button.Focused)
-export const Blur = ButtonAction(Button.Blur)
-export const Over = ButtonAction(Button.Over)
-export const Out = ButtonAction(Button.Out)
-export const Click = ButtonAction(Button.Press)
-export const Down = ButtonAction(Button.Down)
-export const Up = ButtonAction(Button.Up)
-
-export const onFocus = anotate(Focus.onFocus, ButtonAction)
-export const onBlur = anotate(Focus.onBlur, ButtonAction)
+export const onFocus = anotate(Button.onFocus, ButtonAction)
+export const onBlur = anotate(Button.onBlur, ButtonAction)
 export const onMouseOver = anotate(Button.onMouseOver, ButtonAction)
 export const onMouseOut = anotate(Button.onMouseOut, ButtonAction)
+export const onClick = anotate(Button.onClick, ButtonAction)
+export const onMouseDown = anotate(Button.onMouseDown, ButtonAction)
+export const onMouseUp = anotate(Button.onMouseUp, ButtonAction)

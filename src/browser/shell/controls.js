@@ -69,7 +69,7 @@ const CloseButtonAction = compose
   ( action =>
     ( action === Ignore
     ? Ignore
-    : action.type === "Press"
+    : action.type === "Click"
     ? CloseWindow
     : ( { type: "CloseButton"
         , source: action
@@ -83,7 +83,7 @@ const MinimizeButtonAction = compose
   ( action =>
     ( action === Ignore
     ? Ignore
-    : action.type === "Press"
+    : action.type === "Click"
     ? MinimizeWindow
     : ( { type: "MinimizeButton"
         , source: action
@@ -97,7 +97,7 @@ const ToggleButtonAction = compose
   ( action =>
     ( action === Ignore
     ? Ignore
-    : action.type === "Press"
+    : action.type === "Click"
     ? ToggleWindowFullscreen
     : ( { type: "ToggleButton"
         , source: action
