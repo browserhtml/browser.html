@@ -39,10 +39,10 @@ export const toID =
   (model:Model):string => {
     switch (model.type) {
       case "Search":
-        return `?${model.search.url}`
+        return `?${Search.id(model.search)}`
       case "History":
       default:
-        return `^${model.history.url}`
+        return `^${History.id(model.history)}`
     }
   }
 
