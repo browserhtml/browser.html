@@ -593,9 +593,9 @@ const escapeInput =
     ( update
     , model
     , [ DeactivateAssistant
+      , FocusOutput
       , HideOverlay
       , ClearInput
-      , FocusOutput
       ]
     )
   : batch
