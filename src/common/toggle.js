@@ -177,7 +177,7 @@ export const view =
     onMouseUp: forward(address, always(Up))
   });
 
-export const Activate = ButtonAction(Button.Focus)
+export const Activate = ButtonAction(Button.Focused)
 export const Blur = ButtonAction(Button.Blur)
 export const Over = ButtonAction(Button.Over)
 export const Out = ButtonAction(Button.Out)

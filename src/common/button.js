@@ -5,10 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {merge, always, mapFX} from "../common/prelude"
+import {merge, always, nofx, mapFX} from "../common/prelude"
 import * as Unknown from "../common/unknown"
 import * as Target from "../common/target"
-import * as Focusable from "../common/focusable"
+import * as Focus from "../common/focusable"
 import * as Control from "../common/control"
 import {Style} from "../common/style"
 import {html, Effects, forward} from "reflex"
@@ -30,46 +30,52 @@ export type StyleSheet =
   , inactive?: Rules
   }
 
-
-export type Model =
-  { isDisabled: boolean
-  , isActive: boolean
-  , isPointerOver: boolean
-  , isFocused: boolean
-  , text: string
+export class Model {
+  control: Control.Model;
+  target: Target.Model;
+  focus: Focus.Model;
+  isActive: boolean;
+  label: string;
+  constructor(
+    label:string
+  , isActive:boolean
+  , control:Control.Model
+  , target:Target.Model
+  , focus:Focus.Model
+  ) {
+    this.label = label;
+    this.isActive = isActive;
+    this.control = control;
+    this.target = target;
+    this.focus = focus;
   }
+}
 
 export type Action =
   | { type: "Down" }
   | { type: "Press" }
   | { type: "Up" }
-  | { type: "Control"
-    , control: Control.Action
-    }
-  | { type: "Focusable"
-    , focusable: Focusable.Action
-    }
-  | { type: "Target"
-    , target: Target.Action
-    }
+  | { type: "Control", control: Control.Action }
+  | { type: "Focus" , focus: Focus.Action }
+  | { type: "Target", target: Target.Action }
 
 
 const TargetAction =
-  action =>
+  (action:Target.Action):Action =>
   ( { type: "Target"
     , target: action
     }
   );
 
-const FocusableAction =
-  action =>
-  ( { type: "Focusable"
-    , focusable: action
+const FocusAction =
+  (action:Focus.Action):Action =>
+  ( { type: "Focus"
+    , focus: action
     }
   );
 
 const ControlAction =
-  action =>
+  (action:Control.Action):Action =>
   ( { type: "Control"
     , control: action
     }
@@ -78,49 +84,149 @@ const ControlAction =
 export const Down = { type: "Down" };
 export const Press = { type: "Press" };
 export const Up = { type: "Up" };
-
 export const Disable = ControlAction(Control.Disable);
 export const Enable = ControlAction(Control.Enable);
-
-
-export const Focus = FocusableAction(Focusable.Focus);
-export const Blur = FocusableAction(Focusable.Blur);
-
+export const Activate = FocusAction(Focus.Focus);
+export const Deactivate = FocusAction(Focus.Blur);
 export const Over = TargetAction(Target.Over);
 export const Out = TargetAction(Target.Out);
+export const Focused = FocusAction(Focus.Focus);
+export const Blur = FocusAction(Focus.Blur);
 
 export const init =
   ( isDisabled:boolean
   , isFocused:boolean
   , isActive:boolean
   , isPointerOver:boolean
-  , text:string=''
+  , label:string=''
   ):[Model, Effects<Action>] =>
-  [ ({isDisabled: false
-    , isFocused: false
-    , isActive: false
-    , isPointerOver: false
-    , text
-    })
-  , Effects.none
+  assemble
+  ( label
+  , isActive
+  , Control.init(isActive)
+  , Target.init(isPointerOver)
+  , Focus.init(isFocused)
+  );
+
+const assemble =
+  ( label
+  , isActive
+  , [control, control$]
+  , [target, target$]
+  , [focus, focus$]
+  ) =>
+  [ new Model
+    ( label
+    , isActive
+    , control
+    , target
+    , focus
+    )
+  , Effects.batch
+    ( [ control$.map(ControlAction)
+      , target$.map(TargetAction)
+      , focus$.map(FocusAction)
+      ]
+    )
   ]
 
-export const update = <model:Model>
-  (model:model, action:Action):[model, Effects<Action>] =>
-  ( action.type === "Down"
-  ? [merge(model, {isActive: true}), Effects.none]
-  : action.type === "Up"
-  ? [merge(model, {isActive: false}), Effects.none]
-  : action.type === "Press"
-  ? [model, Effects.none]
-  : action.type === "Control"
-  ? mapFX(ControlAction, Control.update(model, action.control))
-  : action.type === "Target"
-  ? mapFX(TargetAction, Target.update(model, action.target))
-  : action.type === "Focusable"
-  ? mapFX(FocusableAction, Focusable.update(model, action.focusable))
-  : Unknown.update(model, action)
-  );
+
+export const update =
+  (model:Model, action:Action):[Model, Effects<Action>] => {
+    switch (action.type) {
+      case "Down":
+        return down(model)
+      case "Up":
+        return up(model)
+      case "Press":
+        return press(model)
+      case "Control":
+        return delegateControlUpdate(model, action.control)
+      case "Target":
+        return delegateTargetUpdate(model, action.target)
+      case "Focus":
+        return delegateFocusUpdate(model, action.focus)
+      default:
+        return Unknown.update(model, action)
+    }
+  }
+
+export const down =
+  (model:Model):[Model, Effects<Action>] =>
+  nofx
+  ( new Model
+    ( model.label
+    , true
+    , model.control
+    , model.target
+    , model.focus
+    )
+  )
+
+export const up =
+  (model:Model):[Model, Effects<Action>] =>
+  nofx
+  ( new Model
+    ( model.label
+    , false
+    , model.control
+    , model.target
+    , model.focus
+    )
+  )
+
+export const press =
+  (model:Model):[Model, Effects<Action>] =>
+  nofx(model)
+
+const delegateControlUpdate =
+  (model, action) =>
+  swapControl(model, Control.update(model.control, action))
+
+const swapControl =
+  (model, [control, fx]) =>
+  [ new Model
+    ( model.label
+    , model.isActive
+    , control
+    , model.target
+    , model.focus
+    )
+  , fx.map(ControlAction)
+  ]
+
+const delegateTargetUpdate =
+  (model, action) =>
+  swapTarget(model, Target.update(model.target, action))
+
+const swapTarget =
+  (model, [target, fx]) =>
+  [ new Model
+    ( model.label
+    , model.isActive
+    , model.control
+    , target
+    , model.focus
+    )
+  , fx.map(TargetAction)
+  ]
+
+
+const delegateFocusUpdate =
+  (model, action) =>
+  swapFocus(model, Focus.update(model.focus, action))
+
+const swapFocus =
+  (model, [focus, fx]) =>
+  [ new Model
+    ( model.label
+    , model.isActive
+    , model.control
+    , model.target
+    , focus
+    )
+  , fx.map(FocusAction)
+  ]
 
 
 export const view =
@@ -131,27 +237,29 @@ export const view =
     className: key,
     style: Style
       (  styleSheet.base
-
-      ,   model.isFocused
+      , ( model.isFocused
         ? styleSheet.focused
         : styleSheet.blured
+        )
 
-      ,   model.isDisabled
+      , ( model.isDisabled
         ? styleSheet.disabled
         : styleSheet.enabled
+        )
 
-      ,  model.isPointerOver
+      , ( model.isPointerOver
         ? styleSheet.over
         : styleSheet.out
+        )
 
-      ,  model.isActive
+      , ( model.isActive
         ? styleSheet.active
         : styleSheet.inactive
-
+        )
       , contextStyle
       ),
 
-    onFocus: forward(address, always(Focus)),
+    onFocus: forward(address, always(Focused)),
     onBlur: forward(address, always(Blur)),
 
     onMouseOver: forward(address, always(Over)),
@@ -160,4 +268,6 @@ export const view =
     onMouseDown: forward(address, always(Down)),
     onClick: forward(address, always(Press)),
     onMouseUp: forward(address, always(Up))
-  }, [model.text || '']);
+  }, [
+    model.label
+  ]);

@@ -22,6 +22,12 @@ export type Action
 export const Over:Action = {type: "Over"};
 export const Out:Action = {type: "Out"};
 
+export const init =
+  (isPointerOver:boolean=false):[Model, Effects<Action>] =>
+  [ {isPointerOver}
+  , Effects.none
+  ]
+
 export const update = <model:Model>
   (model:model, action:Action):[model, Effects<Action>] =>
   ( action.type == "Over"

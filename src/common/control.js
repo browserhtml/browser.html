@@ -40,6 +40,12 @@ const disable = <model:Model>
   , Effects.none
   ];
 
+export const init =
+  (isDisabled:boolean=false):[Model, Effects<Action>] =>
+  [ {isDisabled}
+  , Effects.none
+  ];
+
 export const update = <model:Model>
   (model:model, action:Action):[model, Effects<Action>] =>
   ( action.type === "Enable"
