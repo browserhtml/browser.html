@@ -76,7 +76,7 @@ export const Uncheck = {type: "Uncheck"}
 
 const ButtonAction =
   (action:Button.Action):Action =>
-  ( action.type === "Press"
+  ( action.type === "Click"
   ? Toggle
   : { type: "Button"
     , button: action

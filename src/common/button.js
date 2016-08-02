@@ -53,7 +53,7 @@ export class Model {
 
 export type Action =
   | { type: "Down" }
-  | { type: "Press" }
+  | { type: "Click" }
   | { type: "Up" }
   | { type: "Control", control: Control.Action }
   | { type: "Focus" , focus: Focus.Action }
@@ -82,7 +82,7 @@ const ControlAction =
   );
 
 export const Down = { type: "Down" };
-export const Press = { type: "Press" };
+export const Click = { type: "Click" };
 export const Up = { type: "Up" };
 export const Disable = ControlAction(Control.Disable);
 export const Enable = ControlAction(Control.Enable);
@@ -136,7 +136,7 @@ export const update =
         return down(model)
       case "Up":
         return up(model)
-      case "Press":
+      case "Click":
         return press(model)
       case "Control":
         return delegateControlUpdate(model, action.control)
@@ -276,4 +276,4 @@ export const onMouseOver = anotate(Target.onMouseOver, TargetAction)
 export const onMouseOut = anotate(Target.onMouseOut, TargetAction)
 export const onMouseDown = port(always(Down))
 export const onMouseUp = port(always(Up))
-export const onClick = port(always(Press))
+export const onClick = port(always(Click))
