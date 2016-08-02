@@ -10,7 +10,7 @@ import {always, nofx, appendFX, port, merge} from "../../../../common/prelude"
 import * as Style from "../../../../common/style"
 
 // This module helps you create selectors similar to HTML `<select>` but without
-// restrictions of `<select>` and `<option>` and in particlura to the way they
+// restrictions of `<select>` and `<option>` and in particular to the way they
 // are displayed. The crucial feature is that it lets you own your data
 // separately and keep it in whatever format is best for you. This way you are
 // free to change your data without worrying about the table
@@ -21,7 +21,7 @@ import * as Style from "../../../../common/style"
 // ## Configuration
 
 // Function is used to create a `Configuration` for your selectors `view`
-// function. It constains details on how you want to render your options,
+// function. It contains details on how you want to render your options,
 // how seleced / deselected options should be styled etc...
 
 export const configure = <option, outerMessage, innerMessage>
@@ -47,10 +47,10 @@ export type Configuration <option, outerMessage, innerMessage> =
   // Message to send into update when option with the given `id` gets activated
   // (more specifically clicked).
   , onActivate: (id:string) => outerMessage
-  // Message to send into update when message in the option with given `id` occurs.
-  // Since selector itself has no idea what childrens or what kind of messages
-  // they produce it's needs this option to know how to translate child messages
-  // to parent messages.
+  // Message to send it to an update when message inside option for given `id`
+  // occurs. As selector itself is unaware of children or kind messages they
+  // produce, it requires this option to translate child messages to a parent
+  // messages.
   , onOptionMessage: (id:string, input:innerMessage) => outerMessage
   }
 
@@ -73,7 +73,7 @@ export const initSelected =
  new Model(id)
 
 // Create a Selector where option with given `id` selected, or if `id` is
-// ommitted  a Selector where no option is selected.
+// omitted  a Selector where no option is selected.
 export const init =
   (id:?string=null):Model =>
   ( id == null
@@ -105,7 +105,7 @@ export const selectPrevious = <option, message, inner>
    )
   )
 
-// Figures out which option if any should be selected give the array of options,
+// Figures out which option if any should be selected given the array of options,
 // id of currently selected option, an offset from currently selected option to
 // be selected & function to identify `option`.
 const nthFrom = <option>
