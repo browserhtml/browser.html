@@ -1,0 +1,51 @@
+/* @flow */
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+import type {Address, Task, Never} from "reflex"
+
+export {Renderer} from "reflex-virtual-dom-driver"
+
+type Mapper <from, to> =
+  (input:from) => to
+
+type ListenerOption <data> =
+  { stopPropagation?: (input:data) => boolean
+  , preventDefault?: (input:data) => boolean
+  }
+
+type Property =
+  | Property
+
+declare export function on <message, element:HTMLElement, event:Event>
+  ( address:Address<message>
+  , decode?:Mapper<event, ?message>
+  , options?:ListenerOption<message>
+  , getTarget?:(source:element) => HTMLElement
+  ):Property
+
+declare export function onWindow <message, event:Event>
+  ( address:Address<message>
+  , decode?:Mapper<event, ?message>
+  , options?:ListenerOption<message>
+  ):Property
+
+declare export function focus (value:boolean):Property
+
+type Selection =
+  { start: number
+  , end: number
+  , direction: 'forward' | 'backward' | 'none'
+  }
+
+declare export function selection (value:Selection):Property
+
+type Setter <data, element:HTMLElement> =
+  (target:element, value:data) => Task<Never, void>
+
+declare export function setting <element:HTMLElement, data>
+  ( setter:Setter<data, element>
+  , value:data
+  ):Property
