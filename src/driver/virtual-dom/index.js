@@ -148,6 +148,34 @@ class MetaProperty {
 export const metaProperty = update => value =>
   new MetaProperty(value, update)
 
+type Setter <data, element:HTMLElement> =
+  (target:element, value:data) => Task<Never, void>
+
+class Setting <data, element:HTMLElement> {
+  value: data;
+  setter: Setter<data, element>;
+  constructor(setter:Setter<data, element>, value:data) {
+    this.value = value
+    this.setter = setter
+  }
+  hook(node, name, previous) {
+    this
+      .setter(node, this.value)
+      .fork(this.onSucceed, this.onFail);
+  }
+  onFail(error) {
+    console.error(error);
+  }
+  onSucceed() {
+
+  }
+}
+
+
+export const setting = <element:HTMLElement, data>
+  ( setter:Setter<data, element>
+  , value:data
+  ) => new Setting(setter, value)
 
 // Bunch of meta properties are booleans, meaning they can be toggled on
 // or off. This function is an optimized version of metaProperty for such
