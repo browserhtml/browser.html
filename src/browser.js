@@ -85,6 +85,7 @@ export type Action =
   | { type: "Modify", modify: ID, action: any }
   | { type: "Open" }
   | { type: "Tabs", tabs: Tabs.Action }
+  | { type: "Failure", error: {} }
   | { type: "Crash", crash: IssueReporter.Report }
   | { type: "IssueReporter", issueReporter: IssueReporter.Action }
 
@@ -785,6 +786,7 @@ export const view =
     , onUnload: onWindow(address, always(Unload))
     , onServoMouseForceDown: on(address, always(ShowTabs))
     , onWebkitMouseForceDown: on(address, always(ShowTabs))
+    , onMozBrowserError: onWindow(address, decodeError)
     }
   , [ Navigators.view
       ( model.navigators
@@ -813,3 +815,22 @@ export const view =
       )
     ]
   );
+
+const decodeError =
+  ( event ) =>
+  ( event.detail.type === "fatal"
+  ? decodeCrash(event)
+  : Failure(event.detail)
+  )
+
+const decodeCrash =
+  ({ detail }) =>
+  ( { type: "Crash"
+    , crash:
+      { description: detail.description
+      , version: detail.version
+      , backtrace: detail.report
+      , url: ""
+      }
+    }
+  )
