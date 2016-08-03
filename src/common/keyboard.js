@@ -11,19 +11,6 @@ export type kind =
   | "KeyDown"
   | "KeyPress"
 
-export type Abort =
-  { type: "AbortEvent"
-  , action:
-    { type: kind
-    , combination: string
-    , key: string
-    , metaKey: boolean
-    , shiftKey: boolean
-    , altKey: boolean
-    , ctrlKey: boolean
-    }
-  }
-
 export type BindingTable <Action> =
   { [key:string]: (event:KeyboardEvent) => Action
   }
@@ -176,7 +163,7 @@ const writeChord = event => {
 
 
 export const bindings = <Action>
-  (bindingTable:BindingTable<Action>):(event:KeyboardEvent) => Action | Abort => {
+  (bindingTable:BindingTable<Action>):(event:KeyboardEvent) => ?Action => {
   const bindings = Object.create(null);
   Object.keys(bindingTable).forEach(key => {
     bindings[readChord(key)] = bindingTable[key];
@@ -192,23 +179,7 @@ export const bindings = <Action>
       return binding(event);
     }
     else {
-      return {
-        type: "AbortEvent"
-      , action:
-        { type
-            : event.type === "keyup"
-            ? "KeyUp"
-            : event.type === "keydown"
-            ? "KeyDown"
-            : "KeyPress"
-        , combination: combination
-        , key: event.key
-        , metaKey: event.metaKey
-        , shiftKey: event.shiftKey
-        , altKey: event.altKey
-        , ctrlKey: event.ctrlKey
-        }
-      };
+      return null
     }
   };
 };

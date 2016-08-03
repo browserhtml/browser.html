@@ -20,7 +20,7 @@ class On {
         void(0) :
         handler.decode(event)
 
-      if (data == null || data.type !== "AbortEvent") {
+      if (data !== null) {
         if (handler.stopPropagation) {
           if (handler.stopPropagation(data)) {
             event.stopPropagation()
