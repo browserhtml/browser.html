@@ -1,10 +1,14 @@
 /* @flow */
 
-import {Effects, node, html, forward} from 'reflex';
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+import {Effects, Task, node, html, forward} from 'reflex';
 import * as URL from '../../../../common/url-helper';
 import * as Driver from '@driver';
 import * as Style from '../../../../common/style';
-import {on} from '@driver';
+import {on, setting} from '@driver';
 import {always} from '../../../../common/prelude';
 
 
@@ -12,7 +16,6 @@ import {always} from '../../../../common/prelude';
 import type {Address, DOM} from "reflex"
 import type {Model, Action} from "../WebView"
 import {performance} from "../../../../common/performance"
-
 
 const Blur = always({ type: "Blur" });
 const Focus = always({ type: "Focus" });
@@ -22,6 +25,7 @@ const DocumentFirstPaint = always({ type: "DocumentFirstPaint" });
 
 export const view =
   ( styleSheet:{ base: Style.Rules }
+  , selected:boolean
   , model:Model
   , address:Address<Action>
   ):DOM =>
@@ -49,6 +53,7 @@ export const view =
         )
       , mozallowfullscreen: true
       }
+    , visibility: setting(visibility, selected)
 
     // Events
 
@@ -256,3 +261,10 @@ const frameStyleSheet = Style.createSheet
       }
     }
   );
+
+const visibility = (element:HTMLElement, visible:boolean) =>
+  new Task((succeed, fail) => {
+    if (typeof(element.setVisible) === "function") {
+      element.setVisible(visible)
+    }
+  })

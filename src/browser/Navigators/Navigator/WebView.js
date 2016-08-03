@@ -490,5 +490,5 @@ const Frame =
 
 
 export const view =
-  (model:Model, address:Address<Action>):DOM =>
-  Frame.view(styleSheet, model, address);
+  (isSelected:boolean, model:Model, address:Address<Action>):DOM =>
+  Frame.view(styleSheet, isSelected, model, address);

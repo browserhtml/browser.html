@@ -24,6 +24,7 @@ const DocumentFirstPaint = always({ type: "DocumentFirstPaint" });
 
 export const view =
   ( styleSheet:{ base: Style.Rules }
+  , selected:boolean
   , model:Model
   , address:Address<Action>
   ):DOM =>

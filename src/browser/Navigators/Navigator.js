@@ -910,7 +910,7 @@ export const render =
       , styleBackground(model.output)
       )
     }
-  , [ Output.view(model.output, forward(address, tagOutput))
+  , [ Output.view(model.isSelected, model.output, forward(address, tagOutput))
     , Overlay.view(model.overlay, forward(address, tagOverlay))
     , Assistant.view(model.assistant, forward(address, tagAssistant))
     , Header.view
@@ -953,7 +953,8 @@ const styleSheet = Style.createSheet
       , transitionDuration: '300ms'
       }
     , selected:
-      { zIndex: 2 }
+      { zIndex: 2
+      }
     , unselected:
       { zIndex: 1
       , visibility: 'hidden'
