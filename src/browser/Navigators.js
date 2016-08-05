@@ -1,7 +1,6 @@
 /* @flow */
 
 import * as Deck from "../common/Deck"
-import * as Animation from "../common/Animation"
 import * as Unknown from "../common/unknown"
 import * as Display from "./Navigators/Display"
 import {Effects, html, forward, thunk} from "reflex"
@@ -39,7 +38,6 @@ export type Action =
   | { type: "SelectNext" }
   | { type: "SelectPrevious" }
   | { type: "Crash", crash: Report }
-  | { type: "Animation", animation: Animation.Action }
   | { type: "Tabs", tabs: Tabs.Action }
   | { type: "Deck", deck: Deck.Action<Navigator.Action, Navigator.Flags> }
 
@@ -68,18 +66,15 @@ export class Model {
   zoom: boolean;
   shrink: boolean;
   deck: Deck.Model<Navigator.Model>;
-  animation: Animation.Model<Display.Model>;
 
   constructor(
     zoom:boolean
   , shrink:boolean
   , deck:Deck.Model<Navigator.Model>
-  , animation:Animation.Model<Display.Model>
   ) {
     this.zoom = zoom;
     this.shrink = shrink;
     this.deck = deck;
-    this.animation = animation;
   }
 }
 
@@ -132,12 +127,6 @@ const tagDeck =
     }
   }
 
-const tagAnimation =
-  action =>
-  ( { type: "Animation"
-    , animation: action
-    }
-  );
 
 const tagOverlay = always(ShowWebView);
 
@@ -191,20 +180,10 @@ export const init =
       : [deck2, $deck2]
       );
 
-    const display =
-      ( shrink
-      ? Display.shrinked
-      : zoom
-      ? Display.normal
-      : Display.expose
-      )
-
-    const [animation, $animation] = Animation.init(display);
-    const model = new Model(zoom, shrink, deck3, animation);
+    const model = new Model(zoom, shrink, deck3);
     const fx = Effects.batch
       ( [ $deck.map(tagDeck)
         , $deck3.map(tagDeck)
-        , $animation.map(tagAnimation)
         ]
       )
     return [model, fx]
@@ -213,8 +192,6 @@ export const init =
 export const update =
   (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
-      case "Animation":
-        return updateAnimation(model, action.animation);
       case "Deck":
         return updateDeck(model, action.deck);
       case "SelectNext":
@@ -256,30 +233,6 @@ export const update =
     }
   }
 
-const animate =
-  (animation, action) =>
-  Animation.updateWith
-  ( Easing.easeOutCubic
-  , Display.interpolate
-  , animation
-  , action
-  )
-
-const updateAnimation = cursor
-  ( { get: model => model.animation
-    , set:
-      (model, animation) =>
-      new Model
-      ( model.zoom
-      , model.shrink
-      , model.deck
-      , animation
-      )
-    , tag: tagAnimation
-    , update: animate
-    }
-  )
-
 const openNewTab =
   model =>
   updateDeck
@@ -295,7 +248,6 @@ const updateDeck = cursor
       ( model.zoom
       , model.shrink
       , deck
-      , model.animation
       )
     , tag: tagDeck
     , update:
@@ -371,17 +323,11 @@ const focus =
   ( model ) =>
   ( model.zoom
   ? nofx(model)
-  : startAnimation
-    ( true
-    , model.shrink
-    , model.deck
-    , Animation.transition
-      ( model.animation
-      , ( model.shrink
-        ? Display.shrinked
-        : Display.normal
-        )
-      , 200
+  : nofx
+    ( new Model
+      ( true
+      , model.shrink
+      , model.deck
       )
     )
   )
@@ -389,17 +335,11 @@ const focus =
 const expose =
   ( model ) =>
   ( model.zoom
-  ? startAnimation
-    ( false
-    , model.shrink
-    , model.deck
-    , Animation.transition
-      ( model.animation
-      , ( model.shrink
-        ? Display.exposeShrinked
-        : Display.expose
-        )
-      , 500
+  ? nofx
+    ( new Model
+      ( false
+      , model.shrink
+      , model.deck
       )
     )
   : nofx(model)
@@ -409,14 +349,11 @@ const shrink =
   ( model ) =>
   ( model.shrink
   ? nofx(model)
-  : startAnimation
-    ( true
-    , true
-    , model.deck
-    , Animation.transition
-      ( model.animation
-      , Display.shrinked
-      , 200
+  : nofx
+    ( new Model
+      ( true
+      , true
+      , model.deck
       )
     )
   )
@@ -425,37 +362,14 @@ const expand =
   ( model ) =>
   ( !model.shrink
   ? nofx(model)
-  : model.zoom
-  ? startAnimation
-    ( model.zoom
-    , false
-    , model.deck
-    , Animation.transition
-      ( model.animation
-      , Display.normal
-      , 200
-      )
-    )
   : nofx
     ( new Model
       ( model.zoom
       , false
       , model.deck
-      , model.animation
       )
     )
   )
-
-const startAnimation =
-  (zoom, shrink, deck, [animation, fx]) =>
-  [ new Model
-    ( zoom
-    , shrink
-    , deck
-    , animation
-    )
-  , fx.map(tagAnimation)
-  ]
 
 
 export const render =
@@ -467,9 +381,14 @@ export const render =
     , style:
         Style.mix
         ( styleSheet.base
-        , { borderRight: `solid transparent ${model.animation.state.rightOffset}px`
-          , transform: `translate3d(0, 0, ${model.animation.state.depth}px)`
-          }
+        , ( model.shrink
+          ? styleSheet.shrinked
+          : styleSheet.expanded
+          )
+        , ( model.zoom
+          ? styleSheet.collapsed
+          : styleSheet.expose
+          )
         )
     }
   , [ Overlay.view
@@ -496,6 +415,7 @@ export const view =
   , address
   )
 
+const easeOutCubic = 'cubic-bezier(0.215, 0.61, 0.355, 1)'
 const styleSheet = Style.createSheet
   ( { base:
       { position: 'absolute'
@@ -507,6 +427,22 @@ const styleSheet = Style.createSheet
       , overflow: 'hidden'
       , transformOrigin: 'left center'
       , boxSizing: 'border-box'
+      , transition: `border-right 200ms ${easeOutCubic}, transform 200ms ${easeOutCubic}`
+      , background: 'white'
+      }
+    , shrinked: {
+        borderRight: 'solid transparent 50px'
+      }
+    , expanded: {
+        borderRight: 'solid transparent 0px'
+      }
+    , collapsed:
+      { transform: 'translate3d(0, 0, 0)'
+      , transition: `border-right 200ms ${easeOutCubic}, transform 200ms ${easeOutCubic}`
+      }
+    , expose:
+      { transition: `border-right 200ms ${easeOutCubic}, transform 500ms ${easeOutCubic}`
+      , transform: 'translate3d(0, 0, -200px)'
       }
     }
   )
