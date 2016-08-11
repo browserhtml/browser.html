@@ -52,36 +52,21 @@ export type Action =
 
 
 export class Model {
-  
+
   ref: Ref.Model;
   canGoBack: boolean;
   canGoForward: boolean;
-  // URI of the page displayed by a web-view. This uri updates during any
-  // redirects or when the user navigates away by going back / forward or by
-  // navigating to a new uri.
-  currentURI: URI;
-  // URI that was entered in a location bar by the user. Note this may not be an
-  // URI of currently loaded page as URI could have being redirect or the user
-  // could have navigated away by clicking a link or pressing go back / go
-  // forward buttons.
-  // Note: This field is needed to workaround unfortunate API of the iframe.
-  // The field's value is used as `src` attribute of the iframe and we can't use
-  // `currentURI` as that would cause iframe a reload every time the user
-  // navigates away & also destroy navgation history along the way.
-  src: URI;
-  
+  url: URI;
   constructor(
     ref: Ref.Model
   , canGoBack: boolean
   , canGoForward: boolean
-  , currentURI: URI
-  , src: URI
+  , url: URI
   ) {
     this.ref = ref
     this.canGoBack = canGoBack
     this.canGoForward = canGoForward
-    this.currentURI = currentURI
-    this.src = src
+    this.url = url
   }
 }
 
@@ -181,7 +166,6 @@ const elementCanGoForward =
     }
   });
 
-
 const invoke =
   name => {
     const elementInvoke = <value>
@@ -226,7 +210,6 @@ export const init =
     , canGoBack
     , canGoForward
     , uri
-    , uri
     )
   , Effects.none
   ]
@@ -237,8 +220,7 @@ const updateCanGoBack =
     ( model.ref
     , canGoBack
     , model.canGoForward
-    , model.currentURI
-    , model.src
+    , model.url
     )
   , Effects.none
   ]
@@ -249,8 +231,7 @@ const updateCanGoForward =
     ( model.ref
     , model.canGoBack
     , canGoForward
-    , model.currentURI
-    , model.src
+    , model.url
     )
   , Effects.none
   ]
@@ -263,7 +244,7 @@ const updateResponse =
   );
 
 const updateLocation =
-  (model, uri, canGoBackValue, canGoForwardValue) =>
+  (model, url, canGoBackValue, canGoForwardValue) =>
   // In the case where LocationChanged carries information about
   // canGoBack and canGoForward, we update the model with the new info.
   // This scenario will be hit in Servo.
@@ -272,12 +253,7 @@ const updateLocation =
       ( model.ref
       , canGoBackValue
       , canGoForwardValue
-      , uri
-      // Please note that `src` does not change here, because it is
-      // reflected as `src` on iframe & therefor it would cause undesired
-      // fresh page load when iframe navigates away, for example when user
-      // clicks a link.
-      , model.src
+      , url
       )
     , Effects.none
     ]
@@ -288,8 +264,7 @@ const updateLocation =
       ( model.ref
       , model.canGoBack
       , model.canGoForward
-      , uri
-      , model.src
+      , url
       )
     , Effects.batch
       ( [ Effects
@@ -305,18 +280,16 @@ const updateLocation =
 
 export const load =
   ( model:Model
-  , uri:URI='about:blank'
+  , url:URI='about:blank'
   ):[Model, Effects<Action>] =>
-  [ new Model
-    ( model.ref
-    , false
-    , false
-    // Please note that both `src` & `currentURI` are updated. The
-    // former will be reflected as `src` on the iframe, while the later
-    // represents currently loaded `URI` (They get out of sync when iframe
-    // navigates away, for example when a link on a page is clicked).
-    , uri
-    , uri
+  [ ( model.url === url
+    ? model
+    : new Model
+      ( model.ref
+      , model.canGoBack
+      , false
+      , url
+      )
     )
   , Effects.none
   ]

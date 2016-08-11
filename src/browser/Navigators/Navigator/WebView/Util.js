@@ -15,8 +15,8 @@ export const readTitle =
       model.page.title !== ''
     )
   ? model.page.title
-  : model.navigation.currentURI.search(/^\s*$/)
-  ? URI.prettify(model.navigation.currentURI)
+  : model.navigation.url.search(/^\s*$/)
+  ? URI.prettify(model.navigation.url)
   : fallback
   );
 
@@ -24,7 +24,7 @@ export const readFaviconURI =
   (model:WebViewModel):string =>
   ( (model.page && model.page.faviconURI)
   ? model.page.faviconURI
-  : Favicon.getFallback(model.navigation.currentURI)
+  : Favicon.getFallback(model.navigation.url)
   );
 
 export const isDark =

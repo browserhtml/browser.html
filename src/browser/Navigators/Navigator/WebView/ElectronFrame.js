@@ -1,10 +1,10 @@
 /* @flow */
 
-import {Effects, node, html, forward} from 'reflex';
+import {Effects, Task, node, html, forward} from 'reflex';
 import * as URL from '../../../../common/url-helper';
 import * as Driver from '@driver';
 import * as Style from '../../../../common/style';
-import {on} from '@driver';
+import {on, setting} from '@driver';
 import {always} from '../../../../common/prelude';
 
 
@@ -31,8 +31,7 @@ export const view =
   node
   ( 'webview'
   , { [model.ref.name]: model.ref.value
-    , src: model.navigation.src
-    , 'data-current-uri': model.navigation.currentURI
+    , location: setting(location, model.navigation.url)
     , 'data-name': model.name
     , 'data-features': model.features
     // Stock electron does not actually connect a window with it's opener in any
@@ -166,3 +165,23 @@ const decodeMetaChange =
     , content: event.themeColor
     }
   );
+
+
+const location =
+  (element, url) =>
+  new Task((succeed, fail) => {
+    if (!element.onURLChange) {
+      element.onURLChange = onURLChange
+      element.addEventListener("did-navigate", onURLChange)
+    }
+
+    if (element.dataset.url !== url) {
+      element.setAttribute('src', url)
+    }
+
+    element.dataset.url = url
+  })
+
+const onURLChange =
+  event =>
+  event.target.dataset.url = event.url

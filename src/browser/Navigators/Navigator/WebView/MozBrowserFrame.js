@@ -31,8 +31,7 @@ export const view =
   ):DOM =>
   html.iframe
   ( { [model.ref.name]: model.ref.value
-    , src: model.navigation.src
-    , 'data-current-uri': model.navigation.currentURI
+    , location: setting(location, model.navigation.url)
     , 'data-name': model.name
     , 'data-features': model.features
     , style: Style.mix
@@ -47,7 +46,7 @@ export const view =
       { mozbrowser: true
       , remote: true
       , mozapp:
-        ( URL.isPrivileged(model.navigation.currentURI)
+        ( URL.isPrivileged(model.navigation.url)
         ? URL.getManifestURL().href
         : void(0)
         )
@@ -123,7 +122,7 @@ const decodeCrash =
       { description: detail.description
       , version: detail.version
       , backtrace: detail.report
-      , url: target.dataset.currentUri
+      , url: target.dataset.url
       }
     }
   )
@@ -198,23 +197,23 @@ const decodeIconChange =
 
 const decodeLocationChange =
   ( { detail } ) =>
-  // Servo and Gecko have different implementation of detail.
-  // In Gecko, detail is a string (the uri).
-  // In Servo, detail is an object {uri,canGoBack,canGoForward}
-  ( typeof(detail) === "string"
-  ? { type: "LocationChanged"
-    , uri: detail
-    , time: performance.now()
-    , canGoBack: null
-    , canGoForward: null
-    }
-  : { type: "LocationChanged"
-    , uri: detail.url || detail.uri
+  ( { type: "LocationChanged"
+    , uri: decodeLocation(detail)
     , time: performance.now()
     , canGoBack: detail.canGoBack
     , canGoForward: detail.canGoForward
     }
   );
+
+const decodeLocation =
+  detail =>
+  // Servo and Gecko have different implementation of detail.
+  // In Gecko, detail is a string (the uri).
+  // In Servo, detail is an object {uri,canGoBack,canGoForward}
+  ( typeof(detail) === "string"
+  ? detail
+  : detail.url || detail.uri
+  )
 
 // See: https://developer.mozilla.org/en-US/docs/Web/Events/mozbrowsersecuritychange
 const decodeSecurityChange =
@@ -268,3 +267,23 @@ const visibility = (element:HTMLElement, visible:boolean) =>
       element.setVisible(visible)
     }
   })
+
+
+const location =
+  (element, url) =>
+  new Task((succeed, fail) => {
+    if (!element.onURLChange) {
+      element.onURLChange = onURLChange
+      element.addEventListener("mozbrowserlocationchange", onURLChange)
+    }
+
+    if (element.dataset.url !== url) {
+      element.setAttribute('src', url)
+    }
+
+    element.dataset.url = url
+  })
+
+const onURLChange =
+  event =>
+  event.target.dataset.url = decodeLocation(event.detail)

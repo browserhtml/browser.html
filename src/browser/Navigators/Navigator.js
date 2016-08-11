@@ -694,11 +694,11 @@ const editInput =
   ( update
   , model
   , [ ActivateInput
-      // @TODO: Do not use `model.output.navigation.currentURI` as it ties it
+      // @TODO: Do not use `model.output.navigation.url` as it ties it
       // to webView API too much.
     , ( model.isInputEmbedded
       ? SetSelectedInputValue('')
-      : SetSelectedInputValue(model.output.navigation.currentURI)
+      : SetSelectedInputValue(model.output.navigation.url)
       )
     ]
   )
