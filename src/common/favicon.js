@@ -48,9 +48,9 @@ export const getBestIcon =
   const others = new Set();   // store icons without sizes or non-shortcut icons
 
   for (var icon of icons) {
-    if (icon.rel != 'shortcut icon') {
+    if (icon.rel != 'shortcut icon' && icon.rel != 'icon') {
       others.add(icon);
-    } else if (!icon.sizes) {
+    } else if (!icon.sizes || icon.sizes === "") {
       others.add(icon);
     } else {
       if (icon.sizes == 'any') {
@@ -83,7 +83,7 @@ export const getBestIcon =
     if (!prev) {
       return curr;
     }
-    if (curr.rel == 'shortcut icon') {
+    if (curr.rel == 'shortcut icon' || curr.rel == 'icon') {
       // Prefer 'shortcut icon'
       return curr;
     }
