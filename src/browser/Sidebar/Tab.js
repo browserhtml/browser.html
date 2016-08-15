@@ -9,9 +9,10 @@ import * as Style from '../../common/style';
 import * as Image from '../../common/image';
 import * as Target from "../../common/target";
 import * as Unknown from "../../common/unknown";
+import * as Page from '../Navigators/Navigator/WebView/Page';
 
-import {always, merge} from '../../common/prelude';
-import {readTitle, readFaviconURI} from '../Navigators/Navigator/WebView/Util';
+import {always, merge, mapFX, nofx} from '../../common/prelude';
+import {readTitle} from '../Navigators/Navigator/WebView/Util';
 import {cursor} from '../../common/cursor';
 
 
@@ -27,7 +28,8 @@ export type Context =
 export type Action =
   | { type: "Close" }
   | { type: "Select" }
-  | { type: "Target", source: Target.Action }
+  | { type: "Page", page: Page.Action }
+  | { type: "Target", target: Target.Action }
 
 export class Model {
 
@@ -49,9 +51,16 @@ export const Activate = {type: "Activate"};
 
 const TargetAction = action =>
   ( { type: "Target"
-    , source: action
+    , target: action
     }
   );
+
+const PageAction = action =>
+  ( { type: "Page"
+    , page: action
+    }
+  );
+
 
 const updateTarget =
   (model, action) =>
@@ -59,6 +68,8 @@ const updateTarget =
   ? transactOver
   : transactOut
   )
+
+const updatePage = nofx
 
 const Out = TargetAction(Target.Out);
 const Over = TargetAction(Target.Over);
@@ -68,11 +79,16 @@ export const init =
   transactOut;
 
 export const update =
-  (model:Model, action:Action):[Model, Effects<Action>] =>
-  ( action.type === "Target"
-  ? updateTarget(model, action.source)
-  : Unknown.update(model, action)
-  );
+  (model:Model, action:Action):[Model, Effects<Action>] => {
+    switch (action.type) {
+      case "Target":
+        return updateTarget(model, action.target)
+      case "Page":
+        return updatePage(model, action.page)
+      default:
+        return Unknown.update(model, action)
+    }
+  }
 
 const tabHeight = '32px';
 
@@ -172,16 +188,6 @@ const styleSheet = Style.createSheet({
   }
 });
 
-const viewIcon = Image.view('favicon', Style.createSheet({
-  base: {
-    borderRadius: '3px',
-    left: '8px',
-    position: 'absolute',
-    top: '8px',
-    width: '16px',
-    height: '16px'
-  }
-}));
 
 // TODO: Use button widget instead.
 const viewClose = (isSelected, tab, address) =>
@@ -233,10 +239,7 @@ export const render =
       ( { className: 'sidebar-tab-inner'
         , style: styleSheet.container
         }
-      , [ viewIcon
-          ( { uri: readFaviconURI(model.output) }
-          , address
-          )
+      , [ Page.viewIcon(model.output.page, forward(address, PageAction))
         , html.div
           ( { className: 'sidebar-tab-title'
             , style:

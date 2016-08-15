@@ -25,11 +25,11 @@ import * as MozBrowserFrame from './WebView/MozBrowserFrame';
 import * as ElectronFrame from './WebView/ElectronFrame';
 import * as Ref from '../../../common/ref';
 import * as Tab from '../../Sidebar/Tab';
+import * as Favicon from '../../../common/favicon';
 
 
 import type {Address, DOM} from "reflex"
 import type {URI, Time, Integer, Float} from "../../../common/prelude"
-import type {Icon} from "../../../common/favicon"
 import {performance} from "../../../common/performance"
 import type {Report} from "../../IssueReporter"
 
@@ -73,7 +73,7 @@ export type Action =
   | { type: "FirstPaint" }
   | { type: "DocumentFirstPaint" }
   | { type: "MetaChanged", name: string, content: string }
-  | { type: "IconChanged", icon: Icon }
+  | { type: "IconChanged", icon: Favicon.Model }
   | { type: "TitleChanged", title: string }
   | { type: "SecurityChanged"
     , state: "broken" | "secure" | "insecure"
@@ -270,6 +270,8 @@ const TabAction = action => {
         return Close;
       case "Select":
         return Select;
+      case "Page":
+        return PageAction(action.page);
       default:
         return {
           type: "Tab"
@@ -285,6 +287,17 @@ const updatePage = cursor
     , update: Page.update
     }
   );
+
+const delegateTabUpdate =
+  (model, action) => {
+    switch (action.type) {
+      case "Page":
+        return updatePage(model, action.page)
+      default:
+        return updateTab(model, action)
+
+    }
+  }
 
 const updateTab = cursor
   ( { get: model => model.tab
@@ -455,7 +468,7 @@ export const update =
       case "Page":
         return updatePage(model, action.page);
       case "Tab":
-        return updateTab(model, action.tab);
+        return delegateTabUpdate(model, action.tab);
       case "Security":
         return updateSecurity(model, action.security);
       case "Navigation":

@@ -4,16 +4,20 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, Task} from 'reflex';
-import {merge} from '../../../../common/prelude';
+import {Effects, Task, forward, thunk} from 'reflex';
+import {merge, nofx} from '../../../../common/prelude';
+import {cursor} from '../../../../common/cursor';
 import * as Favicon from '../../../../common/favicon';
+import * as Image from '../../../../common/image';
 import * as Pallet from '../../../../browser/pallet';
 import * as Unknown from '../../../../common/unknown';
 import * as Ref from '../../../../common/ref';
-
+import * as Sign from './Page/Sign';
+import * as Icon from './Page/Icon';
+import * as URL from '../../../../common/url-helper'
 
 import type {URI} from "../../../../common/prelude"
-import type {Icon} from "../../../../common/favicon"
+import type {Address, DOM} from "reflex"
 
 export type Action =
   | { type: "LoadStart" }
@@ -21,9 +25,9 @@ export type Action =
   | { type: "TitleChanged"
     , title: string
     }
-  | { type: "IconChanged"
-    , icon: Icon
-    }
+  | { type: "IconChanged", icon: Favicon.Model }
+  | { type: "IconLoadError" }
+  | { type: "Icon", icon: Icon.Action }
   | { type: "MetaChanged"
     , name: string
     , content: string
@@ -46,22 +50,24 @@ export type Action =
 
 
 export class Model {
-  
+
   uri: URI;
-  title: ?string;
-  faviconURI: ?URI;
-  icon: ?Icon;
+  title: string;
+  icon: ?Image.Model;
+  favicon: ?Favicon.Model;
+  sign: Sign.Model;
 
   themeColor: ?string;
   curatedColor: ?Pallet.Theme;
 
   pallet: Pallet.Model;
-  
+
   constructor(
     uri: URI
-  , title: ?string
-  , faviconURI: ?URI
-  , icon: ?Icon
+  , title: string
+  , icon: ?Image.Model
+  , favicon: ?Favicon.Model
+  , sign: Sign.Model
 
   , themeColor: ?string
   , curatedColor: ?Pallet.Theme
@@ -70,8 +76,9 @@ export class Model {
   ) {
     this.uri = uri
     this.title = title
-    this.faviconURI = faviconURI
     this.icon = icon
+    this.favicon = favicon
+    this.sign = sign
     this.themeColor = themeColor
     this.curatedColor = curatedColor
     this.pallet = pallet
@@ -94,7 +101,7 @@ export const TitleChanged =
  ({type: "TitleChanged", title});
 
 export const IconChanged =
-  (icon:Icon):Action =>
+  (icon:Favicon.Model):Action =>
   ({type: "IconChanged", icon});
 
 export const OverflowChanged =
@@ -122,20 +129,38 @@ export const LocationChanged =
   (uri:URI):Action =>
   ({type: "LocationChanged", uri});
 
+const IconAction =
+  action => {
+    switch (action.type) {
+      case "Error":
+        return IconLoadError
+      default:
+        return { type: "Icon", icon: action }
+    }
+  }
 
-const updateIcon = (model, {icon}) => {
-  const {bestIcon, faviconURI} =
-    ( model.icon == null
-    ? Favicon.getBestIcon([icon])
-    : Favicon.getBestIcon([model.icon, icon])
+const IconLoadError = { type: "IconLoadError" }
+
+const iconChanged = (model, newFavicon) => {
+  const favicon =
+    ( model.favicon == null
+    ? Favicon.getBestIcon([newFavicon])
+    : Favicon.getBestIcon([model.favicon, newFavicon])
     );
+
+    const icon =
+    ( favicon == null
+    ? new Image.Model(Favicon.getFallback(model.uri))
+    : new Image.Model(Favicon.createURL(favicon))
+    )
 
   return [
     new Model
     ( model.uri
     , model.title
-    , faviconURI
-    , bestIcon
+    , icon
+    , favicon
+    , model.sign
     , model.themeColor
     , model.curatedColor
     , model.pallet
@@ -144,14 +169,59 @@ const updateIcon = (model, {icon}) => {
   ];
 };
 
+const iconLoadError =
+  model =>
+  nofx
+  ( new Model
+    ( model.uri
+    , model.title
+    , null
+    , null
+    , model.sign
+    , model.themeColor
+    , model.curatedColor
+    , model.pallet
+    )
+  )
+
+const updateIcon = cursor
+  ( { get: (model) => model.icon
+    , set: (model, icon) =>
+      new Model
+      ( model.uri
+      , model.title
+      , icon
+      , model.favicon
+      , model.sign
+      , model.themeColor
+      , model.curatedColor
+      , model.pallet
+      )
+    , update:
+        (icon, message) => {
+          if (icon == null) {
+            return nofx(icon)
+          }
+          else {
+            // Note: Need to reconstruct due to bug in flow
+            // https://github.com/facebook/flow/issues/2253
+            const [model, fx] = Icon.update(icon, message)
+            return [model, fx]
+          }
+        }
+    , tag: IconAction
+    }
+  );
+
 const updateMeta =
   (model, {name, content}) =>
   [ ( name === 'theme-color'
     ? new Model
       ( model.uri
       , model.title
-      , model.faviconURI
       , model.icon
+      , model.favicon
+      , model.sign
       , content
       , model.curatedColor
       , model.pallet
@@ -161,23 +231,50 @@ const updateMeta =
   , Effects.none
   ];
 
-const updatePallet = (model, _) =>
+const updatePallet =
+  (model, _) =>
+  swapPallet
+  ( model
+  , ( model.curatedColor != null
+    ? Pallet.create
+      ( model.curatedColor.background
+      , model.curatedColor.foreground
+      )
+    : model.themeColor != null
+    ? Pallet.create(...`${model.themeColor}|`.split('|'))
+    : Pallet.blank
+    )
+  );
+
+const chooseInital =
+  (hostname:string, title:string) =>
+  ( hostname == ""
+  ? title
+  : hostname
+  ).substr(0, 1).toUpperCase()
+
+
+const swapPallet =
+  (model, pallet) =>
   [ new Model
     ( model.uri
     , model.title
-    , model.faviconURI
     , model.icon
+    , model.favicon
+    , Sign.init
+      ( chooseInital(URL.getHostname(model.uri), model.title)
+      , pallet.background
+      , ( pallet.foreground == ""
+        ? ( pallet.isDark
+          ? Sign.dark.foreground
+          : Sign.bright.foreground
+          )
+        : pallet.foreground
+        )
+      )
     , model.themeColor
     , model.curatedColor
-    , ( model.curatedColor != null
-      ? Pallet.create
-        ( model.curatedColor.background
-        , model.curatedColor.foreground
-        )
-      : model.themeColor != null
-      ? Pallet.create(...`${model.themeColor}|'`.split('|'))
-      : Pallet.blank
-      )
+    , pallet
     )
   , Effects.none
   ];
@@ -186,9 +283,10 @@ export const init =
   (uri:URI):[Model, Effects<Action>] =>
   [ new Model
     ( uri
+    , ""
     , null
     , null
-    , null
+    , Sign.blank
 
     , null
     , null
@@ -202,9 +300,10 @@ const loadStart =
   model =>
   [ new Model
     ( model.uri
+    , ""
     , null
     , null
-    , null
+    , Sign.blank
 
     , null
     , null
@@ -221,8 +320,9 @@ const updateTitle =
   [ new Model
     ( model.uri
     , title
-    , model.faviconURI
     , model.icon
+    , model.favicon
+    , model.sign
     , model.themeColor
     , model.curatedColor
     , model.pallet
@@ -235,8 +335,9 @@ const updateCuratedColor =
   [ new Model
     ( model.uri
     , model.title
-    , model.faviconURI
     , model.icon
+    , model.favicon
+    , model.sign
     , model.themeColor
     , color
     , model.pallet
@@ -255,8 +356,9 @@ const updateURI =
   : [ new Model
       ( uri
       , model.title
-      , model.faviconURI
       , model.icon
+      , model.favicon
+      , model.sign
       , null
       , null
       , model.pallet
@@ -283,7 +385,11 @@ export const update =
       case "TitleChanged":
         return updateTitle(model, action.title);
       case "IconChanged":
-        return  updateIcon(model, action);
+        return iconChanged(model, action.icon);
+      case "IconLoadError":
+        return iconLoadError(model);
+      case "Icon":
+        return updateIcon(model, action.icon);
       case "MetaChanged":
         return  updateMeta(model, action);
       case "CuratedColorUpdate":
@@ -305,3 +411,10 @@ export const update =
       return Unknown.update(model, action);
     }
   };
+
+export const viewIcon =
+  (model:Model, address:Address<Action>):DOM =>
+  ( model.icon == null
+  ? Sign.view(model.sign)
+  : Icon.view(model.icon, forward(address, IconAction))
+  )

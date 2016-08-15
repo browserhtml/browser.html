@@ -20,13 +20,6 @@ export const readTitle =
   : fallback
   );
 
-export const readFaviconURI =
-  (model:WebViewModel):string =>
-  ( (model.page && model.page.faviconURI)
-  ? model.page.faviconURI
-  : Favicon.getFallback(model.navigation.url)
-  );
-
 export const isDark =
   (model:WebViewModel):boolean =>
   ( model.page != null

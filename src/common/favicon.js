@@ -9,14 +9,23 @@ import type {URI} from "../common/prelude"
 
 export type {URI}
 
-export type Icon =
+export type Model =
   { href: URI
   , sizes?: string
   , rel: ?string
   }
 
 
-const constructFaviconURI = (href, size) => `${href}#-moz-resolution=${size},${size}`;
+export const createURL =
+  (model:Model):string =>
+  ( (model.sizes == null || model.sizes === "")
+  ? constructFaviconURI(model.href)
+  : `${model.href}#-moz-resolution=${model.sizes}`
+  )
+
+const constructFaviconURI =
+  (href, size=FAVICON_SIZE) =>
+  `${href}#-moz-resolution=${size},${size}`;
 
 export const getFallback =
   (pageURI:URI):URI =>
@@ -34,8 +43,7 @@ const FAVICON_SIZE = 16 * window.devicePixelRatio;
  * }
  */
 export const getBestIcon =
-  (icons:Array<Icon>):{ bestIcon: ?Icon, faviconURI: ?URI} => {
-
+  (icons:Array<Model>):?Model => {
   const allSizes = new Map(); // store icons per size
   const others = new Set();   // store icons without sizes or non-shortcut icons
 
@@ -68,7 +76,7 @@ export const getBestIcon =
     } else {
       return prev;
     }
-  }, undefined);
+  }, null);
 
   // @FlowIssue: Flow does not yet support spread on set #1566
   const bestFitForOthers = [...others].reduce((prev, curr) => {
@@ -80,24 +88,20 @@ export const getBestIcon =
       return curr;
     }
     return prev;
-  }, undefined);
+  }, null);
 
-  if (bestFit) {
-    const size = bestFit[0];
-    const href = bestFit[1].href;
+  if (bestFit != null) {
+    const [size, {href, rel}] = bestFit
     return {
-      bestIcon: bestFit[1],
-      faviconURI: constructFaviconURI(href, size),
+      href
+    , rel
+    , sizes: `${size}x${size}`
     }
   }
 
-  if (bestFitForOthers) {
-    const href = bestFitForOthers.href;
-    return {
-      bestIcon: bestFitForOthers,
-      faviconURI: constructFaviconURI(href, FAVICON_SIZE),
-    }
+  if (bestFitForOthers != null) {
+    return bestFitForOthers
   }
 
-  return {bestIcon: null, faviconURI: null};
+  return null;
 }
