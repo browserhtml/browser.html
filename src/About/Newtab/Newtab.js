@@ -4,14 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {merge, tag, tagged} from "../../common/prelude"
+import {merge, tag, tagged} from "../../Common/Prelude"
 import {Effects, html, thunk, forward} from "reflex"
-import {Style, StyleSheet} from "../../common/style";
-import {cursor} from "../../common/cursor";
-import * as Unknown from "../../common/unknown";
+import {Style, StyleSheet} from "../../Common/Style";
+import {cursor} from "../../Common/Cursor";
+import * as Unknown from "../../Common/Unknown";
 
-import * as Tiles from './newtab/tiles';
-import * as Wallpapers from './newtab/wallpapers';
+import * as Tiles from './Newtab/Tiles';
+import * as Wallpapers from './Newtab/Wallpapers';
 
 
 import type {Address, DOM} from "reflex"

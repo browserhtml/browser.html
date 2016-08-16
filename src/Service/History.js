@@ -5,9 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Task} from "reflex"
-import {ok, error} from "../common/result"
-import * as History from "../browser/Navigators/Navigator/Assistant/History"
-import type {Result} from "../common/result"
+import {ok, error} from "../Common/Result"
+import * as History from "../Browser/Navigators/Navigator/Assistant/History"
+import type {Result} from "../Common/Result"
 
 export const decode =
   (content:string):Result<Error, History.Model> => {

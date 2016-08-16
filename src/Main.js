@@ -5,14 +5,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import "babel-polyfill";
-import "./common/request-animation-frame";
+import "./Common/RequestAnimationFrame";
 import {start, Effects} from "reflex";
-import * as UI from "./browser";
+import * as UI from "./Browser";
 import {version} from "../package.json";
 import * as Config from "../browserhtml.json";
-import * as Runtime from "./common/runtime";
+import * as Runtime from "./Common/Runtime";
 import {Renderer} from "@driver";
-import * as Devtools from "./devtools"
+import * as Devtools from "./Devtools"
 
 const isReload = window.application != null;
 console.timeStamp =

@@ -6,8 +6,8 @@
 
 import {Effects, html, thunk, forward} from "reflex"
 import type {Address, DOM} from "reflex";
-import {always, nofx, appendFX, port, merge} from "../../../../common/prelude"
-import * as Style from "../../../../common/style"
+import {always, nofx, appendFX, port, merge} from "../../../../Common/Prelude"
+import * as Style from "../../../../Common/Style"
 
 // This module helps you create selectors similar to HTML `<select>` but without
 // restrictions of `<select>` and `<option>` and in particular to the way they

@@ -5,16 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {html, thunk, forward, Effects} from 'reflex';
-import {merge, setIn} from '../../common/prelude';
-import {cursor} from '../../common/cursor';
-import * as Style from '../../common/style';
+import {merge, setIn} from '../../Common/Prelude';
+import {cursor} from '../../Common/Cursor';
+import * as Style from '../../Common/Style';
 import * as Toolbar from './Toolbar';
 import * as Tab from './Tab';
-import * as Unknown from '../../common/unknown';
+import * as Unknown from '../../Common/Unknown';
 
 import type {Address, DOM} from "reflex"
 import type {Model as NavigatorModel} from "../Navigators/Navigator"
-import * as Deck from "../../common/Deck"
+import * as Deck from "../../Common/Deck"
 
 export type ID = string
 export type Context = Tab.Context

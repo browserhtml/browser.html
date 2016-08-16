@@ -4,9 +4,9 @@
  * license, v. 2.0. if a copy of the mpl was not distributed with this
  * file, you can obtain one at http://mozilla.org/mpl/2.0/. */
 
-import {URL, nullURL} from "./url"
+import {URL, nullURL} from "./URL"
 
-import type {URI} from "../common/prelude"
+import type {URI} from "../Common/Prelude"
 
 
 export const parse = (input:string):URL => {
@@ -61,7 +61,7 @@ export const isAboutURL =
 
 export const isPrivileged = (uri:URI):boolean => {
   // FIXME: not safe. White list?
-  return uri.startsWith(new URL('./components/about/', getBaseURI().href).href);
+  return uri.startsWith(new URL('./components/About/', getBaseURI().href).href);
 };
 
 const rscheme = /^(?:[a-z\u00a1-\uffff0-9-+]+)(?::|:\/\/)/i;
@@ -95,9 +95,13 @@ export const isNotURL = (input:string):boolean => {
 const readSearchURL = input =>
   `https://duckduckgo.com/html/?q=${encodeURIComponent(input)}`;
 
+const capitilize =
+  text =>
+  `${text.charAt(0).toUpperCase()}${text.substr(1)}`
+
 const readAboutURL = input =>
   input === 'about:blank' ? input :
-  `${getBaseURI().toString()}components/about/${input.replace('about:', '')}/index.html`;
+  `${getBaseURI().toString()}components/About/${capitilize(input.replace('about:', ''))}/index.html`;
 
 export const read = (input:string):URI =>
   isNotURL(input) ? readSearchURL(input) :
@@ -112,7 +116,7 @@ export const normalize = (uri:URI):URI =>
 export const resolve = (from:URI, to:URI):URI =>
   new URL(to, from).href;
 
-const aboutPattern = /\/about\/([^\/]+)\/index.html$/;
+const aboutPattern = /\/About\/([^\/]+)\/index.html$/;
 
 const readAboutTerm = input => {
   const match = aboutPattern.exec(input);

@@ -5,22 +5,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {html, thunk, forward, Effects} from 'reflex';
-import * as Style from '../common/style';
+import * as Style from '../Common/Style';
 import * as Toolbar from "./Sidebar/Toolbar";
 import * as Tabs from "./Sidebar/Tabs";
-import {merge, always, nofx} from "../common/prelude";
-import {cursor} from "../common/cursor";
-import * as Unknown from "../common/unknown";
+import {merge, always, nofx} from "../Common/Prelude";
+import {cursor} from "../Common/Cursor";
+import * as Unknown from "../Common/Unknown";
 import * as Easing from "eased";
 import * as Display from "./Sidebar/Display";
-import * as Animation from "../common/Animation";
+import * as Animation from "../Common/Animation";
 
 
-import type {Integer, Float} from "../common/prelude"
+import type {Integer, Float} from "../Common/Prelude"
 import type {Address, DOM} from "reflex"
 import type {ID} from "./Sidebar/Tabs"
 import * as Navigator from "./Navigators/Navigator"
-import * as Deck from "../common/Deck"
+import * as Deck from "../Common/Deck"
 
 export type Action =
   | { type: "CreateWebView" }

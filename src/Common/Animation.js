@@ -1,8 +1,8 @@
 /* @flow */
 
-import * as Unknown from "./unknown"
+import * as Unknown from "./Unknown"
 import {Task, Effects} from "reflex"
-import {nofx} from "./prelude"
+import {nofx} from "./Prelude"
 import {ease} from "eased"
 
 
@@ -15,13 +15,13 @@ import type {Interpolation, Easing} from "eased"
 
 
 class Transition <model> {
-  
+
   duration: Time;
   now: Time;
   elapsed: Time;
   from: model;
   to: model;
-  
+
   constructor(
     from:model
   , to:model
@@ -38,10 +38,10 @@ class Transition <model> {
 }
 
 export class Model <model> {
-  
+
   state: model;
   transition: ?Transition<model>;
-  
+
   constructor(
     state:model
   , transition:?Transition<model>

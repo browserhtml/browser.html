@@ -3,7 +3,6 @@
   "excludeFiles": [
     "node_modules/**",
     "runtime/**",
-    "apps/browser/lib/**"
   ],
   "requireSpaceBeforeKeywords": [
     "else",

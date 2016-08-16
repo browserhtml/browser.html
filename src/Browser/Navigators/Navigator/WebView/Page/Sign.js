@@ -6,7 +6,7 @@
 
 import {html, thunk} from "reflex"
 import type {DOM} from "reflex"
-import * as Style from "../../../../../common/style"
+import * as Style from "../../../../../Common/Style"
 
 export class Model {
   content: string;

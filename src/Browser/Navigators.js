@@ -1,19 +1,19 @@
 /* @flow */
 
-import * as Deck from "../common/Deck"
-import * as Animation from "../common/Animation"
-import * as Unknown from "../common/unknown"
+import * as Deck from "../Common/Deck"
+import * as Animation from "../Common/Animation"
+import * as Unknown from "../Common/Unknown"
 import * as Display from "./Navigators/Display"
 import {Effects, html, forward, thunk} from "reflex"
-import {cursor} from "../common/cursor"
-import {always, nofx} from "../common/prelude"
-import * as Style from "../common/style"
+import {cursor} from "../Common/Cursor"
+import {always, nofx} from "../Common/Prelude"
+import * as Style from "../Common/Style"
 import * as Easing from "eased"
 import * as Overlay from "./Navigators/Overlay"
 import * as Navigator from "./Navigators/Navigator"
-import * as URI from "../common/url-helper";
+import * as URI from "../Common/URLHelper";
 import * as Tabs from "./Sidebar/Tabs";
-import * as Runtime from '../common/runtime';
+import * as Runtime from '../Common/Runtime';
 
 
 

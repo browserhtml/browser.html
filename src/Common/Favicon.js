@@ -4,8 +4,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {getOrigin} from '../common/url-helper';
-import type {URI} from "../common/prelude"
+import {getOrigin} from '../Common/URLHelper'
+import type {URI} from '../Common/Prelude'
 
 export type {URI}
 

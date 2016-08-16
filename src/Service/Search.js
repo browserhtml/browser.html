@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Task} from "reflex"
-import {ok, error} from "../common/result"
-import * as Search from "../browser/Navigators/Navigator/Assistant/Search"
+import {ok, error} from "../Common/Result"
+import * as Search from "../Browser/Navigators/Navigator/Assistant/Search"
 
 const pendingRequests = Object.create(null)
 

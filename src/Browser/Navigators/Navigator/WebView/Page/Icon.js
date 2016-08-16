@@ -4,8 +4,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import * as Image from '../../../../../common/image';
-import * as Style from '../../../../../common/style';
+import * as Image from '../../../../../Common/Image';
+import * as Style from '../../../../../Common/Style';
 
 export const view = Image.view('favicon', Style.createSheet({
   base: {

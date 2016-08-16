@@ -5,16 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects, Task} from "reflex";
-import {merge, always} from "../../../../common/prelude";
-import {cursor} from "../../../../common/cursor";
-import {ok, error} from "../../../../common/result";
-import * as Focusable from "../../../../common/focusable";
-import * as Ref from '../../../../common/ref';
+import {merge, always} from "../../../../Common/Prelude";
+import {cursor} from "../../../../Common/Cursor";
+import {ok, error} from "../../../../Common/Result";
+import * as Focusable from "../../../../Common/Focus";
+import * as Ref from '../../../../Common/Ref';
 
 
-import type {Result} from "../../../../common/result"
+import type {Result} from "../../../../Common/Result"
 import type {Never} from "reflex"
-import type {Float} from "../../../../common/prelude"
+import type {Float} from "../../../../Common/Prelude"
 
 export type Action =
   | { type: "NoOp" }
@@ -35,12 +35,12 @@ export type Action =
 
 
 export class Model {
-  
+
   ref: Ref.Model;
   zoom: Float;
   isVisible: boolean;
   isFocused: boolean;
-  
+
   constructor(
     ref:Ref.Model
   , zoom:Float

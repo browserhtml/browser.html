@@ -5,12 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {html, thunk, forward, Effects} from 'reflex';
-import * as Style from '../../common/style';
-import * as Toggle from "../../common/toggle";
-import * as Button from "../../common/button";
-import {merge} from "../../common/prelude";
-import {cursor} from "../../common/cursor";
-import * as Unknown from "../../common/unknown";
+import * as Style from '../../Common/Style';
+import * as Toggle from "../../Common/Toggle";
+import * as Button from "../../Common/Button";
+import {merge} from "../../Common/Prelude";
+import {cursor} from "../../Common/Cursor";
+import * as Unknown from "../../Common/Unknown";
 
 
 import type {Address, DOM} from "reflex"

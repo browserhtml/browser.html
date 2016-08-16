@@ -5,9 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {merge, always} from "../common/prelude"
-import * as Unknown from "../common/unknown"
-import {Style} from "../common/style"
+import {merge, always} from "../Common/Prelude"
+import * as Unknown from "../Common/Unknown"
+import {Style} from "../Common/Style"
 import {html, Effects, forward} from "reflex"
 
 export class Model {

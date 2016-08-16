@@ -5,18 +5,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects, Task, forward, thunk} from 'reflex';
-import {merge, nofx} from '../../../../common/prelude';
-import {cursor} from '../../../../common/cursor';
-import * as Favicon from '../../../../common/favicon';
-import * as Image from '../../../../common/image';
-import * as Pallet from '../../../../browser/pallet';
-import * as Unknown from '../../../../common/unknown';
-import * as Ref from '../../../../common/ref';
+import {merge, nofx} from '../../../../Common/Prelude';
+import {cursor} from '../../../../Common/Cursor';
+import * as Favicon from '../../../../Common/Favicon';
+import * as Image from '../../../../Common/Image';
+import * as Pallet from '../../../../Browser/Pallet';
+import * as Unknown from '../../../../Common/Unknown';
+import * as Ref from '../../../../Common/Ref';
 import * as Sign from './Page/Sign';
 import * as Icon from './Page/Icon';
-import * as URL from '../../../../common/url-helper'
+import * as URL from '../../../../Common/URLHelper'
 
-import type {URI} from "../../../../common/prelude"
+import type {URI} from "../../../../Common/Prelude"
 import type {Address, DOM} from "reflex"
 
 export type Action =

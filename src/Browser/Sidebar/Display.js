@@ -7,7 +7,7 @@
 import * as Easing from "eased";
 
 
-import type {Integer, Float} from "../../common/prelude"
+import type {Integer, Float} from "../../Common/Prelude"
 
 
 export class Model {

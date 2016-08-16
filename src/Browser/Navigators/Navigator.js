@@ -5,24 +5,24 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects, html, forward, thunk} from "reflex"
-import {merge, always, batch, nofx} from "../../common/prelude";
-import {cursor} from "../../common/cursor";
-import * as Style from "../../common/style";
+import {merge, always, batch, nofx} from "../../Common/Prelude";
+import {cursor} from "../../Common/Cursor";
+import * as Style from "../../Common/Style";
 
 import * as Assistant from "./Navigator/Assistant";
 import * as Overlay from "./Navigator/Overlay";
 import * as Input from "./Navigator/Input";
 import * as Output from "./Navigator/WebView";
-import * as Unknown from "../../common/unknown";
-import * as URL from '../../common/url-helper';
+import * as Unknown from "../../Common/Unknown";
+import * as URL from '../../Common/URLHelper';
 import * as Header from './Navigator/Header';
 import * as Title from './Navigator/Title';
 import * as Progress from './Navigator/Progress';
 import * as Display from './Navigator/Display';
-import * as Animation from "../../common/Animation";
+import * as Animation from "../../Common/Animation";
 import * as Easing from "eased";
 import * as Tab from "../Sidebar/Tab";
-import * as Runtime from '../../common/runtime';
+import * as Runtime from '../../Common/Runtime';
 import type {Report} from "../IssueReporter";
 
 import {readTitle, isSecure, isDark, canGoBack} from './Navigator/WebView/Util';

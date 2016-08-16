@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects} from 'reflex';
-import * as Unknown from '../../../../common/unknown';
+import * as Unknown from '../../../../Common/Unknown';
 
 
 

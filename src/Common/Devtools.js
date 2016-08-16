@@ -7,16 +7,16 @@
 
 
 import type {Address, DOM} from "reflex"
-import type {Result} from "./result"
+import type {Result} from "./Result"
 
 
-import * as Settings from '../common/settings';
-import * as Runtime from '../common/runtime';
-import * as Unknown from '../common/unknown';
-import {merge, always} from '../common/prelude';
-import {cursor} from '../common/cursor';
+import * as Settings from '../Common/Settings';
+import * as Runtime from '../Common/Runtime';
+import * as Unknown from '../Common/Unknown';
+import {merge, always} from '../Common/Prelude';
+import {cursor} from '../Common/Cursor';
 import {Effects, html, thunk, forward} from 'reflex';
-import {Style, StyleSheet} from '../common/style';
+import {Style, StyleSheet} from '../Common/Style';
 
 export type DevtoolsSettings =
   { 'debugger.remote-mode': 'adb-devtools' | 'disabled'

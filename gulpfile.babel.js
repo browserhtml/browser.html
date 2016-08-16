@@ -181,22 +181,17 @@ gulp.task('watcher', function() {
 
 gulp.task('hotreload', function() {
 
-  settings.plugins['main'] = [[hmr, {
+  settings.plugins['Main'] = [[hmr, {
     port: 3124,
     url: "http://localhost:3124"
   }]]
 
-  settings.plugins['service/history-worker'] = [[hmr, {
-    port: 3125,
-    url: "http://localhost:3125"
-  }]]
-
-  settings.plugins['about/settings/main'] = [[hmr, {
+  settings.plugins['About/Settings/Main'] = [[hmr, {
     port: 3126,
     url: "http://localhost:3126"
   }]]
 
-  settings.plugins['about/repl/main'] =
+  settings.plugins['About/Repl/Main'] =
     [ [ hmr
       , { port: 3127
         , url: "http://localhost:3127"
@@ -204,7 +199,7 @@ gulp.task('hotreload', function() {
       ]
     ]
 
-  settings.plugins['about/newtab/main'] =
+  settings.plugins['About/Newtab/Main'] =
     [ [ hmr
       , { port: 3128
         , url: "http://localhost:3128"
@@ -240,29 +235,26 @@ gulp.task('copydist', function() {
   copy_files('./*.json', path.join(dist, "components"));
 });
 
-bundler('main');
-bundler('service/history-worker');
-bundler('about/settings/main');
-bundler('about/repl/main');
-bundler('about/newtab/main');
+bundler('Main');
+bundler('About/Settings/Main');
+bundler('About/Repl/Main');
+bundler('About/Newtab/Main');
 
 gulp.task('build', [
   'compressor',
-  'main',
-  // 'service/history-worker',
-  'about/settings/main',
-  'about/repl/main',
-  'about/newtab/main',
+  'Main',
+  'About/Settings/Main',
+  'About/Repl/Main',
+  'About/Newtab/Main',
   'copydist'
 ]);
 
 gulp.task('watch', [
   'watcher',
-  'main',
-  // 'service/history-worker',
-  'about/settings/main',
-  'about/newtab/main',
-  'about/repl/main',
+  'Main',
+  'About/Settings/Main',
+  'About/Newtab/Main',
+  'About/Repl/Main',
   'copydist'
 ]);
 

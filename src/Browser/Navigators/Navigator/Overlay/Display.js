@@ -3,7 +3,7 @@
 import * as Easing from "eased"
 
 
-import type {Float} from "../../../../common/prelude"
+import type {Float} from "../../../../Common/Prelude"
 
 
 export class Model {

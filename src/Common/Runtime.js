@@ -7,14 +7,14 @@
 
 
 import type {Never} from "reflex"
-import type {Result} from "../common/result"
+import type {Result} from "../Common/Result"
 
 
-import {always} from "../common/prelude";
+import {always} from "../Common/Prelude";
 import {Task} from "reflex";
-import {ok, error} from "../common/result";
-import * as OS from '../common/os';
-import * as URL from '../common/url-helper';
+import {ok, error} from "../Common/Result";
+import * as OS from '../Common/OS';
+import * as URL from '../Common/URLHelper';
 import * as QueryString from 'querystring';
 
 export type RemoteDebugResponseType = {

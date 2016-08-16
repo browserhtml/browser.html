@@ -1,8 +1,8 @@
 /* @flow */
 
 import {thunk, html} from 'reflex';
-import * as Style from '../../../../common/style';
-import * as Ref from '../../../../common/ref';
+import * as Style from '../../../../Common/Style';
+import * as Ref from '../../../../Common/Ref';
 import type {DOM} from 'reflex';
 
 export const render =

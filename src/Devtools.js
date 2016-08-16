@@ -1,18 +1,18 @@
 /* @flow */
 
 import {Effects, Task, thunk, html, forward} from "reflex"
-import {merge, nofx} from "./common/prelude"
-import {cursor} from "./common/cursor"
-import {ok, error} from "./common/result"
-import * as Runtime from "./common/runtime"
-import * as Unknown from "./common/unknown"
-import * as Replay from "./devtools/replay"
-import * as Record from "./devtools/record"
-import * as Log from "./devtools/log"
+import {merge, nofx} from "./Common/Prelude"
+import {cursor} from "./Common/Cursor"
+import {ok, error} from "./Common/Result"
+import * as Runtime from "./Common/Runtime"
+import * as Unknown from "./Common/Unknown"
+import * as Replay from "./Devtools/Replay"
+import * as Record from "./Devtools/Record"
+import * as Log from "./Devtools/Log"
 
 
 import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} from "reflex"
-import type {Result} from "./common/result"
+import type {Result} from "./Common/Result"
 
 export type Model <model, action> =
   { record: ?Record.Model<model, action>
@@ -179,7 +179,7 @@ export const update = <model, action, flags>
 
   : action.type === "Persist"
   ? persist(model)
-  
+
   : Unknown.update(model, action)
   )
 

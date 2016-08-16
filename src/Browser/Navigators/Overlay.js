@@ -1,7 +1,7 @@
 /* @flow */
 
-import {always} from "../../common/prelude"
-import * as Style from "../../common/style"
+import {always} from "../../Common/Prelude"
+import * as Style from "../../Common/Style"
 import {html, forward, thunk} from "reflex"
 
 

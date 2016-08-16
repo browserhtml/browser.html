@@ -5,20 +5,20 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {html, thunk, forward, Effects} from 'reflex';
-import * as Style from '../../common/style';
-import * as Image from '../../common/image';
-import * as Target from "../../common/target";
-import * as Unknown from "../../common/unknown";
+import * as Style from '../../Common/Style';
+import * as Image from '../../Common/Image';
+import * as Target from "../../Common/Target";
+import * as Unknown from "../../Common/Unknown";
 import * as Page from '../Navigators/Navigator/WebView/Page';
 
-import {always, merge, mapFX, nofx} from '../../common/prelude';
+import {always, merge, mapFX, nofx} from '../../Common/Prelude';
 import {readTitle} from '../Navigators/Navigator/WebView/Util';
-import {cursor} from '../../common/cursor';
+import {cursor} from '../../Common/Cursor';
 
 
 import type {Address, DOM} from "reflex"
 import type {Model as NavigatorModel} from "../Navigators/Navigator"
-import type {ID} from "../../common/prelude"
+import type {ID} from "../../Common/Prelude"
 
 export type Context =
   { tabWidth: number

@@ -5,10 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects, Task} from 'reflex';
-import {merge, always} from "../common/prelude";
-import * as Unknown from "../common/unknown";
+import {merge, always} from "../Common/Prelude";
+import * as Unknown from "../Common/Unknown";
 
-import type {Time} from "../common/prelude"
+import type {Time} from "../Common/Prelude"
 export type Idle = null
 export type Ticking =
   { time: Time

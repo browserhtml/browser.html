@@ -1,8 +1,8 @@
 /* @flow */
 
 import {html, thunk, forward} from 'reflex';
-import * as Style from '../../../common/style';
-import {always} from '../../../common/prelude';
+import * as Style from '../../../Common/Style';
+import {always} from '../../../Common/Prelude';
 import * as Title from './Title';
 import * as ShowTabsButton from './Header/ShowTabsButton';
 import * as NewTabButton from './Header/NewTabButton';

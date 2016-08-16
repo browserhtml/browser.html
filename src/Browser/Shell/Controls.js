@@ -5,14 +5,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {html, forward, Effects} from 'reflex';
-import {Style, StyleSheet} from '../../common/style';
-import * as Target from '../../common/target';
-import * as Button from '../../common/button';
-import * as Toggle from '../../common/toggle';
-import * as Unknown from '../../common/unknown';
-import {compose} from '../../lang/functional';
-import {always, merge} from '../../common/prelude';
-import {cursor} from '../../common/cursor';
+import {Style, StyleSheet} from '../../Common/Style';
+import * as Target from '../../Common/Target';
+import * as Button from '../../Common/Button';
+import * as Toggle from '../../Common/Toggle';
+import * as Unknown from '../../Common/Unknown';
+import {compose} from '../../Lang/Functional';
+import {always, merge} from '../../Common/Prelude';
+import {cursor} from '../../Common/Cursor';
 
 
 

@@ -10,7 +10,7 @@
     , "isDark": false
     }
   , "1":
-    { "src": "./wallpaper/shore.jpg"
+    { "src": "./Wallpaper/Shore.jpg"
     , "color": "#30b1a2"
     , "isDark": true
     }

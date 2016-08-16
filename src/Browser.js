@@ -9,29 +9,29 @@ import * as Package from "../package.json";
 import * as Config from "../browserhtml.json";
 import {Effects, html, forward, thunk} from "reflex";
 
-import * as Shell from "./browser/shell";
-import * as Sidebar from './browser/Sidebar';
-import * as Devtools from "./common/devtools";
-import * as Runtime from "./common/runtime";
-import * as URL from './common/url-helper';
-import * as Unknown from "./common/unknown";
-import * as Focusable from "./common/focusable";
-import * as OS from './common/os';
-import * as Keyboard from './common/keyboard';
-import * as Stopwatch from "./common/stopwatch";
+import * as Shell from "./Browser/Shell";
+import * as Sidebar from './Browser/Sidebar';
+import * as Devtools from "./Common/Devtools";
+import * as Runtime from "./Common/Runtime";
+import * as URL from './Common/URLHelper';
+import * as Unknown from "./Common/Unknown";
+import * as Focusable from "./Common/Focus";
+import * as OS from './Common/OS';
+import * as Keyboard from './Common/Keyboard';
+import * as Stopwatch from "./Common/Stopwatch";
 import * as Easing from "eased";
-import {always, batch, tag, tagged} from "./common/prelude";
-import {cursor} from "./common/cursor";
-import {Style, StyleSheet} from './common/style';
-import type {Result} from "./common/result"
+import {always, batch, tag, tagged} from "./Common/Prelude";
+import {cursor} from "./Common/Cursor";
+import {Style, StyleSheet} from './Common/Style';
+import type {Result} from "./Common/Result"
 
-import {identity, compose} from "./lang/functional";
+import {identity, compose} from "./Lang/Functional";
 
 import {onWindow, on} from "@driver";
-import * as Navigators from "./browser/Navigators";
-import type {ID} from "./common/prelude"
-import * as Tabs from "./browser/Sidebar/Tabs"
-import * as IssueReporter from "./browser/IssueReporter";
+import * as Navigators from "./Browser/Navigators";
+import type {ID} from "./Common/Prelude"
+import * as Tabs from "./Browser/Sidebar/Tabs"
+import * as IssueReporter from "./Browser/IssueReporter";
 
 export type Version = string
 
@@ -91,7 +91,7 @@ export type Action =
 
 
 import type {Address, DOM} from "reflex"
-import type {URI} from "./common/prelude"
+import type {URI} from "./Common/Prelude"
 
 export class Model {
 

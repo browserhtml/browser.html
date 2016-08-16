@@ -5,9 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects, Task, html, forward, thunk} from "reflex"
-import {merge, nofx} from "../common/prelude"
-import * as Unknown from "../common/unknown"
-import {indexOfOffset} from "../common/selector"
+import {merge, nofx} from "../Common/Prelude"
+import * as Unknown from "../Common/Unknown"
+import {indexOfOffset} from "../Common/Selector"
 
 
 import type {Address, DOM, Never} from "reflex"

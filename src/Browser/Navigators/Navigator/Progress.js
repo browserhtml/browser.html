@@ -7,17 +7,17 @@
 
 import {Effects, Task, html} from 'reflex';
 import {ease, easeOutQuart, float} from 'eased';
-import * as Style from '../../../common/style';
-import {always, nofx} from '../../../common/prelude';
-import * as Unknown from '../../../common/unknown';
-import * as Runtime from '../../../common/runtime';
-import * as Ref from '../../../common/ref';
+import * as Style from '../../../Common/Style';
+import {always, nofx} from '../../../Common/Prelude';
+import * as Unknown from '../../../Common/Unknown';
+import * as Runtime from '../../../Common/Runtime';
+import * as Ref from '../../../Common/Ref';
 import * as PolyfillView from './Progress/PolyfillView';
 import * as ProgressView from './Progress/ProgressView';
 
 
 import type {Address, DOM} from "reflex"
-import type {Time, Float} from "../../../common/prelude"
+import type {Time, Float} from "../../../Common/Prelude"
 
 // Implied to be 0.0 - 1.0 range
 export type LoadProgress = Float

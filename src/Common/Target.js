@@ -6,8 +6,8 @@
 
 
 import {Effects, forward} from "reflex";
-import {always, port} from "../common/prelude";
-import * as Unknown from "../common/unknown";
+import {always, port} from "../Common/Prelude";
+import * as Unknown from "../Common/Unknown";
 
 import type {Address} from "reflex";
 

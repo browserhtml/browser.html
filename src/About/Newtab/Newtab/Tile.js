@@ -5,13 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {html, Effects} from "reflex";
-import * as Style from "../../../common/style";
-import * as Unknown from "../../../common/unknown";
+import * as Style from "../../../Common/Style";
+import * as Unknown from "../../../Common/Unknown";
 
 
 import type {Address, DOM} from "reflex";
 
-import type {URI} from "../../../common/prelude"
+import type {URI} from "../../../Common/Prelude"
 
 export type ID = string
 export type {URI}

@@ -6,7 +6,7 @@
 
 
 import {Effects, html, forward, thunk} from "reflex";
-import * as URL from '../../../../../common/url-helper';
+import * as URL from '../../../../../Common/URLHelper';
 import type {Address, DOM} from "reflex"
 
 

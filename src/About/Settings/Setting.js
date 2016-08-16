@@ -4,19 +4,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Style, StyleSheet} from '../../common/style';
+import {Style, StyleSheet} from '../../Common/Style';
 import {html, thunk, forward, Effects} from 'reflex';
-import {compose} from '../../lang/functional';
-import {merge, always, tagged, batch} from "../../common/prelude"
-import {cursor} from "../../common/cursor"
-import {ok, error} from "../../common/result";
-import * as Unknown from '../../common/unknown';
-import * as Focusable from '../../common/focusable';
-import * as TextInput from '../../common/text-input';
+import {compose} from '../../Lang/Functional';
+import {merge, always, tagged, batch} from "../../Common/Prelude"
+import {cursor} from "../../Common/Cursor"
+import {ok, error} from "../../Common/Result";
+import * as Unknown from '../../Common/Unknown';
+import * as Focus from '../../Common/Focus';
+import * as TextInput from '../../Common/TextInput';
 
 
 import type {Address, DOM} from "reflex";
-import type {Value} from '../../common/settings';
+import type {Value} from '../../Common/Settings';
 
 export type {Value}
 export type Model =

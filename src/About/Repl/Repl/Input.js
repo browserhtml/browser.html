@@ -5,10 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {html, thunk, forward, Effects} from 'reflex';
-import {merge, always} from "../../../common/prelude";
-import {Style, StyleSheet} from '../../../common/style';
-import * as Settings from '../../../common/settings';
-import * as Unknown from '../../../common/unknown';
+import {merge, always} from "../../../Common/Prelude";
+import {Style, StyleSheet} from '../../../Common/Style';
+import * as Settings from '../../../Common/Settings';
+import * as Unknown from '../../../Common/Unknown';
 import {focus} from "@driver";
 
 

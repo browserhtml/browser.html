@@ -9,8 +9,8 @@ import * as Suggestion from "./Suggestion"
 import * as Icon from "./Suggestion/Icon"
 import * as Title from "./Suggestion/Title"
 import * as Location from "./Suggestion/Location"
-import * as Unknown from "../../../../common/unknown"
-import {nofx} from "../../../../common/prelude"
+import * as Unknown from "../../../../Common/Unknown"
+import {nofx} from "../../../../Common/Prelude"
 import type {Address, DOM} from "reflex"
 export type URL = string
 

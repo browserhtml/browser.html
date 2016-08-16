@@ -5,15 +5,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects, html, thunk, forward} from "reflex"
-import {merge, always, tagged} from "../../../common/prelude"
-import * as Style from "../../../common/style";
-import * as Unknown from "../../../common/unknown";
+import {merge, always, tagged} from "../../../Common/Prelude"
+import * as Style from "../../../Common/Style";
+import * as Unknown from "../../../Common/Unknown";
 
-import hardcodedWallpaper from "../wallpaper.json";
+import hardcodedWallpaper from "../Wallpaper.json";
 
 
 import type {Address, DOM} from "reflex"
-import type {URI} from "../../../common/prelude"
+import type {URI} from "../../../Common/Prelude"
 
 export type {URI}
 export type ID = string

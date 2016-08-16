@@ -7,7 +7,7 @@
 import {Task, Effects} from "reflex"
 
 
-import type {Integer} from "../common/prelude"
+import type {Integer} from "../Common/Prelude"
 
 
 export const readTitle = <value, model:{title?:string}>

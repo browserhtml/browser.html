@@ -6,15 +6,15 @@
 
 import {html, forward, Effects} from 'reflex';
 import {on, focus as isFocused, selection} from '@driver';
-import {identity} from '../../../lang/functional';
-import {always, merge, nofx, mapFX, appendFX, anotate} from '../../../common/prelude';
-import {compose, debounce} from '../../../lang/functional';
-import {cursor} from '../../../common/cursor';
-import * as Focus from '../../../common/focusable';
-import * as Edit from '../../../common/editable';
-import * as Keyboard from '../../../common/keyboard';
-import * as Unknown from '../../../common/unknown';
-import * as Style from '../../../common/style';
+import {identity} from '../../../Lang/Functional';
+import {always, merge, nofx, mapFX, appendFX, anotate} from '../../../Common/Prelude';
+import {compose, debounce} from '../../../Lang/Functional';
+import {cursor} from '../../../Common/Cursor';
+import * as Focus from '../../../Common/Focus';
+import * as Edit from '../../../Common/Edit';
+import * as Keyboard from '../../../Common/Keyboard';
+import * as Unknown from '../../../Common/Unknown';
+import * as Style from '../../../Common/Style';
 
 
 import type {Address, DOM} from "reflex"

@@ -8,11 +8,11 @@
 
 import tinycolor from 'tinycolor2';
 import {Effects, Task} from 'reflex';
-import {getDomainName} from '../common/url-helper';
+import {getDomainName} from '../Common/URLHelper';
 
 
 import type {Address, DOM, Never} from "reflex"
-import type {URI} from "../common/prelude"
+import type {URI} from "../Common/Prelude"
 
 export type {URI}
 

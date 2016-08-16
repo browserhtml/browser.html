@@ -5,21 +5,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {html, thunk, forward, Effects} from 'reflex';
-import {merge, always, batch, tag, tagged} from "../../common/prelude";
-import {Style, StyleSheet} from '../../common/style';
-import * as Cell from './repl/cell';
-import * as Settings from '../../common/settings';
-import * as Unknown from '../../common/unknown';
-import * as Host from './repl/host';
-import * as Input from "./repl/input";
-import * as Output from "./repl/output";
+import {merge, always, batch, tag, tagged} from "../../Common/Prelude";
+import {Style, StyleSheet} from '../../Common/Style';
+import * as Cell from './Repl/Cell';
+import * as Settings from '../../Common/Settings';
+import * as Unknown from '../../Common/Unknown';
+import * as Host from './Repl/Host';
+import * as Input from "./Repl/Input";
+import * as Output from "./Repl/Output";
 
 
 import {onWindow} from "@driver";
 
 
 import type {Address, DOM} from "reflex"
-import type {Integer} from "../../common/prelude"
+import type {Integer} from "../../Common/Prelude"
 
 export type Model =
   { nextID: Integer

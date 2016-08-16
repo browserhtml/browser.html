@@ -5,13 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {html, thunk, forward, Effects} from "reflex"
-import {port, always, nofx} from "../common/prelude"
-import * as Style from '../common/style';
-import * as Unknown from "../common/unknown";
+import {port, always, nofx} from "../Common/Prelude"
+import * as Style from "../Common/Style"
+import * as Unknown from "../Common/Unknown"
 
 
 import type {Address, DOM} from "reflex"
-import type {Rules} from "../common/style"
+import type {Rules} from "../Common/Style"
 
 export class Model {
   url: string;

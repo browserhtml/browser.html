@@ -4,14 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {error, ok} from '../common/result';
-import * as Unknown from '../common/unknown';
-import {merge, always} from '../common/prelude';
+import {error, ok} from '../Common/Result';
+import * as Unknown from '../Common/Unknown';
+import {merge, always} from '../Common/Prelude';
 import {Effects, Task} from 'reflex';
 
 
 import type {Address, Never} from "reflex"
-import type {Result} from "./result"
+import type {Result} from "./Result"
 
 export type Name = string
 export type Value

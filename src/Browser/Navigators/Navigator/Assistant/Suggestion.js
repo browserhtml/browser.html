@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects, Task, html, forward, thunk} from "reflex"
-import * as Unknown from "../../../../common/unknown"
-import {port, always, mapFX, nofx} from "../../../../common/prelude"
+import * as Unknown from "../../../../Common/Unknown"
+import {port, always, mapFX, nofx} from "../../../../Common/Prelude"
 import * as StyleSheet from "./Suggestion/StyleSheet"
 import type {Address, DOM} from "reflex"
 

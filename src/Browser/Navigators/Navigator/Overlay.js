@@ -5,17 +5,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects, html, thunk, forward} from "reflex";
-import {merge, always, nofx} from "../../../common/prelude";
-import {cursor} from "../../../common/cursor";
-import * as Style from "../../../common/style";
+import {merge, always, nofx} from "../../../Common/Prelude";
+import {cursor} from "../../../Common/Cursor";
+import * as Style from "../../../Common/Style";
 import * as Easing from "eased";
-import * as Animation from "../../../common/Animation"
-import * as Unknown from "../../../common/unknown";
+import * as Animation from "../../../Common/Animation"
+import * as Unknown from "../../../Common/Unknown";
 import * as Display from "./Overlay/Display"
 
 
 import type {Address, DOM} from "reflex"
-import type {Time} from "../../../common/prelude"
+import type {Time} from "../../../Common/Prelude"
 
 export type Flags = boolean
 

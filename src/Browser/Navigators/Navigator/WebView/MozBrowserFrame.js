@@ -5,17 +5,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects, Task, node, html, forward} from 'reflex';
-import * as URL from '../../../../common/url-helper';
+import * as URL from '../../../../Common/URLHelper';
 import * as Driver from '@driver';
-import * as Style from '../../../../common/style';
+import * as Style from '../../../../Common/Style';
 import {on, setting} from '@driver';
-import {always} from '../../../../common/prelude';
+import {always} from '../../../../Common/Prelude';
 
 
 
 import type {Address, DOM} from "reflex"
 import type {Model, Action} from "../WebView"
-import {performance} from "../../../../common/performance"
+import {performance} from "../../../../Common/Performance"
 
 const Blur = always({ type: "Blur" });
 const Focus = always({ type: "Focus" });

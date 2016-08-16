@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects, Task, html, forward, thunk} from "reflex"
-import * as Unknown from "../../../common/unknown"
-import {merge, setIn, nofx, appendFX} from "../../../common/prelude"
+import * as Unknown from "../../../Common/Unknown"
+import {merge, setIn, nofx, appendFX} from "../../../Common/Prelude"
 import * as Suggestion from "./Assistant/Suggestion"
 import * as SuggestionStyle from "./Assistant/Suggestion/StyleSheet"
 import * as Selector from "./Assistant/Selector"
@@ -14,7 +14,7 @@ import * as Search from "./Assistant/Search"
 import * as History from "./Assistant/History"
 import * as HistoryService from "../../../Service/History"
 import * as SearchService from "../../../Service/Search"
-import * as Style from '../../../common/style';
+import * as Style from '../../../Common/Style';
 import type {DOM, Address} from "reflex"
 
 // # Model

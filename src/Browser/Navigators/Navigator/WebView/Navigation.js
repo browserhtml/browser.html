@@ -4,16 +4,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {always} from '../../../../common/prelude';
-import {ok, error} from '../../../../common/result';
+import {always} from '../../../../Common/Prelude';
+import {ok, error} from '../../../../Common/Result';
 import {Effects, Task} from 'reflex';
-import * as Unknown from '../../../../common/unknown'
-import * as Ref from '../../../../common/ref';
+import * as Unknown from '../../../../Common/Unknown'
+import * as Ref from '../../../../Common/Ref';
 
 
 import type {Never} from "reflex";
-import type {Result} from '../../../../common/result';
-import type {ID, URI, Time} from "../../../../common/prelude"
+import type {Result} from '../../../../Common/Result';
+import type {ID, URI, Time} from "../../../../Common/Prelude"
 
 export type Action =
   | { type: "NoOp" }

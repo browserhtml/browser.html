@@ -5,13 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects, Task, html, thunk, forward} from 'reflex';
-import {always, merge} from '../common/prelude';
-import * as Style from '../common/style';
-import * as Unknown from '../common/unknown';
+import {always, merge} from '../Common/Prelude';
+import * as Style from '../Common/Style';
+import * as Unknown from '../Common/Unknown';
 
 
 import type {Address, DOM} from 'reflex'
-import type {Result} from '../common/result'
+import type {Result} from '../Common/Result'
 
 export type Action =
   | { type: 'Dismiss' }

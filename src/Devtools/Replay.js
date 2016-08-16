@@ -1,15 +1,15 @@
 /* @flow */
 
 import {Effects, Task, html, thunk, forward} from "reflex"
-import {merge, nofx} from "../common/prelude"
-import {ok, error} from "../common/result"
-import * as Runtime from "../common/runtime"
-import * as Unknown from "../common/unknown"
-import * as Style from "../common/style"
+import {merge, nofx} from "../Common/Prelude"
+import {ok, error} from "../Common/Result"
+import * as Runtime from "../Common/Runtime"
+import * as Unknown from "../Common/Unknown"
+import * as Style from "../Common/Style"
 
 
 import type {Address, Never, DOM, Init, Update, View, AdvancedConfiguration} from "reflex"
-import type {Result} from "../common/result"
+import type {Result} from "../Common/Result"
 
 export type Model <model, action> =
   { snapshotURI: string

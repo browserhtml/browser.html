@@ -5,17 +5,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {Effects, Task, html, thunk, forward} from "reflex";
-import {merge, always} from "../common/prelude";
-import {cursor} from "../common/cursor";
-import * as Focusable from "../common/focusable";
-import * as Target from "../common/target";
-import * as Runtime from "../common/runtime";
-import * as Controls from "./shell/controls";
-import * as Unknown from "../common/unknown";
+import {merge, always} from "../Common/Prelude";
+import {cursor} from "../Common/Cursor";
+import * as Focusable from "../Common/Focus";
+import * as Target from "../Common/Target";
+import * as Runtime from "../Common/Runtime";
+import * as Controls from "./Shell/Controls";
+import * as Unknown from "../Common/Unknown";
 
 
 import type {Address, DOM} from "reflex"
-import type {Result} from "../common/result"
+import type {Result} from "../Common/Result"
 
 export type Model =
   { isFocused: boolean

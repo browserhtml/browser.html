@@ -5,16 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import {merge, always, nofx, mapFX, anotate, port} from "../common/prelude"
-import * as Unknown from "../common/unknown"
-import * as Target from "../common/target"
-import * as Focus from "../common/focusable"
-import * as Control from "../common/control"
-import {Style} from "../common/style"
+import {merge, always, nofx, mapFX, anotate, port} from "../Common/Prelude"
+import * as Unknown from "../Common/Unknown"
+import * as Target from "../Common/Target"
+import * as Focus from "../Common/Focus"
+import * as Control from "../Common/Control"
+import {Style} from "../Common/Style"
 import {html, Effects, forward} from "reflex"
 
 import type {Address, DOM} from "reflex"
-import type {Rules} from "../common/style"
+import type {Rules} from "../Common/Style"
 
 export type ContextStyle = Rules
 

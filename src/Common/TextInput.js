@@ -5,20 +5,20 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import {html, forward, Effects} from 'reflex';
-import {Style} from '../common/style';
-import {compose} from '../lang/functional';
-import {tag, tagged, anotate, mapFX, always} from '../common/prelude';
-import * as Unknown from '../common/unknown';
-import * as Focus from '../common/focusable';
-import * as Edit from '../common/editable';
-import * as Control from '../common/control';
+import {Style} from '../Common/Style';
+import {compose} from '../Lang/Functional';
+import {tag, tagged, anotate, mapFX, always} from '../Common/Prelude';
+import * as Unknown from '../Common/Unknown';
+import * as Focus from '../Common/Focus';
+import * as Edit from '../Common/Edit';
+import * as Control from '../Common/Control';
 
 import {on, focus, selection} from '@driver';
 
 
 import type {Address, DOM} from "reflex"
-import type {Rules} from "../common/style"
-import type {Tagged} from "../common/prelude"
+import type {Rules} from "../Common/Style"
+import type {Tagged} from "../Common/Prelude"
 
 export type StyleSheet =
   { base: Rules

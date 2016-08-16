@@ -6,31 +6,31 @@
 
 
 import {Effects, html, forward} from 'reflex';
-import {merge, always, nofx, batch} from '../../../common/prelude';
-import {cursor} from '../../../common/cursor';
-import {compose} from '../../../lang/functional';
+import {merge, always, nofx, batch} from '../../../Common/Prelude';
+import {cursor} from '../../../Common/Cursor';
+import {compose} from '../../../Lang/Functional';
 import {on} from '@driver';
-import {isElectron} from "../../../common/runtime";
+import {isElectron} from "../../../Common/Runtime";
 import * as Shell from './WebView/Shell';
 import * as Navigation from './WebView/Navigation';
 import * as Security from './WebView/Security';
 import * as Page from './WebView/Page';
-import * as Unknown from '../../../common/unknown';
-import {Style, StyleSheet} from '../../../common/style';
+import * as Unknown from '../../../Common/Unknown';
+import {Style, StyleSheet} from '../../../Common/Style';
 import {readTitle, isDark, canGoBack} from './WebView/Util';
 import * as Driver from '@driver';
-import * as Focusable from '../../../common/focusable';
+import * as Focusable from '../../../Common/Focus';
 import * as Easing from 'eased';
 import * as MozBrowserFrame from './WebView/MozBrowserFrame';
 import * as ElectronFrame from './WebView/ElectronFrame';
-import * as Ref from '../../../common/ref';
+import * as Ref from '../../../Common/Ref';
 import * as Tab from '../../Sidebar/Tab';
-import * as Favicon from '../../../common/favicon';
+import * as Favicon from '../../../Common/Favicon';
 
 
 import type {Address, DOM} from "reflex"
-import type {URI, Time, Integer, Float} from "../../../common/prelude"
-import {performance} from "../../../common/performance"
+import type {URI, Time, Integer, Float} from "../../../Common/Prelude"
+import {performance} from "../../../Common/Performance"
 import type {Report} from "../../IssueReporter"
 
 export type {URI, Time}
