@@ -251,7 +251,7 @@ const chooseInital =
   ( hostname == ""
   ? title
   : hostname
-  ).substr(0, 1).toUpperCase()
+  ).charAt(0).toUpperCase()
 
 
 const swapPallet =
