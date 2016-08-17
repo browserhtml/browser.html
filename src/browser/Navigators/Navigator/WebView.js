@@ -295,7 +295,6 @@ const delegateTabUpdate =
         return updatePage(model, action.page)
       default:
         return updateTab(model, action)
-
     }
   }
 
