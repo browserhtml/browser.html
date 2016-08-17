@@ -50,7 +50,7 @@ export const getBestIcon =
   for (var icon of icons) {
     if (icon.rel != 'shortcut icon' && icon.rel != 'icon') {
       others.add(icon);
-    } else if (!icon.sizes || icon.sizes === "") {
+    } else if (icon.sizes == null || icon.sizes === "") {
       others.add(icon);
     } else {
       if (icon.sizes == 'any') {
