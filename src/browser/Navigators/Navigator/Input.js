@@ -19,7 +19,7 @@ import * as Style from '../../../common/style';
 
 import type {Address, DOM} from "reflex"
 
-export type Flags =
+export type Options =
   { isVisible?: boolean
   , isFocused?: boolean
   , value: string
@@ -141,7 +141,7 @@ const assemble =
   ]
 
 export const init =
-  (flags:Flags=defaultFlags):[Model, Effects<Action>] =>
+  (flags:Options=defaultFlags):[Model, Effects<Action>] =>
   assemble
   ( flags.value
   , false

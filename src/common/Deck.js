@@ -20,7 +20,7 @@ export type Dictionary <key, value> =
 export type Maybe <value> =
   ?value
 
-export type Flags <flags> =
+export type Options <flags> =
   { inBackground: boolean
   , flags: flags
   }

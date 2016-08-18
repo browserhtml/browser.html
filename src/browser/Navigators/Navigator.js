@@ -31,13 +31,13 @@ import {readTitle, isSecure, isDark, canGoBack} from './Navigator/WebView/Util';
 import type {Address, DOM} from "reflex"
 import type {URI, Time} from "./Navigator/WebView"
 
-export type Flags =
-  { output: Output.Flags
+export type Options =
+  { output: Output.Options
   , isPinned?: boolean
   , isInputEmbedded?: boolean
-  , input?: Input.Flags
-  , overlay?: Overlay.Flags
-  , assistant?: Assistant.Flags
+  , input?: Input.Options
+  , overlay?: Overlay.Options
+  , assistant?: Assistant.Options
   }
 
 export type Action =
@@ -104,7 +104,7 @@ export type Action =
 
   // Embedder
   | { type: "Navigate", uri: URI }
-  | { type: "Open", open: Flags }
+  | { type: "Open", open: Options }
 
   | { type: "Tab", tab: Tab.Action }
 
@@ -348,7 +348,7 @@ const assemble =
 
 
 export const init =
-  (options:Flags):[Model, Effects<Action>] =>
+  (options:Options):[Model, Effects<Action>] =>
   assemble
   ( options.output.disposition != 'background-tab'
   , false

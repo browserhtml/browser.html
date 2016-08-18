@@ -42,7 +42,7 @@ export type Debuggee <model, action> =
 export type Step <model, action> =
   [Model<model, action>, Effects<Action<model, action>>]
 
-type Flags <model, action, flags> =
+type Options <model, action, flags> =
   { Debuggee: Debuggee<model, action>
   , flags: flags
   }
@@ -100,14 +100,14 @@ export const persist = <model, action, flags>
   ];
 
 export const restore = <model, action, flags>
-  ({Debuggee, flags}:Flags<model, action, flags>
+  ({Debuggee, flags}:Options<model, action, flags>
   ):Step<model, action> =>
   [ merge(window.application.model.value, {Debuggee, flags})
   , Effects.none
   ];
 
 export const init = <model, action, flags>
-  ({Debuggee, flags}:Flags<model, action, flags>):Step<model, action> => {
+  ({Debuggee, flags}:Options<model, action, flags>):Step<model, action> => {
     const disable = [null, Effects.none]
 
     const [record, recordFX] =
