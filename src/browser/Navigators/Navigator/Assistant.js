@@ -21,7 +21,7 @@ import type {DOM, Address} from "reflex"
 
 export type Match = Suggestion.Completion
 export type Action = Message
-export type Flags = boolean
+export type Options = boolean
 
 export class Model {
   isOpen: boolean;

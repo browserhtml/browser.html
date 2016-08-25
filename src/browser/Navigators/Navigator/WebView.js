@@ -46,7 +46,7 @@ export type Disposition =
   | 'new-window'
   | 'new-popup'
 
-export type Flags =
+export type Options =
   { uri: URI
   , disposition: Disposition
   , name: string
@@ -92,7 +92,7 @@ export type Action =
   | { type: "Tab", tab: Tab.Action }
   | { type: "Security", security: Security.Action }
   | { type: "Navigation", navigation: Navigation.Action }
-  | { type: "Open", options: Flags }
+  | { type: "Open", options: Options }
   | { type: "ContextMenu"
     , clientX: Float
     , clientY: Float
@@ -331,7 +331,7 @@ const updateNavigation = cursor
 
 
 export const init =
-  (options:Flags):[Model, Effects<Action>] => {
+  (options:Options):[Model, Effects<Action>] => {
     const ref = Ref.create()
     return assemble(
         ref

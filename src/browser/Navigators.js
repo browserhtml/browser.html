@@ -41,7 +41,7 @@ export type Action =
   | { type: "Crash", crash: Report }
   | { type: "Animation", animation: Animation.Action }
   | { type: "Tabs", tabs: Tabs.Action }
-  | { type: "Deck", deck: Deck.Action<Navigator.Action, Navigator.Flags> }
+  | { type: "Deck", deck: Deck.Action<Navigator.Action, Navigator.Options> }
 
 
 export const Expose = { type: "Expose" }
@@ -92,7 +92,7 @@ const Card =
   }
 
 const tagDeck =
-  (action:Deck.Action<Navigator.Action, Navigator.Flags>):Action => {
+  (action:Deck.Action<Navigator.Action, Navigator.Options>):Action => {
     switch (action.type) {
       case "Modify":
         switch (action.modify.type) {
@@ -146,7 +146,7 @@ export const init =
   ( zoom:boolean=true
   , shrink:boolean=false
   ):[Model, Effects<Action>] => {
-    const flags =
+    const Options =
       { input:
         { value: ''
         , isVisible: true
@@ -171,7 +171,7 @@ export const init =
     const [deck2, $deck2] = Deck.open
       ( Card
       , deck
-      , flags
+      , Options
       );
     const [deck3, $deck3] =
       ( Runtime.env.url
