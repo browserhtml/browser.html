@@ -20,13 +20,9 @@ export type Model = {
   tiles: Tiles.Model
 }
 
-export type Action = | {
-      type: "Wallpapers",
-      wallpapers: Wallpapers.Action
-    } | {
-      type: "Tiles",
-      tiles: Tiles.Action
-    }
+export type Action =
+  | { type: "Wallpapers", wallpapers: Wallpapers.Action }
+  | { type: "Tiles", tiles: Tiles.Action }
 
 const WallpapersAction =
   action => ({
@@ -69,11 +65,16 @@ const updateTiles = cursor({
   tag: TilesAction
 })
 
-export const update = (model:Model, action:Action):[Model, Effects<Action>] => (
-  action.type === 'Wallpapers' ? updateWallpapers(model, action.wallpapers)
-  : action.type === 'Tiles' ? updateTiles(model, action.tiles)
-  : Unknown.update(model, action)
-)
+export const update = (model:Model, action:Action):[Model, Effects<Action>] => {
+  switch (action.type) {
+    case 'Wallpapers':
+      return updateWallpapers(model, action.wallpapers)
+    case 'Tiles':
+      return updateTiles(model, action.tiles)
+    default:
+      return Unknown.update(model, action)
+  }
+}
 
 export const styleSheet =
   StyleSheet.create({
@@ -109,26 +110,21 @@ export const view = ({
   address:Address<Action>):DOM => {
   const activeWallpaper = Wallpapers.active(wallpapers)
   return (
-    html.div(
-      {
-        className: 'newtab',
-        style: Style(styleSheet.base, readWallpaper(activeWallpaper))
-      },
-      [
-        html.meta(
-          {
-            name: 'theme-color',
-            content: activeWallpaper.color
-          }
-        ),
-        thunk(
-          'tiles',
-          Tiles.view,
-          tiles,
-          forward(address, TilesAction),
-          activeWallpaper.isDark
-        )
-      ]
-    )
+    html.div({
+      className: 'newtab',
+      style: Style(styleSheet.base, readWallpaper(activeWallpaper))
+    }, [
+      html.meta({
+        name: 'theme-color',
+        content: activeWallpaper.color
+      }),
+      thunk(
+        'tiles',
+        Tiles.view,
+        tiles,
+        forward(address, TilesAction),
+        activeWallpaper.isDark
+      )
+    ])
   )
 }
