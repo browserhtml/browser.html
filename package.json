@@ -75,8 +75,6 @@
       "src/About/Newtab/Newtab/Tiles.js",
       "src/About/Newtab/Newtab/Wallpaper.js",
       "src/About/Newtab/Newtab/Wallpapers.js",
-      "src/About/Repl/Main.js",
-      "src/About/Repl/Repl.js",
       "src/About/Repl/Repl/Cell.js",
       "src/About/Repl/Repl/Host.js",
       "src/About/Repl/Repl/Host/Window.js",
