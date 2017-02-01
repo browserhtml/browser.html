@@ -20,7 +20,7 @@ We welcome contributions from anyone. See [CONTRIBUTING.md](https://github.com/b
 
 The Browser.html UI is bundled with Servo. To run it, you'll need to build Servo.
 
-First, [install Servo's prerequisites](https://github.com/servo/servo#prerequisites). Then, clone and build Servo:
+First, [install Servo's prerequisites](https://github.com/servo/servo#setting-up-your-environment). Then, clone and build Servo:
 
 ``` sh
 git clone https://github.com/servo/servo
