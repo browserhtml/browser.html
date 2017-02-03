@@ -1,0 +1,13 @@
+[package]
+name = "browserhtml"
+version = "0.1.0"
+authors = ["The Browserhtml Project Developers"]
+description = "Experimental browser built in HTML"
+license = "MPL-2.0"
+repository = "https://github.com/browserhtml/browserhtml"
+homepage = "https://github.com/browserhtml/browserhtml"
+build = "build.rs"
+
+exclude = [
+    "node_modules/*"
+]

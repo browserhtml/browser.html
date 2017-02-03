@@ -1,3 +1,5 @@
+Cargo.lock
+target/
 graphene
 .DS_Store
 node_modules/
