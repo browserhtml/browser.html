@@ -1,16 +1,14 @@
 /* @flow */
 
-import * as Easing from "eased";
+import * as Easing from 'eased'
 
-
-import type {Float} from "../../../Common/Prelude"
-
+import type {Float} from '../../../Common/Prelude'
 
 export class Model {
-  
+
   opacity: Float;
-  
-  constructor(
+
+  constructor (
     opacity:Float
   ) {
     this.opacity = opacity
@@ -22,10 +20,9 @@ export const deselected = new Model(0)
 export const closed = new Model(0)
 
 export const interpolate =
-  ( from:Model
+  (from:Model
   , to:Model
   , progress:Float
   ):Model =>
-  new Model
-  ( Easing.float(from.opacity, to.opacity, progress)
+  new Model(Easing.float(from.opacity, to.opacity, progress)
   )

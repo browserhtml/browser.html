@@ -4,27 +4,23 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import {html, thunk} from 'reflex'
 
-import {Effects, html, forward, thunk} from "reflex";
-
-import type {Address, DOM} from "reflex"
-
-
+import type {DOM} from 'reflex'
 
 const style =
   { fontSize: '14px'
   }
 
 const properties =
-  { className: 'assistant title'
-  , style
+  { className: 'assistant title',
+    style
   }
 
 export const render =
   (title:?string):DOM =>
-  html.span
-  ( properties
-  , [ ( title == null
+  html.span(properties,
+    [ (title == null
       ? 'Untitled'
       : `${title}`
       )
@@ -33,11 +29,10 @@ export const render =
 
 export const view =
   (title:?string):DOM =>
-  thunk
-  ( ( title == null
-    ? ""
+  thunk((title == null
+    ? ''
     : title
-    )
-  , render
-  , title
+    ),
+    render,
+    title
   )

@@ -4,19 +4,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, Task, html, forward, thunk} from "reflex"
-import * as Unknown from "../../../../Common/Unknown"
-import {port, always, mapFX, nofx} from "../../../../Common/Prelude"
-import * as StyleSheet from "./Suggestion/StyleSheet"
-import type {Address, DOM} from "reflex"
+import {Effects, forward} from 'reflex'
+import {nofx} from '../../../../Common/Prelude'
+import type {Address, DOM} from 'reflex'
 
-import * as History from "./History"
-import * as Search from "./Search"
+import * as History from './History'
+import * as Search from './Search'
 
 export type Completion =
-  { match: string
-  , hint: string
-  , query: string
+  { match: string,
+   hint: string,
+   query: string
   }
 
 export type Model =
@@ -29,18 +27,18 @@ export type Message =
 
 export const isSearch =
   (model:Model):boolean =>
-  model.type === "Search"
+  model.type === 'Search'
 
 export const isHistory =
   (model:Model):boolean =>
-  model.type === "History"
+  model.type === 'History'
 
 export const toID =
   (model:Model):string => {
     switch (model.type) {
-      case "Search":
+      case 'Search':
         return `?${Search.id(model.search)}`
-      case "History":
+      case 'History':
       default:
         return `^${History.id(model.history)}`
     }
@@ -49,9 +47,9 @@ export const toID =
 export const isMatch =
   (query:string, model:Model):boolean => {
     switch (model.type) {
-      case "Search":
+      case 'Search':
         return Search.isMatch(query, model.search)
-      case "History":
+      case 'History':
       default:
         return History.isMatch(query, model.history)
     }
@@ -60,18 +58,18 @@ export const isMatch =
 export const completion =
   (query:string, model:Model):Completion => {
     switch (model.type) {
-      case "Search":
+      case 'Search':
         return {
-          query
-        , match: Search.getMatch(query, model.search)
-        , hint: Search.getHint(query, model.search)
+          query,
+          match: Search.getMatch(query, model.search),
+          hint: Search.getHint(query, model.search)
         }
-      case "History":
+      case 'History':
       default:
         return {
-          query
-        , match: History.getMatch(query, model.history)
-        , hint: History.getHint(query, model.history)
+          query,
+          match: History.getMatch(query, model.history),
+          hint: History.getHint(query, model.history)
         }
     }
   }
@@ -79,9 +77,9 @@ export const completion =
 export const update =
   (model:Model, message:Message):[Model, Effects<Message>] => {
     switch (model.type) {
-      case "Search":
+      case 'Search':
         return updateSearch(model.search, message)
-      case "History":
+      case 'History':
       default:
         return updateHistory(model.history, message)
     }
@@ -90,7 +88,7 @@ export const update =
 const updateHistory =
   (model:History.Model, message:Message) => {
     switch (message.type) {
-      case "History":
+      case 'History':
         const [history, fx] = History.update(model, message.history)
         return [tagHistory(history), fx.map(tagHistory)]
       default:
@@ -101,7 +99,7 @@ const updateHistory =
 const updateSearch =
   (model:Search.Model, message:Message) => {
     switch (message.type) {
-      case "Search":
+      case 'Search':
         const [search, fx] = Search.update(model, message.search)
         return [tagSearch(history), fx.map(tagSearch)]
       default:
@@ -112,9 +110,9 @@ const updateSearch =
 export const view =
   (model:Model, address:Address<Message>):DOM => {
     switch (model.type) {
-      case "Search":
+      case 'Search':
         return Search.render(model.search, forward(address, tagSearch))
-      case "History":
+      case 'History':
       default:
         return History.render(model.history, forward(address, tagHistory))
     }
@@ -122,14 +120,14 @@ export const view =
 
 export const tagSearch = <value>
   (search:value):{type: "Search", search:value} =>
-  ( { type: "Search"
-    , search
+  ({ type: 'Search',
+     search
     }
   )
 
 export const tagHistory = <value>
   (history:value):{type: "History", history:value} =>
-  ( { type: "History"
-    , history
+  ({ type: 'History',
+     history
     }
   )
