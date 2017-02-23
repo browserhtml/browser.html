@@ -4,13 +4,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import * as URI from '../../../../Common/URLHelper';
-import * as Favicon from '../../../../Common/Favicon';
-import type {Model as WebViewModel} from "../WebView";
+import * as URI from '../../../../Common/URLHelper'
+import type {Model as WebViewModel} from '../WebView'
 
 export const readTitle =
   (model:WebViewModel, fallback:string):string =>
-  ( ( model.page != null &&
+  ((model.page != null &&
       model.page.title != null &&
       model.page.title !== ''
     )
@@ -18,19 +17,19 @@ export const readTitle =
   : model.navigation.url.search(/^\s*$/)
   ? URI.prettify(model.navigation.url)
   : fallback
-  );
+  )
 
 export const isDark =
   (model:WebViewModel):boolean =>
-  ( model.page != null
+  (model.page != null
   ? model.page.pallet.isDark
   : false
-  );
+  )
 
 export const canGoBack =
   (model:WebViewModel):boolean =>
-  model.navigation.canGoBack === true;
+  model.navigation.canGoBack === true
 
 export const isSecure =
   (model:WebViewModel):boolean =>
-  model.security.secure;
+  model.security.secure

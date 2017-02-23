@@ -4,9 +4,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Task} from "reflex"
-import {ok, error} from "../Common/Result"
-import * as Search from "../Browser/Navigators/Navigator/Assistant/Search"
+import {Task} from 'reflex'
+import {ok, error} from '../Common/Result'
+import * as Search from '../Browser/Navigators/Navigator/Assistant/Search'
 
 const pendingRequests = Object.create(null)
 
@@ -38,8 +38,7 @@ export const query =
       const result = decode(request, query, limit)
       if (result.isOk) {
         succeed(result.value)
-      }
-      else {
+      } else {
         fail(result.error)
       }
     }
@@ -72,8 +71,8 @@ const fail =
   error(Error(`Can not decode ${JSON.stringify(request.response)} from ${requestURL(request)} `))
 
 const decode =
-  ( request, query, limit ) =>
-  ( request.responseType !== 'json'
+  (request, query, limit) =>
+  (request.responseType !== 'json'
   ? fail(request)
   : request.response == null
   ? fail(request)
@@ -83,8 +82,8 @@ const decode =
   )
 
 const decodeMatches =
-  ( matches, query, limit) =>
-  ( Array.isArray(matches)
+  (matches, query, limit) =>
+  (Array.isArray(matches)
   ? ok(ensureIncludes(query, matches).slice(0, limit).map(decodeMatch))
   : error(Error(`Can not decode non array matches ${matches}`))
   )
@@ -95,11 +94,11 @@ const decodeMatch =
 
 const ensureIncludes =
   (query, matches) =>
-  ( ( matches.length > 0 &&
+  ((matches.length > 0 &&
       matches[0].toLowerCase().startsWith(query.toLowerCase())
     )
   ? matches
-  : ( matches.unshift(query)
+  : (matches.unshift(query)
     , matches
     )
   )

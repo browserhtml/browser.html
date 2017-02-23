@@ -4,10 +4,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects} from 'reflex';
-import * as Unknown from '../../../../Common/Unknown';
-
-
+import {Effects} from 'reflex'
+import * as Unknown from '../../../../Common/Unknown'
 
 export type State =
   | "broken"
@@ -16,22 +14,21 @@ export type State =
 
 export type Action =
   | { type: "LoadStart" }
-  | { type: "SecurityChanged"
-    , state: State
-    , extendedValidation: boolean
+  | { type: "SecurityChanged",
+     state: State,
+     extendedValidation: boolean
     }
 
-
 export class Model {
-  
+
   state: State;
   secure: boolean;
   extendedValidation: boolean;
-  
-  constructor(
-    state:State
-  , secure:boolean
-  , extendedValidation:boolean
+
+  constructor (
+    state:State,
+   secure:boolean,
+   extendedValidation:boolean
   ) {
     this.state = state
     this.secure = secure
@@ -39,28 +36,27 @@ export class Model {
   }
 }
 
-const insecure = new Model
-  ( 'insecure'
-  , false
-  , false
+const insecure = new Model('insecure',
+   false,
+   false
   )
 
 export const LoadStart:Action =
-  { type: "LoadStart"
-  };
+  { type: 'LoadStart'
+  }
 
 export const Changed =
   (state:State, extendedValidation:boolean):Action =>
-  ( { type: "SecurityChanged"
-    , state
-    , extendedValidation
+  ({ type: 'SecurityChanged',
+     state,
+     extendedValidation
     }
-  );
+  )
 
 export const init =
   ():[Model, Effects<Action>] =>
-  [ insecure
-  , Effects.none
+  [ insecure,
+   Effects.none
   ]
 
 const loadStart =
@@ -69,22 +65,21 @@ const loadStart =
 
 const updateSecurity =
   (model, state, extendedValidation) =>
-  [ new Model
-    ( state
-    , state === 'secure'
-    , extendedValidation
-    )
-  , Effects.none
+  [ new Model(state,
+     state === 'secure',
+     extendedValidation
+    ),
+   Effects.none
   ]
 
 export const update =
   (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
-      case "LoadStart":
-        return loadStart(model);
-      case "SecurityChanged":
+      case 'LoadStart':
+        return loadStart(model)
+      case 'SecurityChanged':
         return updateSecurity(model, action.state, action.extendedValidation)
       default:
-        return Unknown.update(model, action);
+        return Unknown.update(model, action)
     }
-  };
+  }

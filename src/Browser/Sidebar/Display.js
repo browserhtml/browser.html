@@ -4,22 +4,20 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import * as Easing from "eased";
+import * as Easing from 'eased'
 
-
-import type {Integer, Float} from "../../Common/Prelude"
-
+import type {Integer, Float} from '../../Common/Prelude'
 
 export class Model {
-  
+
   x: Integer;
   shadow: Float;
   spacing: Integer;
   toolbarOpacity: Float;
   titleOpacity: Float;
   tabWidth: Integer;
-  
-  constructor(
+
+  constructor (
     x: Integer
   , shadow: Float
   , spacing: Integer
@@ -36,9 +34,7 @@ export class Model {
   }
 }
 
-
-export const collapsed = new Model
-  ( 550
+export const collapsed = new Model(550
   , 0.5
   , 16
   , 1
@@ -46,8 +42,7 @@ export const collapsed = new Model
   , 288
   )
 
-export const attached = new Model
-  ( 270
+export const attached = new Model(270
   , 0
   , 9
   , 0
@@ -55,8 +50,7 @@ export const attached = new Model
   , 32
   )
 
-export const expanded = new Model
-  ( 0
+export const expanded = new Model(0
   , 0.5
   , 16
   , 1
@@ -65,12 +59,11 @@ export const expanded = new Model
   )
 
 export const interpolate =
-  ( from:Model
+  (from:Model
   , to:Model
   , progress:Float
   ):Model =>
-  new Model
-  ( Easing.float(from.x, to.x, progress)
+  new Model(Easing.float(from.x, to.x, progress)
   , Easing.float(from.shadow, to.shadow, progress)
   , Easing.float(from.spacing, to.spacing, progress)
   , Easing.float(from.toolbarOpacity, to.toolbarOpacity, progress)

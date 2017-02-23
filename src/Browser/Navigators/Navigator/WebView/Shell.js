@@ -4,17 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, Task} from "reflex";
-import {merge, always} from "../../../../Common/Prelude";
-import {cursor} from "../../../../Common/Cursor";
-import {ok, error} from "../../../../Common/Result";
-import * as Focusable from "../../../../Common/Focus";
-import * as Ref from '../../../../Common/Ref';
+import {Effects, Task} from 'reflex'
+import {ok, error} from '../../../../Common/Result'
+import * as Focusable from '../../../../Common/Focus'
+import * as Ref from '../../../../Common/Ref'
 
-
-import type {Result} from "../../../../Common/Result"
-import type {Never} from "reflex"
-import type {Float} from "../../../../Common/Prelude"
+import type {Result} from '../../../../Common/Result'
+import type {Never} from 'reflex'
+import type {Float} from '../../../../Common/Prelude'
 
 export type Action =
   | { type: "NoOp" }
@@ -24,15 +21,14 @@ export type Action =
   | { type: "ResetZoom" }
   | { type: "MakeVisible" }
   | { type: "MakeNotVisible" }
-  | { type: "ZoomChanged"
-    , zoomChanged: Result<Error, number>
+  | { type: "ZoomChanged",
+     zoomChanged: Result<Error, number>
     }
-  | { type: "VisibilityChanged"
-    , visibilityChanged: Result<Error, boolean>
+  | { type: "VisibilityChanged",
+     visibilityChanged: Result<Error, boolean>
     }
   | { type: "Focus" }
   | { type: "Blur" }
-
 
 export class Model {
 
@@ -41,11 +37,11 @@ export class Model {
   isVisible: boolean;
   isFocused: boolean;
 
-  constructor(
-    ref:Ref.Model
-  , zoom:Float
-  , isVisible:boolean
-  , isFocused:boolean
+  constructor (
+    ref:Ref.Model,
+   zoom:Float,
+   isVisible:boolean,
+   isFocused:boolean
   ) {
     this.ref = ref
     this.zoom = zoom
@@ -55,49 +51,43 @@ export class Model {
 }
 
 export const MakeVisible:Action =
-  ({type: "MakeVisible"});
+  ({type: 'MakeVisible'})
 
 export const MakeNotVisible:Action =
-  ({type: "MakeNotVisible"});
+  ({type: 'MakeNotVisible'})
 
 export const ZoomIn:Action =
-  ({type: "ZoomIn"});
+  ({type: 'ZoomIn'})
 
 export const ZoomOut:Action =
-  ({type: "ZoomOut"});
+  ({type: 'ZoomOut'})
 
 export const ResetZoom:Action =
-  ({type: "ResetZoom"});
-
-const FocusableAction =
-  action =>
-  ({type: "Focusable", action});
+  ({type: 'ResetZoom'})
 
 const Panic =
   error =>
-  ( { type: "Panic"
-    , panic: error
+  ({ type: 'Panic',
+     panic: error
     }
   )
 
-export const Focus:Action = Focusable.Focus;
-export const Blur:Action = Focusable.Blur;
-
-const NoOp = always({type: "NoOp"});
+export const Focus:Action = Focusable.Focus
+export const Blur:Action = Focusable.Blur
 
 const VisibilityChanged =
   result =>
-  ( { type: "VisibilityChanged"
-    , visibilityChanged: result
+  ({ type: 'VisibilityChanged',
+     visibilityChanged: result
     }
-  );
+  )
 
 const ZoomChanged =
   result =>
-  ( { type: "ZoomChanged"
-    , zoomChanged: result
+  ({ type: 'ZoomChanged',
+     zoomChanged: result
     }
-  );
+  )
 
 const setZoom =
   (ref:Ref.Model, level:Float):Task<Error, Float> =>
@@ -106,48 +96,46 @@ const setZoom =
   .chain(element => setElementZoom(element, level))
 
 const setElementZoom =
-  ( target, level ) =>
+  (target, level) =>
   new Task((succeed, fail) => {
-    if (typeof(target.zoom) !== 'function') {
-      fail(Error(`.zoom is not supported by runtime`))
-    }
-    else {
-      target.zoom(level);
-      succeed(level);
+    if (typeof (target.zoom) !== 'function') {
+      fail(Error('.zoom is not supported by runtime'))
+    } else {
+      target.zoom(level)
+      succeed(level)
     }
   })
 
-const ZOOM_MIN = 0.5;
-const ZOOM_MAX = 2;
-const ZOOM_STEP = 0.1;
+const ZOOM_MIN = 0.5
+const ZOOM_MAX = 2
+const ZOOM_STEP = 0.1
 
 export const zoomIn =
   (ref:Ref.Model, zoom:number):Task<Error, number> =>
-  setZoom(ref, Math.min(ZOOM_MAX, zoom + ZOOM_STEP));
+  setZoom(ref, Math.min(ZOOM_MAX, zoom + ZOOM_STEP))
 
 export const zoomOut =
   (ref:Ref.Model, zoom:number):Task<Error, number> =>
-  setZoom(ref, Math.max(ZOOM_MIN, zoom - ZOOM_STEP));
+  setZoom(ref, Math.max(ZOOM_MIN, zoom - ZOOM_STEP))
 
 export const resetZoom =
   (ref:Ref.Model):Task<Error, number> =>
-  setZoom(ref, 1);
+  setZoom(ref, 1)
 
 export const setVisibility =
   (ref:Ref.Model, isVisible:boolean):Task<Error, boolean> =>
   Ref
   .deref(ref)
-  .chain(target => setElementVisibility(target, isVisible));
+  .chain(target => setElementVisibility(target, isVisible))
 
 const setElementVisibility =
   (element, isVisible) =>
   new Task((succeed, fail) => {
-    if (typeof(element.setVisible) !== 'function') {
-      fail(Error(`.setVisible is not supported by runtime`))
-    }
-    else {
-      element.setVisible(isVisible);
-      succeed(isVisible);
+    if (typeof (element.setVisible) !== 'function') {
+      fail(Error('.setVisible is not supported by runtime'))
+    } else {
+      element.setVisible(isVisible)
+      succeed(isVisible)
     }
   })
 
@@ -155,7 +143,7 @@ export const focus = <value>
   (ref:Ref.Model):Task<Error, value> =>
   Ref
   .deref(ref)
-  .chain(focusElement);
+  .chain(focusElement)
 
 const focusElement = <value>
   (element:HTMLElement):Task<Error, value> =>
@@ -164,17 +152,16 @@ const focusElement = <value>
       if (element.ownerDocument.activeElement !== element) {
         element.focus()
       }
-    }
-    catch (error) {
+    } catch (error) {
       fail(error)
     }
-  });
+  })
 
 export const blur = <value>
   (ref:Ref.Model):Task<Error, value> =>
   Ref
   .deref(ref)
-  .chain(blurElement);
+  .chain(blurElement)
 
 const blurElement =<value>
   (element:HTMLElement):Task<Error, value> =>
@@ -183,163 +170,148 @@ const blurElement =<value>
       if (element.ownerDocument.activeElement === element) {
         element.blur()
       }
-    }
-    catch (error) {
+    } catch (error) {
       fail(error)
     }
-  });
-
-
+  })
 
 // Reports error as a warning in a console.
 const warn = <value>
   (error:Error):Task<Never, value> =>
   new Task((succeed, fail) => {
-    console.warn(error);
-  });
-
+    console.warn(error)
+  })
 
 export const init =
-  ( ref:Ref.Model
-  , isFocused:boolean):[Model, Effects<Action>] =>
-  [ new Model
-    ( ref
-    , 1
-    , true
-    , isFocused
-    )
-  , Effects.none
+  (ref:Ref.Model,
+   isFocused:boolean):[Model, Effects<Action>] =>
+  [ new Model(ref,
+     1,
+     true,
+     isFocused
+    ),
+   Effects.none
   ]
 
 const updateVisibility =
-  ( model, isVisible ) =>
-  [ new Model
-    ( model.ref
-    , model.zoom
-    , isVisible
-    , model.isFocused
-    )
-  , Effects.none
+  (model, isVisible) =>
+  [ new Model(model.ref,
+     model.zoom,
+     isVisible,
+     model.isFocused
+    ),
+   Effects.none
   ]
 
 const updateZoom =
-  ( model, zoom ) =>
-  [ new Model
-    ( model.ref
-    , zoom
-    , model.isVisible
-    , model.isFocused
-    )
-  , Effects.none
+  (model, zoom) =>
+  [ new Model(model.ref,
+     zoom,
+     model.isVisible,
+     model.isFocused
+    ),
+   Effects.none
   ]
 
 const updateFocus =
-  ( model, isFocused ) =>
-  ( model.isFocused === isFocused
+  (model, isFocused) =>
+  (model.isFocused === isFocused
   ? [ model, Effects.none ]
-  : [ new Model
-      ( model.ref
-      , model.zoom
-      , model.isVisible
-      , isFocused
-      )
-    , Effects.perform
-      ( isFocused
+  : [ new Model(model.ref,
+       model.zoom,
+       model.isVisible,
+       isFocused
+      ),
+     Effects.perform(isFocused
       ? focus(model.ref).recover(Panic)
       : blur(model.ref).recover(Panic)
       )
     ]
   )
 
-
 export const update =
   (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
-      case "ZoomIn":
+      case 'ZoomIn':
         return [
-          model
-          , Effects
-            .perform
-              ( zoomIn(model.ref, model.zoom)
+          model,
+          Effects
+            .perform(zoomIn(model.ref, model.zoom)
                 .map(ok)
                 .capture(reason => Task.succeed(error(reason)))
               )
             .map(ZoomChanged)
-          ];
-      case "ZoomOut":
+        ]
+      case 'ZoomOut':
         return [
-          model
-          , Effects
-              .perform
-              ( zoomOut(model.ref, model.zoom)
+          model,
+          Effects
+              .perform(zoomOut(model.ref, model.zoom)
                 .map(ok)
                 .capture(reason => Task.succeed(error(reason)))
               )
               .map(ZoomChanged)
-          ];
-      case "ResetZoom":
+        ]
+      case 'ResetZoom':
         return [
-          model
-          , Effects
-              .perform
-              ( resetZoom(model.ref)
+          model,
+          Effects
+              .perform(resetZoom(model.ref)
                 .map(ok)
                 .capture(reason => Task.succeed(error(reason)))
               )
               .map(ZoomChanged)
-          ];
-      case "MakeVisible":
+        ]
+      case 'MakeVisible':
         return [
-          model
-          , Effects
-              .perform
-              ( setVisibility(model.ref, true)
+          model,
+          Effects
+              .perform(setVisibility(model.ref, true)
                 .map(ok)
                 .capture(reason => Task.succeed(error(reason)))
               )
               .map(VisibilityChanged)
-          ];
-      case "MakeNotVisible":
+        ]
+      case 'MakeNotVisible':
         return [
-          model
-          , Effects
-            .perform
-            ( setVisibility(model.ref, false)
+          model,
+          Effects
+            .perform(setVisibility(model.ref, false)
               .map(ok)
               .capture(reason => Task.succeed(error(reason)))
             )
             .map(VisibilityChanged)
-          ];
-      case "VisibilityChanged":
+        ]
+      case 'VisibilityChanged':
         return (
           action.visibilityChanged.isOk
         ? updateVisibility(model, action.visibilityChanged.value)
-        : [ model
-          , Effects
+        : [ model,
+           Effects
             .perform(warn(action.visibilityChanged.error))
           ]
-        );
-      case "ZoomChanged":
+        )
+      case 'ZoomChanged':
         return (
           action.zoomChanged.isOk
         ? updateZoom(model, action.zoomChanged.value)
-        : [ model
-          , Effects
+        : [ model,
+           Effects
             .perform(warn(action.zoomChanged.error))
           ]
-        );
+        )
 
   // Delegate
-      case "Focus":
+      case 'Focus':
 
-        return updateFocus(model, true);
-      case "Blur":
-        return updateFocus(model, false);
+        return updateFocus(model, true)
+      case 'Blur':
+        return updateFocus(model, false)
 
-      case "Panic":
-        return [model, Effects.perform(warn(action.panic))];
+      case 'Panic':
+        return [model, Effects.perform(warn(action.panic))]
 
       default:
-        return [model, Effects.none];
+        return [model, Effects.none]
     }
-  };
+  }

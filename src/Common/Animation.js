@@ -1,18 +1,16 @@
 /* @flow */
 
-import * as Unknown from "./Unknown"
-import {Task, Effects} from "reflex"
-import {nofx} from "./Prelude"
-import {ease} from "eased"
-
+import * as Unknown from './Unknown'
+import {Task, Effects} from 'reflex'
+import {nofx} from './Prelude'
+import {ease} from 'eased'
 
 export type Time = number
 export type Action =
   | { type: "Tick", time: Time }
   | { type: "End", time: Time }
 
-import type {Interpolation, Easing} from "eased"
-
+import type {Interpolation, Easing} from 'eased'
 
 class Transition <model> {
 
@@ -22,12 +20,12 @@ class Transition <model> {
   from: model;
   to: model;
 
-  constructor(
-    from:model
-  , to:model
-  , now:Time
-  , elapsed:Time
-  , duration:Time
+  constructor (
+    from:model,
+   to:model,
+   now:Time,
+   elapsed:Time,
+   duration:Time
   ) {
     this.from = from
     this.to = to
@@ -42,9 +40,9 @@ export class Model <model> {
   state: model;
   transition: ?Transition<model>;
 
-  constructor(
-    state:model
-  , transition:?Transition<model>
+  constructor (
+    state:model,
+   transition:?Transition<model>
   ) {
     this.state = state
     this.transition = transition
@@ -52,142 +50,120 @@ export class Model <model> {
 }
 
 export const transition = <action, model>
-  ( model:Model<model>
-  , to:model
-  , duration:Time
+  (model:Model<model>,
+   to:model,
+   duration:Time
   ):[Model<model>, Effects<Action>] =>
-  ( model.transition == null
-  ? startTransition
-    ( model.state
-    , to
-    , 0
-    , duration
+  (model.transition == null
+  ? startTransition(model.state,
+     to,
+     0,
+     duration
     )
   : model.transition.to === to
   ? nofx(model)
-  : startTransition
-    ( model.state
-    , to
-    , duration - (duration * model.transition.elapsed / model.transition.duration)
-    , duration
+  : startTransition(model.state,
+     to,
+     duration - (duration * model.transition.elapsed / model.transition.duration),
+     duration
     )
   )
 
 const Tick =
   time =>
-  ( { type: "Tick"
-    , time
+  ({ type: 'Tick',
+     time
     }
-  );
+  )
 
 const End =
   time =>
-  ( { type: "End"
-    , time
+  ({ type: 'End',
+     time
     }
-  );
-
+  )
 
 const startTransition = <model>
-  ( from:model
-  , to:model
-  , elapsed:Time
-  , duration:Time
+  (from:model,
+   to:model,
+   elapsed:Time,
+   duration:Time
   ):[Model<model>, Effects<Action>] =>
-  [ new Model
-    ( from
-    , new Transition
-      ( from
-      , to
-      , 0
-      , elapsed
-      , duration
+  [ new Model(from,
+     new Transition(from,
+       to,
+       0,
+       elapsed,
+       duration
       )
-    )
-  , Effects.perform
-    (Task.requestAnimationFrame().map(Tick))
-  ]
-
-const endTransition = <model>
-  ( model:Model<model>
-  ):[Model<model>, Effects<Action>] =>
-  [ new Model
-    ( model.state
-    , null
-    )
-  , Effects.perform
-    (Task.requestAnimationFrame().map(End))
+    ),
+   Effects.perform(Task.requestAnimationFrame().map(Tick))
   ]
 
 const tickTransitionWith = <model>
-  ( easing:Easing
-  , interpolation:Interpolation<model>
-  , model:Model<model>
-  , now/*Time*/
+  (easing:Easing,
+   interpolation:Interpolation<model>,
+   model:Model<model>,
+   now/* Time*/
   ):[Model<model>, Effects<Action>] =>
-  ( model.transition == null
+  (model.transition == null
   ? nofx(model)
-  : interpolateTransitionWith
-    ( easing
-    , interpolation
-    , model.transition
-    , ( model.transition.now === 0
+  : interpolateTransitionWith(easing,
+     interpolation,
+     model.transition,
+     (model.transition.now === 0
       ? 0
       : now - model.transition.now + model.transition.elapsed
-      )
-    , now
+      ),
+     now
     )
   )
 
 const interpolateTransitionWith = <model>
-  ( easing:Easing
-  , interpolation:Interpolation<model>
-  , transition:Transition<model>
-  , elapsed:Time
-  , now:Time
+  (easing:Easing,
+   interpolation:Interpolation<model>,
+   transition:Transition<model>,
+   elapsed:Time,
+   now:Time
   ):[Model<model>, Effects<Action>] =>
-  ( elapsed >= transition.duration
-  ? [ new Model(transition.to, null)
-    , Effects.receive(End(now))
+  (elapsed >= transition.duration
+  ? [ new Model(transition.to, null),
+     Effects.receive(End(now))
     ]
-  : [ new Model
-      ( ease
-        ( easing
-        , interpolation
-        , transition.from
-        , transition.to
-        , transition.duration
-        , elapsed
+  : [ new Model(ease(easing,
+         interpolation,
+         transition.from,
+         transition.to,
+         transition.duration,
+         elapsed
+        ),
+       new Transition(transition.from,
+         transition.to,
+         now,
+         elapsed,
+         transition.duration
         )
-      , new Transition
-        ( transition.from
-        , transition.to
-        , now
-        , elapsed
-        , transition.duration
-        )
-      )
-    , Effects.perform
-      (Task.requestAnimationFrame().map(Tick))
+      ),
+     Effects.perform(Task.requestAnimationFrame().map(Tick))
     ]
   )
 
 export const updateWith = <model>
-  ( easing:Easing
-  , interpolation:Interpolation<model>
-  , model:Model<model>
-  , action:Action
+  (easing:Easing,
+   interpolation:Interpolation<model>,
+   model:Model<model>,
+   action:Action
   ):[Model<model>, Effects<Action>] => {
-    switch (action.type) {
-      case "Tick":
-        return tickTransitionWith(easing, interpolation, model, action.time);
-      case "End":
-        return nofx(model);
-      default:
-        return Unknown.update(model, action);
-    }
+  switch (action.type) {
+    case 'Tick':
+      return tickTransitionWith(easing, interpolation, model, action.time)
+    case 'End':
+      return nofx(model)
+    default:
+      return Unknown.update(model, action)
   }
+}
 
 export const init = <model>
-  ( state:model ):[Model<model>, Effects<Action>] =>
+  (state:model):[Model<model>, Effects<Action>] =>
   nofx(new Model(state, null))

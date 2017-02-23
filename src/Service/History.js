@@ -4,18 +4,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Task} from "reflex"
-import {ok, error} from "../Common/Result"
-import * as History from "../Browser/Navigators/Navigator/Assistant/History"
-import type {Result} from "../Common/Result"
+import {Task} from 'reflex'
+import {ok, error} from '../Common/Result'
+import * as History from '../Browser/Navigators/Navigator/Assistant/History'
+import type {Result} from '../Common/Result'
 
 export const decode =
   (content:string):Result<Error, History.Model> => {
     try {
       const data = JSON.parse(content)
       return ok(new History.Model(data.url, data.title))
-    }
-    catch (failure) {
+    } catch (failure) {
       return error(failure)
     }
   }
@@ -24,13 +23,12 @@ export const encode =
   (place:History.Model):Result<Error, string> => {
     try {
       return ok(JSON.stringify(place))
-    }
-    catch (failure) {
+    } catch (failure) {
       return error(failure)
     }
   }
 
-const pendingRequests = Object.create(null);
+const pendingRequests = Object.create(null)
 
 const noMatches = Object.freeze([])
 
@@ -46,7 +44,7 @@ export const query =
       try {
         const places = []
         const count = window.localStorage.length
-        let index  = 0
+        let index = 0
         while (index < count) {
           const key = window.localStorage.key(index)
           index = index + 1
@@ -57,8 +55,7 @@ export const query =
               const place = result.value
               if (place.title.includes(query)) {
                 places.push(place)
-              }
-              else if (place.url.includes(query)) {
+              } else if (place.url.includes(query)) {
                 places.push(place)
               }
             }
@@ -67,12 +64,10 @@ export const query =
 
         if (places.length === 0) {
           succeed(noMatches)
-        }
-        else {
+        } else {
           succeed(places)
         }
-      }
-      catch (error) {
+      } catch (error) {
         fail(error)
       }
     }

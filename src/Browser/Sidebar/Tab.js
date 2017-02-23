@@ -4,25 +4,21 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {html, thunk, forward, Effects} from 'reflex';
-import * as Style from '../../Common/Style';
-import * as Image from '../../Common/Image';
-import * as Target from "../../Common/Target";
-import * as Unknown from "../../Common/Unknown";
-import * as Page from '../Navigators/Navigator/WebView/Page';
+import {html, thunk, forward, Effects} from 'reflex'
+import * as Style from '../../Common/Style'
+import * as Target from '../../Common/Target'
+import * as Unknown from '../../Common/Unknown'
+import * as Page from '../Navigators/Navigator/WebView/Page'
 
-import {always, merge, mapFX, nofx} from '../../Common/Prelude';
-import {readTitle} from '../Navigators/Navigator/WebView/Util';
-import {cursor} from '../../Common/Cursor';
+import {always, nofx} from '../../Common/Prelude'
+import {readTitle} from '../Navigators/Navigator/WebView/Util'
 
-
-import type {Address, DOM} from "reflex"
-import type {Model as NavigatorModel} from "../Navigators/Navigator"
-import type {ID} from "../../Common/Prelude"
+import type {Address, DOM} from 'reflex'
+import type {Model as NavigatorModel} from '../Navigators/Navigator'
 
 export type Context =
-  { tabWidth: number
-  , titleOpacity: number
+  { tabWidth: number,
+   titleOpacity: number
   }
 
 export type Action =
@@ -35,62 +31,61 @@ export class Model {
 
   isPointerOver: boolean;
 
-  constructor(isPointerOver:boolean) {
+  constructor (isPointerOver:boolean) {
     this.isPointerOver = isPointerOver
   }
 }
 
 const over = new Model(true)
 const out = new Model(false)
-const transactOver = [over, Effects.none];
-const transactOut = [out, Effects.none];
+const transactOver = [over, Effects.none]
+const transactOut = [out, Effects.none]
 
-export const Close = {type: "Close"};
-export const Select = {type: "Select"};
-export const Activate = {type: "Activate"};
+export const Close = {type: 'Close'}
+export const Select = {type: 'Select'}
+export const Activate = {type: 'Activate'}
 
 const TargetAction = action =>
-  ( { type: "Target"
-    , target: action
+  ({ type: 'Target',
+     target: action
     }
-  );
+  )
 
 const PageAction = action =>
-  ( { type: "Page"
-    , page: action
+  ({ type: 'Page',
+     page: action
     }
-  );
-
+  )
 
 const updateTarget =
   (model, action) =>
-  ( action.type === "Over"
+  (action.type === 'Over'
   ? transactOver
   : transactOut
   )
 
 const updatePage = nofx
 
-const Out = TargetAction(Target.Out);
-const Over = TargetAction(Target.Over);
+const Out = TargetAction(Target.Out)
+const Over = TargetAction(Target.Over)
 
 export const init =
   ():[Model, Effects<Action>] =>
-  transactOut;
+  transactOut
 
 export const update =
   (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
-      case "Target":
+      case 'Target':
         return updateTarget(model, action.target)
-      case "Page":
+      case 'Page':
         return updatePage(model, action.page)
       default:
         return Unknown.update(model, action)
     }
   }
 
-const tabHeight = '32px';
+const tabHeight = '32px'
 
 const styleSheet = Style.createSheet({
   base: {
@@ -127,8 +122,6 @@ const styleSheet = Style.createSheet({
     whiteSpace: 'nowrap'
   },
 
-
-
   closeMask: {
     color: 'inherit',
     fontFamily: 'FontAwesome',
@@ -156,7 +149,7 @@ const styleSheet = Style.createSheet({
       to right,
       rgba(86,87,81,0) 0%,
       rgba(86,87,81, 0.8) 20%,
-      rgba(86,87,81,1) 100%)`,
+      rgba(86,87,81,1) 100%)`
   },
   closeMaskUnselected: {
 
@@ -164,14 +157,14 @@ const styleSheet = Style.createSheet({
 
   closeMaskHidden: {
     right: '-21px',
-    pointerEvents: 'none',
+    pointerEvents: 'none'
     // Transitioning color or opacity seems to cause rendering bugs
     // See: https://github.com/browserhtml/browserhtml/issues/1048
     // color: 'rgba(255, 255, 255, 0)'
   },
 
   closeMaskVisible: {
-    right: 0,
+    right: 0
     // Transitioning color or opacity seems to cause rendering bugs
     // See: https://github.com/browserhtml/browserhtml/issues/1048
     // color: 'rgba(255, 255, 255, 1)'
@@ -186,91 +179,81 @@ const styleSheet = Style.createSheet({
     lineHeight: tabHeight,
     textAlign: 'center'
   }
-});
-
+})
 
 // TODO: Use button widget instead.
 const viewClose = (isSelected, tab, address) =>
-  html.button
-  ( { className: 'tab-close-mask'
-    , style:
-        Style.mix
-        ( styleSheet.closeMask
-        , ( isSelected
+  html.button({ className: 'tab-close-mask',
+     style:
+        Style.mix(styleSheet.closeMask,
+         (isSelected
           ? styleSheet.closeMaskSelected
           : styleSheet.closeMaskUnselected
-          )
-        , ( tab.isPointerOver
+          ),
+         (tab.isPointerOver
           ? styleSheet.closeMaskVisible
           : styleSheet.closeMaskHidden
           )
-        )
-    , onClick:
+        ),
+     onClick:
         event => {
           // Should prevent propagation so that tab won't trigger
           // Activate action when close button is clicked.
-          event.stopPropagation();
-          address(Close);
+          event.stopPropagation()
+          address(Close)
         }
-    }
-  , ['']
-  );
+    },
+   ['']
+  )
 
 export const render =
-  ( model:NavigatorModel
-  , address:Address<Action>
-  , {tabWidth, titleOpacity}:Context
+  (model:NavigatorModel,
+   address:Address<Action>,
+   {tabWidth, titleOpacity}:Context
   ):DOM =>
-  html.div
-  ( { className: 'sidebar-tab'
-    , style: Style.mix
-      ( styleSheet.base
-      , ( model.isSelected
+  html.div({ className: 'sidebar-tab',
+     style: Style.mix(styleSheet.base,
+       (model.isSelected
         ? styleSheet.selected
         : styleSheet.unselected
-        )
-      , { width: `${tabWidth}px` }
-      )
-    , onMouseOver: forward(address, always(Over))
-    , onMouseOut: forward(address, always(Out))
-    , onClick: forward(address, always(Select))
-    }
-  , [ html.div
-      ( { className: 'sidebar-tab-inner'
-        , style: styleSheet.container
-        }
-      , [ Page.viewIcon(model.output.page, forward(address, PageAction))
-        , html.div
-          ( { className: 'sidebar-tab-title'
-            , style:
-              Style.mix
-              ( styleSheet.title
-              , { opacity: titleOpacity }
+        ),
+       { width: `${tabWidth}px` }
+      ),
+     onMouseOver: forward(address, always(Over)),
+     onMouseOut: forward(address, always(Out)),
+     onClick: forward(address, always(Select))
+    },
+   [ html.div({ className: 'sidebar-tab-inner',
+         style: styleSheet.container
+        },
+       [ Page.viewIcon(model.output.page, forward(address, PageAction)),
+         html.div({ className: 'sidebar-tab-title',
+             style:
+              Style.mix(styleSheet.title,
+               { opacity: titleOpacity }
               )
-            }
+            },
             // @TODO localize this string
-          , [ readTitle(model.output, 'Untitled')
+            [ readTitle(model.output, 'Untitled')
             ]
-          )
-        , ( model.isPinned
-          ? ""
+          ),
+         (model.isPinned
+          ? ''
           : thunk('close', viewClose, model.isSelected, model.output.tab, address)
           )
         ]
       )
     ]
-  );
-
+  )
 
 export const view =
-  ( model:NavigatorModel
-  , address:Address<Action>
-  , context:Context
+  (model:NavigatorModel,
+   address:Address<Action>,
+   context:Context
   ):DOM =>
-  thunk
-  ( `${model.output.ref.value}`
-  , render
-  , model
-  , address
-  , context
+  thunk(`${model.output.ref.value}`,
+   render,
+   model,
+   address,
+   context
   )

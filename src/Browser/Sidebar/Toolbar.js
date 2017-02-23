@@ -4,16 +4,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {html, thunk, forward, Effects} from 'reflex';
-import * as Style from '../../Common/Style';
-import * as Toggle from "../../Common/Toggle";
-import * as Button from "../../Common/Button";
-import {merge} from "../../Common/Prelude";
-import {cursor} from "../../Common/Cursor";
-import * as Unknown from "../../Common/Unknown";
+import {html, thunk, forward, Effects} from 'reflex'
+import * as Style from '../../Common/Style'
+import * as Toggle from '../../Common/Toggle'
+import {cursor} from '../../Common/Cursor'
+import * as Unknown from '../../Common/Unknown'
 
-
-import type {Address, DOM} from "reflex"
+import type {Address, DOM} from 'reflex'
 
 export type Context =
   { toolbarOpacity: number
@@ -25,12 +22,11 @@ export type Action =
   | { type: "CreateWebView" }
   | { type: "Toggle", toggle: Toggle.Action }
 
-
 export class Model {
-  
+
   pin: Toggle.Model;
-  
-  constructor(
+
+  constructor (
     pin:Toggle.Model
   ) {
     this.pin = pin
@@ -38,42 +34,41 @@ export class Model {
 }
 
 export const Attach:Action =
-  { type: "Attach"
-  };
+  { type: 'Attach'
+  }
 
 export const Detach:Action =
-  { type: "Detach"
-  };
+  { type: 'Detach'
+  }
 
 export const CreateWebView:Action =
-  { type: "CreateWebView"
-  };
+  { type: 'CreateWebView'
+  }
 
 const ToggleAction =
   action => {
     switch (action.type) {
-      case "Check":
+      case 'Check':
         return Attach
-      case "Uncheck":
+      case 'Uncheck':
         return Detach
       default:
-        return { type: "Toggle", toggle: action }
+        return { type: 'Toggle', toggle: action }
     }
-  };
+  }
 
 const updateToggle = cursor({
   get: model => model.pin,
   set: (model, pin) => new Model(pin),
   tag: ToggleAction,
   update: Toggle.update
-});
+})
 
 export const init = ():[Model, Effects<Action>] => {
-  const [pin, pinFX] = Toggle.init();
+  const [pin, pinFX] = Toggle.init()
   return [
     new Model(pin),
-    Effects.batch
-    ( [ pinFX.map(ToggleAction)
+    Effects.batch([ pinFX.map(ToggleAction)
       ]
     )
 
@@ -82,18 +77,18 @@ export const init = ():[Model, Effects<Action>] => {
 
 export const update =
   (model:Model, action:Action):[Model, Effects<Action>] =>
-  ( action.type === "Attach"
+  (action.type === 'Attach'
   ? updateToggle(model, Toggle.Check)
-  : action.type === "Detach"
+  : action.type === 'Detach'
   ? updateToggle(model, Toggle.Uncheck)
 
-  : action.type === "Toggle"
+  : action.type === 'Toggle'
   ? updateToggle(model, action.toggle)
 
   : Unknown.update(model, action)
-  );
+  )
 
-export const height = '48px';
+export const height = '48px'
 
 export const styleSheet = Style.createSheet({
   base: {
@@ -107,7 +102,7 @@ export const styleSheet = Style.createSheet({
     opacity: 0,
     pointerEvents: 'none'
   }
-});
+})
 
 const viewPin = Toggle.view('pin-button', Style.createSheet({
   base: {
@@ -128,7 +123,7 @@ const viewPin = Toggle.view('pin-button', Style.createSheet({
   checked: {
     backgroundColor: '#3D91F2'
   }
-}));
+}))
 
 export const view =
   (model:Model, address:Address<Action>, display:Context):DOM =>
@@ -136,13 +131,12 @@ export const view =
     key: 'sidebar-toolbar',
     className: 'sidebar-toolbar',
     style:
-    Style.mix
-    ( styleSheet.base
-    , ( display.toolbarOpacity === 0
+    Style.mix(styleSheet.base
+    , (display.toolbarOpacity === 0
       ? styleSheet.invisible
       : { opacity: display.toolbarOpacity }
       )
     )
   }, [
     thunk('pin', viewPin, model.pin, forward(address, ToggleAction))
-  ]);
+  ])

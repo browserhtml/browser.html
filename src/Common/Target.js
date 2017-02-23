@@ -4,18 +4,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-
-import {Effects, forward} from "reflex";
-import {always, port} from "../Common/Prelude";
-import * as Unknown from "../Common/Unknown";
-
-import type {Address} from "reflex";
+import {Effects} from 'reflex'
+import {always, port} from '../Common/Prelude'
+import * as Unknown from '../Common/Unknown'
 
 export class Model {
   isPointerOver: boolean;
   static over: Model;
   static out: Model;
-  constructor(isPointerOver:boolean) {
+  constructor (isPointerOver:boolean) {
     this.isPointerOver = isPointerOver
   }
 }
@@ -26,43 +23,41 @@ export type Action
   = { type: "Over" }
   | { type: "Out" }
 
-
-export const Over = { type: "Over" };
-export const Out = { type: "Out" };
+export const Over = { type: 'Over' }
+export const Out = { type: 'Out' }
 
 export const init =
   (isPointerOver:boolean=false):[Model, Effects<Action>] =>
-  [ ( isPointerOver
+  [ (isPointerOver
     ? Model.over
     : Model.out
-    )
-  , Effects.none
+    ),
+   Effects.none
   ]
 
 export const update =
   (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
-      case "Over":
-        return over(model);
-      case "Out":
-        return out(model);
+      case 'Over':
+        return over(model)
+      case 'Out':
+        return out(model)
       default:
-        return Unknown.update(model, action);
+        return Unknown.update(model, action)
     }
   }
 
 export const over =
   (model:Model):[Model, Effects<Action>] =>
-  [ Model.over
-  , Effects.none
-  ];
+  [ Model.over,
+   Effects.none
+  ]
 
 export const out =
   (model:Model):[Model, Effects<Action>] =>
-  [ Model.out
-  , Effects.none
-  ];
+  [ Model.out,
+   Effects.none
+  ]
 
-
-export const onMouseOver = port(always(Over));
-export const onMouseOut = port(always(Out));
+export const onMouseOver = port(always(Over))
+export const onMouseOut = port(always(Out))

@@ -4,15 +4,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import tinycolor from 'tinycolor2'
+import {Task} from 'reflex'
+import {getDomainName} from '../Common/URLHelper'
 
-
-import tinycolor from 'tinycolor2';
-import {Effects, Task} from 'reflex';
-import {getDomainName} from '../Common/URLHelper';
-
-
-import type {Address, DOM, Never} from "reflex"
-import type {URI} from "../Common/Prelude"
+import type {Never} from 'reflex'
+import type {URI} from '../Common/Prelude'
 
 export type {URI}
 
@@ -22,14 +19,14 @@ export type Color = string;
 export type HexColor = string;
 
 export type Model =
-  { isDark: boolean
-  , foreground: ?Color
-  , background: ?Color
+  { isDark: boolean,
+   foreground: ?Color,
+   background: ?Color
   }
 
 export type Theme =
-  { foreground: Color
-  , background: Color
+  { foreground: Color,
+   background: Color
   }
 
 // Hand-curated themes for popular websites.
@@ -48,44 +45,43 @@ const curated = {
   'firewatchgame.com': {background: '#2d102b', foreground: '#ef4338'},
   'whatliesbelow.com': {background: '#74888b', foreground: '#fff'},
   'supertimeforce.com': {background: '#051224', foreground: '#2ebcec'},
-  'github.com': {background: 'rgb(245, 245, 245)', foreground: 'rgb(51, 51, 51)'},
-};
+  'github.com': {background: 'rgb(245, 245, 245)', foreground: 'rgb(51, 51, 51)'}
+}
 
 // Calculate the distance from white, returning a boolean.
 // This is a pretty primitive check.
 const isHexBright =
   (hexcolor:HexColor):boolean =>
-  parseInt(hexcolor, 16) > 0xffffff/2;
+  parseInt(hexcolor, 16) > 0xffffff/2
 
 export const isDark = (color:Color):boolean => {
-  const tcolor = tinycolor(color);
+  const tcolor = tinycolor(color)
   // tinycolor uses YIQ for brightness calculation, we also throw more
   // primitive hex based calculation and treat background as dark if any
   // of two calculations consider color to be dark.
-  return (tcolor.isDark() || !isHexBright(tcolor.toHex()));
+  return (tcolor.isDark() || !isHexBright(tcolor.toHex()))
 }
 
 export const blank:Model = {
   isDark: false,
   foreground: null,
   background: null
-};
+}
 
 export const create =
   (background:Color, foreground:Color):Model =>
-  ( { background
-    , foreground
-    , isDark: isDark(background)
+  ({ background,
+     foreground,
+     isDark: isDark(background)
     }
-  );
+  )
 
 export const requestCuratedColor =
   (uri:URI):Task<Never, ?Theme> =>
   new Task((succeed, fail) => {
-    const hostname = getDomainName(uri);
-    Promise.resolve
-    ( hostname == null
+    const hostname = getDomainName(uri)
+    Promise.resolve(hostname == null
     ? null
     : curated[hostname]
     ).then(succeed, fail)
-  });
+  })

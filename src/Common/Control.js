@@ -4,17 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-
-import {merge, always} from "../Common/Prelude"
-import * as Unknown from "../Common/Unknown"
-import {Style} from "../Common/Style"
-import {html, Effects, forward} from "reflex"
+import * as Unknown from '../Common/Unknown'
+import {Effects} from 'reflex'
 
 export class Model {
   isDisabled: boolean;
   static enabled: Model;
   static disabled: Model;
-  constructor(isDisabled:boolean) {
+  constructor (isDisabled:boolean) {
     this.isDisabled = isDisabled
   }
 }
@@ -25,51 +22,49 @@ export type Action =
   | { type: "Disable" }
   | { type: "Enable" }
 
-export const Disable = { type: "Disable" }
-export const Enable = { type: "Enable" }
-
+export const Disable = { type: 'Disable' }
+export const Enable = { type: 'Enable' }
 
 export const init =
   (isDisable:boolean=false):[Model, Effects<Action>] =>
-  [ ( isDisable
+  [ (isDisable
     ? Model.disabled
     : Model.enabled
-    )
-  , Effects.none
+    ),
+   Effects.none
   ]
 
 export const update =
   (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
-      case "Enable":
+      case 'Enable':
         return enable(model)
-      case "Disable":
+      case 'Disable':
         return disable(model)
-      case "Toggle":
+      case 'Toggle':
         return toggle(model)
       default:
         return Unknown.update(model, action)
     }
   }
 
-
 export const enable =
   (model:Model):[Model, Effects<Action>] =>
-  [ Model.enabled
-  , Effects.none
+  [ Model.enabled,
+   Effects.none
   ]
 
 export const disable =
   (model:Model):[Model, Effects<Action>] =>
-  [ Model.disabled
-  , Effects.none
+  [ Model.disabled,
+   Effects.none
   ]
 
 export const toggle =
   (model:Model):[Model, Effects<Action>] =>
-  [ ( model.isDisabled
+  [ (model.isDisabled
     ? Model.enabled
     : Model.disabled
-    )
-  , Effects.none
+    ),
+   Effects.none
   ]

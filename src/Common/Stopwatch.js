@@ -4,15 +4,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, Task} from 'reflex';
-import {merge, always} from "../Common/Prelude";
-import * as Unknown from "../Common/Unknown";
+import {Effects, Task} from 'reflex'
+import {merge} from '../Common/Prelude'
+import * as Unknown from '../Common/Unknown'
 
-import type {Time} from "../Common/Prelude"
+import type {Time} from '../Common/Prelude'
 export type Idle = null
 export type Ticking =
-  { time: Time
-  , elapsed: Time
+  { time: Time,
+   elapsed: Time
   }
 
 export type Model =
@@ -22,44 +22,43 @@ export type Model =
 export type Action =
   | { type: "Start" }
   | { type: "End" }
-  | { type: "Tick"
-    , time: Time
+  | { type: "Tick",
+     time: Time
     }
 
-export const Start:Action = {type: "Start"};
-export const End:Action = {type: "End"};
+export const Start:Action = {type: 'Start'}
+export const End:Action = {type: 'End'}
 export const Tick =
   (time:Time):Action =>
-  ( { type: "Tick"
-    , time
+  ({ type: 'Tick',
+     time
     }
-  );
-
+  )
 
 export const init =
   ():[Model, Effects<Action>] =>
-  [null, Effects.none];
+  [null, Effects.none]
 
 export const update =
   (model:Model, action:Action):[Model, Effects<Action>] =>
-  ( action.type === "End"
+  (action.type === 'End'
   ? [ null, Effects.none ]
-  : action.type === "Start"
+  : action.type === 'Start'
   ? [ null, Effects.perform(Task.requestAnimationFrame().map(Tick)) ]
-  : action.type === "Tick"
-  ? ( model == null
+  : action.type === 'Tick'
+  ? (model == null
     ? [ {
-          time: action.time,
-          elapsed: 0
-        }
-      , Effects.perform(Task.requestAnimationFrame().map(Tick))
+      time: action.time,
+      elapsed: 0
+    },
+       Effects.perform(Task.requestAnimationFrame().map(Tick))
       ]
     : [ merge(model, {
-          time: action.time,
-          elapsed: model.elapsed + (action.time - model.time)
-        })
-      , Effects.perform(Task.requestAnimationFrame().map(Tick))
+      time: action.time,
+      elapsed: model.elapsed + (action.time - model.time)
+    }),
+       Effects.perform(Task.requestAnimationFrame().map(Tick))
       ]
     )
   : Unknown.update(model, action)
-  );
+  )

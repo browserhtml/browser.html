@@ -16,9 +16,8 @@ const restore = () => [
   Effects.none
 ]
 
-
 const application = start({
-  flags: void(0),
+  flags: void (0),
   init: (
     isReload ? restore : UI.init
   ),

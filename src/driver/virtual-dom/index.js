@@ -4,21 +4,20 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {identity} from '../../Lang/Functional'
-import {forward, Effects, Task} from 'reflex'
+import {Task} from 'reflex'
 export {Renderer} from 'reflex-virtual-dom-driver'
 
 // @TODO documentation
 // I think this is some kind of memoization class? - GB 2015-11-12
 class On {
-  static handleEvent(event) {
+  static handleEvent (event) {
     const {currentTarget, type} = event
 
     const handler = currentTarget[`on:${type}`]
     if (handler) {
-      const data = handler.decode == null ?
-        void(0) :
-        handler.decode(event)
+      const data = handler.decode == null
+        ? void (0)
+        : handler.decode(event)
 
       if (data !== null) {
         if (handler.stopPropagation) {
@@ -37,7 +36,7 @@ class On {
       }
     }
   }
-  constructor(address, decode, options, getTarget) {
+  constructor (address, decode, options, getTarget) {
     this.address = address
     this.decode = decode
     this.getTarget = getTarget
@@ -55,31 +54,27 @@ class On {
       }
     }
   }
-  hook(node, name, previous) {
-    const type = name.indexOf('on') === 0 ?
-      name.substr(2).toLowerCase() :
-      name
+  hook (node, name, previous) {
+    const type = name.indexOf('on') === 0
+      ? name.substr(2).toLowerCase()
+      : name
 
-    const target = this.getTarget != null ?
-      this.getTarget(node) :
-      node
+    const target = this.getTarget != null
+      ? this.getTarget(node)
+      : node
 
-    if (previous == null || previous.type != this.type) {
+    if (previous == null || previous.type !== this.type) {
       target.addEventListener(type, this.constructor.handleEvent)
     }
 
     target[`on:${type}`] = this
   }
-  unhook(node, name, next) {
-    const type = name.indexOf('on') === 0 ?
-      name.substr(2).toLowerCase() :
-      name.toLowerCase()
+  unhook (node, name, next) {
+    const type = name.indexOf('on') === 0
+      ? name.substr(2).toLowerCase()
+      : name.toLowerCase()
 
-    const target = this.getTarget != null ?
-      this.getTarget(node) :
-      node
-
-    if (next == null || next.type != this.type) {
+    if (next == null || next.type !== this.type) {
       node.removeEventListener(type, this.constructor.handleEvent)
     }
 
@@ -87,23 +82,23 @@ class On {
   }
 }
 
-const $hash = Symbol.for("hash")
+const $hash = Symbol.for('hash')
 let nextHash = 0
 
 const hash = v => {
   if (v == null) {
-    return `#_`
+    return '#_'
   } else if (v === false) {
-    return `#f`
+    return '#f'
   } else if (v === true) {
-    return `#t`
+    return '#t'
   } else {
     if (v[$hash] == null) {
       v[$hash] = `f#${++nextHash}`
     }
 
     if (v[$hash] == null) {
-      throw TypeError(`Invalid value of type ${typeof(v)} passed to a hashing function`)
+      throw TypeError(`Invalid value of type ${typeof (v)} passed to a hashing function`)
     }
 
     return v[$hash]
@@ -127,21 +122,21 @@ export const onWindow = (address, decode, options) =>
   on(address, decode, options, getRoot)
 
 class MetaProperty {
-  constructor(value, update) {
+  constructor (value, update) {
     this.value = value
     this.update = update
     this.type = 'MetaProperty'
   }
-  hook(node, name, previous) {
-    const before = previous == null ?
-        previous :
-      previous.type != this.type ?
-        previous :
-        previous.value
+  hook (node, name, previous) {
+    const before = previous == null
+        ? previous
+        : previous.type !== this.type
+          ? previous
+          : previous.value
 
     this.update(node, this.value, before)
   }
-  unhook(node, name, next) {
+  unhook (node, name, next) {
   }
 }
 
@@ -154,27 +149,26 @@ type Setter <data, element:HTMLElement> =
 class Setting <data, element:HTMLElement> {
   value: data;
   setter: Setter<data, element>;
-  constructor(setter:Setter<data, element>, value:data) {
+  constructor (setter:Setter<data, element>, value:data) {
     this.value = value
     this.setter = setter
   }
-  hook(node, name, previous) {
+  hook (node, name, previous) {
     this
       .setter(node, this.value)
-      .fork(this.onSucceed, this.onFail);
+      .fork(this.onSucceed, this.onFail)
   }
-  onFail(error) {
-    console.error(error);
+  onFail (error) {
+    console.error(error)
   }
-  onSucceed() {
+  onSucceed () {
 
   }
 }
 
-
 export const setting = <element:HTMLElement, data>
-  ( setter:Setter<data, element>
-  , value:data
+  (setter:Setter<data, element>,
+   value:data
   ) => new Setting(setter, value)
 
 // Bunch of meta properties are booleans, meaning they can be toggled on
@@ -201,11 +195,10 @@ const metaBooleanProperty = update => {
   }
 }
 
-
 export const focus = metaBooleanProperty((node, next, previous) => {
-  if (next != previous) {
+  if (next !== previous) {
     if (next) {
-      node.focus();
+      node.focus()
       // If node did not get focused, it is because this is initial render and
       // in such case VirtualDOM library calls hooks before nodes are actualy
       // part of document and there for `.focus()` has no effect. In this case
@@ -213,28 +206,27 @@ export const focus = metaBooleanProperty((node, next, previous) => {
       // of the document.
       if (node.ownerDocument.activeElement !== node) {
         Promise.resolve().then(() => {
-          node.focus();
+          node.focus()
         })
       }
     } else {
-      node.blur();
+      node.blur()
     }
   }
-});
-
+})
 
 export const selection = metaProperty((node, next, previous) => {
   const {direction} = next
   const start =
-    ( next.start === Infinity
+    (next.start === Infinity
     ? node.value.length
     : next.start
-    );
+    )
   const end =
-    ( next.end === Infinity
+    (next.end === Infinity
     ? node.value.length
     : next.end
-    );
+    )
 
   // Note that call to `node.setSelectionRange` triggers `select` event
   // regardless of whether there was a change in selection. In order to avoid
@@ -246,25 +238,21 @@ export const selection = metaProperty((node, next, previous) => {
     node.selectionDirection !== direction
 
   if (isUpdateRequired) {
-    node.setSelectionRange(start, end, direction);
+    node.setSelectionRange(start, end, direction)
   }
-});
-
+})
 
 export const forceRender:Task<Error, void> =
-  new Task
-  ( (succeed, fail) => {
-      if (window.renderer) {
-        window.renderer.execute();
-        console.log('Rendered in the same tick');
-        succeed(void(0));
-      }
-      else {
-        fail(Error('window.renderer must be set to enable force rendering'))
-      }
+  new Task((succeed, fail) => {
+    if (window.renderer) {
+      window.renderer.execute()
+      console.log('Rendered in the same tick')
+      succeed(void (0))
+    } else {
+      fail(Error('window.renderer must be set to enable force rendering'))
     }
+  }
   )
-
 
 // @Hack: The following three functions have being copied from:
 // https://github.com/Gozala/reflex-virtual-dom-driver/blob/c0248855bcf76123e50ff55a4b41bf19a53ab793/src/hooks/event-handler.js#L103-L119
@@ -274,72 +262,66 @@ const handleEvent = phase => event => {
   const {currentTarget, type} = event
   const handler = currentTarget[`on${type}${phase}`]
 
-  if (typeof(handler) === 'function') {
+  if (typeof (handler) === 'function') {
     handler(event)
   }
 
-  if (handler != null && typeof(handler.handleEvent) === 'function') {
+  if (handler != null && typeof (handler.handleEvent) === 'function') {
     handler.handleEvent(event)
   }
 }
 const handleCapturing:EventListener = handleEvent('capture')
 const handleBubbling:EventListener = handleEvent('bubble')
 
-
 export const replaceElement =
   (query:string, element:HTMLElement):Task<Error, void> =>
-  new Task
-  ( ( succeed, fail ) => {
-      const target = document.querySelector(query)
-      if (target == null) {
-        fail(Error('could not find node ${query}'))
-      }
-      else {
-        if (target != element) {
-          const {attributes} = target
-          const count = attributes.length
-          let index = 0
-          while (index < count) {
-            const {name, value} = attributes[index]
-            index = index + 1
-            element.setAttribute(name, value)
-          }
+  new Task((succeed, fail) => {
+    const target = document.querySelector(query)
+    if (target == null) {
+      fail(Error('could not find node ${query}'))
+    } else {
+      if (target !== element) {
+        const {attributes} = target
+        const count = attributes.length
+        let index = 0
+        while (index < count) {
+          const {name, value} = attributes[index]
+          index = index + 1
+          element.setAttribute(name, value)
+        }
 
-          for (let name in target) {
-            if (target.hasOwnProperty(name)) {
-              if (name.indexOf('on:') === 0) {
-                const type = name.substr(3);
-                const handler = target[name];
-                element.addEventListener(type, handler.constructor.handleEvent);
-              }
-              else if (name.indexOf('on') === 0) {
-                ( name.endsWith('capture')
-                ? element.addEventListener
-                  ( name.substring(2, name.length - 'capture'.length)
-                  , handleCapturing
-                  , true
+        for (let name in target) {
+          if (target.hasOwnProperty(name)) {
+            if (name.indexOf('on:') === 0) {
+              const type = name.substr(3)
+              const handler = target[name]
+              element.addEventListener(type, handler.constructor.handleEvent)
+            } else if (name.indexOf('on') === 0) {
+              (name.endsWith('capture')
+                ? element.addEventListener(name.substring(2, name.length - 'capture'.length),
+                   handleCapturing,
+                   true
                   )
                 : name.endsWith('bubble')
-                ? element.addEventListener
-                  ( name.substring(2, name.length - 'bubble'.length)
-                  , handleBubbling
-                  , false
+                ? element.addEventListener(name.substring(2, name.length - 'bubble'.length),
+                   handleBubbling,
+                   false
                   )
-                : void(0)
-                );
-              }
-
-              element[name] = target[name]
+                : void (0)
+                )
             }
+
+            element[name] = target[name]
           }
         }
-        target.parentNode.replaceChild(element, target);
       }
-      succeed(void(0));
+      target.parentNode.replaceChild(element, target)
     }
-  );
+    succeed(void (0))
+  }
+  )
 
 export const forceReplace =
   (query:string, element:HTMLElement):Task<Error, void> =>
   forceRender
-  .chain(_ => replaceElement(query, element));
+  .chain(_ => replaceElement(query, element))

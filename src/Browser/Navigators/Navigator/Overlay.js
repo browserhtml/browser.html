@@ -4,18 +4,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, html, thunk, forward} from "reflex";
-import {merge, always, nofx} from "../../../Common/Prelude";
-import {cursor} from "../../../Common/Cursor";
-import * as Style from "../../../Common/Style";
-import * as Easing from "eased";
-import * as Animation from "../../../Common/Animation"
-import * as Unknown from "../../../Common/Unknown";
-import * as Display from "./Overlay/Display"
+import {Effects, html, thunk, forward} from 'reflex'
+import {always, nofx} from '../../../Common/Prelude'
+import {cursor} from '../../../Common/Cursor'
+import * as Style from '../../../Common/Style'
+import * as Easing from 'eased'
+import * as Animation from '../../../Common/Animation'
+import * as Unknown from '../../../Common/Unknown'
+import * as Display from './Overlay/Display'
 
-
-import type {Address, DOM} from "reflex"
-import type {Time} from "../../../Common/Prelude"
+import type {Address, DOM} from 'reflex'
 
 export type Options = boolean
 
@@ -25,46 +23,44 @@ export type Action =
   | { type: "Hide" }
   | { type: "Animation", animation: Animation.Action }
 
-
 export class Model {
-  
+
   animation: Animation.Model<Display.Model>;
   isVisible: boolean;
-  
-  constructor(
-    isVisible:boolean
-  , animation:Animation.Model<Display.Model>
+
+  constructor (
+    isVisible:boolean,
+   animation:Animation.Model<Display.Model>
   ) {
-    this.isVisible = isVisible;
-    this.animation = animation;
+    this.isVisible = isVisible
+    this.animation = animation
   }
 }
 
-const Click = always({type: "Click"})
-export const Show = {type: "Show"}
-export const Hide = {type: "Hide"}
+const Click = always({type: 'Click'})
+export const Show = {type: 'Show'}
+export const Hide = {type: 'Hide'}
 
 const tagAnimation =
   action =>
-  ( { type: "Animation"
-    , animation: action
+  ({ type: 'Animation',
+     animation: action
     }
-  );
+  )
 
 export const init =
-  ( isVisible:boolean=false
+  (isVisible:boolean=false
   ):[Model, Effects<Action>] => {
     const display =
-      ( isVisible
+      (isVisible
       ? Display.visible
       : Display.invisible
       )
     const [animation, $animation] =
       Animation.init(display)
 
-    const model = new Model
-      ( isVisible
-      , animation
+    const model = new Model(isVisible,
+       animation
       )
 
     const fx =
@@ -74,123 +70,108 @@ export const init =
     return [model, fx]
   }
 
-
 export const update =
   (model:Model, action:Action):[Model, Effects<Action>] => {
     switch (action.type) {
-      case "Animation":
+      case 'Animation':
         return updateAnimation(model, action.animation)
-      case "Show":
+      case 'Show':
         return show(model)
-      case "Hide":
+      case 'Hide':
         return hide(model)
-      case "Click":
+      case 'Click':
         return nofx(model)
       default:
         return Unknown.update(model, action)
     }
-  };
+  }
 
 const show =
-  ( model ) =>
-  ( model.isVisible
+  (model) =>
+  (model.isVisible
   ? nofx(model)
-  : startAnimation
-    ( true
-    , Animation.transition
-      ( model.animation
-      , Display.visible
-      , 300
+  : startAnimation(true,
+     Animation.transition(model.animation,
+       Display.visible,
+       300
       )
     )
   )
 
 const hide =
-  ( model ) =>
-  ( !model.isVisible
+  (model) =>
+  (!model.isVisible
   ? nofx(model)
-  : startAnimation
-    ( false
-    , Animation.transition
-      ( model.animation
-      , Display.invisible
-      , 300
+  : startAnimation(false,
+     Animation.transition(model.animation,
+       Display.invisible,
+       300
       )
     )
   )
 
 const animate =
   (animation, action) =>
-  Animation.updateWith
-  ( Easing.easeOutQuad
-  , Display.interpolate
-  , animation
-  , action
+  Animation.updateWith(Easing.easeOutQuad,
+   Display.interpolate,
+   animation,
+   action
   )
 
-
-const updateAnimation = cursor
-  ( { get: model => model.animation
-    , set:
+const updateAnimation = cursor({ get: model => model.animation,
+     set:
       (model, animation) =>
-      new Model
-      ( model.isVisible
-      , animation
-      )
-    , tag: tagAnimation
-    , update: animate
+      new Model(model.isVisible,
+       animation
+      ),
+     tag: tagAnimation,
+     update: animate
     }
   )
 
 const startAnimation =
   (isVisible, [animation, fx]) =>
-  [ new Model
-    ( isVisible
-    , animation
-    )
-  , fx.map(tagAnimation)
+  [ new Model(isVisible,
+     animation
+    ),
+   fx.map(tagAnimation)
   ]
 
 export const render =
-  ( model:Model
-  , address:Address<Action>
+  (model:Model,
+   address:Address<Action>
   ):DOM =>
-  html.div
-  ( { className: 'overlay'
-    , style: Style.mix
-      ( styleSheet.base
-      , ( model.isVisible
+  html.div({ className: 'overlay',
+     style: Style.mix(styleSheet.base,
+       (model.isVisible
         ? styleSheet.visible
         : styleSheet.invisible
-        )
-      , { opacity: model.animation.state.opacity
+        ),
+       { opacity: model.animation.state.opacity
         }
-      )
-    , onClick: forward(address, Click)
+      ),
+     onClick: forward(address, Click)
     }
-  );
-
+  )
 
 export const view =
-  ( model:Model
-  , address:Address<Action>
+  (model:Model,
+   address:Address<Action>
   ):DOM =>
-  thunk
-  ( 'Browser/NavigatorDeck/Navigator/Overaly'
-  , render
-  , model
-  , address
-  );
+  thunk('Browser/NavigatorDeck/Navigator/Overaly',
+   render,
+   model,
+   address
+  )
 
-const styleSheet = Style.createSheet
-  ( { base:
-      { background: 'rgb(0, 0, 0)'
-      , position: 'absolute'
-      , width: '100vw'
-      , height: '100vh'
-      }
-    , visible: null
-    , invisible:
+const styleSheet = Style.createSheet({ base:
+      { background: 'rgb(0, 0, 0)',
+       position: 'absolute',
+       width: '100vw',
+       height: '100vh'
+      },
+     visible: null,
+     invisible:
       { zIndex: -1
       }
     }
