@@ -70,7 +70,6 @@
     "ignore": [
       "src/About/Newtab/Demos/evil_ad/vendor/coffee-physics.min.js",
       "src/About/Repl/Repl/Host/Window.js",
-      "src/About/Settings/Setting.js",
       "src/Browser/Navigators.js",
       "src/Browser/Navigators/Navigator/Assistant/Search.js",
       "src/Browser/Navigators/Navigator/Assistant/Suggestion.js",

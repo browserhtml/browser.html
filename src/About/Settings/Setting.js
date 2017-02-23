@@ -250,7 +250,6 @@ const viewInput = TextInput.view('input',
    StyleSheet.create({ base:
         { fontFamily: 'inherit',
          fontSize: 'inherit',
-         color: 'inherit',
          width: 'calc(100% - 10px)',
          border: 'none',
          backgroundColor: 'rgba(255,255,255,0.2)',
