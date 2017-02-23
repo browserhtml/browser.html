@@ -4,8 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import {Effects, forward} from 'reflex'
-import {nofx} from '../../../../Common/Prelude'
+import {forward} from 'reflex'
 import type {Address, DOM} from 'reflex'
 
 import * as History from './History'
@@ -71,39 +70,6 @@ export const completion =
           match: History.getMatch(query, model.history),
           hint: History.getHint(query, model.history)
         }
-    }
-  }
-
-export const update =
-  (model:Model, message:Message):[Model, Effects<Message>] => {
-    switch (model.type) {
-      case 'Search':
-        return updateSearch(model.search, message)
-      case 'History':
-      default:
-        return updateHistory(model.history, message)
-    }
-  }
-
-const updateHistory =
-  (model:History.Model, message:Message) => {
-    switch (message.type) {
-      case 'History':
-        const [history, fx] = History.update(model, message.history)
-        return [tagHistory(history), fx.map(tagHistory)]
-      default:
-        return nofx(model)
-    }
-  }
-
-const updateSearch =
-  (model:Search.Model, message:Message) => {
-    switch (message.type) {
-      case 'Search':
-        const [search, fx] = Search.update(model, message.search)
-        return [tagSearch(history), fx.map(tagSearch)]
-      default:
-        return nofx(model)
     }
   }
 

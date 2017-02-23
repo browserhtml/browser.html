@@ -72,7 +72,6 @@
       "src/About/Repl/Repl/Host/Window.js",
       "src/Browser/Navigators.js",
       "src/Browser/Navigators/Navigator/Assistant/Search.js",
-      "src/Browser/Navigators/Navigator/Assistant/Suggestion.js",
       "src/Browser/Navigators/Navigator/Progress.js",
       "src/Browser/Navigators/Navigator/WebView/Navigation.js",
       "src/Common/Animation.js",
