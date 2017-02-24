@@ -26,7 +26,7 @@ export const getOrigin =
 
 export const getBaseURI =
   ():URL =>
-  new URL('./', location.href)
+  new URL('./', window.location.href)
 
 export const getHostname =
   (url:URI):string =>
@@ -70,9 +70,9 @@ export const isNotURL = (input:string):boolean => {
   // for cases, ?abc and 'a? b' which should searching query
   const case1Reg = /^(\?)|(\?.+\s)/
   // for cases, pure string
-  const case2Reg = /[\?\.\s\:]/
+  const case2Reg = /[\?\.\s:]/
   // for cases, data:uri
-  const case3Reg = /^\w+\:\/*$/
+  const case3Reg = /^\w+:\/*$/
   if (str === 'localhost') {
     return false
   }
