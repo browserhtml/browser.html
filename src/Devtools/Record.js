@@ -30,12 +30,12 @@ export type Gist =
    updated_at: String
   }
 
-export type Model <model, action> =
+export type Model <model, action> = // eslint-disable-line no-unused-vars
   { status: 'Idle' | 'Pending',
    description: string
   }
 
-export type Action <model, action> =
+export type Action <model, action> = // eslint-disable-line no-unused-vars
   | { type: "NoOp" }
   | { type: "Debuggee", debuggee: action }
   | { type: "PrintSnapshot" }
@@ -57,7 +57,7 @@ const PublishedSnapshot = <model, action>
     }
   )
 
-export const init = <model, action, flags>
+export const init = <model, action>
   ():Step<model, action> =>
   ([ { status: 'Idle',
        description: ''
@@ -141,7 +141,7 @@ const publishedSnapshot = <model, action>
 const uploadSnapshot =
   (snapshot:string):Task<Error, Gist> =>
   new Task((succeed, fail) => {
-    const request = new XMLHttpRequest({mozSystem: true})
+    const request = new window.XMLHttpRequest({mozSystem: true})
     request.open('POST', 'https://api.github.com/gists', true)
     request.responseType = 'json'
     request.send(JSON.stringify({ 'description': 'Browser.html generated state snapshot',
