@@ -5,7 +5,7 @@
 type USVString = string
 type ByteString = string
 type DOMString = string
-type short = number
+type Short = number
 
 type HeadersInit
   = {[key:ByteString]: ByteString|number}
@@ -19,7 +19,7 @@ declare class Headers {
   getAll(name:ByteString):Array<ByteString>,
   has(name:ByteString):boolean,
   set(name:ByteString, value:ByteString):void,
-  @@iterator(): Iterator<[ByteString, ByteString]>
+  '@@iterator'(): Iterator<[ByteString, ByteString]>
 }
 
 type FormDataEntryValue
@@ -34,7 +34,7 @@ declare class FormData {
   getAll(name:USVString):Array<FormDataEntryValue>,
   has(name:USVString):boolean,
   set(name:USVString, value:FormDataEntryValue):void,
-  @@iterator(): Iterator<[USVString, FormDataEntryValue]>
+  '@@iterator'(): Iterator<[USVString, FormDataEntryValue]>
 }
 
 type JSONData
@@ -52,7 +52,6 @@ declare class Body {
   json(): Promise<JSONData>,
   text(): Promise<USVString>
 }
-
 
 type RequestInfo
   = USVString
@@ -126,7 +125,6 @@ type RequestDestination
   | "unknown"
   | "worker"
 
-
 declare class Request {
   constructor(input:RequestInfo, init?:RequestInit):void,
   method: ByteString,
@@ -145,7 +143,7 @@ declare class Request {
 }
 
 type ResponseInit = {
-  status: short,
+  status: Short,
   statusText: string,
   headers: HeadersInit
 }
@@ -162,7 +160,7 @@ declare class Response extends Body {
   constructor(body?:BodyInit, init?:ResponseInit):void,
   type: ResponseType,
   url: USVString,
-  status: short,
+  status: Short,
   ok: boolean,
   statusText: ByteString,
   headers: Headers,
