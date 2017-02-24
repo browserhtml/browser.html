@@ -49,7 +49,7 @@ export class Model <model> {
   }
 }
 
-export const transition = <action, model>
+export const transition = <model>
   (model:Model<model>,
    to:model,
    duration:Time

@@ -74,7 +74,6 @@
       "src/Browser/Navigators/Navigator/Assistant/Search.js",
       "src/Browser/Navigators/Navigator/Progress.js",
       "src/Browser/Navigators/Navigator/WebView/Navigation.js",
-      "src/Common/Animation.js",
       "src/Common/Deck.js",
       "src/Common/Favicon.js",
       "src/Common/Keyboard.js",
