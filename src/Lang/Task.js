@@ -89,7 +89,7 @@ exports.async = async
 // were scheduled but only after task with mathing id is complete.
 const schedule = (id, task, ...params) => {
   const pending = schedule.d[id]
-  return schedule.d[id] = spawn(function * () {
+  const spawned = spawn(function * () {
     // wait for the scheduled task with matching id to complete before
     // spawning new task.
     try {
@@ -98,9 +98,11 @@ const schedule = (id, task, ...params) => {
       // spawn a task regardless if previous task completed with error
       // or success. Note we do not catch error here to let it propagate
       // and make devtools handle it more properly.
-      return spawn(task, ...params)
+      return spawn(task, ...params) // eslint-disable-line no-unsafe-finally
     }
   })
+  schedule.d[id] = spawned
+  return spawned
 }
 
 // Use `null` prototype to avoid object as a hash map pitfalls
