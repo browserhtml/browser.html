@@ -13,7 +13,7 @@ const pendingRequests = Object.create(null)
 export const query =
   (query:string, limit:number=100):Task<Error, Array<Search.Model>> =>
   new Task((succeed, fail) => {
-    const request = new XMLHttpRequest({ mozSystem: true })
+    const request = new window.XMLHttpRequest({ mozSystem: true })
     pendingRequests[query] = request
     const url = `https://ac.duckduckgo.com/ac/?q=${query}&type=list`
     request.open('GET', url, true)

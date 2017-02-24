@@ -76,7 +76,6 @@
       "src/Browser/Navigators/Navigator/WebView/Navigation.js",
       "src/Common/Deck.js",
       "src/Common/Style.js",
-      "src/Service/Search.js",
       "src/driver/virtual-dom/index.js",
       "test/new_tab_test.js",
       "interface/fetch.js"
