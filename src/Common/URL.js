@@ -27,7 +27,7 @@ export const nullURL =
        getAll () { return [] },
        has () { return false },
        set () { throw Error('Not Implemented') },
-       ['@@iterator'] () { return [].values() },
+       '@@iterator' () { return [].values() },
        [Symbol.iterator] () { return [].values() }
       }
     )
