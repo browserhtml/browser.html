@@ -76,7 +76,6 @@
       "src/Browser/Navigators/Navigator/WebView/Navigation.js",
       "src/Common/Deck.js",
       "src/Common/Style.js",
-      "src/Devtools.js",
       "src/Devtools/Log.js",
       "src/Devtools/Record.js",
       "src/Devtools/Replay.js",

@@ -72,11 +72,9 @@ const TagDebuggee = <model, action>
   ? { type: 'Debuggee',
      debuggee: action
     }
-  : /* ::typeof(action) === "object" && action != null && */
-    action.type === 'PrintSnapshot'
+  : /* ::typeof(action) === "object" && action != null && */ action.type === 'PrintSnapshot'
   ? TagRecord(action)
-  : /* ::typeof(action) === "object" && action != null && */
-    action.type === 'PublishSnapshot'
+  : /* ::typeof(action) === "object" && action != null && */ action.type === 'PublishSnapshot'
   ? TagRecord(action)
   : { type: 'Debuggee',
      debuggee: action
@@ -85,7 +83,7 @@ const TagDebuggee = <model, action>
 
 export const Persist = { type: 'Persist' }
 
-export const persist = <model, action, flags>
+export const persist = <model, action>
   (model:Model<model, action>
   ):Step<model, action> =>
   [ model,
@@ -142,7 +140,7 @@ export const init = <model, action, flags>
   return [model, fx]
 }
 
-export const update = <model, action, flags>
+export const update = <model, action>
   (model:Model<model, action>,
    action:Action<model, action>
   ):Step<model, action> =>
