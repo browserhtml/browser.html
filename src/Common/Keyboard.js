@@ -6,11 +6,6 @@
 
 import * as OS from './OS'
 
-export type kind =
-  | "KeyUp"
-  | "KeyDown"
-  | "KeyPress"
-
 export type BindingTable <Action> =
   { [key:string]: (event:KeyboardEvent) => Action
   }
