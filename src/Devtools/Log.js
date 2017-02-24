@@ -7,11 +7,11 @@ import * as Unknown from '../Common/Unknown'
 
 import type {Address, DOM} from 'reflex'
 
-export type Model <model, action> =
+export type Model <model, action> = // eslint-disable-line no-unused-vars
   { mode: 'raw' | 'json' | 'none'
   }
 
-export type Action <model, action> =
+export type Action <model, action> = // eslint-disable-line no-unused-vars
   | { type: "NoOp" }
   | { type: "Debuggee", debuggee: action }
 
@@ -20,7 +20,7 @@ type Step <model, action> =
    Effects<Action<model, action>>
   ]
 
-export const init = <model, action, flags>
+export const init = <model, action, flags> // eslint-disable-line no-unused-vars
   ():Step<model, action> =>
   ([ { mode:
         (Runtime.env.log === 'json'
