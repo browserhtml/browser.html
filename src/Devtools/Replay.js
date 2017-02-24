@@ -10,7 +10,7 @@ import * as Style from '../Common/Style'
 import type {Address, Never, DOM} from 'reflex'
 import type {Result} from '../Common/Result'
 
-export type Model <model, action> =
+export type Model <model, action> = // eslint-disable-line no-unused-vars
   { snapshotURI: string,
    error: ?Error,
    replayed: boolean
@@ -87,7 +87,7 @@ const loadSnapshot = <model, action>
 
 const fetchSnapshot = <model>
   (uri:string):Task<Never, Result<Error, model>> => new Task(succeed => {
-    const request = new XMLHttpRequest({mozSystem: true})
+    const request = new window.XMLHttpRequest({mozSystem: true})
     request.open('GET',
      uri,
      true
