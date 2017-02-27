@@ -74,7 +74,6 @@
       "src/Browser/Navigators/Navigator/Assistant/Search.js",
       "src/Browser/Navigators/Navigator/Progress.js",
       "src/Browser/Navigators/Navigator/WebView/Navigation.js",
-      "src/Common/Style.js",
       "test/new_tab_test.js"
     ]
   },
