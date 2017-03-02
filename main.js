@@ -23,19 +23,21 @@ const encodeArgsAsQueryString =
         )
       }
     : flag == null  // If there is no flag then skip.
-    ? { flag,
-       query
-      }
+    ? {
+      flag,
+      query
+    }
     : { flag,
-       query:
-        ((query.endsWith(`&${flag}`) || query === flag)
-        ? `${query}=${encodeURIComponent(arg)}`
-        : `${query}&${flag}=${encodeURIComponent(arg)}`
+        query: (
+          (query.endsWith(`&${flag}`) || query === flag)
+          ? `${query}=${encodeURIComponent(arg)}`
+          : `${query}&${flag}=${encodeURIComponent(arg)}`
         )
       }
     ),
-   { flag: null,
-     query: ''
+    {
+      flag: null,
+      query: ''
     }
   )
   .query
@@ -45,15 +47,15 @@ const encodeArgsAsQueryString =
 
 var onReady = function () {
   // Create the browser window.
-  mainWindow = new BrowserWindow({ width: 1024,
-     height: 740,
-     frame: false,
-     webPreferences:
-      { nodeIntegration: true,
-       preload: path.resolve(path.join('.'), 'electron-preload.js')
-      }
+  mainWindow = new BrowserWindow({
+    width: 1024,
+    height: 740,
+    frame: false,
+    webPreferences: {
+      nodeIntegration: true,
+      preload: path.resolve(path.join('.'), 'electron-preload.js')
     }
-  )
+  })
 
   // and load the index.html of the app.
   mainWindow.loadURL(`file://${path.resolve(module.filename, '../dist/index.html')}?${encodeArgsAsQueryString(process.argv.slice(2))}`)

@@ -16,11 +16,11 @@ import type {Address, DOM} from 'reflex'
 
 export type ID = string
 
-export type Model =
-  { id: ID,
-   input: Input.Model,
-   output: Output.Model
-  }
+export type Model = {
+  id: ID,
+  input: Input.Model,
+  output: Output.Model
+}
 
 export type Action =
   | { type: "Remove" }
