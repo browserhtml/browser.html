@@ -11,7 +11,7 @@ import {ok, error} from '../../../../Common/Result'
 import type {ID, EvaluationResult} from '../Host'
 import type {Never} from 'reflex'
 
-const DELETE = 'delete'
+const DELETE = new String('delete')
 const executeWith = (context, execute) => {
   const keys = Object.keys(context)
   const stash =
