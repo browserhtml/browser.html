@@ -100,6 +100,16 @@ const startTransition = <model>
    Effects.perform(Task.requestAnimationFrame().map(Tick))
   ]
 
+export const endTransition = <model>
+  (model:Model<model>
+  ):[Model<model>, Effects<Action>] =>
+  [ new Model(
+      model.state,
+      null
+    ),
+    Effects.perform(Task.requestAnimationFrame().map(Tick))
+  ]
+
 const tickTransitionWith = <model>
   (easing:Easing,
    interpolation:Interpolation<model>,

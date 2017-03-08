@@ -256,6 +256,23 @@ export const Suggest =
     }
   )
 
+export const updateSuggestion =
+  (state:Model, id:string, message:Suggestion.Message):[Model, Effects<Message>] => {
+    const index = state.suggestions.findIndex(item => config.toID(item) === id)
+    if (index > -1) {
+      return swapSuggestion(
+        state,
+        index,
+        Suggestion.update(state.suggestions[index], message)
+      )
+    } else {
+      return [
+        state,
+        Effects.perform(Unknown.warn(`Suggestion with id ${id} does not exist`))
+      ]
+    }
+  }
+
 export const swapSuggestion =
   (state:Model,
    index:number,
