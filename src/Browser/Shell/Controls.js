@@ -89,7 +89,7 @@ const MinimizeButtonAction = compose(action =>
 const ToggleButtonAction = compose(action =>
     (action === Ignore
     ? Ignore
-    : action.type === 'Click'
+    : action.type === 'Toggle'
     ? ToggleWindowFullscreen
     : ({ type: 'ToggleButton',
          source: action

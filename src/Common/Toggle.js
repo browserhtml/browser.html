@@ -137,19 +137,19 @@ export const view =
     key: key,
     className: key,
     style: Style(styleSheet.base,
-       (model.isFocused
+       (model.button.focus.isFocused
         ? styleSheet.focused
         : styleSheet.blured
         ),
-       (model.isDisabled
+       (model.button.control.isDisabled
         ? styleSheet.disabled
         : styleSheet.enabled
         ),
-       (model.isPointerOver
+       (model.button.target.isPointerOver
         ? styleSheet.over
         : styleSheet.out
         ),
-       (model.isActive
+       (model.button.control.isDisabled
         ? styleSheet.active
         : styleSheet.inactive
         ),

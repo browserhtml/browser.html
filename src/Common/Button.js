@@ -37,10 +37,10 @@ export class Model {
   label: string;
   constructor (
     label:string,
-   isActive:boolean,
-   control:Control.Model,
-   target:Target.Model,
-   focus:Focus.Model
+    isActive:boolean,
+    control:Control.Model,
+    target:Target.Model,
+    focus:Focus.Model
   ) {
     this.label = label
     this.isActive = isActive
@@ -219,17 +219,17 @@ export const view =
     key: key,
     className: key,
     style: Style(styleSheet.base,
-       (model.isFocused
+       (model.focus.isFocused
         ? styleSheet.focused
         : styleSheet.blured
         ),
 
-       (model.isDisabled
+       (model.control.isDisabled
         ? styleSheet.disabled
         : styleSheet.enabled
         ),
 
-       (model.isPointerOver
+       (model.target.isPointerOver
         ? styleSheet.over
         : styleSheet.out
         ),
