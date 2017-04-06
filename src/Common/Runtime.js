@@ -90,11 +90,15 @@ export const respond = <message>
 export const send = <message>
   (message:message):Task<Never, void> =>
   new Task(succeed => {
-    window.dispatchEvent(new window.CustomEvent('mozContentEvent', {
-      bubbles: true,
-      cancelable: false,
-      detail: message
-    }))
+    if (global.electron != null) {
+      global.electron.ipcRenderer.send('inbox', message)
+    } else {
+      window.dispatchEvent(new window.CustomEvent('mozContentEvent', {
+        bubbles: true,
+        cancelable: false,
+        detail: message
+      }))
+    }
 
     succeed(void (0))
   })
@@ -127,6 +131,22 @@ export const quit:Task<Never, Result<Error, void>> =
     }
   })
   : send({type: 'shutdown-application'})
+    // We do not actually close a window but rather we shut down an app, there
+    // will be nothing handling a response so we don"t even bother with it.
+    .chain(always(never))
+  )
+
+export const close:Task<Never, Result<Error, void>> =
+  ((isServo || isElectron)
+  ? new Task((succeed, fail) => {
+    try {
+      window.close()
+      succeed(ok(void (0)))
+    } catch (reason) {
+      succeed(error(reason))
+    }
+  })
+  : send({type: 'close-native-window'})
     // We do not actually close a window but rather we shut down an app, there
     // will be nothing handling a response so we don"t even bother with it.
     .chain(always(never))

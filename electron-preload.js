@@ -1,3 +1,4 @@
+window.electron = global.require('electron')
 window.onerror = null
 delete global.__dirname
 delete global.__filename

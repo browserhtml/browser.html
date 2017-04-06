@@ -72,7 +72,7 @@ export type Action =
   | { type: "Reloaded" }
   | { type: "OpenURL", uri: URI }
   | { type: "Close" }
-  | { type: "CloseRuntime" }
+  | { type: "Quit" }
   | { type: "Closed", result: Result<Error, void> }
   // @TODO: Do not use any here.
   | { type: "Modify", modify: ID, action: any }
@@ -344,8 +344,8 @@ export const BlurInput:Action =
   { type: 'BlurInput'
   }
 
-export const CloseRuntime:Action =
-  { type: 'CloseRuntime'
+export const Quit:Action =
+  { type: 'Quit'
   }
 
 // Following Browser actions directly delegate to a `WebViews` module, there for
@@ -425,7 +425,7 @@ const decodeKeyDown = Keyboard.bindings({
   'F12': always(ToggleDevtools),
   'F5': always(ReloadRuntime),
   'meta control r': always(ReloadRuntime),
-  [`${modifier} q`]: always(CloseRuntime),
+  [`${modifier} q`]: always(Quit),
   'meta alt 3': always(PrintSnapshot),
   'meta alt 4': always(PublishSnapshot)
 })
@@ -538,7 +538,7 @@ const close =
    Navigators.Close
   )
 
-const closeRuntime = model =>
+const quit = model =>
   [ model,
    Effects
     .perform(Runtime.quit)
@@ -617,8 +617,8 @@ export const update =
         return resetZoom(model)
       case 'Close':
         return close(model)
-      case 'CloseRuntime':
-        return closeRuntime(model)
+      case 'Quit':
+        return quit(model)
       case 'OpenNewTab':
         return openNewTab(model)
       case 'EditWebView':

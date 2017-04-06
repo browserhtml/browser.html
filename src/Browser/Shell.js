@@ -154,7 +154,7 @@ const closed = (model, result) =>
 const close = model =>
   [ model,
    Effects
-    .perform(Runtime.quit)
+    .perform(Runtime.close)
     .map(Closed)
   ]
 
