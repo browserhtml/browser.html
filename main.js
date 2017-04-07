@@ -54,6 +54,7 @@ var onReady = function () {
     webPreferences: {
       sandbox: false,
       nodeIntegration: true,
+      partition: "persist:main",
       preload: path.resolve(path.join('.'), 'electron-preload.js')
     }
   })
