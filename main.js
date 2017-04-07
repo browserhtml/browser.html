@@ -1,6 +1,6 @@
 /* @noflow */
 
-const {app, BrowserWindow, ipcMain} = require('electron')
+const {app, BrowserWindow, ipcMain, nativeImage} = require('electron')
 const path = require('path')
 
 var mainWindow = null
@@ -54,7 +54,7 @@ var onReady = function () {
     webPreferences: {
       sandbox: false,
       nodeIntegration: true,
-      partition: "persist:main",
+      partition: 'persist:main',
       preload: path.resolve(path.join('.'), 'electron-preload.js')
     }
   })
@@ -86,6 +86,8 @@ var onReady = function () {
     mainWindow = null
   })
 }
+
+app.dock.setIcon(nativeImage.createFromPath('./images/icon.png'))
 
 app.on('window-all-closed', onQuit)
 app.on('ready', onReady)
