@@ -113,6 +113,7 @@ export type Action =
 
   // Wheel events
   | { type: "VerticalSwipe", deltaY: number }
+  | { type: "ShowHeader" }
 
 const SubmitInput = { type: 'SubmitInput' }
 const EscapeInput = { type: 'EscapeInput' }
@@ -269,6 +270,15 @@ const SetSelectedInputValue =
     }
   )
 
+class Top {
+  header:number
+  content:number
+  constructor(header:number, content:number) {
+    this.header = header
+    this.content = content
+  }
+}
+
 export class Model {
 
   isSelected: boolean;
@@ -281,7 +291,7 @@ export class Model {
   assistant: Assistant.Model;
   progress: Progress.Model;
   animation: Animation.Model<Display.Model>;
-  top: number;
+  top: Top;
 
   constructor (
     isSelected:boolean,
@@ -294,7 +304,7 @@ export class Model {
    overlay:Overlay.Model,
    progress:Progress.Model,
    animation:Animation.Model<Display.Model>,
-   top: number
+   top: Top
   ) {
     this.isSelected = isSelected
     this.isClosed = isClosed
@@ -363,7 +373,7 @@ export const init =
     ? Display.selected
     : Display.deselected
     ),
-  0
+  new Top(0, 0)
   )
 
 export const update =
@@ -466,7 +476,9 @@ export const update =
         return endAnimation(model)
 
       case 'VerticalSwipe':
-        return nofx(updateTop(model, model.top - action.deltaY))
+        return nofx(updateTop(model, action.deltaY, action.deltaY))
+      case 'ShowHeader':
+        return nofx(showHeader(model))
 
       default:
         return Unknown.update(model, action)
@@ -818,18 +830,34 @@ const animate =
    action
   )
 
-const updateTop = (model, top) =>
+const updateTop = (model, deltaY) => {
+  const header = Math.min(0, Math.max(-27, model.top.header - deltaY))
+  const content = Math.min(0, Math.max(-27, model.top.content - deltaY))
+  return new Model(model.isSelected,
+                    model.isClosed,
+                    model.isPinned,
+                    model.isInputEmbedded,
+                    model.input,
+                    model.output,
+                    model.assistant,
+                    model.overlay,
+                    model.progress,
+                    model.animation,
+                    new Top(header, content))
+}
+
+const showHeader = model =>
   new Model(model.isSelected,
-          model.isClosed,
-          model.isPinned,
-          model.isInputEmbedded,
-          model.input,
-          model.output,
-          model.assistant,
-          model.overlay,
-          model.progress,
-          model.animation,
-          Math.min(0, Math.max(-27, top)))
+            model.isClosed,
+            model.isPinned,
+            model.isInputEmbedded,
+            model.input,
+            model.output,
+            model.assistant,
+            model.overlay,
+            model.progress,
+            model.animation,
+            new Top(0, model.top.content))
 
 const updateAnimation = cursor({ get: model => model.animation,
      set:
@@ -895,10 +923,7 @@ export const render =
         ? model.animation.state
         : null
         ),
-       styleBackground(model.output),
-       {
-         top: `${model.top}px`
-       }
+       styleBackground(model.output)
       ),
     onWheel: ({deltaY, deltaX}) => {
       const {top} = model
@@ -906,12 +931,12 @@ export const render =
       if (isVertical) {
         const isUp = deltaY > 0
         if (isUp) {
-          if (top > -27) {
+          if (top.content > -27 || top.header > -27) {
             event.preventDefault()
             address({ type: "VerticalSwipe", deltaY })
           }
         } else {
-          if (top < 0) {
+          if (top.content < 0 || top.header < 0) {
             event.preventDefault()
             address({ type: "VerticalSwipe", deltaY })
           }
@@ -919,16 +944,38 @@ export const render =
       }
     }
   }, [
-    Output.view(model.isSelected, model.output, forward(address, tagOutput)),
-    Overlay.view(model.overlay, forward(address, tagOverlay)),
-    Assistant.view(model.assistant, forward(address, tagAssistant)),
-    Header.view(canGoBack(model.output), forward(address, tagHeader)),
-    Title.view(model.input.isVisible,
-      readTitle(model.output, 'Untitled'),
-      isSecure(model.output),
-      forward(address, tagTitle)),
-    Progress.view(model.progress, forward(address, tagProgress)),
-    Input.view(model.input, forward(address, tagInput))
+    html.div({
+      className: 'content',
+      style: {
+        top: `${model.top.content}px`,
+        position: 'absolute',
+        width: '100%',
+        height: '100%'
+      }
+    }, [
+      Output.view(model.isSelected, model.output, forward(address, tagOutput))
+    ]),
+    html.div({
+      className: 'ui',
+      onMouseOver: event => address({ type: "ShowHeader" }),
+      style: {
+        top: `${model.top.header}px`,
+        height: '27px',
+        position: 'absolute',
+        width: '100%',
+        backgroundColor: 'inherit'
+      }
+    }, [
+      Overlay.view(model.overlay, forward(address, tagOverlay)),
+      Assistant.view(model.assistant, forward(address, tagAssistant)),
+      Header.view(canGoBack(model.output), forward(address, tagHeader)),
+      Title.view(model.input.isVisible,
+        readTitle(model.output, 'Untitled'),
+        isSecure(model.output),
+        forward(address, tagTitle)),
+      Progress.view(model.progress, forward(address, tagProgress)),
+      Input.view(model.input, forward(address, tagInput))
+    ])
   ])
 
 export const view =
@@ -941,7 +988,7 @@ export const view =
 
 const styleSheet = Style.createSheet({ base:
       { width: '100%',
-       height: 'calc(100% + 27px)',
+       height: '100%',
        position: 'absolute',
        top: 0,
        left: 0,

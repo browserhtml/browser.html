@@ -424,7 +424,7 @@ const styleSheet = StyleSheet.create({
     top: topBarHeight,
     left: 0,
     width: '100%',
-    height: `calc(100% - ${topBarHeight})`,
+    height: `100%`,
     mozUserSelect: 'none', // necessary to pass text drag to iframe's content
     borderWidth: 0,
     backgroundColor: 'white',
