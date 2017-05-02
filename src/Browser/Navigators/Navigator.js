@@ -111,6 +111,9 @@ export type Action =
   | { type: "Animation", animation: Animation.Action }
   | { type: "AnimationEnd" }
 
+  // Wheel events
+  | { type: "VerticalSwipe", deltaY: number }
+
 const SubmitInput = { type: 'SubmitInput' }
 const EscapeInput = { type: 'EscapeInput' }
 const ActivateInput = { type: 'ActivateInput' }
@@ -278,6 +281,7 @@ export class Model {
   assistant: Assistant.Model;
   progress: Progress.Model;
   animation: Animation.Model<Display.Model>;
+  top: number;
 
   constructor (
     isSelected:boolean,
@@ -289,7 +293,8 @@ export class Model {
    assistant:Assistant.Model,
    overlay:Overlay.Model,
    progress:Progress.Model,
-   animation:Animation.Model<Display.Model>
+   animation:Animation.Model<Display.Model>,
+   top: number
   ) {
     this.isSelected = isSelected
     this.isClosed = isClosed
@@ -301,6 +306,7 @@ export class Model {
     this.overlay = overlay
     this.progress = progress
     this.animation = animation
+    this.top = top
   }
 }
 
@@ -314,7 +320,8 @@ const assemble =
    [assistant, $assistant],
    [overlay, $overlay],
    [progress, $progress],
-   [animation, $animation]
+   [animation, $animation],
+   top
   ) => {
     const model = new Model(isSelected,
        isClosed,
@@ -325,7 +332,8 @@ const assemble =
        assistant,
        overlay,
        progress,
-       animation
+       animation,
+       top
       )
 
     const fx = Effects.batch([ $input.map(tagInput),
@@ -354,7 +362,8 @@ export const init =
    Animation.init(options.output.disposition !== 'background-tab'
     ? Display.selected
     : Display.deselected
-    )
+    ),
+  0
   )
 
 export const update =
@@ -455,6 +464,9 @@ export const update =
         return updateAnimation(model, action.animation)
       case 'AnimationEnd':
         return endAnimation(model)
+
+      case 'VerticalSwipe':
+        return nofx(updateTop(model, model.top - action.deltaY))
 
       default:
         return Unknown.update(model, action)
@@ -643,7 +655,8 @@ const updateLoadProgress =
      source.assistant,
      source.overlay,
      progress,
-     source.animation
+     source.animation,
+     source.top
     )
     const fx = Effects.batch([ output$.map(tagOutput),
        progress$.map(tagProgress)
@@ -709,7 +722,8 @@ const updateInput = cursor({ get: model => model.input,
        model.assistant,
        model.overlay,
        model.progress,
-       model.animation
+       model.animation,
+       model.top
       ),
      update: Input.update,
      tag: tagInput
@@ -728,7 +742,8 @@ const updateOutput = cursor({ get: model => model.output,
        model.assistant,
        model.overlay,
        model.progress,
-       model.animation
+       model.animation,
+       model.top
       ),
      update: Output.update,
      tag: tagOutput
@@ -747,7 +762,8 @@ const updateProgress = cursor({ get: model => model.progress,
        model.assistant,
        model.overlay,
        progress,
-       model.animation
+       model.animation,
+       model.top
       ),
      update: Progress.update,
      tag: tagProgress
@@ -766,7 +782,8 @@ const updateAssistant = cursor({ get: model => model.assistant,
        assistant,
        model.overlay,
        model.progress,
-       model.animation
+       model.animation,
+       model.top
       ),
      update: Assistant.update,
      tag: tagAssistant
@@ -785,7 +802,8 @@ const updateOverlay = cursor({ get: model => model.overlay,
        model.assistant,
        overlay,
        model.progress,
-       model.animation
+       model.animation,
+       model.top
       ),
      update: Overlay.update,
      tag: tagOverlay
@@ -800,6 +818,19 @@ const animate =
    action
   )
 
+const updateTop = (model, top) =>
+  new Model(model.isSelected,
+          model.isClosed,
+          model.isPinned,
+          model.isInputEmbedded,
+          model.input,
+          model.output,
+          model.assistant,
+          model.overlay,
+          model.progress,
+          model.animation,
+          Math.min(0, Math.max(-27, top)))
+
 const updateAnimation = cursor({ get: model => model.animation,
      set:
       (model, animation) =>
@@ -812,7 +843,8 @@ const updateAnimation = cursor({ get: model => model.animation,
          model.assistant,
          model.overlay,
          model.progress,
-         animation
+         animation,
+         model.top
         ),
      tag: tagAnimation,
      update: animate
@@ -830,7 +862,8 @@ const startAnimation =
      model.assistant,
      model.overlay,
      model.progress,
-     animation
+     animation,
+     model.top
     ),
    fx.map(tagAnimation)
   ]
@@ -846,9 +879,10 @@ const endAnimation =
 
 export const render =
   (model:Model, address:Address<Action>):DOM =>
-  html.dialog({ className: `navigator ${mode(model.output)}`,
-     open: true,
-     style: Style.mix(styleSheet.base,
+  html.dialog({
+    className: `navigator ${mode(model.output)}`,
+    open: true,
+    style: Style.mix(styleSheet.base,
        (isDark(model.output)
         ? styleSheet.dark
         : styleSheet.bright
@@ -861,24 +895,41 @@ export const render =
         ? model.animation.state
         : null
         ),
-       styleBackground(model.output)
-      )
-    },
-   [ Output.view(model.isSelected, model.output, forward(address, tagOutput)),
-     Overlay.view(model.overlay, forward(address, tagOverlay)),
-     Assistant.view(model.assistant, forward(address, tagAssistant)),
-     Header.view(canGoBack(model.output),
-       forward(address, tagHeader)
+       styleBackground(model.output),
+       {
+         top: `${model.top}px`
+       }
       ),
-     Title.view(model.input.isVisible,
-       readTitle(model.output, 'Untitled'),
-       isSecure(model.output),
-       forward(address, tagTitle)
-      ),
-     Progress.view(model.progress, forward(address, tagProgress)),
-     Input.view(model.input, forward(address, tagInput))
-    ]
-  )
+    onWheel: ({deltaY, deltaX}) => {
+      const {top} = model
+      const isVertical = Math.abs(deltaY) > Math.abs(deltaX)
+      if (isVertical) {
+        const isUp = deltaY > 0
+        if (isUp) {
+          if (top > -27) {
+            event.preventDefault()
+            address({ type: "VerticalSwipe", deltaY })
+          }
+        } else {
+          if (top < 0) {
+            event.preventDefault()
+            address({ type: "VerticalSwipe", deltaY })
+          }
+        }
+      }
+    }
+  }, [
+    Output.view(model.isSelected, model.output, forward(address, tagOutput)),
+    Overlay.view(model.overlay, forward(address, tagOverlay)),
+    Assistant.view(model.assistant, forward(address, tagAssistant)),
+    Header.view(canGoBack(model.output), forward(address, tagHeader)),
+    Title.view(model.input.isVisible,
+      readTitle(model.output, 'Untitled'),
+      isSecure(model.output),
+      forward(address, tagTitle)),
+    Progress.view(model.progress, forward(address, tagProgress)),
+    Input.view(model.input, forward(address, tagInput))
+  ])
 
 export const view =
   (model:Model, address:Address<Action>):DOM =>
@@ -890,7 +941,7 @@ export const view =
 
 const styleSheet = Style.createSheet({ base:
       { width: '100%',
-       height: '100%',
+       height: 'calc(100% + 27px)',
        position: 'absolute',
        top: 0,
        left: 0,
