@@ -273,7 +273,7 @@ const SetSelectedInputValue =
 class Top {
   header:number
   content:number
-  constructor(header:number, content:number) {
+  constructor (header:number, content:number) {
     this.header = header
     this.content = content
   }
@@ -925,7 +925,8 @@ export const render =
         ),
        styleBackground(model.output)
       ),
-    onWheel: ({deltaY, deltaX}) => {
+    onWheel: (event) => {
+      const {deltaY, deltaX} = event
       const {top} = model
       const isVertical = Math.abs(deltaY) > Math.abs(deltaX)
       if (isVertical) {
@@ -933,12 +934,12 @@ export const render =
         if (isUp) {
           if (top.content > -27 || top.header > -27) {
             event.preventDefault()
-            address({ type: "VerticalSwipe", deltaY })
+            address({ type: 'VerticalSwipe', deltaY })
           }
         } else {
           if (top.content < 0 || top.header < 0) {
             event.preventDefault()
-            address({ type: "VerticalSwipe", deltaY })
+            address({ type: 'VerticalSwipe', deltaY })
           }
         }
       }
@@ -956,8 +957,19 @@ export const render =
       Output.view(model.isSelected, model.output, forward(address, tagOutput))
     ]),
     html.div({
+      className: 'hotzone',
+      onMouseEnter: event => address({ type: 'ShowHeader' }),
+      style: {
+        top: '0px',
+        height: '50px',
+        width: '100%',
+        position: 'absoulte',
+        opacity: '0',
+        pointerEvents: model.top.header === -27 ? 'all' : 'none'
+      }
+    }, []),
+    html.div({
       className: 'ui',
-      onMouseOver: event => address({ type: "ShowHeader" }),
       style: {
         top: `${model.top.header}px`,
         height: '27px',
