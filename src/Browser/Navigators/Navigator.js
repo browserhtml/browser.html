@@ -1010,7 +1010,9 @@ const styleSheet = Style.createSheet({ base:
        borderRadius: Runtime.useNativeTitlebar() ? '0' : '4px',
        transitionProperty: 'background-color, color, border-color',
        transitionTimingFunction: 'ease-in, ease-out, ease',
-       transitionDuration: '300ms'
+       transitionDuration: '300ms',
+       MozWindowDragging: 'drag',
+       WebkitAppRegion: 'drag'
       },
      selected:
       { zIndex: 2
