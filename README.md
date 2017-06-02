@@ -2,12 +2,12 @@
 
 # Browser.html
 
-*Browser.html* is a research project aimed at building an experimental [Servo](https://github.com/servo/servo) browser in HTML. This project has 2 major pieces:
+*Browser.html* is a research project aimed at building an experimental [Servo][] browser in HTML. This project has 2 major pieces:
 
 - _Graphene_: a runtime for building native apps in HTML. It's currently in development and part of Servo.
 - _Browser.html_: an experimental browser UI for desktop.
 
-This repository is for Browser.html (the front-end). Active development of Graphene happens in the [Servo](https://github.com/servo/servo) repository. Questions? Check out the [FAQ](https://github.com/browserhtml/browserhtml/wiki/FAQ).
+This repository is for Browser.html (the front-end). Active development of Graphene happens in the [Servo][] repository. Questions? Check out the [FAQ](https://github.com/browserhtml/browserhtml/wiki/FAQ).
 
 ![browser](./browser.gif)
 
@@ -48,7 +48,7 @@ npm run live-server
 
 ### Client
 
-In order to run the browser.html application itself, you will need a client component. This would be a Servo binary with the Graphene runtime. You can either [download][servo download] pre-built nightly snapshots or [build it yourself][build servo] and run with the `--browserhtml` flag. Assuming you have a pre-built snapshot in the default location on a Mac you can run the browser.html application with the following command:
+In order to run the browser.html application itself, you will need a client component. This would be a Servo binary with the Graphene runtime. You can either [download][download servo] pre-built nightly snapshots or [build it yourself][build servo] and run with the `--browserhtml` flag. Assuming you have a pre-built snapshot in the default location on a Mac you can run the browser.html application with the following command:
 
 
 ``` sh
@@ -57,7 +57,7 @@ In order to run the browser.html application itself, you will need a client comp
 
 ### Gecko Client
 
-Browser.html can also be run on top of a Gecko-based version of Graphene. We used to use this variant to test and debug features that were not yet in Servo. You can either [download][dowload gecko] pre-built nightly snapshots or [build it yourself][build gecko][]. Assuming you have a pre-built snapshot in default location on a Mac you can run the browser.html application with the following command:
+Browser.html can also be run on top of a Gecko-based version of Graphene. We used to use this variant to test and debug features that were not yet in Servo. You can either [download][download gecko] pre-built nightly snapshots or [build it yourself][build gecko]. Assuming you have a pre-built snapshot in default location on a Mac you can run the browser.html application with the following command:
 
 ```sh
 /Applications/B2G.app/Contents/MacOS/b2g-bin --start-manifest=http://localhost:6060/manifest.webapp --profile ./.profile
@@ -65,7 +65,7 @@ Browser.html can also be run on top of a Gecko-based version of Graphene. We use
 
 ### Electron Client
 
-Browser.html can also run as an [Electron][] application. Assuming you have `electron` installed you can run browser.html application with the following command (must be run from the project root):
+Browser.html can also run as an [Electron][] application. Assuming you have `electron` installed you can run the browser.html application with the following command (must be run from the project root):
 
 ```sh
 electron .
@@ -76,10 +76,11 @@ electron .
 You can also just load http://localhost:6060/ in your favourite web browser, but be aware that many features with not work because they require APIs not available to web content.
 
 
-[download servo]:https://download.servo.org/
-[Node.js]:(https://nodejs.org/)
-[npm]:https://www.npmjs.com/
+[build gecko]:https://github.com/browserhtml/browserhtml/wiki/Building-Graphene-%28Gecko-flavor%29
 [build servo]:https://github.com/servo/servo/blob/master/docs/HACKING_QUICKSTART.md
 [download gecko]:https://ftp.mozilla.org/pub/b2g/nightly/latest-mozilla-central/
+[download servo]:https://download.servo.org/
 [Electron]:https://electron.atom.io/
-[build gecko]:https://github.com/browserhtml/browserhtml/wiki/Building-Graphene-%28Gecko-flavor%29
+[Node.js]:https://nodejs.org/
+[npm]:https://www.npmjs.com/
+[Servo]:https://github.com/servo/servo
