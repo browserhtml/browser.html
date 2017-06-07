@@ -20,7 +20,7 @@
     , "src": "./Tiles/duckduckgo.com.png"
     }
   , "1":
-    { "title": "Github"
+    { "title": "GitHub"
     , "uri": "https://github.com"
     , "src": "./Tiles/github.com.png"
     }
@@ -30,7 +30,7 @@
     , "src": "./Tiles/wikipedia.org.png"
     }
   , "3":
-    { "title": "arstechnica"
+    { "title": "Ars Technica"
     , "uri": "http://arstechnica.com"
     , "src": "./Tiles/arstechnica.com.png"
     }
