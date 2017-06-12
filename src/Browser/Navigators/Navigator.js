@@ -115,6 +115,7 @@ export type Action =
   | { type: "VerticalSwipe", deltaY: number }
   | { type: "ShowHeader" }
 
+const ShowHeader = { type: 'ShowHeader' }
 const SubmitInput = { type: 'SubmitInput' }
 const EscapeInput = { type: 'EscapeInput' }
 const ActivateInput = { type: 'ActivateInput' }
@@ -616,15 +617,17 @@ const activateInput =
   (model.isInputEmbedded
   ? batch(update,
      model,
-     [ FocusInput,
+     [ ShowHeader,
+       FocusInput,
        ActivateAssistant
       ]
     )
   : batch(update,
      model,
-     [ FocusInput,
+     [ ShowHeader,
+       FocusInput,
        ActivateAssistant,
-       ShowOverlay
+       ShowOverlay,
       ]
     )
   )
@@ -924,26 +927,7 @@ export const render =
         : null
         ),
        styleBackground(model.output)
-      ),
-    onWheel: (event) => {
-      const {deltaY, deltaX} = event
-      const {top} = model
-      const isVertical = Math.abs(deltaY) > Math.abs(deltaX)
-      if (isVertical) {
-        const isUp = deltaY > 0
-        if (isUp) {
-          if (top.content > -27 || top.header > -27) {
-            event.preventDefault()
-            address({ type: 'VerticalSwipe', deltaY })
-          }
-        } else {
-          if (top.content < 0 || top.header < 0) {
-            event.preventDefault()
-            address({ type: 'VerticalSwipe', deltaY })
-          }
-        }
-      }
-    }
+      )
   }, [
     html.div({
       className: 'content',
@@ -952,22 +936,43 @@ export const render =
         position: 'absolute',
         width: '100%',
         height: '100%'
+      },
+      onWheel: (event) => {
+        const {deltaY, deltaX} = event
+        const {top} = model
+        const isVertical = Math.abs(deltaY) > Math.abs(deltaX)
+        if (isVertical) {
+          const isUp = deltaY > 0
+          if (isUp) {
+            if (top.content > -27 || top.header > -27) {
+              event.preventDefault()
+              address({ type: 'VerticalSwipe', deltaY })
+            }
+          } else {
+            if (top.content < 0 || top.header < 0) {
+              event.preventDefault()
+              address({ type: 'VerticalSwipe', deltaY })
+            }
+          }
+        }
       }
     }, [
       Output.view(model.isSelected, model.output, forward(address, tagOutput))
     ]),
     html.div({
       className: 'hotzone',
-      onMouseEnter: event => address({ type: 'ShowHeader' }),
+      onMouseEnter: event => address(ShowHeader),
       style: {
         top: '0px',
         height: '50px',
         width: '100%',
-        position: 'absoulte',
+        position: 'absolute',
         opacity: '0',
         pointerEvents: model.top.header === -27 ? 'all' : 'none'
       }
     }, []),
+    Overlay.view(model.overlay, forward(address, tagOverlay)),
+    Assistant.view(model.assistant, forward(address, tagAssistant)),
     html.div({
       className: 'ui',
       style: {
@@ -978,16 +983,14 @@ export const render =
         backgroundColor: 'inherit'
       }
     }, [
-      Overlay.view(model.overlay, forward(address, tagOverlay)),
-      Assistant.view(model.assistant, forward(address, tagAssistant)),
       Header.view(canGoBack(model.output), forward(address, tagHeader)),
       Title.view(model.input.isVisible,
         readTitle(model.output, 'Untitled'),
         isSecure(model.output),
         forward(address, tagTitle)),
       Progress.view(model.progress, forward(address, tagProgress)),
-      Input.view(model.input, forward(address, tagInput))
-    ])
+    ]),
+    Input.view(model.input, forward(address, tagInput))
   ])
 
 export const view =
@@ -1000,7 +1003,7 @@ export const view =
 
 const styleSheet = Style.createSheet({ base:
       { width: '100%',
-       height: '100%',
+       height: '100vh',
        position: 'absolute',
        top: 0,
        left: 0,
