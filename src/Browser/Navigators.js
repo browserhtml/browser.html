@@ -6,7 +6,7 @@ import * as Unknown from '../Common/Unknown'
 import * as Display from './Navigators/Display'
 import {Effects, html, forward, thunk} from 'reflex'
 import {cursor} from '../Common/Cursor'
-import {always, nofx} from '../Common/Prelude'
+import {always, nofx, batch} from '../Common/Prelude'
 import * as Style from '../Common/Style'
 import * as Easing from 'eased'
 import * as Overlay from './Navigators/Overlay'
@@ -20,6 +20,8 @@ import type {Report} from './IssueReporter'
 
 export type Action =
   | { type: "Expose" }
+  | { type: "ExposeAnimation" }
+  | { type: "ShowHeader" }
   | { type: "Focus" }
   | { type: "Shrink" }
   | { type: "Expand" }
@@ -42,6 +44,8 @@ export type Action =
   | { type: "Deck", deck: Deck.Action<Navigator.Action, Navigator.Options> }
 
 export const Expose = { type: 'Expose' }
+const ExposeAnimation = { type: 'ExposeAnimation' }
+const ShowHeader = { type: 'ShowHeader' }
 export const Focus = { type: 'Focus' }
 export const Expand = { type: 'Expand' }
 export const Shrink = { type: 'Shrink' }
@@ -238,6 +242,10 @@ export const update =
         return focus(model)
       case 'Expose':
         return expose(model)
+      case 'ExposeAnimation':
+        return exposeAnimation(model)
+      case 'ShowHeader':
+        return showHeader(model)
       case 'Shrink':
         return shrink(model)
       case 'Expand':
@@ -368,6 +376,17 @@ const focus =
   )
 
 const expose =
+  model =>
+  batch(update, model, [
+    ShowHeader,
+    ExposeAnimation
+  ])
+
+const showHeader =
+  model =>
+  updateSelected(model, Navigator.ShowHeader)
+
+const exposeAnimation =
   (model) =>
   (model.zoom
   ? startAnimation(false,

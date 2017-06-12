@@ -115,7 +115,7 @@ export type Action =
   | { type: "VerticalSwipe", deltaY: number }
   | { type: "ShowHeader" }
 
-const ShowHeader = { type: 'ShowHeader' }
+export const ShowHeader = { type: 'ShowHeader' }
 const SubmitInput = { type: 'SubmitInput' }
 const EscapeInput = { type: 'EscapeInput' }
 const ActivateInput = { type: 'ActivateInput' }
@@ -130,7 +130,7 @@ export const ZoomOut = { type: 'ZoomOut' }
 export const ZoomIn = { type: 'ZoomIn' }
 export const ResetZoom = { type: 'ResetZoom' }
 
-const ShowTabs = { type: 'ShowTabs' }
+export const ShowTabs = { type: 'ShowTabs' }
 const OpenNewTab = { type: 'OpenNewTab' }
 export const EditInput = { type: 'EditInput' }
 const ActivateOutput = { type: 'ActivateOutput' }
