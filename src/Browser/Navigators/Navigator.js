@@ -937,7 +937,7 @@ export const render =
         width: '100%',
         height: '100%'
       },
-      onWheel: (event) => {
+      onWheel: model.isInputEmbedded ? null : (event) => {
         const {deltaY, deltaX} = event
         const {top} = model
         const isVertical = Math.abs(deltaY) > Math.abs(deltaX)
