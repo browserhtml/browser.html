@@ -421,7 +421,11 @@ const topBarHeight = '27px'
 const styleSheet = StyleSheet.create({
   base: {
     position: 'absolute',
-    top: topBarHeight,
+    // Note: We use `borderTop` instead of top or translateY because on
+    // `webview.focus()` engine scrolls viewport such that top of the element
+    // is at the top of the viewport. By using invisible border we avoid this
+    // problem as top of the `webview` is going to be the top of the border.
+    borderTop: `${topBarHeight} solid transparent`,
     left: 0,
     width: '100%',
     height: `100%`,
