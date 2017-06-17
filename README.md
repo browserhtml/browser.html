@@ -73,7 +73,7 @@ electron .
 
 ### Browser Client
 
-You can also just load http://localhost:6060/ in your favourite web browser, but be aware that many features with not work because they require APIs not available to web content.
+You can also just load http://localhost:6060/ in your favourite web browser, but be aware that many features will not work because they require APIs not available to web content.
 
 
 [build gecko]:https://github.com/browserhtml/browserhtml/wiki/Building-Graphene-%28Gecko-flavor%29
