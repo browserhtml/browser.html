@@ -257,19 +257,19 @@ const frameStyleSheet = Style.createSheet({ mozbrowser:
 const visibility = (element:HTMLElement, visible:boolean) =>
   new Task((succeed, fail) => {
     if (typeof (element.setVisible) === 'function') {
-      let isConnectedToDom = false;
+      let isConnectedToDom = false
 
-      for(let p=element; p!=null; p=p.parentNode) {
-        if(p == document) {
-          isConnectedToDom = true;
-          break;
+      for (let p=element; p!=null; p=p.parentNode) {
+        if (p === document) {
+          isConnectedToDom = true
+          break
         }
       }
 
-      //Make sure the element is in the DOM tree.
-      //Otherwise, element.setVisible() does not work.
-      if(isConnectedToDom) {
-        element.setVisible(visible);
+      // Make sure the element is in the DOM tree.
+      // Otherwise, element.setVisible() does not work.
+      if (isConnectedToDom) {
+        element.setVisible(visible)
       }
     }
   })
