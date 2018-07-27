@@ -111,6 +111,11 @@ export type Action =
   | { type: "Animation", animation: Animation.Action }
   | { type: "AnimationEnd" }
 
+  // Wheel events
+  | { type: "VerticalSwipe", deltaY: number }
+  | { type: "ShowHeader" }
+
+export const ShowHeader = { type: 'ShowHeader' }
 const SubmitInput = { type: 'SubmitInput' }
 const EscapeInput = { type: 'EscapeInput' }
 const ActivateInput = { type: 'ActivateInput' }
@@ -125,7 +130,7 @@ export const ZoomOut = { type: 'ZoomOut' }
 export const ZoomIn = { type: 'ZoomIn' }
 export const ResetZoom = { type: 'ResetZoom' }
 
-const ShowTabs = { type: 'ShowTabs' }
+export const ShowTabs = { type: 'ShowTabs' }
 const OpenNewTab = { type: 'OpenNewTab' }
 export const EditInput = { type: 'EditInput' }
 const ActivateOutput = { type: 'ActivateOutput' }
@@ -266,6 +271,15 @@ const SetSelectedInputValue =
     }
   )
 
+class Top {
+  header:number
+  content:number
+  constructor (header:number, content:number) {
+    this.header = header
+    this.content = content
+  }
+}
+
 export class Model {
 
   isSelected: boolean;
@@ -278,6 +292,7 @@ export class Model {
   assistant: Assistant.Model;
   progress: Progress.Model;
   animation: Animation.Model<Display.Model>;
+  top: Top;
 
   constructor (
     isSelected:boolean,
@@ -289,7 +304,8 @@ export class Model {
    assistant:Assistant.Model,
    overlay:Overlay.Model,
    progress:Progress.Model,
-   animation:Animation.Model<Display.Model>
+   animation:Animation.Model<Display.Model>,
+   top: Top
   ) {
     this.isSelected = isSelected
     this.isClosed = isClosed
@@ -301,6 +317,7 @@ export class Model {
     this.overlay = overlay
     this.progress = progress
     this.animation = animation
+    this.top = top
   }
 }
 
@@ -314,7 +331,8 @@ const assemble =
    [assistant, $assistant],
    [overlay, $overlay],
    [progress, $progress],
-   [animation, $animation]
+   [animation, $animation],
+   top
   ) => {
     const model = new Model(isSelected,
        isClosed,
@@ -325,7 +343,8 @@ const assemble =
        assistant,
        overlay,
        progress,
-       animation
+       animation,
+       top
       )
 
     const fx = Effects.batch([ $input.map(tagInput),
@@ -354,7 +373,8 @@ export const init =
    Animation.init(options.output.disposition !== 'background-tab'
     ? Display.selected
     : Display.deselected
-    )
+    ),
+  new Top(0, 0)
   )
 
 export const update =
@@ -455,6 +475,11 @@ export const update =
         return updateAnimation(model, action.animation)
       case 'AnimationEnd':
         return endAnimation(model)
+
+      case 'VerticalSwipe':
+        return nofx(updateTop(model, action.deltaY, action.deltaY))
+      case 'ShowHeader':
+        return nofx(showHeader(model))
 
       default:
         return Unknown.update(model, action)
@@ -592,15 +617,17 @@ const activateInput =
   (model.isInputEmbedded
   ? batch(update,
      model,
-     [ FocusInput,
+     [ ShowHeader,
+       FocusInput,
        ActivateAssistant
       ]
     )
   : batch(update,
      model,
-     [ FocusInput,
+     [ ShowHeader,
+       FocusInput,
        ActivateAssistant,
-       ShowOverlay
+       ShowOverlay,
       ]
     )
   )
@@ -643,7 +670,8 @@ const updateLoadProgress =
      source.assistant,
      source.overlay,
      progress,
-     source.animation
+     source.animation,
+     source.top
     )
     const fx = Effects.batch([ output$.map(tagOutput),
        progress$.map(tagProgress)
@@ -709,7 +737,8 @@ const updateInput = cursor({ get: model => model.input,
        model.assistant,
        model.overlay,
        model.progress,
-       model.animation
+       model.animation,
+       model.top
       ),
      update: Input.update,
      tag: tagInput
@@ -728,7 +757,8 @@ const updateOutput = cursor({ get: model => model.output,
        model.assistant,
        model.overlay,
        model.progress,
-       model.animation
+       model.animation,
+       model.top
       ),
      update: Output.update,
      tag: tagOutput
@@ -747,7 +777,8 @@ const updateProgress = cursor({ get: model => model.progress,
        model.assistant,
        model.overlay,
        progress,
-       model.animation
+       model.animation,
+       model.top
       ),
      update: Progress.update,
      tag: tagProgress
@@ -766,7 +797,8 @@ const updateAssistant = cursor({ get: model => model.assistant,
        assistant,
        model.overlay,
        model.progress,
-       model.animation
+       model.animation,
+       model.top
       ),
      update: Assistant.update,
      tag: tagAssistant
@@ -785,7 +817,8 @@ const updateOverlay = cursor({ get: model => model.overlay,
        model.assistant,
        overlay,
        model.progress,
-       model.animation
+       model.animation,
+       model.top
       ),
      update: Overlay.update,
      tag: tagOverlay
@@ -800,6 +833,35 @@ const animate =
    action
   )
 
+const updateTop = (model, deltaY) => {
+  const header = Math.min(0, Math.max(-27, model.top.header - deltaY))
+  const content = Math.min(0, Math.max(-27, model.top.content - deltaY))
+  return new Model(model.isSelected,
+                    model.isClosed,
+                    model.isPinned,
+                    model.isInputEmbedded,
+                    model.input,
+                    model.output,
+                    model.assistant,
+                    model.overlay,
+                    model.progress,
+                    model.animation,
+                    new Top(header, content))
+}
+
+const showHeader = model =>
+  new Model(model.isSelected,
+            model.isClosed,
+            model.isPinned,
+            model.isInputEmbedded,
+            model.input,
+            model.output,
+            model.assistant,
+            model.overlay,
+            model.progress,
+            model.animation,
+            new Top(0, model.top.content))
+
 const updateAnimation = cursor({ get: model => model.animation,
      set:
       (model, animation) =>
@@ -812,7 +874,8 @@ const updateAnimation = cursor({ get: model => model.animation,
          model.assistant,
          model.overlay,
          model.progress,
-         animation
+         animation,
+         model.top
         ),
      tag: tagAnimation,
      update: animate
@@ -830,7 +893,8 @@ const startAnimation =
      model.assistant,
      model.overlay,
      model.progress,
-     animation
+     animation,
+     model.top
     ),
    fx.map(tagAnimation)
   ]
@@ -846,9 +910,10 @@ const endAnimation =
 
 export const render =
   (model:Model, address:Address<Action>):DOM =>
-  html.dialog({ className: `navigator ${mode(model.output)}`,
-     open: true,
-     style: Style.mix(styleSheet.base,
+  html.dialog({
+    className: `navigator ${mode(model.output)}`,
+    open: true,
+    style: Style.mix(styleSheet.base,
        (isDark(model.output)
         ? styleSheet.dark
         : styleSheet.bright
@@ -863,22 +928,70 @@ export const render =
         ),
        styleBackground(model.output)
       )
-    },
-   [ Output.view(model.isSelected, model.output, forward(address, tagOutput)),
-     Overlay.view(model.overlay, forward(address, tagOverlay)),
-     Assistant.view(model.assistant, forward(address, tagAssistant)),
-     Header.view(canGoBack(model.output),
-       forward(address, tagHeader)
-      ),
-     Title.view(model.input.isVisible,
-       readTitle(model.output, 'Untitled'),
-       isSecure(model.output),
-       forward(address, tagTitle)
-      ),
-     Progress.view(model.progress, forward(address, tagProgress)),
-     Input.view(model.input, forward(address, tagInput))
-    ]
-  )
+  }, [
+    html.div({
+      className: 'content',
+      style: {
+        top: `${model.top.content}px`,
+        position: 'absolute',
+        width: '100%',
+        height: '100%'
+      },
+      onWheel: model.isInputEmbedded ? null : (event) => {
+        const {deltaY, deltaX} = event
+        const {top} = model
+        const isVertical = Math.abs(deltaY) > Math.abs(deltaX)
+        if (isVertical) {
+          const isUp = deltaY > 0
+          if (isUp) {
+            if (top.content > -27 || top.header > -27) {
+              event.preventDefault()
+              address({ type: 'VerticalSwipe', deltaY })
+            }
+          } else {
+            if (top.content < 0 || top.header < 0) {
+              event.preventDefault()
+              address({ type: 'VerticalSwipe', deltaY })
+            }
+          }
+        }
+      }
+    }, [
+      Output.view(model.isSelected, model.output, forward(address, tagOutput))
+    ]),
+    html.div({
+      className: 'hotzone',
+      onMouseEnter: event => address(ShowHeader),
+      style: {
+        top: '0px',
+        height: '50px',
+        width: '100%',
+        position: 'absolute',
+        opacity: '0',
+        pointerEvents: model.top.header === -27 ? 'all' : 'none'
+      }
+    }, []),
+    Overlay.view(model.overlay, forward(address, tagOverlay)),
+    Assistant.view(model.assistant, forward(address, tagAssistant)),
+    html.div({
+      className: 'ui',
+      style: {
+        top: `${model.top.header}px`,
+        height: '27px',
+        position: 'absolute',
+        width: '100%',
+        backgroundColor: 'inherit'
+      }
+    }, [
+      Header.view(canGoBack(model.output), forward(address, tagHeader)),
+      Title.view(model.input.isVisible,
+        readTitle(model.output, 'Untitled'),
+        isSecure(model.output),
+        forward(address, tagTitle)),
+      Progress.view(model.progress, forward(address, tagProgress)),
+    ]),
+    Input.view(model.input, forward(address, tagInput))
+  ])
 
 export const view =
   (model:Model, address:Address<Action>):DOM =>
@@ -890,7 +1003,7 @@ export const view =
 
 const styleSheet = Style.createSheet({ base:
       { width: '100%',
-       height: '100%',
+       height: '100vh',
        position: 'absolute',
        top: 0,
        left: 0,
@@ -900,7 +1013,9 @@ const styleSheet = Style.createSheet({ base:
        borderRadius: Runtime.useNativeTitlebar() ? '0' : '4px',
        transitionProperty: 'background-color, color, border-color',
        transitionTimingFunction: 'ease-in, ease-out, ease',
-       transitionDuration: '300ms'
+       transitionDuration: '300ms',
+       MozWindowDragging: 'drag',
+       WebkitAppRegion: 'drag'
       },
      selected:
       { zIndex: 2
