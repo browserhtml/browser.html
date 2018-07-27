@@ -2,6 +2,7 @@
 
 const {app, BrowserWindow, ipcMain, nativeImage} = require('electron')
 const path = require('path')
+const os = require('os')
 
 var mainWindow = null
 
@@ -87,7 +88,10 @@ var onReady = function () {
   })
 }
 
-app.dock.setIcon(nativeImage.createFromPath('./images/icon.png'))
+if (os.platform() === 'darwin') {
+  // dock API family is only available in macOS
+  app.dock.setIcon(nativeImage.createFromPath('./images/icon.png'))
+}
 
 app.on('window-all-closed', onQuit)
 app.on('ready', onReady)
